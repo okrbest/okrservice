@@ -456,7 +456,18 @@ export const can = (actionName: string, currentUser: IUser): boolean => {
   return actions[actionName] === true;
 };
 export const __ = (key: string, options?: any) => {
+  // console.log(`Translation attempt: ${key}`, T.texts); // Debug log
+  // First check if key exists directly in texts object (handling keys with dots)
+  if (key && key.includes(".") && T.texts && T.texts[key]) {
+    const value = T.texts[key];
+    const formatted = T.format(value, options);
+    return formatted ? formatted.toString() : "";
+  }
+
+  // Try translation with default method
   const translation = T.translate(key, options);
+
+  // console.log(`Translation result: ${key} => ${translation}`);
 
   if (!translation) {
     return "";
