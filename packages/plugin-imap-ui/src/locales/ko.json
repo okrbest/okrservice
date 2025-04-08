@@ -1,0 +1,12 @@
+{
+    "send email to " : "이메일 보내기 ",
+    "Expand email" : "이메일 확장",
+    "Shrink email" : "이메일 축소",
+    "See full mail" : "전체 메일 보기",
+    "imap email" : "IMAP 이메일",
+    "Which specific Brand does this integration belong to?" : "이 통합은 어떤 특정 브랜드에 속합니까?",
+    "Main user (for a mail with aliases)" : "주 사용자 (별칭이 있는 메일용)",
+    "User" : "사용자",
+    "Password" : "비밀번호",
+    "Log messages" : "로그 메시지"
+}
