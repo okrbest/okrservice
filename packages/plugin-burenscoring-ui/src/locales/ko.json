@@ -1,0 +1,19 @@
+{
+    "Scoring" : "스코링",
+    "Burenscorings" : "부렌스코링",
+    "Theres no burenscoring" : "부렌스코링이 없습니다",
+    "Register number" : "등록 번호",
+    "Choose scoring type" : "스코링 유형 선택",
+    "Score": "점수",
+    "Type": "유형",
+    "get Date": "날짜 가져오기",
+    "See related scoring.." : "관련 스코링 보기..",
+    "Customer Scoring" : "고객 스코링",
+    "No scoring" : "스코링 없음",
+    "Buren Scoring config" : "부렌 스코링 설정",
+    "client id" : "클라이언트 ID",
+    "secret Key" : "비밀 키",
+    "Choose field" : "필드 선택",
+    "Save" : "저장",
+    "You successfully score a " : "성공적으로 스코링했습니다 "
+}
