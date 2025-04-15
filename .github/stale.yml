@@ -1,58 +1,58 @@
-# Configuration for probot-stale - https://github.com/probot/stale
+# probot-stale 설정 - https://github.com/probot/stale
 
-# Number of days of inactivity before an Issue or Pull Request becomes stale
+# 이슈나 풀 리퀘스트가 오래된 상태로 표시되기까지의 비활성 일수
 daysUntilStale: 30
 
-# Number of days of inactivity before an Issue or Pull Request with the stale label is closed.
-# Set to false to disable. If disabled, issues still need to be closed manually, but will remain marked as stale.
+# 오래된 라벨이 붙은 이슈나 풀 리퀘스트가 닫히기까지의 비활성 일수
+# false로 설정하면 비활성화됩니다. 비활성화된 경우 이슈는 여전히 수동으로 닫아야 하지만 오래된 상태로 표시됩니다.
 daysUntilClose: 5
 
-# Only issues or pull requests with all of these labels are check if stale. Defaults to `[]` (disabled)
+# 오래된 상태 확인 시 이 라벨이 모두 있는 이슈나 풀 리퀘스트만 확인합니다. 기본값은 `[]` (비활성화)
 onlyLabels: []
 
-# Issues or Pull Requests with these labels will never be considered stale. Set to `[]` to disable
+# 이 라벨이 있는 이슈나 풀 리퀘스트는 절대 오래된 상태로 간주되지 않습니다. 비활성화하려면 `[]`로 설정
 exemptLabels:
   - pinned
   - security
   - "[Status] Maybe Later"
 
-# Set to true to ignore issues in a project (defaults to false)
+# 프로젝트 내 이슈를 무시하려면 true로 설정 (기본값은 false)
 exemptProjects: false
 
-# Set to true to ignore issues in a milestone (defaults to false)
+# 마일스톤 내 이슈를 무시하려면 true로 설정 (기본값은 false)
 exemptMilestones: false
 
-# Set to true to ignore issues with an assignee (defaults to false)
+# 담당자가 있는 이슈를 무시하려면 true로 설정 (기본값은 false)
 exemptAssignees: false
 
-# Label to use when marking as stale
+# 오래된 상태로 표시할 때 사용할 라벨
 staleLabel: stale
 
-# Comment to post when marking as stale. Set to `false` to disable
+# 오래된 상태로 표시할 때 게시할 댓글. 비활성화하려면 `false`로 설정
 markComment: >
 
-# Limit the number of actions per hour, from 1-30. Default is 30
+# 시간당 작업 수를 1-30 사이로 제한합니다. 기본값은 30
 limitPerRun: 30
 
-# Optionally, specify configuration settings that are specific to just 'issues' or 'pulls':
+# 선택적으로 '이슈'나 '풀 리퀘스트'에만 특정한 설정을 지정할 수 있습니다:
 pulls:
   markComment: >
-    Thank you for your contribution! However, it has
-    not had any activity on it in the past 30 days and will be closed in
-    5 days if no updates occur. If you believe the changes are still valid then please verify your
-    branch has no conflicts with target and rebase if needed. If you
-    are awaiting a (re-)review then please let us know.
+    기여해 주셔서 감사합니다! 하지만 지난 30일 동안 
+    활동이 없었으며, 5일 내에 업데이트가 없으면 닫힐 예정입니다. 
+    변경 사항이 여전히 유효하다고 생각하시면 브랜치가 대상 브랜치와 
+    충돌이 없는지 확인하고 필요한 경우 리베이스하세요. 
+    (재)검토를 기다리고 계시다면 알려주세요.
 
 issues:
   markComment: >
-    Thank you for your contribution! However, it has
-    not had any activity on it in the past 30 days and will be closed in
-    5 days if no updates occur. If you would like this issue to remain open:
+    기여해 주셔서 감사합니다! 하지만 지난 30일 동안 
+    활동이 없었으며, 5일 내에 업데이트가 없으면 닫힐 예정입니다. 
+    이 이슈를 계속 열어두고 싶으시다면:
 
-      1. Verify that you can still reproduce the issue in the latest version of erxes
-      1. Comment that the issue is still reproducible and include:
-          * What version of erxes you reproduced the issue on
-          * What OS and version you reproduced the issue on
-          * What steps you followed to reproduce the issue
+      1. 최신 버전의 service-desk에서도 이슈를 재현할 수 있는지 확인하세요
+      1. 이슈가 여전히 재현 가능하다는 댓글을 남기고 다음 내용을 포함하세요:
+          * 어떤 버전의 service-desk에서 이슈를 재현했는지
+          * 어떤 OS 및 버전에서 이슈를 재현했는지
+          * 이슈를 재현하기 위해 어떤 단계를 따랐는지
 #   exemptLabels:
 #     - confirmed

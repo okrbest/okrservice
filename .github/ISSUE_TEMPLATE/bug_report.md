@@ -1,38 +1,38 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: 버그 리포트
+about: 개선을 위한 버그 리포트 작성
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-<!-- Please use this template while reporting a bug and provide as much info as possible. Not doing so may result in your bug not being addressed in a timely manner. Thanks!
+<!-- 버그를 보고할 때 이 템플릿을 사용하고 가능한 많은 정보를 제공해 주세요. 그렇지 않으면 버그가 적시에 해결되지 않을 수 있습니다. 감사합니다!
 
-If the matter is security related, please disclose it privately via info@erxes.io
+보안 관련 문제인 경우 help@okr.best로 비공개적으로 알려주세요.
 -->
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**버그 설명**
+버그에 대한 명확하고 간결한 설명을 작성해 주세요.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**재현 방법**
+동작을 재현하는 단계:
+1. '...'로 이동
+2. '....'를 클릭
+3. '....'로 스크롤 다운
+4. 오류 확인
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**예상 동작**
+예상했던 동작에 대한 명확하고 간결한 설명을 작성해 주세요.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**스크린샷**
+가능하다면 문제를 설명하는 데 도움이 되는 스크린샷을 추가해 주세요.
 
-**Context (please include the related information if applicable):**
- - OS: [e.g. Ubuntu 16.04]
- - Browser version [e.g. chrome 75.0.3770.142 safari  12.1.1]
- - erxes version [e.g. 0.9.17, 0.9.16]
- - installation type [e.g docker, manual]
+**환경 정보 (해당되는 경우 관련 정보를 포함해 주세요):**
+ - OS: [예: Ubuntu 16.04]
+ - 브라우저 버전: [예: 크롬 75.0.3770.142, 사파리 12.1.1]
+ - erxes 버전: [예: 0.9.17, 0.9.16]
+ - 설치 유형: [예: 도커, 수동 설치]
 
-**Additional context**
-Add any other context about the problem here.
+**추가 정보**
+문제에 대한 기타 추가 정보를 여기에 작성해 주세요.

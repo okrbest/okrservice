@@ -1,11 +1,11 @@
-[ISSUE](https://github.com/erxes/erxes/issues/ISSUE)
+[ISSUE](https://github.com/okrbest/service-desk/issues/ISSUE)
 
-### Context
+### 내용
 
-Your context here.  Additionally, any screenshots.  Delete this line.
+여기에 내용을 작성하세요. 추가로 스크린샷도 첨부하세요. 이 줄은 삭제하세요.
 
 
-// Delete the below section once completed
-### PR Checklist
-- [ ] Description is clearly stated under Context section
-- [ ] Screenshots and the additional verifications are attached
+// 완료 후 아래 섹션 삭제
+### PR 체크리스트
+- [ ] 내용 섹션에 설명이 명확하게 작성되었습니다
+- [ ] 스크린샷 및 추가 검증 자료가 첨부되었습니다
