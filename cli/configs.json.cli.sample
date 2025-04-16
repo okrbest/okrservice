@@ -19,19 +19,35 @@
 	},
 	"plugins": [
 		{
-			"name": "logs"
+			"ui": "local",
+			"name": "inbox"
 		},
 		{
-			"name":"dashboard",
-			"ui":"local"
+			"ui": "local",
+			"name": "knowledgebase"
 		},
 		{
-			"name":"tags",
-			"ui":"local"
+			"ui": "local",
+			"name": "tasks"
 		},
 		{
-			"name":"contacts",
-			"ui":"local"
+			"ui": "local",
+			"name": "tickets"
+		},
+		{
+			"ui": "local",
+			"name": "sales"
+		},
+		{
+			"ui": "local",
+			"name": "purchases"
+		},
+		{
+			"ui": "local",
+			"name": "notifications"
+		},
+		{
+			"name": "integrations"
 		}
 	]
 }
