@@ -12,6 +12,7 @@ on:
       - "packages/api-utils/**"
       - "packages/core/**"
       - ".github/workflows/core.yaml"
+    workflow_dispatch:
 
 jobs: 
   core:
