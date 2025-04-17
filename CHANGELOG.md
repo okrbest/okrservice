@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.9.5](https://github.com/erxes/erxes/compare/2.9.4...2.9.5) (2025-04-16)
+
+### Bug Fixes
+
+* **facebook:** safe content ([989dbc7](https://github.com/erxes/erxes/commit/989dbc7a41121781323aabd9b8a197a31b74d8ba))
+* product chooser search by text ([3dd135b](https://github.com/erxes/erxes/commit/3dd135b8ad2e3044c9b1239d47d51bfb582589b7))
+* products query doubled ([52e0b6d](https://github.com/erxes/erxes/commit/52e0b6dbef2955cf1af327da2053c0018518fc11))
+
+## [2.9.4](https://github.com/erxes/erxes/compare/2.9.3...2.9.4) (2025-04-15)
+
+### Bug Fixes
+
+* **facebook:** display permalink even when content is empty ([6937ee0](https://github.com/erxes/erxes/commit/6937ee076b85f34ee364ac30a01fcf40ffbc58e6))
+* **inbox:** send a trigger to automations when a company is updated ([31974a7](https://github.com/erxes/erxes/commit/31974a730906e28627f78a32e28eaedfae919501))
+* **inbox:** send a trigger to automations when a company is updated. ([f8f8a30](https://github.com/erxes/erxes/commit/f8f8a306aaf83d4d71035e5bf137a56acf411bab))
+* products data save per row on sales ([#6001](https://github.com/erxes/erxes/issues/6001)) ([953fc3c](https://github.com/erxes/erxes/commit/953fc3c359af60397096824642dbac26a284f6c3))
+
+## [2.9.3](https://github.com/erxes/erxes/compare/2.9.2...2.9.3) (2025-04-10)
+
+### Features
+
+* number to mn word utils and mnt rates download cron ([#5996](https://github.com/erxes/erxes/issues/5996)) ([7662543](https://github.com/erxes/erxes/commit/766254317848d8fbdcc8dc842a01dd90ed4bec6c))
+
+### Bug Fixes
+
+* ebarimt data and payments data with round 4 ([d6a1044](https://github.com/erxes/erxes/commit/d6a10445e660b61c14d1acc804e6cd60069218fa))
+* erkhetremainder queries update ([8d69d9b](https://github.com/erxes/erxes/commit/8d69d9bf5f2fa37cf6a9c385ff16f8e688dd3172))
+
 ## [2.9.2](https://github.com/erxes/erxes/compare/2.9.1...2.9.2) (2025-04-08)
 
 ### Bug Fixes
