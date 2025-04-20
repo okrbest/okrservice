@@ -76,7 +76,7 @@ export default (response, counter?) => {
     <div class="receipt" id="${(response._id || '')}">
       ${(counter > 0 && '<div class="splitter"></div>') || ''}
       <div class="center">
-        <img src="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/ebarimt.png">
+        <img src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/ebarimt.png">
       </div>
       <p class="center">
         ${response.companyName ? response.companyName : ''}
