@@ -6,7 +6,6 @@ on:
       - dev
       - master
       - rc
-      - staging
       - v1
     paths:
       - 'pos/**'
