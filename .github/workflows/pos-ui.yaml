@@ -46,5 +46,5 @@ jobs:
         run: |
           cd pos
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          DOCKER_BUILDKIT=1 docker build -t erxes/pos-ui:${GITHUB_REF#refs/heads/} -f Dockerfile .
+          DOCKER_BUILDKIT=1 docker build -t 5240help/pos-ui:${GITHUB_REF#refs/heads/} -f Dockerfile .
           docker push 5240help/pos-ui:${GITHUB_REF#refs/heads/}
