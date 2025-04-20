@@ -173,12 +173,12 @@ const syncUI = async ({ name, image_tag, ui_location }) => {
     let s3_location = "";
 
     if (!tag) {
-      s3_location = `https://erxes-plugins.s3.us-west-2.amazonaws.com/uis/${plName}`;
+      s3_location = `https://service-desk-plugins.s3.ap-northeast-2.amazonaws.com/uis/${plName}`;
     } else {
       if (buildPlugins.includes(tag)) {
-        s3_location = `https://erxes-${tag}-plugins.s3.us-west-2.amazonaws.com/uis/${plName}`;
+        s3_location = `https://service-desk-${tag}-plugins.s3.ap-northeast-2.amazonaws.com/uis/${plName}`;
       } else {
-        s3_location = `https://erxes-release-plugins.s3.us-west-2.amazonaws.com/uis/${plName}/${tag}`;
+        s3_location = `https://service-desk-release-plugins.s3.ap-northeast-2.amazonaws.com/uis/${plName}/${tag}`;
       }
     }
 
@@ -204,9 +204,9 @@ const updateLocales = async () => {
   let s3_location = "";
 
   if (tag === "dev") {
-    s3_location = `https://erxes-dev-plugins.s3.us-west-2.amazonaws.com`;
+    s3_location = `https://service-desk-dev-plugins.s3.ap-northeast-2.amazonaws.com`;
   } else {
-    s3_location = `https://erxes-release-plugins.s3.us-west-2.amazonaws.com/${tag}`;
+    s3_location = `https://service-desk-release-plugins.s3.ap-northeast-2.amazonaws.com/${tag}`;
   }
 
   log(`Downloading locales from ${s3_location}`);
@@ -628,13 +628,13 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
   }
 
   let pluginsMapLocation =
-    "https://erxes-plugins.s3.us-west-2.amazonaws.com/pluginsMap.js";
+    "https://service-desk-plugins.s3.ap-northeast-2.amazonaws.com/pluginsMap.js";
 
   if (configs.image_tag) {
     if (buildPlugins.includes(configs.image_tag)) {
-      pluginsMapLocation = `https://erxes-${configs.image_tag}-plugins.s3.us-west-2.amazonaws.com/pluginsMap.js`;
+      pluginsMapLocation = `https://service-desk-${configs.image_tag}-plugins.s3.ap-northeast-2.amazonaws.com/pluginsMap.js`;
     } else {
-      pluginsMapLocation = `https://erxes-release-plugins.s3.us-west-2.amazonaws.com/${image_tag}/pluginsMap.js`;
+      pluginsMapLocation = `https://service-desk-release-plugins.s3.ap-northeast-2.amazonaws.com/${image_tag}/pluginsMap.js`;
     }
   }
 
@@ -804,7 +804,7 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
     window.plugins = [
       ${uiPlugins.join(",")}
     ]
-  `.replace(/plugin-uis.s3.us-west-2.amazonaws.com/g, NGINX_HOST)
+  `.replace(/plugin-uis.s3.ap-northeast-2.amazonaws.com/g, NGINX_HOST)
   );
 
   const extraServices = configs.extra_services || {};
