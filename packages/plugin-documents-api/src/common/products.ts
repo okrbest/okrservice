@@ -78,7 +78,7 @@ export default {
 
       if (content.includes("{{ barcode }}")) {
         results.push(
-          '::heads::<script src="https://nmgplugins.s3.us-west-2.amazonaws.com/JsBarcode.all.min.js"></script><script src="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/jquery.js"></script>'
+          '::heads::<script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/JsBarcode.all.min.js"></script><script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/jquery.js"></script>'
         );
       }
 

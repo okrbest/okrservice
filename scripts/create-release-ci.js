@@ -37,7 +37,7 @@ var releaseYaml = {
 					"with": {
 						"aws-access-key-id": "${{ secrets.AWS_ACCESS_KEY_ID }}",
 						"aws-secret-access-key": "${{ secrets.AWS_SECRET_ACCESS_KEY }}",
-						"aws-region": "us-west-2"
+						"aws-region": "ap-northeast-2"
 					}
 				},
 			]
@@ -95,10 +95,10 @@ var main = async () => {
 		let run = "echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin \n"
 			+ `docker image pull erxes/${service}:dev \n`
 			+ `docker tag erxes/${service}:dev erxes/${service}:\${GITHUB_REF#refs/tags/} \n`
-			+ `docker push erxes/${service}:\${GITHUB_REF#refs/tags/} \n`;
+			+ `docker push 5240help/${service}:\${GITHUB_REF#refs/tags/} \n`;
 
 		if (service === 'erxes') {
-			run += `aws s3 cp s3://erxes-dev-plugins/locales.tar s3://erxes-release-plugins/\${GITHUB_REF#refs/tags/}/locales.tar \n`;
+			run += `aws s3 cp s3://service-desk-dev-plugins/locales.tar s3://service-desk-release-plugins/\${GITHUB_REF#refs/tags/}/locales.tar \n`;
 		}
 
 		releaseYaml.jobs.release.steps.push({
@@ -111,7 +111,7 @@ var main = async () => {
 		if (plugin.ui) {
 			releaseYaml.jobs.release.steps.push({
 				name: `${plugin.name} ui`,
-				run: `aws s3 sync s3://erxes-dev-plugins/uis/plugin-${plugin.name}-ui s3://erxes-release-plugins/uis/plugin-${plugin.name}-ui/\${GITHUB_REF#refs/tags/}/`
+				run: `aws s3 sync s3://service-desk-dev-plugins/uis/plugin-${plugin.name}-ui s3://service-desk-release-plugins/uis/plugin-${plugin.name}-ui/\${GITHUB_REF#refs/tags/}/`
 			})
 		}
 	}

@@ -14,7 +14,7 @@ module.exports = {
         "./integrationDetailsForm": "./src/forms/components/CallproEditForm.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-inbox-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-inbox-ui/remoteEntry.js",
         "scope": "inbox",
         "module": "./routes"
       },
@@ -130,7 +130,7 @@ module.exports = {
         }
       ],
       "integrationDetailsForm": "./integrationDetailsForm",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-inbox-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-inbox-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -420,7 +420,7 @@ module.exports = {
         "./template": "./src/templates/template.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-automations-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-automations-ui/remoteEntry.js",
         "scope": "automations",
         "module": "./routes"
       },
@@ -442,7 +442,7 @@ module.exports = {
           "scope": "automations"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-automations-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-automations-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -490,7 +490,7 @@ module.exports = {
         "./settings": "./src/Settings.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-calendar-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-calendar-ui/remoteEntry.js",
         "scope": "calendar",
         "module": "./routes"
       },
@@ -521,7 +521,7 @@ module.exports = {
           ]
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-calendar-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-calendar-ui/remoteEntry.js"
     }
   },
   "calls": {
@@ -539,12 +539,12 @@ module.exports = {
         "./activityLog": "./src/components/ActivityLogs.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-calls-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-calls-ui/remoteEntry.js",
         "scope": "calls",
         "module": "./routes"
       },
       "layout": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-calls-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-calls-ui/remoteEntry.js",
         "scope": "calls",
         "module": "./call"
       },
@@ -573,7 +573,7 @@ module.exports = {
         }
       ],
       "activityLog": "./activityLog",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-calls-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-calls-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -615,7 +615,7 @@ module.exports = {
         "./selectRelation": "./src/containers/SelectRelation.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-cars-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-cars-ui/remoteEntry.js",
         "scope": "cars",
         "module": "./routes"
       },
@@ -635,7 +635,7 @@ module.exports = {
         "title": "Cars",
         "component": "./dealSidebar"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-cars-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-cars-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -676,7 +676,7 @@ module.exports = {
       "srcDir": "/Users/macintosh/Documents/erxes/packages/plugin-sales-ui/src",
       "name": "sales",
       "scope": "sales",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-sales-ui/remoteEntry.js",
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-sales-ui/remoteEntry.js",
       "exposes": {
         "./routes": "./src/routes.tsx",
         "./settings": "./src/Settings.tsx",
@@ -690,7 +690,7 @@ module.exports = {
         "./scoreCampaignConfig": "./src/scoreCampaignConfig.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-sales-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-sales-ui/remoteEntry.js",
         "scope": "sales",
         "module": "./routes"
       },
@@ -895,7 +895,7 @@ module.exports = {
       "srcDir": "/Users/macintosh/Documents/erxes/packages/plugin-tasks-ui/src",
       "name": "tasks",
       "scope": "tasks",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-tasks-ui/remoteEntry.js",
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-tasks-ui/remoteEntry.js",
       "exposes": {
         "./routes": "./src/routes.tsx",
         "./settings": "./src/Settings.tsx",
@@ -908,7 +908,7 @@ module.exports = {
         "./invoiceDetailRightSection": "./src/common/Item.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-tasks-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-tasks-ui/remoteEntry.js",
         "scope": "tasks",
         "module": "./routes"
       },
@@ -1102,7 +1102,7 @@ module.exports = {
       "srcDir": "/Users/macintosh/Documents/erxes/packages/plugin-purchases-ui/src",
       "name": "purchases",
       "scope": "purchases",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-purchases-ui/remoteEntry.js",
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-purchases-ui/remoteEntry.js",
       "exposes": {
         "./routes": "./src/routes.tsx",
         "./settings": "./src/Settings.tsx",
@@ -1115,7 +1115,7 @@ module.exports = {
         "./invoiceDetailRightSection": "./src/common/Item.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-purchases-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-purchases-ui/remoteEntry.js",
         "scope": "purchases",
         "module": "./routes"
       },
@@ -1315,7 +1315,7 @@ module.exports = {
         "./automation": "./src/automations/index.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-notifications-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-notifications-ui/remoteEntry.js",
         "scope": "notifications",
         "module": "./routes"
       },
@@ -1337,7 +1337,7 @@ module.exports = {
           "scope": "notifications"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-notifications-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-notifications-ui/remoteEntry.js"
     }
   },
   "tickets": {
@@ -1345,7 +1345,7 @@ module.exports = {
       "srcDir": "/Users/macintosh/Documents/erxes/packages/plugin-tickets-ui/src",
       "name": "tickets",
       "scope": "tickets",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-tickets-ui/remoteEntry.js",
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-tickets-ui/remoteEntry.js",
       "exposes": {
         "./routes": "./src/routes.tsx",
         "./settings": "./src/Settings.tsx",
@@ -1358,7 +1358,7 @@ module.exports = {
         "./invoiceDetailRightSection": "./src/common/Item.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-tickets-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-tickets-ui/remoteEntry.js",
         "scope": "tickets",
         "module": "./routes"
       },
@@ -1590,7 +1590,7 @@ module.exports = {
       "cardDetailAction": "./cardDetailAction",
       "fieldConfig": "./fieldConfig",
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-clientportal-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-clientportal-ui/remoteEntry.js",
         "scope": "clientportal",
         "module": "./routes"
       },
@@ -1612,7 +1612,7 @@ module.exports = {
         "title": "Kind",
         "component": "./Section"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-clientportal-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-clientportal-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -1654,10 +1654,10 @@ module.exports = {
         "./routes": "./src/routes.tsx",
         "./response": "./src/response.tsx"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-ebarimt-ui/remoteEntry.js",
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-ebarimt-ui/remoteEntry.js",
       "scope": "ebarimt",
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-ebarimt-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-ebarimt-ui/remoteEntry.js",
         "scope": "ebarimt",
         "module": "./routes"
       },
@@ -1680,7 +1680,7 @@ module.exports = {
         }
       ],
       "layout": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-ebarimt-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-ebarimt-ui/remoteEntry.js",
         "scope": "ebarimt",
         "module": "./response"
       }
@@ -1733,7 +1733,7 @@ module.exports = {
         "./activityLog": "./src/ActivityLog.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-engages-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-engages-ui/remoteEntry.js",
         "scope": "engages",
         "module": "./routes"
       },
@@ -1759,7 +1759,7 @@ module.exports = {
           ]
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-engages-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-engages-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -1828,7 +1828,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-exm-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-exm-ui/remoteEntry.js",
         "scope": "exm",
         "module": "./routes"
       },
@@ -1844,7 +1844,7 @@ module.exports = {
           ]
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-exm-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-exm-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -1924,7 +1924,7 @@ module.exports = {
         "./automation": "./src/automation.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-knowledgebase-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-knowledgebase-ui/remoteEntry.js",
         "scope": "knowledgebase",
         "module": "./routes"
       },
@@ -1938,7 +1938,7 @@ module.exports = {
           "permission": "showKnowledgeBase"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-knowledgebase-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-knowledgebase-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -1980,7 +1980,7 @@ module.exports = {
         "./automation": "./src/automations/automation.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-loyalties-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-loyalties-ui/remoteEntry.js",
         "scope": "loyalties",
         "module": "./routes"
       },
@@ -2015,7 +2015,7 @@ module.exports = {
           "scope": "loyalties"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-loyalties-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-loyalties-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2058,7 +2058,7 @@ module.exports = {
         "./automation": "./src/automations/automations.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-webhooks-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-webhooks-ui/remoteEntry.js",
         "scope": "webhooks",
         "module": "./routes"
       },
@@ -2076,7 +2076,7 @@ module.exports = {
           ]
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-webhooks-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-webhooks-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2117,7 +2117,7 @@ module.exports = {
         "./automation": "./src/automations.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-pos-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-pos-ui/remoteEntry.js",
         "scope": "pos",
         "module": "./routes"
       },
@@ -2144,7 +2144,7 @@ module.exports = {
         }
       ],
       "customerRightSidebarSection": "./customerSidebar",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-pos-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-pos-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2224,7 +2224,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-syncerkhet-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-syncerkhet-ui/remoteEntry.js",
         "scope": "syncerkhet",
         "module": "./routes"
       },
@@ -2247,7 +2247,7 @@ module.exports = {
           "permission": "syncErkhetConfig"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-syncerkhet-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-syncerkhet-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2273,7 +2273,7 @@ module.exports = {
         "./response": "./src/response.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-multierkhet-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-multierkhet-ui/remoteEntry.js",
         "scope": "multierkhet",
         "module": "./routes"
       },
@@ -2297,11 +2297,11 @@ module.exports = {
         }
       ],
       "layout": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-multierkhet-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-multierkhet-ui/remoteEntry.js",
         "scope": "multierkhet",
         "module": "./response"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-multierkhet-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-multierkhet-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2326,7 +2326,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-salesplans-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-salesplans-ui/remoteEntry.js",
         "scope": "salesplans",
         "module": "./routes"
       },
@@ -2348,7 +2348,7 @@ module.exports = {
           "permission": "showSalesPlans"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-salesplans-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-salesplans-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2388,7 +2388,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-processes-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-processes-ui/remoteEntry.js",
         "scope": "processes",
         "module": "./routes"
       },
@@ -2414,7 +2414,7 @@ module.exports = {
           "permission": "showWorks"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-processes-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-processes-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2461,7 +2461,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-inventories-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-inventories-ui/remoteEntry.js",
         "scope": "inventories",
         "module": "./routes"
       },
@@ -2479,7 +2479,7 @@ module.exports = {
           ]
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-inventories-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-inventories-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2512,7 +2512,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-webbuilder-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-webbuilder-ui/remoteEntry.js",
         "scope": "webbuilder",
         "module": "./routes"
       },
@@ -2525,7 +2525,7 @@ module.exports = {
           "permission": "showWebbuilder"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-webbuilder-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-webbuilder-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2566,7 +2566,7 @@ module.exports = {
         "./paymentConfig": "./src/containers/paymentConfig/Form.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-payment-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-payment-ui/remoteEntry.js",
         "scope": "payment",
         "module": "./routes"
       },
@@ -2597,7 +2597,7 @@ module.exports = {
         "title": "Invoices",
         "component": "./invoiceSection"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-payment-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-payment-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2672,7 +2672,7 @@ module.exports = {
         "./integrationDetailsForm": "./src/components/IntegrationEditForm.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-imap-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-imap-ui/remoteEntry.js",
         "scope": "imap",
         "module": "./routes"
       },
@@ -2696,7 +2696,7 @@ module.exports = {
       ],
       "integrationDetailsForm": "./integrationDetailsForm",
       "activityLog": "./activityLog",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-imap-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-imap-ui/remoteEntry.js"
     }
   },
   "block": {
@@ -2710,7 +2710,7 @@ module.exports = {
         "./activityLog": "./src/activityLogs/activityLog.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-block-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-block-ui/remoteEntry.js",
         "scope": "block",
         "module": "./routes"
       },
@@ -2724,7 +2724,7 @@ module.exports = {
         }
       ],
       "customerRightSidebarSection": "./customerSidebar",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-block-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-block-ui/remoteEntry.js"
     }
   },
   "assets": {
@@ -2737,7 +2737,7 @@ module.exports = {
         "./selectWithAsset": "./src/common/SelectWithAssets.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-assets-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-assets-ui/remoteEntry.js",
         "scope": "assets",
         "module": "./routes"
       },
@@ -2773,7 +2773,7 @@ module.exports = {
           ]
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-assets-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-assets-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2825,7 +2825,7 @@ module.exports = {
         "./selectVistors": "./src/Visitors.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-riskassessment-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-riskassessment-ui/remoteEntry.js",
         "scope": "riskassessment",
         "module": "./routes"
       },
@@ -2879,7 +2879,7 @@ module.exports = {
       },
       "ticketRightSidebarSection": "./cardSideBarSection",
       "taskRightSidebarSection": "./cardSideBarSection",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-riskassessment-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-riskassessment-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -2921,7 +2921,7 @@ module.exports = {
         "./settings": "./src/Settings.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-forum-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-forum-ui/remoteEntry.js",
         "scope": "forum",
         "module": "./routes"
       },
@@ -2960,7 +2960,7 @@ module.exports = {
           "permissions": []
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-forum-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-forum-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -3080,7 +3080,7 @@ module.exports = {
         "./printButton": "./src/containers/PrintButton.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-documents-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-documents-ui/remoteEntry.js",
         "scope": "documents",
         "module": "./routes"
       },
@@ -3098,7 +3098,7 @@ module.exports = {
           ]
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-documents-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-documents-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -3141,7 +3141,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-pricing-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-pricing-ui/remoteEntry.js",
         "scope": "pricing",
         "module": "./routes"
       },
@@ -3159,7 +3159,7 @@ module.exports = {
           ]
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-pricing-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-pricing-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -3200,7 +3200,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-timeclock-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-timeclock-ui/remoteEntry.js",
         "scope": "timeclock",
         "module": "./routes"
       },
@@ -3212,7 +3212,7 @@ module.exports = {
           "location": "mainNavigation"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-timeclock-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-timeclock-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -3252,7 +3252,7 @@ module.exports = {
         "./inboxConversationDetail": "./src/components/ConversationDetail.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-zalo-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-zalo-ui/remoteEntry.js",
         "scope": "zalo",
         "module": "./routes"
       },
@@ -3281,7 +3281,7 @@ module.exports = {
           "category": "All integrations, For support teams, Marketing automation, Email marketing"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-zalo-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-zalo-ui/remoteEntry.js"
     }
   },
   "facebook": {
@@ -3299,7 +3299,7 @@ module.exports = {
         "./messenger-bots": "./src/automations/bots/containers/List.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-facebook-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-facebook-ui/remoteEntry.js",
         "scope": "facebook",
         "module": "./routes"
       },
@@ -3361,7 +3361,7 @@ module.exports = {
       "activityLog": "./activityLog",
       "inboxConversationDetailRespondBoxMask": "./inboxConversationDetailRespondBoxMask",
       "inboxConversationDetail": "./inboxConversationDetail",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-facebook-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-facebook-ui/remoteEntry.js"
     },
     "api": {
       "essyncer": [
@@ -3383,7 +3383,7 @@ module.exports = {
         "./fileChooserSection": "./src/containers/file/CardFolderChooser.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-filemanager-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-filemanager-ui/remoteEntry.js",
         "scope": "filemanager",
         "module": "./routes"
       },
@@ -3404,7 +3404,7 @@ module.exports = {
       },
       "ticketRightSidebarSection": "./fileChooserSection",
       "taskRightSidebarSection": "./fileChooserSection",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-filemanager-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-filemanager-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -3440,7 +3440,7 @@ module.exports = {
       },
       "widget": "./widget",
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-khanbank-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-khanbank-ui/remoteEntry.js",
         "scope": "khanbank",
         "module": "./routes"
       },
@@ -3476,7 +3476,7 @@ module.exports = {
           "component": "./widget"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-khanbank-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-khanbank-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -3568,7 +3568,7 @@ module.exports = {
         "./response": "./src/response.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-productplaces-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-productplaces-ui/remoteEntry.js",
         "scope": "productplaces",
         "module": "./routes"
       },
@@ -3584,11 +3584,11 @@ module.exports = {
         }
       ],
       "layout": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-productplaces-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-productplaces-ui/remoteEntry.js",
         "scope": "productplaces",
         "module": "./response"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-productplaces-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-productplaces-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -3616,7 +3616,7 @@ module.exports = {
         "./cardSideBarSection": "./src/section/containers/Section.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-grants-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-grants-ui/remoteEntry.js",
         "scope": "grants",
         "module": "./routes"
       },
@@ -3641,7 +3641,7 @@ module.exports = {
       },
       "ticketRightSidebarSection": "./cardSideBarSection",
       "taskRightSidebarSection": "./cardSideBarSection",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-grants-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-grants-ui/remoteEntry.js"
     }
   },
   "loans": {
@@ -3654,7 +3654,7 @@ module.exports = {
         "./contractSection": "./src/contracts/components/common/ContractSection.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-loans-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-loans-ui/remoteEntry.js",
         "scope": "loans",
         "module": "./routes"
       },
@@ -3734,7 +3734,7 @@ module.exports = {
         "title": "Loan contract",
         "component": "./contractSection"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-loans-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-loans-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -3902,7 +3902,7 @@ module.exports = {
         "./integrationDetailsForm": "./src/components/IntegrationEditForm.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-viber-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-viber-ui/remoteEntry.js",
         "scope": "viber",
         "module": "./routes"
       },
@@ -3931,7 +3931,7 @@ module.exports = {
           "createModal": "viber"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-viber-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-viber-ui/remoteEntry.js"
     }
   },
   "meetings": {
@@ -3944,7 +3944,7 @@ module.exports = {
         "./meetingSideBarSection": "./src/DealRoute.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-meetings-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-meetings-ui/remoteEntry.js",
         "scope": "meetings",
         "module": "./routes"
       },
@@ -3960,7 +3960,7 @@ module.exports = {
         "title": "Meeting",
         "component": "./meetingSideBarSection"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-meetings-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-meetings-ui/remoteEntry.js"
     }
   },
   "xyp": {
@@ -3975,7 +3975,7 @@ module.exports = {
       },
       "extendSystemConfig": "./xypConfigs",
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-xyp-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-xyp-ui/remoteEntry.js",
         "scope": "xyp",
         "module": "./routes"
       },
@@ -3996,7 +3996,7 @@ module.exports = {
         "title": "ДАН",
         "component": "./customerSidebar"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-xyp-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-xyp-ui/remoteEntry.js"
     },
     "api": {
       "essyncer": [
@@ -4018,7 +4018,7 @@ module.exports = {
         "./contractSection": "./src/contracts/components/common/ContractSection.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-savings-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-savings-ui/remoteEntry.js",
         "scope": "savings",
         "module": "./routes"
       },
@@ -4070,7 +4070,7 @@ module.exports = {
         }
       ],
       "customerRightSidebarSection": "./contractSection",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-savings-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-savings-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -4203,7 +4203,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-goals-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-goals-ui/remoteEntry.js",
         "scope": "goalType",
         "module": "./routes"
       },
@@ -4216,7 +4216,7 @@ module.exports = {
           "scope": "goalType"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-goals-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-goals-ui/remoteEntry.js"
     }
   },
   "msdynamic": {
@@ -4229,7 +4229,7 @@ module.exports = {
         "./customerSidebar": "./src/containers/CustomerSidebar.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-msdynamic-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-msdynamic-ui/remoteEntry.js",
         "scope": "msdynamic",
         "module": "./routes"
       },
@@ -4250,7 +4250,7 @@ module.exports = {
         }
       ],
       "customerRightSidebarSection": "./customerSidebar",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-msdynamic-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-msdynamic-ui/remoteEntry.js"
     }
   },
   "dailyco": {
@@ -4264,13 +4264,13 @@ module.exports = {
         "./videoCall": "./src/components/VideoCall.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-dailyco-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-dailyco-ui/remoteEntry.js",
         "scope": "dailyco",
         "module": "./routes"
       },
       "inboxEditorAction": "./inboxEditorAction",
       "videoCall": "./videoCall",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-dailyco-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-dailyco-ui/remoteEntry.js"
     }
   },
   "zms": {
@@ -4282,7 +4282,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-zms-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-zms-ui/remoteEntry.js",
         "scope": "zms",
         "module": "./routes"
       },
@@ -4302,7 +4302,7 @@ module.exports = {
           "location": "settings"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-zms-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-zms-ui/remoteEntry.js"
     }
   },
   "syncpolaris": {
@@ -4315,7 +4315,7 @@ module.exports = {
         "./customerSidebar": "./src/pullPolaris/containers/CustomerSidebar.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-syncpolaris-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-syncpolaris-ui/remoteEntry.js",
         "scope": "syncpolaris",
         "module": "./routes"
       },
@@ -4337,7 +4337,7 @@ module.exports = {
         }
       ],
       "customerRightSidebarSection": "./customerSidebar",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-syncpolaris-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-syncpolaris-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -4364,7 +4364,7 @@ module.exports = {
         "./reportsCommonFormButton": "./src/containers/common/CommonFormButton.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-reports-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-reports-ui/remoteEntry.js",
         "scope": "reports",
         "module": "./routes"
       },
@@ -4378,7 +4378,7 @@ module.exports = {
           "scope": "reports"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-reports-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-reports-ui/remoteEntry.js"
     }
   },
   "instagram": {
@@ -4395,7 +4395,7 @@ module.exports = {
         "./messenger-bots": "./src/automations/bots/containers/List.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-instagram-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-instagram-ui/remoteEntry.js",
         "scope": "instagram",
         "module": "./routes"
       },
@@ -4457,7 +4457,7 @@ module.exports = {
       "activityLog": "./activityLog",
       "inboxConversationDetailRespondBoxMask": "./inboxConversationDetailRespondBoxMask",
       "inboxConversationDetail": "./inboxConversationDetail",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-instagram-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-instagram-ui/remoteEntry.js"
     }
   },
   "whatsapp": {
@@ -4474,7 +4474,7 @@ module.exports = {
         "./messenger-bots": "./src/automations/bots/containers/List.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-whatsapp-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-whatsapp-ui/remoteEntry.js",
         "scope": "whatsapp",
         "module": "./routes"
       },
@@ -4522,7 +4522,7 @@ module.exports = {
       "activityLog": "./activityLog",
       "inboxConversationDetailRespondBoxMask": "./inboxConversationDetailRespondBoxMask",
       "inboxConversationDetail": "./inboxConversationDetail",
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-whatsapp-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-whatsapp-ui/remoteEntry.js"
     }
   },
   "burenscoring": {
@@ -4536,7 +4536,7 @@ module.exports = {
         "./burenScoreSidebar": "./src/containers/DealBurenSection.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-burenscoring-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-burenscoring-ui/remoteEntry.js",
         "scope": "burenscoring",
         "module": "./routes"
       },
@@ -4560,7 +4560,7 @@ module.exports = {
         "title": "ЗМС",
         "component": "./burenScoreSidebar"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-burenscoring-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-burenscoring-ui/remoteEntry.js"
     }
   },
   "golomtbank": {
@@ -4572,7 +4572,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-golomtbank-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-golomtbank-ui/remoteEntry.js",
         "scope": "golomtbank",
         "module": "./routes"
       },
@@ -4592,7 +4592,7 @@ module.exports = {
           "scope": "golomtBank"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-golomtbank-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-golomtbank-ui/remoteEntry.js"
     }
   },
   "accountings": {
@@ -4604,7 +4604,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-accountings-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-accountings-ui/remoteEntry.js",
         "scope": "accountings",
         "module": "./routes"
       },
@@ -4641,7 +4641,7 @@ module.exports = {
           ]
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-accountings-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-accountings-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -4722,7 +4722,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-pms-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-pms-ui/remoteEntry.js",
         "scope": "pms",
         "module": "./routes"
       },
@@ -4734,7 +4734,7 @@ module.exports = {
           "location": "settings"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-pms-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-pms-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -4760,7 +4760,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-bm-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-bm-ui/remoteEntry.js",
         "scope": "bm",
         "module": "./routes"
       },
@@ -4772,7 +4772,7 @@ module.exports = {
           "location": "mainNavigation"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-bm-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-bm-ui/remoteEntry.js"
     }
   },
   "template": {
@@ -4784,7 +4784,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-template-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-template-ui/remoteEntry.js",
         "scope": "template",
         "module": "./routes"
       },
@@ -4797,7 +4797,7 @@ module.exports = {
           "scope": "template"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-template-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-template-ui/remoteEntry.js"
     }
   },
   "cms": {
@@ -4809,7 +4809,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-cms-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-cms-ui/remoteEntry.js",
         "scope": "cms",
         "module": "./routes"
       },
@@ -4829,7 +4829,7 @@ module.exports = {
           "scope": "cms"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-cms-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-cms-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -4855,7 +4855,7 @@ module.exports = {
         "./routes": "./src/routes.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-activedirectory-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-activedirectory-ui/remoteEntry.js",
         "scope": "activedirectory",
         "module": "./routes"
       },
@@ -4878,7 +4878,7 @@ module.exports = {
           "permission": "showAD"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-activedirectory-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-activedirectory-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -4917,7 +4917,7 @@ module.exports = {
         "./loansResearchSidebar": "./src/containers/LoansResearchSidebar.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-loansresearch-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-loansresearch-ui/remoteEntry.js",
         "scope": "loansresearch",
         "module": "./routes"
       },
@@ -4935,7 +4935,7 @@ module.exports = {
         "title": "Loan Research",
         "component": "./loansResearchSidebar"
       },
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-loansresearch-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-loansresearch-ui/remoteEntry.js"
     },
     "api": {
       "permissions": {
@@ -4977,12 +4977,12 @@ module.exports = {
         "./inboxIntegrationSettings": "./src/containers/UpdateConfigsContainer.tsx"
       },
       "routes": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-cloudflarecalls-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-cloudflarecalls-ui/remoteEntry.js",
         "scope": "cloudflarecalls",
         "module": "./routes"
       },
       "layout": {
-        "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-cloudflarecalls-ui/remoteEntry.js",
+        "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-cloudflarecalls-ui/remoteEntry.js",
         "scope": "cloudflarecalls",
         "module": "./cloudflareCall"
       },
@@ -4999,7 +4999,7 @@ module.exports = {
           "createModal": "cloudflarecall"
         }
       ],
-      "url": "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-cloudflarecalls-ui/remoteEntry.js"
+      "url": "https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-cloudflarecalls-ui/remoteEntry.js"
     }
   }
 }
