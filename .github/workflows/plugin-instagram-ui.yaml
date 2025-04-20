@@ -88,11 +88,11 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
+          aws-region: ap-northeast-2
 
       - name: Deploy
         if: github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/rc' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/staging')
         run: |
           tar -cf build.tar --directory=packages/plugin-instagram-ui/dist .
           cp build.tar packages/plugin-instagram-ui/dist
-          aws s3 sync packages/plugin-instagram-ui/dist s3://erxes-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-instagram-ui --delete
+          aws s3 sync packages/plugin-instagram-ui/dist s3://service-desk-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-instagram-ui --delete
