@@ -77,7 +77,7 @@ export const afterMutationHandlers = async (subdomain, params) => {
     if (type === 'sales:deal' && action === 'update') {
       const deal = params.updatedDocument || params.object;
       const oldDeal = params.object;
-      const destinationStageId = deal.stageId || "";
+      const destinationStageId = deal.stageId || '';
 
       if (!(destinationStageId && destinationStageId !== oldDeal.stageId)) {
         return;
@@ -92,13 +92,7 @@ export const afterMutationHandlers = async (subdomain, params) => {
       if (foundConfig) {
         syncLog = await models.SyncLogs.syncLogsAdd(syncLogDoc);
 
-        await dealToDynamic(
-          subdomain,
-          models,
-          syncLog,
-          deal,
-          foundConfig
-        );
+        await dealToDynamic(subdomain, models, syncLog, deal, foundConfig);
       }
       return;
     }
@@ -111,13 +105,7 @@ export const afterMutationHandlers = async (subdomain, params) => {
       const config = configs[brandId || 'noBrand'];
 
       if (!config.useBoard) {
-        await orderToDynamic(
-          subdomain,
-          models,
-          syncLog,
-          updatedDoc,
-          config
-        );
+        await orderToDynamic(subdomain, models, syncLog, updatedDoc, config);
       }
       return;
     }
