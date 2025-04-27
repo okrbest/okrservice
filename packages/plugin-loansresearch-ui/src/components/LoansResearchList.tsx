@@ -1,4 +1,4 @@
-import { Alert, __ } from '@erxes/ui/src/utils';
+import { Alert, __ } from 'coreui/utils';
 import React from 'react';
 import { BarItems, Wrapper } from '@erxes/ui/src/layout';
 import {

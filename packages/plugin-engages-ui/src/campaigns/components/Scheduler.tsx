@@ -7,7 +7,7 @@ import { IEngageScheduleDate } from "@erxes/ui-engage/src/types";
 import React from "react";
 import { SCHEDULE_TYPES } from "@erxes/ui-engage/src/constants";
 import { SelectMonth } from "@erxes/ui-engage/src/styles";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   scheduleDate: IEngageScheduleDate;

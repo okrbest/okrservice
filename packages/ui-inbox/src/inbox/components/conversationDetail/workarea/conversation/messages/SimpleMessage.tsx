@@ -15,7 +15,7 @@ import React from 'react';
 import TextDivider from '@erxes/ui/src/components/TextDivider';
 import Tip from '@erxes/ui/src/components/Tip';
 import VideoCallMessage from './VideoCallMessage';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import { urlify } from '@erxes/ui/src/utils/urlParser';

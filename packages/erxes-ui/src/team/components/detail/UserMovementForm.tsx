@@ -10,7 +10,7 @@ import { DataWithLoader, NameCard, Tip } from '../../../components';
 import Icon from '../../../components/Icon';
 import { IUserMovement } from '../../types';
 import dayjs from 'dayjs';
-import { __ } from '../../../utils';
+import { __ } from 'coreui/utils';
 import { ContentBox } from '../../../layout';
 import styled from 'styled-components';
 import { colors, dimensions } from '@erxes/ui/src/styles';

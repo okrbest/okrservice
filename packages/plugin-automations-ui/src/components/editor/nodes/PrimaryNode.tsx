@@ -10,7 +10,7 @@ import { Trigger } from '../styles';
 import CommonForm from '@erxes/ui/src/components/form/Form';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import colors from '@erxes/ui/src/styles/colors';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import NoteFormContainer from '../../../containers/forms/NoteForm';
 import { ToolBarRemoveBtn, ToolbarBtn } from '../../../styles';
 import { renderDynamicComponent } from '../../../utils';

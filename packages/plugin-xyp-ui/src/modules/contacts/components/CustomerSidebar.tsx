@@ -24,7 +24,7 @@ import { SidebarList } from "@erxes/ui/src/layout/styles";
 import Spinner from "@erxes/ui/src/components/Spinner";
 import Table from "@erxes/ui/src/components/table";
 import { XYP_TITLES } from "../constants";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import moment from "moment";
 
 type Props = {

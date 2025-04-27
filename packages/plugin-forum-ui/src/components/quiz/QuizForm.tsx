@@ -1,7 +1,7 @@
 import React from "react";
 import { IQuiz, ICategory, ICompany, ITag } from "../../types";
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import Button from "@erxes/ui/src/components/Button";
 import Form from "@erxes/ui/src/components/form/Form";

@@ -28,7 +28,7 @@ import { SmallLoader } from '@erxes/ui/src/components/ButtonMutate';
 import { StepWrapper } from '@erxes/ui/src/components/step/styles';
 
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { IIntegration } from '@erxes/ui-inbox/src/settings/integrations/types';
 import { ILeadData } from '../../types';
 

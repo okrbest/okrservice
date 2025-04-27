@@ -1,7 +1,7 @@
 import Button from "@erxes/ui/src/components/Button";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React from "react";
 
 import { BlockRow } from "../../../styles";

@@ -9,7 +9,7 @@ import EmptyState from "@erxes/ui/src/components/EmptyState";
 import Icon from "@erxes/ui/src/components/Icon";
 import { IDateColumn } from "@erxes/ui/src/types";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import styled from "styled-components";
 import options from "@erxes/ui-purchases/src/purchases/options";
 import {

@@ -19,7 +19,7 @@ import { DetailPopOver } from '../common/utils';
 import Icon from '@erxes/ui/src/components/Icon';
 import NameCard from '@erxes/ui/src/components/nameCard/NameCard';
 import Table from '@erxes/ui/src/components/table';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import colors from '@erxes/ui/src/styles/colors';
 
 type Props = {

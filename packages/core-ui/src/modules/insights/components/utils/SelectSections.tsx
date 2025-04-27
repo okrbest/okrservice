@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import CreatableSelect from 'react-select/creatable';
 
 import Icon from '@erxes/ui/src/components/Icon';
-import { __ } from '@erxes/ui/src/utils/index';
+import { __ } from 'coreui/utils';
 
 import { ISection, SectionMutationVariables } from '../../types';
 import { CustomOption } from '../../styles';

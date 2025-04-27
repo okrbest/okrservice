@@ -4,7 +4,7 @@ import { Button, Icon } from "@erxes/ui/src/components";
 import { FieldStyle, SidebarList } from "@erxes/ui/src/layout/styles";
 import { MeetingListSearch, ParticipantList } from "../../styles";
 import React, { useEffect, useState } from "react";
-import { __, router } from "@erxes/ui/src/utils/core";
+import { __, router } from "coreui/utils";
 
 import Box from "@erxes/ui/src/components/Box";
 import { ChooseOwnerFormContainer } from "../../containers/myCalendar/ChooseOwnerForm";

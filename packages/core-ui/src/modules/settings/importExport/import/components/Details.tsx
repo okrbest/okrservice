@@ -8,7 +8,7 @@ import { FlexItem, FlexPad } from "modules/common/components/step/styles";
 import { ImportHeader } from "../../styles";
 import { InputBar } from "@erxes/ui-settings/src/styles";
 import React from "react";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   disclaimer: boolean;

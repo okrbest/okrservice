@@ -2,7 +2,7 @@ import LeftSidebar from "modules/layout/components/Sidebar";
 import { Link } from "react-router-dom";
 import { SidebarList as List } from "modules/layout/styles";
 import React from "react";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import { IContentType } from "../../types";
 
 type Props = {

@@ -1,6 +1,6 @@
 import { FormColumn, FormWrapper } from "@erxes/ui/src/styles/main";
 import React, { useState } from "react";
-import { __, getConstantFromStore } from "@erxes/ui/src/utils";
+import { __, getConstantFromStore } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import AvatarUpload from "@erxes/ui/src/components/AvatarUpload";

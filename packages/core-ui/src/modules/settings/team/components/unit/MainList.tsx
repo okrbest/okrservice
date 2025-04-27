@@ -1,6 +1,6 @@
 import { LeftActionBar, Title } from "@erxes/ui-settings/src/styles";
 import { IUnit, UnitsMainQueryResponse } from "@erxes/ui/src/team/types";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import ActionButtons from "@erxes/ui/src/components/ActionButtons";

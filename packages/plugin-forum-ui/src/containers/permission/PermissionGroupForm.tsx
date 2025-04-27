@@ -1,4 +1,4 @@
-import { Alert, __ } from '@erxes/ui/src/utils';
+import { Alert, __ } from 'coreui/utils';
 import { mutations, queries } from '../../graphql';
 import { useQuery, useMutation } from '@apollo/client';
 

@@ -1,4 +1,5 @@
-import { CollapseContent, __ } from "@erxes/ui/src";
+import { CollapseContent } from "@erxes/ui/src";
+import { __ } from 'coreui/utils';
 import { Box } from "@erxes/ui/src/components/step/style";
 import React from "react";
 

@@ -1,7 +1,7 @@
 import { Popover } from '@headlessui/react';
 import React from 'react';
 import Tagger from '../containers/Tagger';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { PopoverButton, PopoverHeader } from '@erxes/ui/src/styles/main';
 
 type Props = {

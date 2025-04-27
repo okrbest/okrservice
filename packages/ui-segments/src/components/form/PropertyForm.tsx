@@ -9,7 +9,7 @@ import { Formgroup } from "@erxes/ui/src/components/form/styles";
 import { OperatorList } from "../styles";
 import React from "react";
 import Select, { OnChangeValue } from "react-select";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import SelectWithSearch from "@erxes/ui/src/components/SelectWithSearch";
 
 type Props = {

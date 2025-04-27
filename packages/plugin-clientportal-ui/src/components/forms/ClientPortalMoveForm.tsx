@@ -13,7 +13,7 @@ import { Form } from '@erxes/ui/src/components/form';
 import FormControl from '@erxes/ui/src/components/form/Control';
 import FormGroup from '@erxes/ui/src/components/form/Group';
 import { IUser } from '@erxes/ui/src/auth/types';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   currentUser: IUser;

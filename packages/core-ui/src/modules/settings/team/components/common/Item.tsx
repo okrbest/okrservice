@@ -7,7 +7,7 @@ import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import React from "react";
 import { SideList } from "../../styles";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import queryString from "query-string";
 import { useLocation, useNavigate } from "react-router-dom";
 

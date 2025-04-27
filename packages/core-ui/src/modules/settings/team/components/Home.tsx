@@ -15,7 +15,7 @@ import Sidebar from "./Sidebar";
 import UserInvitationForm from "../containers/UserInvitationForm";
 import UserList from "../containers/UserList";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import { router } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 import Dropdown from "@erxes/ui/src/components/Dropdown";

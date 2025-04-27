@@ -9,7 +9,7 @@ import FormControl from "@erxes/ui/src/components/form/Control";
 import Toggle from "@erxes/ui/src/components/Toggle";
 import Tip from "@erxes/ui/src/components/Tip";
 import { FlexItem, LeftItem } from "@erxes/ui/src/components/step/styles";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import {
   DateContainer,
   FormWrapper,

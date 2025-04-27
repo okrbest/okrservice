@@ -21,7 +21,7 @@ import {
   IFormProps
 } from "@erxes/ui/src/types";
 import { IAssignmentCampaign } from "../types";
-import { extractAttachment, __ } from "@erxes/ui/src/utils";
+import { extractAttachment, __ } from "coreui/utils";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 import Select from "react-select";
 import { IVoucherCampaign } from "../../voucherCampaign/types";

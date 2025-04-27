@@ -1,4 +1,4 @@
-import { Alert, __, generateTree } from "modules/common/utils";
+import { Alert, __, generateTree } from "coreui/utils";
 import { FormTable, InviteOption, RemoveRow } from "../styles";
 import {
   IBranch,

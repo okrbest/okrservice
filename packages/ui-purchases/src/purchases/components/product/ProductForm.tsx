@@ -1,5 +1,5 @@
 import { Add, FlexRowGap, FooterInfo, FormContainer } from "../../styles";
-import { Alert, __ } from "@erxes/ui/src/utils";
+import { Alert, __ } from "coreui/utils";
 import {
   ControlLabel,
   FormGroup,

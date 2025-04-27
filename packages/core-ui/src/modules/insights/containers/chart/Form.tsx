@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import ButtonMutate from '@erxes/ui/src/components/ButtonMutate';
 import { gql, useQuery } from '@apollo/client';
-import { __ } from '@erxes/ui/src/utils/index';
+import { __ } from 'coreui/utils';
 
 import Form from '../../components/chart/Form';
 import { mutations, queries } from '../../graphql';

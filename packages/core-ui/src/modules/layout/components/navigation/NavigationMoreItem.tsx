@@ -11,7 +11,7 @@ import { Plugin } from "./types";
 import React from "react";
 import Tip from "modules/common/components/Tip";
 import WithPermission from "modules/common/components/WithPermission";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import { getLink } from "./utils";
 
 type Props = {

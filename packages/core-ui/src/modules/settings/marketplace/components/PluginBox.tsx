@@ -13,7 +13,7 @@ import {
 import Icon from 'modules/common/components/Icon';
 import { Link } from 'react-router-dom';
 import React from 'react';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { Plugin } from '../types';
 
 type Props = {

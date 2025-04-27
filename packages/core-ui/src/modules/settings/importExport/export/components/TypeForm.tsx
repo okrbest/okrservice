@@ -1,5 +1,5 @@
 import Icon from 'modules/common/components/Icon';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { FlexPad } from 'modules/common/components/step/styles';
 import React from 'react';
 import { Box, TypeContent, ImportHeader } from '../../styles';

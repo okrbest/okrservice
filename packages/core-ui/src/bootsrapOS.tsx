@@ -5,6 +5,7 @@ import "erxes-icon/css/erxes.min.css";
 import { getEnv, readFile } from "modules/common/utils";
 
 import { ApolloProvider } from "@apollo/client";
+import { AppProvider } from "./appContext";
 // global style
 import { GlobalStyle } from "@erxes/ui/src/styles/global-styles";
 import React from "react";
@@ -68,8 +69,10 @@ fetch(`${envs.REACT_APP_API_URL}/initial-setup?envs=${JSON.stringify(envs)}`, {
 
     return root.render(
       <ApolloProvider client={apolloClient}>
-        <GlobalStyle />
-        {body}
+        <AppProvider>
+          <GlobalStyle />
+          {body}
+        </AppProvider>
       </ApolloProvider>
     );
   });

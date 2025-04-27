@@ -11,7 +11,7 @@ import { IRoleValue } from "modules/robot/types";
 import Icon from "modules/common/components/Icon";
 import React from "react";
 import Tip from "modules/common/components/Tip";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 import styled from "styled-components";
 

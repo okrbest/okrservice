@@ -3,7 +3,7 @@ import FormGroup from "@erxes/ui/src/components/form/Group";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import Icon from "@erxes/ui/src/components/Icon";
 import { LeftItem } from "@erxes/ui/src/components/step/styles";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { ColorPick, ColorPicker } from "@erxes/ui/src/styles/main";
 import React from "react";
 import Popover from "@erxes/ui/src/components/Popover";

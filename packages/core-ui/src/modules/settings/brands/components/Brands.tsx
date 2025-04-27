@@ -12,7 +12,7 @@ import Sidebar from '../containers/Sidebar';
 import Table from 'modules/common/components/table';
 import { Title } from '@erxes/ui-settings/src/styles';
 import Wrapper from '../../../layout/components/Wrapper';
-import { __ } from '../../../common/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   brandsTotalCount: number;

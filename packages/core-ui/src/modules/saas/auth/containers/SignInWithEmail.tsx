@@ -5,7 +5,7 @@ import { graphql } from '@apollo/client/react/hoc';
 import React from 'react';
 import { IButtonMutateProps, IRouterProps } from '@erxes/ui/src/types';
 
-import { Alert, __ } from 'modules/common/utils';
+import { Alert, __ } from 'coreui/utils';
 
 import ButtonMutate from '../../../common/components/ButtonMutate';
 import SignInWithEmail from '../components/SignInWithEmail';

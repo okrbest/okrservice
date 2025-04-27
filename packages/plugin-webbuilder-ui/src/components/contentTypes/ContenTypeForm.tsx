@@ -8,7 +8,7 @@ import FullPreview from './step/FullPreview';
 import { IContentType } from '../../types';
 import Icon from '@erxes/ui/src/components/Icon';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   action: (doc: any, afterSave?: any) => void;

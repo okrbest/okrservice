@@ -1,7 +1,7 @@
 import Alert from '../utils/Alert';
 import Button from '../components/Button';
 import React from 'react';
-import { __ } from '../utils/core';
+import { __ } from 'coreui/utils';
 import client from 'coreui/apolloClient';
 import { colors } from '../styles';
 import confirm from '../utils/confirmation/confirm';

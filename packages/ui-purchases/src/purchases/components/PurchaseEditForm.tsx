@@ -1,6 +1,6 @@
 import { IEditFormContent, IItem, IOptions } from "../../boards/types";
 import { IPaymentsData, IPurchase, IPurchaseParams } from "../types";
-import { __, loadDynamicComponent } from "@erxes/ui/src/utils";
+import { __, loadDynamicComponent } from "coreui/utils";
 
 import ChildrenSection from "../../boards/containers/editForm/ChildrenSection";
 import ControlLabel from "@erxes/ui/src/components/form/Label";

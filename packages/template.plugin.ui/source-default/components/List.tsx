@@ -2,7 +2,7 @@ import Button from '@erxes/ui/src/components/Button';
 import { I{Name}, IType } from '../types';
 import Row from './Row';
 import { IButtonMutateProps } from '@erxes/ui/src/types';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import Form from './Form';
 import { Title } from '@erxes/ui-settings/src/styles';

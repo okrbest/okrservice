@@ -2,7 +2,7 @@ import React from "react";
 import Select, { components } from "react-select";
 
 import Icon from "@erxes/ui/src/components/Icon";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { IJobCategory } from "../../types";
 import styled from "styled-components";
 

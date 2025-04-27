@@ -7,7 +7,7 @@ import FormGroup from "@erxes/ui/src/components/form/Group";
 import Info from "@erxes/ui/src/components/Info";
 import React from "react";
 import { RichTextEditor } from "@erxes/ui/src/components/richTextEditor/TEditor";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { queries } from "../graphql";
 import styled from "styled-components";
 import { IEmailConfig } from "../types";

@@ -1,5 +1,5 @@
 import { IItem, IOptions } from "../../types";
-import { __, loadDynamicComponent } from "@erxes/ui/src/utils";
+import { __, loadDynamicComponent } from "coreui/utils";
 
 import { ActionContainer } from "../../styles/item";
 import { ArchiveBtn } from "./ArchiveBtn";

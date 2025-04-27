@@ -5,7 +5,7 @@ import { IButtonMutateProps } from '@erxes/ui/src/types';
 import { Alert } from '@erxes/ui/src';
 import { Button, Icon, Tip } from '@erxes/ui/src/components';
 import CopyToClipboard from 'react-copy-to-clipboard';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { ICommonListProps } from '@erxes/ui-settings/src/common/types';
 
 import { IWebhook } from '../types';

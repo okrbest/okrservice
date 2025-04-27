@@ -2,7 +2,7 @@ import { darken, rgba } from "../styles/ecolor";
 import styled, { css } from "styled-components";
 
 import React from "react";
-import { __ } from "../utils/core";
+import { __ } from "coreui/utils";
 import { shake as animationShake } from "../utils/animations";
 import color from "color";
 import { colors } from "../styles";

@@ -9,7 +9,7 @@ import FormControl from "@erxes/ui/src/components/form/Control";
 import Icon from "@erxes/ui/src/components/Icon";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import PersistentMenu from "./PersistentMenu";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import colors from "@erxes/ui/src/styles/colors";
 
 type Props = {

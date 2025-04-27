@@ -5,7 +5,7 @@ import ControlLabel from '@erxes/ui/src/components/form/Label';
 import Toggle from '@erxes/ui/src/components/Toggle';
 import { RichTextEditor } from '@erxes/ui/src/components/richTextEditor/TEditor';
 import { FlexContent } from '@erxes/ui/src/layout/styles';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 import React from 'react';
 

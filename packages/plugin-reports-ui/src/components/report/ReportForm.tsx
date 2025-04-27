@@ -1,6 +1,6 @@
 import { FlexRow } from "@erxes/ui-settings/src/styles";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import React, { useState } from "react";
 import Dialog from "@erxes/ui/src/components/Dialog";
 import ReportFormModal from "../../containers/report/ReportFormModal";

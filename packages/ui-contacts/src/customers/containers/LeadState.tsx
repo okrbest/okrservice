@@ -1,6 +1,6 @@
 import * as compose from "lodash.flowright";
 
-import { Alert, __ } from "@erxes/ui/src/utils";
+import { Alert, __ } from "coreui/utils";
 import {
   ChangeStateMutationResponse,
   ChangeStateMutationVariables,

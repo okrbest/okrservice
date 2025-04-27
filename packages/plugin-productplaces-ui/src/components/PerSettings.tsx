@@ -8,7 +8,7 @@ import {
 } from "@erxes/ui/src/components";
 import { MainStyleModalFooter as ModalFooter } from "@erxes/ui/src/styles/eindex";
 import { FormColumn, FormWrapper } from "@erxes/ui/src/styles/main";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import React, { useState, useEffect } from "react";
 import PerConditions from "./PerConditions";
 

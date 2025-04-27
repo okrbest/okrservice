@@ -1,5 +1,5 @@
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { SUBMENU } from '../../constants';

@@ -1,4 +1,5 @@
-import { Button, Icon, __, colors } from "@erxes/ui/src";
+import { Button, Icon, colors } from "@erxes/ui/src";
+import { __ } from 'coreui/utils';
 import React, { useEffect, useState } from "react";
 
 import { Divider } from "@erxes/ui-sales/src/boards/styles/stage";

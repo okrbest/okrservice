@@ -13,7 +13,7 @@ import React from "react";
 import { Table } from "../../../styles";
 import Tip from "@erxes/ui/src/components/Tip";
 import Toggle from "@erxes/ui/src/components/Toggle";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   formValues: PricingPlan;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { __ } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import { FlexRow, DescriptionContent } from '../../styles';
 export function DescriptionContentRow({ label, totalCount, teamMembersCount }) {
   return (

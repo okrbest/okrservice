@@ -8,7 +8,7 @@ import {
 } from "@erxes/ui/src/components";
 import { Wrapper } from "@erxes/ui/src/layout";
 import { FormColumn, FormWrapper } from "@erxes/ui/src/styles/main";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import React from "react";
 import { menuDynamic } from "../constants";

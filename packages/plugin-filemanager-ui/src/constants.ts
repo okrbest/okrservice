@@ -1,4 +1,4 @@
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 export const EMPTY_CONTENT_FOLDERS = {
   title: __('Getting Started with Contacts'),

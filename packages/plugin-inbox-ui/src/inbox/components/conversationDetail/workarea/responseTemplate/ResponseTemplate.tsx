@@ -9,7 +9,7 @@ import PopoverContent from '../../../../containers/conversationDetail/responseTe
 import React from 'react';
 import { ResponseTemplateStyled } from '@erxes/ui-inbox/src/inbox/styles';
 import Tip from '@erxes/ui/src/components/Tip';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import strip from 'strip';
 
 type Props = {

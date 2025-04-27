@@ -1,7 +1,7 @@
 import * as routerUtils from "../utils/router";
 
 import React, { forwardRef, useEffect, useState } from "react";
-import { __, router } from "../utils/core";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { CSSTransition } from "react-transition-group";

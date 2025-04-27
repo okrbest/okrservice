@@ -1,5 +1,5 @@
 import Button from '@erxes/ui/src/components/Button';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { DrawerDetail } from '@erxes/ui-automations/src/styles';
 import SelectKbCategories from '@erxes/ui-knowledgebase/src/components/SelectKbCategories';
 import SelectKbTopics from '@erxes/ui-knowledgebase/src/components/SelectKbTopics';

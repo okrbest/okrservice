@@ -1,7 +1,7 @@
 import { MapContainer } from '@erxes/ui/src/styles/main';
 import React, { useEffect, useState } from 'react';
 import { ILocationOption } from '../../types';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import colors from '../../styles/colors';
 import {} from './mapTypes';
 

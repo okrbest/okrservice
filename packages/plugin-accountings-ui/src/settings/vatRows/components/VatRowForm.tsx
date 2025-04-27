@@ -12,7 +12,7 @@ import {
   IButtonMutateProps,
   IFormProps,
 } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React, { useState } from "react";
 import { IVatRow } from '../types';
 

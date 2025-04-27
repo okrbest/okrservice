@@ -9,7 +9,7 @@ import { ControlLabel } from "@erxes/ui/src/components/form";
 import Popover from "@erxes/ui/src/components/Popover";
 import { FlexItem, LeftItem } from "@erxes/ui/src/components/step/styles";
 import { ColorPick, ColorPicker } from "@erxes/ui/src/styles/main";
-import { __, uploadHandler } from "@erxes/ui/src/utils";
+import { __, uploadHandler } from "coreui/utils";
 import { readFile } from '@erxes/ui/src/utils/core';
 import classnames from "classnames";
 import React from "react";

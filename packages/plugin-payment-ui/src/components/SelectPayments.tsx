@@ -2,7 +2,7 @@ import { FlexRow, LeftContent } from '@erxes/ui-settings/src/styles';
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import { IOption } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import React from "react";
 import Select from "react-select";
 

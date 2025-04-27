@@ -2,7 +2,7 @@ import React from 'react';
 import { ScratchNode as CommonScratchNode } from '../styles';
 
 import Icon from '@erxes/ui/src/components/Icon';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { NodeProps } from '../types';
 
 const ScratchNode = ({ data }: NodeProps) => {

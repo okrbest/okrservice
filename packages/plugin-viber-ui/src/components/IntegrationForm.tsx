@@ -8,7 +8,7 @@ import { ModalFooter } from '@erxes/ui/src/styles/main';
 import React from 'react';
 import SelectBrand from '@erxes/ui-inbox/src/settings/integrations/containers/SelectBrand';
 import SelectChannels from '@erxes/ui-inbox/src/settings/integrations/containers/SelectChannels';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   renderButton: (props: IButtonMutateProps) => JSX.Element;
