@@ -8,7 +8,7 @@ import FormControl from '@erxes/ui/src/components/form/Control';
 import FormGroup from '@erxes/ui/src/components/form/Group';
 import { ModalFooter } from '@erxes/ui/src/styles/main';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   closeModal: () => void;

@@ -10,7 +10,7 @@ import { numbers, symbols } from './constants';
 
 import DialogComponent from './components/Dialog';
 import { Icon } from '@erxes/ui/src/components';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import moment from 'moment';
 
 export const formatPhone = (phone) => {

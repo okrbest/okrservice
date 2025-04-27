@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { gql, useQuery } from "@apollo/client";
 import Select from "react-select";
-import { __, Button, ControlLabel, FormGroup } from "@erxes/ui/src";
+import { Button, ControlLabel, FormGroup } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import { FlexRow } from "@erxes/ui-settings/src/styles";
 import { queries } from "@erxes/ui-sales/src/boards/graphql";
 import { LinkButton } from "@erxes/ui/src/styles/main";

@@ -3,7 +3,7 @@ import { TabContent } from '../styles';
 
 import { ICallConfigDoc } from '../types';
 import KeyPadContainer from '../containers/Keypad';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { extractPhoneNumberFromCounterpart } from '../utils';
 
 type Props = {

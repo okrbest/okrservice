@@ -4,7 +4,7 @@ import Label from '@erxes/ui/src/components/Label';
 import SelectBranches from '@erxes/ui/src/team/containers/SelectBranches';
 import SelectDepartments from '@erxes/ui/src/team/containers/SelectDepartments';
 import SelectLabels from '../../settings/containers/SelectLabels';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import dayjs from 'dayjs';
 import {
   Button,

@@ -7,7 +7,7 @@ import SelectDepartment from "@erxes/ui/src/team/containers/SelectDepartments";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 import BoardSelectContainer from "@erxes/ui-sales/src/boards/containers/BoardSelect";
 import { FlexItem, LeftItem } from "@erxes/ui/src/components/step/styles";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 // local
 import { Block } from "../../../styles";
 import { PricingPlan } from "../../../types";

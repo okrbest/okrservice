@@ -3,7 +3,7 @@ import React from 'react';
 import EmptyState from '@erxes/ui/src/components/EmptyState';
 import Table from '@erxes/ui/src/components/table';
 import { Count } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 import { IPaymentDocument } from '../types';
 import PaymentListItem from './PaymentListItem';

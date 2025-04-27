@@ -1,5 +1,5 @@
 import Icon from '@erxes/ui/src/components/Icon';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { IMessage } from '../../../../../types';
 import { AppMessageBox, CallBox, CallButton, UserInfo } from '../styles';

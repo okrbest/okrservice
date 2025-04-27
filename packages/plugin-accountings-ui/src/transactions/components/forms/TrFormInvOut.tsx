@@ -3,7 +3,8 @@ import SelectCustomers from '@erxes/ui-contacts/src/customers/containers/SelectC
 import ProductChooser from "@erxes/ui-products/src/containers/ProductChooser";
 import SelectProducts from '@erxes/ui-products/src/containers/SelectProducts';
 import { IProduct } from "@erxes/ui-products/src/types";
-import { __, Table } from '@erxes/ui/src';
+import { Table } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import Button from "@erxes/ui/src/components/Button";
 import FormControl from '@erxes/ui/src/components/form/Control';
 import FormGroup from '@erxes/ui/src/components/form/Group';

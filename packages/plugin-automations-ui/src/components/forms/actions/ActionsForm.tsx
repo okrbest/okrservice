@@ -8,7 +8,7 @@ import React from 'react';
 import { ScrolledContent } from '@erxes/ui-automations/src/styles';
 import Tip from '@erxes/ui/src/components/Tip';
 import { TriggerTabs } from '../../../styles';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   onClickAction: (action: IAction) => void;

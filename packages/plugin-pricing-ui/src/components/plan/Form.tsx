@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Button from '@erxes/ui/src/components/Button';
 import Step from '@erxes/ui/src/components/step/Step';
 import Steps from '@erxes/ui/src/components/step/Steps';
-import { Alert, __ } from '@erxes/ui/src/utils';
+import { Alert, __ } from 'coreui/utils';
 import {
   StepWrapper,
   ControlWrapper,

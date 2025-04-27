@@ -4,7 +4,7 @@ import { InboxManagementActionConsumer } from '../../containers/InboxCore';
 import { Popover } from '@headlessui/react';
 import { PopoverHeader } from '@erxes/ui/src/styles/eindex';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   targets: IConversation[];

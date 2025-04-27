@@ -1,4 +1,4 @@
-import { Alert, __, confirm } from 'modules/common/utils';
+import { Alert, __, confirm } from 'coreui/utils';
 import { gql, useMutation } from '@apollo/client';
 
 import BlockList from '../../components/common/BlockList';

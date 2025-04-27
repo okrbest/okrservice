@@ -6,7 +6,7 @@ import {
   FormGroup
 } from "@erxes/ui/src/components";
 import BoardSelectContainer from "@erxes/ui-sales/src/boards/containers/BoardSelect";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { MainStyleModalFooter as ModalFooter } from "@erxes/ui/src/styles/eindex";
 import React, { useState } from "react";
 import { IConfigsMap } from "../types";

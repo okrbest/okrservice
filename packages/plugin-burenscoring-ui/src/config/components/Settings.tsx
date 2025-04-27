@@ -7,7 +7,7 @@ import {
 } from "@erxes/ui/src/components";
 import React, { useState } from "react";
 import { IConfigsMaps } from "../../types";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 
 type Props = {

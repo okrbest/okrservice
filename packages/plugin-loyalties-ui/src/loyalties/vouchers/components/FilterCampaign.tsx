@@ -4,7 +4,7 @@ import {
   FormGroup,
 } from "@erxes/ui/src/components/form";
 import { Icon, Tip } from "@erxes/ui/src/components";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import React from "react";

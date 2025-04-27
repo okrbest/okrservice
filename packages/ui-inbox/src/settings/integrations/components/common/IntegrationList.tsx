@@ -11,7 +11,7 @@ import { INTEGRATION_KINDS } from '@erxes/ui/src/constants/integrations';
 import IntegrationListItem from './IntegrationListItem';
 import React from 'react';
 import Table from '@erxes/ui/src/components/table';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   integrations: IIntegration[];

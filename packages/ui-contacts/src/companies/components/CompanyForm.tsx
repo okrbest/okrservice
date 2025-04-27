@@ -11,7 +11,7 @@ import {
 } from "@erxes/ui/src/styles/main";
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
 import { ICompany, ICompanyDoc, ICompanyLinks } from "../types";
-import { __, getConstantFromStore } from "@erxes/ui/src/utils";
+import { __, getConstantFromStore } from "coreui/utils";
 
 import AutoCompletionSelect from "@erxes/ui/src/components/AutoCompletionSelect";
 import AvatarUpload from "@erxes/ui/src/components/AvatarUpload";

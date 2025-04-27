@@ -10,7 +10,7 @@ import { IBranch } from "@erxes/ui/src/team/types";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
 import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
-import { __, extractAttachment } from "modules/common/utils";
+import { __, extractAttachment } from "coreui/utils";
 
 type Props = {
   renderButton: (props: IButtonMutateProps) => JSX.Element;

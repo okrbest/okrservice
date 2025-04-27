@@ -1,5 +1,5 @@
 import FormControl from '../form/Control';
-import { __ } from '../../utils/core';
+import { __ } from 'coreui/utils';
 import React from 'react';
 
 type Props = {

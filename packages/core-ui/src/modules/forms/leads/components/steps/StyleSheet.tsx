@@ -7,7 +7,7 @@ import React from "react";
 import FormControl from "../../../../common/components/form/Control";
 import FormGroup from "../../../../common/components/form/Group";
 import ControlLabel from "../../../../common/components/form/Label";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   onChange: (name: "css", value: string) => void;

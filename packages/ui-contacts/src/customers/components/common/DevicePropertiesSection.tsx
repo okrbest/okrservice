@@ -10,7 +10,7 @@ import { ICustomer } from "../../types";
 import { IField } from "@erxes/ui/src/types";
 import { IFieldsVisibility } from "../../types";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import parse from "ua-parser-js";
 
 type Props = {

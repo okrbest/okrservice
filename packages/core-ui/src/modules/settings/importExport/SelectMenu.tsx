@@ -5,7 +5,7 @@ import Icon from "@erxes/ui/src/components/Icon";
 import { Link } from "react-router-dom";
 import React from "react";
 import Wrapper from "modules/layout/components/Wrapper";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { colors } from "@erxes/ui/src/styles";
 import styled from "styled-components";
 

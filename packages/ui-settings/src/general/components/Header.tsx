@@ -1,5 +1,5 @@
 import HeaderDescription from '@erxes/ui/src/components/HeaderDescription';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 
 function Header({

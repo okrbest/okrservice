@@ -1,4 +1,5 @@
-import { __, DataWithLoader, Pagination, Table, Wrapper } from "@erxes/ui/src";
+import { DataWithLoader, Pagination, Table, Wrapper } from "@erxes/ui/src";
+import { __ } from 'coreui/utils';
 import dayjs from "dayjs";
 import React from "react";
 import { menuSyncpolaris } from "../../constants";

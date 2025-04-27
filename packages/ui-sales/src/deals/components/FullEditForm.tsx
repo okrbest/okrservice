@@ -29,7 +29,7 @@ import { IUser } from "@erxes/ui/src/auth/types";
 import Move from "../../boards/containers/editForm/Move";
 import ProductSectionComponent from "./product/ProductSectionComponent";
 import SidebarConformity from "../../boards/components/editForm/SidebarConformity";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import queryString from "query-string";
 
 type Props = {

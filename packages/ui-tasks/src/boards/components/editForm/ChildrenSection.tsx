@@ -10,7 +10,7 @@ import React from 'react';
 import { AddForm } from '@erxes/ui-sales/src/boards/containers/portable';
 import EditForm from '@erxes/ui-sales/src/boards/containers/editForm/EditForm';
 import { IItem, IOptions } from '../../types';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { SectionBodyItem } from '@erxes/ui/src/layout/styles';
 import { Flex } from '@erxes/ui/src/styles/main';
 

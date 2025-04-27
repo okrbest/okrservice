@@ -15,7 +15,7 @@ import { Preview, StepWrapper } from "@erxes/ui/src/components/step/styles";
 import { PageHeader } from "@erxes/ui/src/layout/styles";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React, { useEffect, useState } from "react";
 import Accounts from "../../../containers/Accounts";
 import ButtonsGenerator from "../../components/action/ButtonGenerator";

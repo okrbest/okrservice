@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import Chip from '../Chip';
 import React from 'react';
-import { __ } from '../../utils/core';
+import { __ } from 'coreui/utils';
 import { cleanIntegrationKind } from '../../utils';
 import createChipText from './createChipText';
 import { gql } from '@apollo/client';

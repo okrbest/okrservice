@@ -13,7 +13,7 @@ import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import PropertyForm from "../containers/PropertyForm";
 import React from "react";
 import Select from "react-select";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   queryParams: any;

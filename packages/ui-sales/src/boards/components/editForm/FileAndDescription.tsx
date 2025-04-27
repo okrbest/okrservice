@@ -5,7 +5,7 @@ import {
 } from "@erxes/ui-internalnotes/src/components/Form";
 import { IItem, IOptions } from "../../types";
 import React, { useEffect, useState } from "react";
-import { __, extractAttachment } from "@erxes/ui/src/utils";
+import { __, extractAttachment } from "coreui/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import ControlLabel from "@erxes/ui/src/components/form/Label";

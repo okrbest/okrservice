@@ -27,7 +27,7 @@ import { SmallLoader } from '@erxes/ui/src/components/ButtonMutate';
 import { StepWrapper } from '@erxes/ui/src/components/step/styles';
 import StyleSheetStep from './step/StyleSheetStep';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   integration?: ILeadIntegration;

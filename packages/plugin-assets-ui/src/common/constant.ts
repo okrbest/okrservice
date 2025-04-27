@@ -1,4 +1,4 @@
-import { __ } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 
 export const ASSET_CATEGORY_STATUSES = [
   { label: 'Choose Status', value: '' },

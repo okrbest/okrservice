@@ -1,4 +1,4 @@
-import { Alert, __ } from "modules/common/utils";
+import { Alert, __ } from "coreui/utils";
 import { IApp, IAppParams } from "../types";
 
 import Button from "modules/common/components/Button";

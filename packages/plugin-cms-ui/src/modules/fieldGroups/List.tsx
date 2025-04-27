@@ -5,7 +5,7 @@ import SortableList from '@erxes/ui/src/components/SortableList';
 import Submenu from '@erxes/ui/src/components/subMenu/Submenu';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import { BarItems, Contents } from '@erxes/ui/src/layout/styles';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { mutations, queries } from './graphql';

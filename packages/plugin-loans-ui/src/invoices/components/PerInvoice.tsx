@@ -2,7 +2,8 @@ import {
   ActivityIcon,
   ActivityRow
 } from '@erxes/ui-log/src/activityLogs/styles';
-import { Alert, Button, Icon, ModalTrigger, __, confirm } from '@erxes/ui/src';
+import { Alert, Button, Icon, ModalTrigger, confirm } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import {
   ItemDesc,
   ItemLabel,

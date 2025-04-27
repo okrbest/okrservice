@@ -4,7 +4,7 @@ import { gql, useMutation, useSubscription } from '@apollo/client';
 import { Alert } from '@erxes/ui/src/utils';
 import { ICustomer } from '../types';
 import IncomingCall from '../components/IncomingCall';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { mutations, subscriptions } from '../graphql';
 import { useRoomContext } from '../RoomContext';
 

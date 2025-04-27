@@ -4,7 +4,7 @@ import ConfigsForm from "../containers/ConfigsForm";
 import React from "react";
 import TypeForm from "../containers/TypeForm";
 import Wrapper from "modules/layout/components/Wrapper";
-import { Alert, __ } from "modules/common/utils";
+import { Alert, __ } from "coreui/utils";
 import { FlexPad } from "modules/common/components/step/styles";
 import { Description, SubHeading } from "@erxes/ui-settings/src/styles";
 import { StepButton } from "@erxes/ui/src/components/step/styles";

@@ -3,7 +3,7 @@ import SelectBranches from '@erxes/ui/src/team/containers/SelectBranches';
 import SelectDepartments from '@erxes/ui/src/team/containers/SelectDepartments';
 import SelectProductCategory from '@erxes/ui-products/src/containers/SelectProductCategory';
 import SelectProducts from '@erxes/ui-products/src/containers/SelectProducts';
-import { Alert, __ } from '@erxes/ui/src/utils';
+import { Alert, __ } from 'coreui/utils';
 import { IButtonMutateProps, IFormProps } from '@erxes/ui/src/types';
 import { IYearPlanParams } from '../types';
 import {

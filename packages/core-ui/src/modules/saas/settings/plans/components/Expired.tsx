@@ -4,7 +4,7 @@ import Button from '@erxes/ui/src/components/Button';
 import EmptyState from '@erxes/ui/src/components/EmptyState';
 import WithPermission from '@erxes/ui/src/components/WithPermission';
 import { FullContent, MiddleContent } from '@erxes/ui/src/styles/main';
-import { getEnv, __ } from '@erxes/ui/src/utils';
+import { getEnv, __ } from 'coreui/utils';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import { Layout } from 'modules/layout/styles';
 import { CenterContainer } from '@erxes/ui/src/components/step/preview/styles';

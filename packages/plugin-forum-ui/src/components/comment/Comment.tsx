@@ -8,7 +8,7 @@ import { IButtonMutateProps } from '@erxes/ui/src/types';
 import { IComment } from '../../types';
 import NameCard from '@erxes/ui/src/components/nameCard/NameCard';
 import Tip from '@erxes/ui/src/components/Tip';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 const Comment: React.FC<{
   comment: IComment;

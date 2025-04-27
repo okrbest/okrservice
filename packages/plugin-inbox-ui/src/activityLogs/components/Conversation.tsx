@@ -12,7 +12,7 @@ import {
   Header,
 } from "@erxes/ui-log/src/activityLogs/styles";
 import { IConversation, IMessage } from "@erxes/ui-inbox/src/inbox/types";
-import { __, renderFullName } from "@erxes/ui/src/utils";
+import { __, renderFullName } from "coreui/utils";
 import {
   formatText,
   getIconAndColor,

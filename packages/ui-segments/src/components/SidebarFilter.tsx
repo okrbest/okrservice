@@ -16,7 +16,7 @@ import { ISegment } from "../types";
 import Icon from "@erxes/ui/src/components/Icon";
 import { Link } from "react-router-dom";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   currentSegment?: string;

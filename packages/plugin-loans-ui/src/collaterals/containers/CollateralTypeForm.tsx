@@ -2,7 +2,7 @@ import React from "react";
 import withCurrentUser from "@erxes/ui/src/auth/containers/withCurrentUser";
 import { ICollateralTypeDocument } from "../types";
 
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import ButtonMutate from "@erxes/ui/src/components/ButtonMutate";
 import { IButtonMutateProps } from "@erxes/ui/src/types";
 import { IUser } from "@erxes/ui/src/auth/types";

@@ -1,4 +1,5 @@
-import { ButtonMutate, __ } from "@erxes/ui/src";
+import { ButtonMutate } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import { IButtonMutateProps } from "@erxes/ui/src/types";
 import React from "react";
 import ScoringForm from "../components/ScorinMainForm";

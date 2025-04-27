@@ -17,7 +17,7 @@ import { IField } from "../../types";
 import Icon from "../Icon";
 import React from "react";
 import SuccessPreview from "./preview/SuccessPreview";
-import { __ } from "../../utils";
+import { __ } from "coreui/utils";
 import FieldForm from "@erxes/ui-forms/src/forms/components/FieldForm";
 import FieldsPreview from "@erxes/ui-forms/src/forms/components/FieldsPreview";
 

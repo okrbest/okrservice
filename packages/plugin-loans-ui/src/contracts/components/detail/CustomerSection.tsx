@@ -1,4 +1,4 @@
-import { __, renderFullName } from '@erxes/ui/src/utils';
+import { __, renderFullName } from 'coreui/utils';
 
 import Box from '@erxes/ui/src/components/Box';
 import EmptyState from '@erxes/ui/src/components/EmptyState';

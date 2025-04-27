@@ -14,7 +14,7 @@ import Icon from "@erxes/ui/src/components/Icon";
 import OnlineHours from "../../OnlineHours";
 import React from "react";
 import UnEnrollment from "../../../containers/forms/settings/UnEnrollment";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 
 type Props = {

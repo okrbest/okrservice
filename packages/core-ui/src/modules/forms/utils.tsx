@@ -3,7 +3,7 @@ import { CUSTOMER_BASIC_INFO } from "@erxes/ui-contacts/src/customers/constants"
 import { FIELDS_GROUPS_CONTENT_TYPES } from "@erxes/ui-forms/src/settings/properties/constants";
 import { IField } from "@erxes/ui/src/types";
 import { PRODUCT_INFO } from "@erxes/ui-products/src/constants";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 const generateFields = (infos: any[], type: string) => {
   const fields: IField[] = [];
