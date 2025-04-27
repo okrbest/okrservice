@@ -6,7 +6,7 @@ import Icon from "@erxes/ui/src/components/Icon";
 import Label from "@erxes/ui/src/components/Label";
 import React from "react";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import moment from "moment";
 import { renderUserFullName } from "@erxes/ui/src/utils/core";
 import { useNavigate } from "react-router-dom";

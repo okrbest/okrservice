@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { IUser } from "@erxes/ui/src/auth/types";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils/index";
+import { __ } from "coreui/utils";
 import { colors } from "@erxes/ui/src/styles";
 import { getUserAvatar } from "@erxes/ui/src/utils/index";
 import styled from "styled-components";

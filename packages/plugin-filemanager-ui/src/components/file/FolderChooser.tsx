@@ -2,7 +2,7 @@ import { IFolder } from "../../types";
 import Icon from "@erxes/ui/src/components/Icon";
 import React from "react";
 import Select, { components } from "react-select";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import styled from "styled-components";
 
 type Props = {

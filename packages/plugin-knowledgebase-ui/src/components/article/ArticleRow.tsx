@@ -17,7 +17,7 @@ import {
 } from "./styles";
 import { ActionButtons } from "@erxes/ui-settings/src/styles";
 import { Column } from "@erxes/ui/src/styles/main";
-import { __, getUserAvatar } from "@erxes/ui/src/utils";
+import { __, getUserAvatar } from "coreui/utils";
 
 type Props = {
   article: IArticle;

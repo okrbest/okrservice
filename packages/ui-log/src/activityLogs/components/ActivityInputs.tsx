@@ -6,7 +6,7 @@ import NoteForm from "@erxes/ui-internalnotes/src/containers/Form";
 import CommentForm from "@erxes/ui-tickets/src/comment/containers/Form";
 import React from "react";
 import { WhiteBoxRoot } from "@erxes/ui/src/layout/styles";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import asyncComponent from "@erxes/ui/src/components/AsyncComponent";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 

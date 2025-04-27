@@ -2,7 +2,7 @@ import { IUser } from 'modules/auth/types';
 import EmptyState from '@erxes/ui/src/components/EmptyState';
 import WithPermission from '@erxes/ui/src/components/WithPermission';
 import { FullContent, MiddleContent } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import React from 'react';
 import OrganizationProfile from '../containers/OrganizationProfile';

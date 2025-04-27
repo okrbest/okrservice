@@ -4,7 +4,7 @@ import FormControl from 'modules/common/components/form/Control';
 import FormGroup from 'modules/common/components/form/Group';
 import { ModalFooter } from 'modules/common/styles/main';
 import React from 'react';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   save: ({

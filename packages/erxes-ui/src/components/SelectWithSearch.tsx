@@ -5,7 +5,7 @@ import Select, {
   OnChangeValue,
   components
 } from "react-select";
-import { __, confirm, readFile, withProps } from "../utils";
+import { __, confirm, readFile, withProps } from "coreui/utils";
 
 import { IOption } from "../types";
 import Icon from "./Icon";

@@ -17,7 +17,7 @@ import ProgressBar from 'modules/common/components/ProgressBar';
 import { ROLE_SETUP } from 'modules/robot/constants';
 import React from 'react';
 import SetupDetail from '../containers/SetupDetail';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { calculatePercentage } from '@erxes/ui/src/utils/core';
 import { getCurrentUserName } from 'modules/robot/utils';
 

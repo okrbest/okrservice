@@ -4,7 +4,7 @@ import { TabTitle, Tabs } from '@erxes/ui/src/components/tabs';
 import General from '../containers/General';
 import { IButtonMutateProps } from '@erxes/ui/src/types';
 import { IExm } from '../types';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import Appearance from '../containers/Appearance';
 
 type Props = {

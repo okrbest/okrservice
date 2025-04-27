@@ -9,7 +9,7 @@ import {
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
 import { IChecklist, IChecklistItem } from "../types";
 import React, { useEffect, useState } from "react";
-import { __, isEmptyContent } from "@erxes/ui/src/utils";
+import { __, isEmptyContent } from "coreui/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import Form from "@erxes/ui/src/components/form/Form";

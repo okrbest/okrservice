@@ -20,7 +20,7 @@ import PollOptions from "./PollOptions";
 import React from "react";
 import Select from "react-select";
 import Uploader from "@erxes/ui/src/components/Uploader";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 
 type Props = {

@@ -7,7 +7,7 @@ import { EmptyState } from '@erxes/ui/src/components';
 import { FormControl } from '@erxes/ui/src/components/form';
 import Icon from '@erxes/ui/src/components/Icon';
 import NameCard from '@erxes/ui/src/components/nameCard/NameCard';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   customers?: any;

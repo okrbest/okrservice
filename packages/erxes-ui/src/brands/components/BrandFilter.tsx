@@ -1,6 +1,6 @@
 import { FieldStyle, SidebarCounter, SidebarList } from "../../layout/styles";
 import React, { useEffect } from "react";
-import { __, router } from "../../utils";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { IBrand } from "../../brands/types";

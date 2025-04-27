@@ -3,7 +3,7 @@ import { Divider, FormContainer, ScheduleCard } from "../../styles";
 import { IPLan } from "../common/types";
 import PortableCard from "../common/PortableCard";
 import React from "react";
-import { __ } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 
 type Props = {
   plan: { cardIds?: string[]; dashboard?: any } & IPLan;

@@ -9,7 +9,7 @@ import ResponseRow from "./ResponseRow";
 import { SortHandler } from "@erxes/ui/src";
 import Table from "@erxes/ui/src/components/table";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { getEnv } from "coreui/utils";
 
 type Props = {

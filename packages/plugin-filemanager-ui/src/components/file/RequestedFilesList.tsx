@@ -1,5 +1,5 @@
 import { IAccessRequests, IFile } from "../../types";
-import { __, renderUserFullName } from "@erxes/ui/src/utils/core";
+import { __, renderUserFullName } from "coreui/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import EmptyState from "@erxes/ui/src/components/EmptyState";

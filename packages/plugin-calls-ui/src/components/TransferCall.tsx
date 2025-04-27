@@ -2,7 +2,7 @@ import { Button, ControlLabel, FormGroup } from '@erxes/ui/src/components';
 import React, { useState } from 'react';
 
 import { CloseModal, ModalFooter } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import Select from 'react-select';
 
 interface IProps {

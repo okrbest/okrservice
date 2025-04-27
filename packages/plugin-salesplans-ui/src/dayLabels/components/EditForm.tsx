@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import SelectBranches from '@erxes/ui/src/team/containers/SelectBranches';
 import SelectDepartments from '@erxes/ui/src/team/containers/SelectDepartments';
 import SelectLabels from '../../settings/containers/SelectLabels';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import {
   Button,
   ControlLabel,

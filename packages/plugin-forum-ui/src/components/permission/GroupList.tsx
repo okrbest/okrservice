@@ -1,6 +1,6 @@
 import { ActionButtons, Header } from "@erxes/ui-settings/src/styles";
 import { FieldStyle, SidebarList } from "@erxes/ui/src/layout/styles";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";

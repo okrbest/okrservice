@@ -9,7 +9,7 @@ import {
   Icon,
 } from '@erxes/ui/src/components';
 import { FormColumn, ModalFooter } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { IConfigsMap } from '../types';
 

@@ -2,7 +2,7 @@ import BoardSelectContainer from '@erxes/ui-sales/src/boards/containers/BoardSel
 import client from '@erxes/ui/src/apolloClient';
 import { gql } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
-import { __ } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import { Block, BlockRow, FlexColumn, FlexItem } from '../../styles';
 import { FieldsCombinedByType } from '@erxes/ui-forms/src/settings/properties/types';
 import { IPmsBranch } from '../../types';

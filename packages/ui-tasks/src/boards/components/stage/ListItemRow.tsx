@@ -14,7 +14,7 @@ import {
   StageColumn
 } from "../../styles/item";
 import { IItem, IOptions } from "../../types";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import React from "react";
 import PriorityIndicator from "../editForm/PriorityIndicator";
 

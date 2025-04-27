@@ -11,7 +11,7 @@ import PriorityIndicator from "./PriorityIndicator";
 import React from "react";
 import SelectItem from "../SelectItem";
 import StartDate from "./StartDate";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   item: IItem;

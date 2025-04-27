@@ -1,7 +1,8 @@
 import { gql, useLazyQuery } from "@apollo/client";
 import Common from "@erxes/ui-automations/src/components/forms/actions/Common";
 import { DrawerDetail } from "@erxes/ui-automations/src/styles";
-import { __, ControlLabel, FormControl, FormGroup } from "@erxes/ui/src";
+import { ControlLabel, FormControl, FormGroup } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import { FormColumn, FormWrapper } from "@erxes/ui/src/styles/main";
 import React, { useEffect, useState } from "react";
 import Select from "react-select";

@@ -1,4 +1,5 @@
-import { __, Sidebar, SidebarList } from '@erxes/ui/src';
+import { Sidebar, SidebarList } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import Box from '@erxes/ui/src/components/Box';
 import React from 'react';
 import SelectTag from '../../../../tags/containers/SelectTag';

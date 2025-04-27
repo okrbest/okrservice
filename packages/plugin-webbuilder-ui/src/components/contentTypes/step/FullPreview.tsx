@@ -5,7 +5,7 @@ import FieldForm from '../FieldForm';
 import FieldsPreview from '@erxes/ui-forms/src/forms/components/FieldsPreview';
 import FormPreview from '@erxes/ui/src/components/step/preview/FormPreview';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   type: string;

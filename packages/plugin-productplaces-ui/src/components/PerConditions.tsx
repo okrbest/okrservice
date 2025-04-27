@@ -12,7 +12,7 @@ import {
 import { FormColumn, FormWrapper } from "@erxes/ui/src/styles/main";
 import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
 import SelectDepartments from "@erxes/ui/src/team/containers/SelectDepartments";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import React from "react";
 import { LittleGroup } from "../styles";
 import SelectTags from "@erxes/ui-tags/src/containers/SelectTags";

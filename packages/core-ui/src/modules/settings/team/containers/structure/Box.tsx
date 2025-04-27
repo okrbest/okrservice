@@ -7,7 +7,7 @@ import StructureBox from '../../components/structure/Box';
 
 import Spinner from '@erxes/ui/src/components/Spinner';
 import ErrorMsg from '@erxes/ui/src/components/ErrorMsg';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { MenuFooter } from 'modules/settings/styles';
 
 export default function BoxContainer() {

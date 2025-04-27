@@ -19,7 +19,7 @@ import { ChartTable, EmptyContent, Number } from "../../styles";
 import React from "react";
 import Spinner from "@erxes/ui/src/components/Spinner";
 import Table from "@erxes/ui/src/components/table";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { chartColors } from "../../constants";
 import dayjs from "dayjs";
 import numeral from "numeral";

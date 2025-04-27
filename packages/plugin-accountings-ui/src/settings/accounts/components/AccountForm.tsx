@@ -7,7 +7,7 @@ import {
 import { IAccount, IAccountCategory } from "../types";
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
 import React, { useState } from "react";
-import { __, router } from "@erxes/ui/src/utils/core";
+import { __, router } from "coreui/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import CommonForm from "@erxes/ui/src/components/form/Form";

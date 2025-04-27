@@ -1,5 +1,6 @@
 import { FieldStyle, SidebarCounter } from "@erxes/ui/src/layout/styles";
-import { SidebarList, __ } from "@erxes/ui/src";
+import { SidebarList } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 
 import { Link } from "react-router-dom";
 import React from "react";

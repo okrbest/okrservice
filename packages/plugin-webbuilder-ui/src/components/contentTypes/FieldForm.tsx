@@ -16,7 +16,7 @@ import Icon from "@erxes/ui/src/components/Icon";
 import Dialog from "@erxes/ui/src/components/Dialog";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   onSubmit: (field: any) => void;

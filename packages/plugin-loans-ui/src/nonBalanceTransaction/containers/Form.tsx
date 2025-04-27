@@ -1,4 +1,5 @@
-import { ButtonMutate, withProps, __} from '@erxes/ui/src';
+import { ButtonMutate, withProps } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import { IUser, UsersQueryResponse } from '@erxes/ui/src/auth/types';
 import { IButtonMutateProps } from '@erxes/ui/src/types';
 import * as compose from 'lodash.flowright';

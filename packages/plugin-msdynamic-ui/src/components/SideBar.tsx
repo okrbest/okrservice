@@ -1,4 +1,4 @@
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React, { useState } from "react";
 import { router } from "@erxes/ui/src/utils";
 import { SidebarList as List, Wrapper } from "@erxes/ui/src/layout";

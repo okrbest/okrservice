@@ -6,7 +6,7 @@ import { RowTitle } from '@erxes/ui-engage/src/styles';
 import { Capitalize } from '@erxes/ui-settings/src/permissions/styles';
 import { DateWrapper } from '@erxes/ui/src/styles/main';
 import WithPermission from '../../../common/components/WithPermission';
-import { __, getEnv } from '../../../common/utils';
+import { __, getEnv } from 'coreui/utils';
 import Manage from './Manage';
 import {
   ActionButtons,

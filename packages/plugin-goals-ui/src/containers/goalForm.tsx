@@ -1,5 +1,6 @@
 import { gql, useQuery } from '@apollo/client';
-import { ButtonMutate, Spinner, __ } from '@erxes/ui/src';
+import { ButtonMutate, Spinner } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import {
   BranchesMainQueryResponse,
   DepartmentsMainQueryResponse,

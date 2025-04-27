@@ -7,7 +7,7 @@ import {
 } from "./styles";
 import { ILogs } from "../../types";
 import { TabTitle, Tabs } from "@erxes/ui/src/components/tabs";
-import { __, getEnv } from "@erxes/ui/src/utils";
+import { __, getEnv } from "coreui/utils";
 import { readFile, renderUserFullName } from "@erxes/ui/src/utils";
 
 import AckList from "../../containers/file/AckList";

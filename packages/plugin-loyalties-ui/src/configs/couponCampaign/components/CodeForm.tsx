@@ -2,7 +2,7 @@ import { ControlLabel, FormControl, FormGroup } from '@erxes/ui/src/components';
 import { TabTitle, Tabs } from '@erxes/ui/src/components/tabs';
 import { FormColumn, FormWrapper } from '@erxes/ui/src/styles/main';
 import { IFormProps } from '@erxes/ui/src/types';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React, { useState } from 'react';
 import Select from 'react-select';
 import { CHARACTER_SET_OPTIONS } from '../constants';

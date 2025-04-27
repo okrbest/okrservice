@@ -5,17 +5,16 @@ import {
 } from '@erxes/ui/src/styles/main';
 import React, { useState } from 'react';
 
-import Box from '@erxes/ui/src/components/Box';
-import DetailForm from '../DetailForm';
-import DynamicComponentContent from '@erxes/ui/src/components/dynamicComponent/Content';
-import EmptyState from '@erxes/ui/src/components/EmptyState';
-import { IBurenScoring } from '../../types';
-import InquiryRow from './InquiryRow';
-import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
-import { ScoringBox } from '../../styles';
-import ScoringForm from '../../containers/ScoringForm';
-import Table from '@erxes/ui/src/components/table';
-import { __ } from '@erxes/ui/src/utils/core';
+import Box from "@erxes/ui/src/components/Box";
+import DetailForm from "../DetailForm";
+import DynamicComponentContent from "@erxes/ui/src/components/dynamicComponent/Content";
+import EmptyState from "@erxes/ui/src/components/EmptyState";
+import { IBurenScoring } from "../../types";
+import InquiryRow from "./InquiryRow";
+import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
+import ScoringForm from "../../containers/ScoringForm";
+import Table from "@erxes/ui/src/components/table";
+import { __ } from "coreui/utils";
 
 type Props = {
   customerId: string;

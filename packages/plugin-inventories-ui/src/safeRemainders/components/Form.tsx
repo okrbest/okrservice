@@ -18,7 +18,7 @@ import { ModalFooter } from "@erxes/ui/src/styles/main";
 import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
 import SelectDepartments from "@erxes/ui/src/team/containers/SelectDepartments";
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 
 type Props = {

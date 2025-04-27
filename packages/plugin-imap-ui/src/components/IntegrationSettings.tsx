@@ -3,7 +3,7 @@ import * as compose from 'lodash.flowright';
 import CollapseContent from '@erxes/ui/src/components/CollapseContent';
 import Icon from '@erxes/ui/src/components/Icon';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { gql, useQuery } from '@apollo/client';
 import { graphql } from '@apollo/client/react/hoc';
 import { queries } from '../graphql';

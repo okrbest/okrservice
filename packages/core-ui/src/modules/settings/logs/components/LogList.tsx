@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { Title } from "@erxes/ui-settings/src/styles";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 
 import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";
 import EmptyState from "@erxes/ui/src/components/EmptyState";

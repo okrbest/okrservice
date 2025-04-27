@@ -9,7 +9,7 @@ import {
   Spinner,
 } from "@erxes/ui/src/components";
 import { Title } from "@erxes/ui-settings/src/styles";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { Wrapper } from "@erxes/ui/src/layout";
 import { queries } from "@erxes/ui-products/src/graphql";
 import React, { useState, useEffect } from "react";

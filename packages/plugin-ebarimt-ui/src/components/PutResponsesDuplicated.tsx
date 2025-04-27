@@ -13,7 +13,7 @@ import React from "react";
 import RightMenu from "./RightMenuDuplicated";
 import { SUB_MENUS } from "../constants";
 import { TableWrapper } from "../styles";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 interface IProps {
   errorMsg: string;

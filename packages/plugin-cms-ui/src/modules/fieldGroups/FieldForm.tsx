@@ -8,7 +8,7 @@ import Form from '@erxes/ui/src/components/form/Form';
 import FormGroup from '@erxes/ui/src/components/form/Group';
 import ControlLabel from '@erxes/ui/src/components/form/Label';
 import { ModalFooter } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { mutations } from './graphql';
 import { queries as formQueries } from '@erxes/ui-forms/src/settings/properties/graphql';
 import { stringToRegex } from '@erxes/ui-forms/src/settings/properties/utils';

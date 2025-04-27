@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import React from "react";
 import Sidebar from "@erxes/ui/src/layout/components/Sidebar";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import CustomFieldsSection from "@erxes/ui-forms/src/forms/containers/CustomFieldsSection";
 

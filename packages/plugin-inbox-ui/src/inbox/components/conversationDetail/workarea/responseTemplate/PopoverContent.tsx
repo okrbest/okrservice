@@ -18,7 +18,7 @@ import { IBrand } from "@erxes/ui/src/brands/types";
 import { IResponseTemplate } from "../../../../../settings/responseTemplates/types";
 import { Link } from "react-router-dom";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import strip from "strip";
 
 type Props = {

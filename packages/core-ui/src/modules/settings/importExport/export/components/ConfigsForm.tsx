@@ -7,7 +7,7 @@ import { OperatorList } from "../../styles";
 import React from "react";
 import { SubHeading } from "@erxes/ui-settings/src/styles";
 import _ from "lodash";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import { IExportField } from "../../types";
 
 type Props = {

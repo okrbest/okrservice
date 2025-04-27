@@ -1,6 +1,6 @@
 import { DataWithLoader, Icon, Tip } from "@erxes/ui/src/components";
 import { Sidebar, Wrapper } from "@erxes/ui/src/layout";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { IDonateCampaign } from "../../../configs/donateCampaign/types";

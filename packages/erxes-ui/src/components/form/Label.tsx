@@ -1,6 +1,6 @@
 import { Label } from './styles';
 import React from 'react';
-import { __ } from '../../utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   children: React.ReactNode | string;

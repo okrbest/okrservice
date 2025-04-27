@@ -1,4 +1,4 @@
-import { Alert, __, confirm } from '@erxes/ui/src/utils';
+import { Alert, __, confirm } from 'coreui/utils';
 import { Box, States } from '../../styles';
 
 import { Actions } from '@erxes/ui/src/styles/main';

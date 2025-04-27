@@ -13,7 +13,8 @@ import PurchaseConvertTrigger from "@erxes/ui-purchases/src/purchases/components
 import React from "react";
 import TaskConvertTrigger from "@erxes/ui-tasks/src/tasks/components/TaskConvertTrigger";
 import TicketConvertTrigger from "@erxes/ui-tickets/src/tickets/components/TicketConvertTrigger";
-import { __, isEnabled } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
+import { isEnabled } from "@erxes/ui/src/utils/core";
 import styled from "styled-components";
 
 const Container = styled.div`

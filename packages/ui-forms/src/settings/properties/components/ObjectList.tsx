@@ -1,5 +1,5 @@
 import { Button } from '@erxes/ui/src/components';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import React, { useState, useEffect } from 'react';
 import { ObjectListItemContainer } from '../styles';
 import ObjectListItem from './ObjectListItem';

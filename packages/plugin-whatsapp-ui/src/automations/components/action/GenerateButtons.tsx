@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import ActionButtons from '@erxes/ui/src/components/ActionButtons';
 import Alert from '@erxes/ui/src/utils/Alert/index';
 import Icon from '@erxes/ui/src/components/Icon';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { LinkButton } from '@erxes/ui/src/styles/main';
 const List = styled.ul`
   list-style: none;

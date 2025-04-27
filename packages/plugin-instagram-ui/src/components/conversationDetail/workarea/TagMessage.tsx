@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { Mask, MaskText } from '@erxes/ui-inbox/src/inbox/styles';
 
 import TaggedMessageModal from './TaggedMessageModal';

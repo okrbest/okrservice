@@ -6,7 +6,7 @@ import React, { useRef } from "react";
 import Popover from "@erxes/ui/src/components/Popover";
 import { PopoverContent } from "@erxes/ui/src/components/filterableList/styles";
 import SelectMembersBox from "../../containers/utils/SelectMembersBox";
-import { __ } from "@erxes/ui/src/utils/index";
+import { __ } from "coreui/utils";
 
 type Props = {
   targets: IReport[] | IDashboard[];

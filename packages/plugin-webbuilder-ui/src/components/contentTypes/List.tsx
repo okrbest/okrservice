@@ -6,7 +6,7 @@ import { IContentTypeDoc } from '../../types';
 import Icon from '@erxes/ui/src/components/Icon';
 import { List } from '../pages/styles';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   contentTypes: IContentTypeDoc[];

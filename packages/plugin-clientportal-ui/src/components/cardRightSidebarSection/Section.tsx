@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import { ParticipantsWrapper } from "../../styles";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { renderFullName } from "@erxes/ui/src/utils/core";
 
 export type Props = {
