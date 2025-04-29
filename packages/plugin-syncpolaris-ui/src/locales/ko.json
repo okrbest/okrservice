@@ -1,0 +1,17 @@
+{
+    "Settings" : "설정",
+    "Sync polaris config" : "폴라리스 동기화 설정",
+    "Sync polaris configs" : "폴라리스 동기화 설정들",
+    "Customer config" : "고객 설정",
+    "General config" : "일반 설정",
+    "Deposit config" : "예금 설정",
+    "Saving config" : "저축 설정",
+    "Loan config" : "대출 설정",
+    "Customer" : "고객",
+    "Sync Polariss " : "폴라리스 동기화 ",
+    "DATAS " : "데이터 ",
+    "Filters" : "필터",
+    "Clear filter" : "필터 지우기",
+    "Start Date" : "시작일",
+    "End Date" : "종료일"   
+}

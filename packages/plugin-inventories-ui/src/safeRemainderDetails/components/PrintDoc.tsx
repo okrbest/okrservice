@@ -47,7 +47,7 @@ export default function List(props: Props) {
     <html>
     <head>
       <meta charset="utf-8">
-      <link rel="stylesheet" href="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/print.css" media="print">
+      <link rel="stylesheet" href="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/print.css" media="print">
     </head>
     <body>
       <div class="wrapper">

@@ -7,10 +7,10 @@ export default content => {
 
     <head>
       <meta charset="utf-8">
-      <link rel="stylesheet" href="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/print.css" media="print">
-      <script src="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/jquery.js"></script>
-      <script src="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/qrcodegen.js"></script>
-      <script src="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/jsbarcode.js"></script>
+      <link rel="stylesheet" href="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/print.css" media="print">
+      <script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/jquery.js"></script>
+      <script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/qrcodegen.js"></script>
+      <script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/jsbarcode.js"></script>
     </head>
 
     <body>

@@ -119,19 +119,19 @@ export default {
       content.includes("{{ seriesQrcode }}")
     ) {
       results.push(
-        '::heads::<script src="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/jquery.js"></script>'
+        '::heads::<script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/jquery.js"></script>'
       );
     }
 
     if (content.includes("{{ seriesBarcode }}")) {
       results.push(
-        '::heads::<script src="https://nmgplugins.s3.us-west-2.amazonaws.com/JsBarcode.all.min.js"></script>'
+        '::heads::<script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/JsBarcode.all.min.js"></script>'
       );
     }
 
     if (content.includes("{{ seriesQrcode }}")) {
       results.push(
-        '::heads::<script src="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/qrcodegen.js"></script>'
+        '::heads::<script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/qrcodegen.js"></script>'
       );
     }
 
