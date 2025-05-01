@@ -11,7 +11,7 @@ import BoardSelectContainer from "@erxes/ui-sales/src/boards/containers/BoardSel
 import { IConfigsMap } from "../types";
 import { MainStyleModalFooter as ModalFooter } from "@erxes/ui/src/styles/eindex";
 import React, { useState } from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   configsMap: IConfigsMap;

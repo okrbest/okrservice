@@ -1,4 +1,5 @@
-import { Button, Label, __ } from '@erxes/ui/src';
+import { Button, Label } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PosOrdersBySub } from '../types';

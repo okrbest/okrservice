@@ -6,7 +6,7 @@ import {
 } from '@erxes/ui-settings/src/main/styles';
 import { IQueryParams } from '@erxes/ui/src/types';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { AccountingsSubMenus } from "../../constants";
 import HeaderDescription from "@erxes/ui/src/components/HeaderDescription";
 

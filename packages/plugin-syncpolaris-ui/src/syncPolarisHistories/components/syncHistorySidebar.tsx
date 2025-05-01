@@ -7,7 +7,7 @@ import queryString from "query-string";
 import React, { useState } from "react";
 import Tip from "@erxes/ui/src/components/Tip";
 import { router } from "@erxes/ui/src/utils";
-import { __ } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import { DateContainer } from "@erxes/ui/src/styles/main";
 import { SidebarList as List, Wrapper } from "@erxes/ui/src/layout";
 import { IQueryParams } from "@erxes/ui/src/types";

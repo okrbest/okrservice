@@ -1,4 +1,5 @@
-import { __, ControlLabel, FormGroup, Uploader } from '@erxes/ui/src';
+import { ControlLabel, FormGroup, Uploader } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import PlaceHolderInput from '@erxes/ui-automations/src/components/forms/actions/placeHolder/PlaceHolderInput';
 import React, { useEffect, useState } from 'react';
 import { FieldInfo } from '../../styles';

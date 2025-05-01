@@ -7,7 +7,7 @@ import FormControl from "./form/Control";
 import Icon from "./Icon";
 import ModalTrigger from "./ModalTrigger";
 import React from "react";
-import { __ } from "../utils/core";
+import { __ } from "coreui/utils";
 
 export type CommonProps = {
   data: any;

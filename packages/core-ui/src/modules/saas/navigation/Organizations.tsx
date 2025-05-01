@@ -5,7 +5,7 @@ import { Add, Container, ExistingOrg, List } from "./styles";
 import { Divider } from "@erxes/ui-sales/src/boards/styles/stage";
 import { IUserOrganization } from "@erxes/ui/src/auth/types";
 import Icon from "modules/common/components/Icon";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   organizations: IUserOrganization[];

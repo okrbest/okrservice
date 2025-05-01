@@ -27,7 +27,7 @@ import Form from '@erxes/ui/src/components/form/Form';
 import FormControl from '@erxes/ui/src/components/form/Control';
 import Tip from '@erxes/ui/src/components/Tip';
 import Button from '@erxes/ui/src/components/Button';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import SelectTeamMembers from '@erxes/ui/src/team/containers/SelectTeamMembers';
 import SelectBranches from '@erxes/ui/src/team/containers/SelectBranches';
 import Select from 'react-select';

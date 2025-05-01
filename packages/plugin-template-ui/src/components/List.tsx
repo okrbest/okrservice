@@ -4,7 +4,7 @@ import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
 import Pagination from '@erxes/ui/src/components/pagination/Pagination';
 import FormControl from '@erxes/ui/src/components/form/Control';
 import Icon from '@erxes/ui/src/components/Icon';
-import { __, Alert, router } from '@erxes/ui/src/utils';
+import { __, Alert, router } from 'coreui/utils';
 import {
   FilterContainer,
   FlexItem,

@@ -3,7 +3,7 @@ import { FlexRow, ImportColumnRow } from "modules/settings/importExport/styles";
 import Icon from "@erxes/ui/src/components/Icon";
 import React from "react";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import Select from "react-select";
 import dayjs from "dayjs";
 import { IColumnWithChosenField, IImportColumn } from "../../types";

@@ -15,7 +15,7 @@ import InquiryRow from "./InquiryRow";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import ScoringForm from "../../containers/ScoringForm";
 import Table from "@erxes/ui/src/components/table";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   customerId: string;

@@ -1,5 +1,6 @@
 import { EmptyContent } from "@erxes/ui-log/src/activityLogs/styles";
-import { Alert, Button, Icon, Wrapper, __ } from "@erxes/ui/src";
+import { Alert, Button, Icon, Wrapper } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import FormControl from "@erxes/ui/src/components/form/Control";
 import DateControl from "@erxes/ui/src/components/form/DateControl";

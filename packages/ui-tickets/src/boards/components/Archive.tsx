@@ -20,7 +20,7 @@ import Select from "react-select";
 import SelectLabel from "./label/SelectLabel";
 import SelectProducts from "@erxes/ui-products/src/containers/SelectProducts";
 import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import { debounce } from "lodash";
 

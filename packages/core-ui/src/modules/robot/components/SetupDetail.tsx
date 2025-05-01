@@ -4,7 +4,7 @@ import ProgressBar from 'modules/common/components/ProgressBar';
 import React from 'react';
 import { Title } from './styles';
 import VideoPopup from './VideoPopup';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { calculatePercentage } from '@erxes/ui/src/utils/core';
 import colors from 'modules/common/styles/colors';
 import styled from 'styled-components';

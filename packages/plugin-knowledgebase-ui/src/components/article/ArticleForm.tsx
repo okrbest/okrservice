@@ -2,7 +2,7 @@ import {
   IArticle,
   IErxesForm,
   ITopic,
-} from '@erxes/ui-knowledgeBase/src/types';
+} from '@erxes/ui-knowledgebase/src/types';
 import { FILE_MIME_TYPES } from '@erxes/ui-settings/src/general/constants';
 import Button from '@erxes/ui/src/components/Button';
 import FormControl from '@erxes/ui/src/components/form/Control';

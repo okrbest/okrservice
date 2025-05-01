@@ -1,6 +1,7 @@
 import React from 'react';
 // erxes
-import { Pagination, Spinner, __ } from '@erxes/ui/src';
+import { Pagination, Spinner } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 // local
 import { gql, useQuery } from '@apollo/client';

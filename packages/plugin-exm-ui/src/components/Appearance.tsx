@@ -21,7 +21,7 @@ import Popover from "@erxes/ui/src/components/Popover";
 import TwitterPicker from "react-color/lib/Twitter";
 import Uploader from "@erxes/ui/src/components/Uploader";
 import VisionStructureForm from "./VisionStructureForm";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { IBoard, IPipeline } from "@erxes/ui-tickets/src/boards/types";
 import { ITopic } from "@erxes/ui-knowledgebase/src/types";
 

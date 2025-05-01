@@ -7,7 +7,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 import styledTS from 'styled-components-ts';
 import { mutations } from '../graphql';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { Alert } from '@erxes/ui/src/utils';
 
 const Control = styled('div')`

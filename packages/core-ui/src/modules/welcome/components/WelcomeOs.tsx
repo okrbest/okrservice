@@ -24,7 +24,7 @@ import ProgressBar from "@erxes/ui/src/components/ProgressBar";
 import { WidgetBackgrounds } from "@erxes/ui-settings/src/styles";
 import Wrapper from "modules/layout/components/Wrapper";
 import _ from "lodash";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import { useNavigate } from "react-router-dom";
 
 type Props = {

@@ -1,5 +1,6 @@
 import { DropdownList, DropdownNoPadding } from "../../styles";
-import { Icon, __ } from "@erxes/ui/src";
+import { Icon } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 
 import { AppConsumer } from "coreui/appContext";
 import Dropdown from "@erxes/ui/src/components/Dropdown";

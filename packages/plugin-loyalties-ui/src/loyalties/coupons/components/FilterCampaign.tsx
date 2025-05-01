@@ -8,7 +8,7 @@ import Tip from '@erxes/ui/src/components/Tip';
 import { FieldStyle, SidebarList } from '@erxes/ui/src/layout/styles';
 import { DateContainer } from '@erxes/ui/src/styles/main';
 import SelectTeamMembers from '@erxes/ui/src/team/containers/SelectTeamMembers';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import Datetime from '@nateradebaugh/react-datetime';
 import dayjs from 'dayjs';
 import React from 'react';

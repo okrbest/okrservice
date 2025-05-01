@@ -11,7 +11,7 @@ import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import Select, { OnChangeValue } from "react-select";
 import Tags from "@erxes/ui/src/components/Tags";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import styled from "styled-components";
 import styledTS from "styled-components-ts";
 import { ModalFooter } from "@erxes/ui/src/styles/main";

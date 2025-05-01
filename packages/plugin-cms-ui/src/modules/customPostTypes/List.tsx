@@ -5,7 +5,7 @@ import Spinner from '@erxes/ui/src/components/Spinner';
 import Submenu from '@erxes/ui/src/components/subMenu/Submenu';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import { BarItems, Contents } from '@erxes/ui/src/layout/styles';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 import { useParams } from 'react-router-dom';
 import queries from './graphql/queries';

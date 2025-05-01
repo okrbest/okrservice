@@ -6,7 +6,7 @@ import {
   HeaderDescription,
 } from '@erxes/ui/src/components';
 import { Wrapper } from '@erxes/ui/src/layout';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import Sidebar from '../../Sidebar';
 

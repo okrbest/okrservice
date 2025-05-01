@@ -6,7 +6,7 @@ import Tip from '@erxes/ui/src/components/Tip';
 import Icon from '@erxes/ui/src/components/Icon';
 import QuestionForm from '../../containers/quiz/QuestionForm';
 import { IChoice } from '../../types';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { FlexItem } from '@erxes/ui/src/layout/styles';
 import { MarginAuto, ChoiceList, ChoiseTitle } from '../../styles';
 

@@ -4,7 +4,7 @@ import {
   BoardContainer,
   BoardContent
 } from "@erxes/ui-tickets/src/boards/styles/common";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import Header from "@erxes/ui/src/layout/components/Header";
 import React from "react";
 import options from "@erxes/ui-tickets/src/tickets/options";

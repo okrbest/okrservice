@@ -1,5 +1,5 @@
 import { Image, PreviewWrapper } from './ImageWithPreview';
-import { __, readFile } from '../utils/core';
+import { __, readFile } from 'coreui/utils';
 
 import CommonPortal from './CommonPortal';
 import { IAttachment } from '../types';

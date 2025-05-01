@@ -8,7 +8,7 @@ import { FlexItem, FlexPad } from "modules/common/components/step/styles";
 import { IContentType } from "../../types";
 import React from "react";
 import { SubHeading } from "@erxes/ui-settings/src/styles";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   duplicatedHeaders: string[];

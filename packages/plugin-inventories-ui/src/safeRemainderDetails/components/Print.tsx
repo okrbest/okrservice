@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 // erxes
 import Button from '@erxes/ui/src/components/Button';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   safeRemainder: any;

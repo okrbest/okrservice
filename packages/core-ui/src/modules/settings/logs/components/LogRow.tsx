@@ -4,7 +4,7 @@ import Button from '@erxes/ui/src/components/Button';
 import Icon from '@erxes/ui/src/components/Icon';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import TextInfo from '@erxes/ui/src/components/TextInfo';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import * as React from 'react';
 import { ILog } from '../types';
 

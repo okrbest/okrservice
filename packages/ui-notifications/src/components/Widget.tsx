@@ -9,7 +9,7 @@ import { NotifButton } from "./styles";
 import NotificationsLatest from "./NotificationsLatest";
 import Popover from "@erxes/ui/src/components/Popover";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   unreadCount: number;

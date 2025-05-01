@@ -9,7 +9,7 @@ import Form from "@erxes/ui/src/components/form/Form";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import Select from "react-select";
 import SelectStructureMembers from "../SelectStructureMembers";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 import { generateUserOptions } from "@erxes/ui/src/team/containers/SelectDepartments";
 

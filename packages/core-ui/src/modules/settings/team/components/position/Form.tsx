@@ -9,7 +9,7 @@ import Form from "@erxes/ui/src/components/form/Form";
 import { IBranch } from "@erxes/ui/src/team/types";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import SelectPositions from "@erxes/ui/src/team/containers/SelectPositions";
 
 type Props = {

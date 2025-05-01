@@ -2,7 +2,7 @@ import { IEditFormContent, IOptions } from "../../boards/types";
 import { ITicket, ITicketParams } from "../types";
 import React, { useEffect, useState } from "react";
 import Select, { components } from "react-select";
-import { __, loadDynamicComponent } from "@erxes/ui/src/utils";
+import { __, loadDynamicComponent } from "coreui/utils";
 
 import { Capitalize } from "@erxes/ui-settings/src/permissions/styles";
 import ChildrenSection from "../../boards/containers/editForm/ChildrenSection";

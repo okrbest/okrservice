@@ -6,7 +6,7 @@ import CollapseContent from "@erxes/ui/src/components/CollapseContent";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import Icon from "@erxes/ui/src/components/Icon";
 import Spinner from "@erxes/ui/src/components/Spinner";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { BottomBarAction } from "../../styles";
 import { Avatar } from "@erxes/ui/src/components/SelectWithSearch";
 import { gql } from "@apollo/client";

@@ -1,4 +1,4 @@
-import { Alert, __ } from "modules/common/utils";
+import { Alert, __ } from "coreui/utils";
 import { FormControl, FormGroup } from "modules/common/components/form";
 
 import { AuthBox } from "../styles";

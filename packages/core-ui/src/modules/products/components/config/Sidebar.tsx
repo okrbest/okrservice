@@ -2,7 +2,7 @@ import {
   Sidebar as LeftSidebar,
   SidebarList as List,
 } from '@erxes/ui/src/layout';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import SidebarHeader from '@erxes/ui-settings/src/common/components/SidebarHeader';

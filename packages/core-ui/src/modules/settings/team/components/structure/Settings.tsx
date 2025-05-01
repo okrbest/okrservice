@@ -1,4 +1,5 @@
-import { Wrapper, __ } from '@erxes/ui/src';
+import { Wrapper } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 
 import BoxContainer from '../../containers/structure/Box';
 import LeftSidebar from '@erxes/ui/src/layout/components/Sidebar';

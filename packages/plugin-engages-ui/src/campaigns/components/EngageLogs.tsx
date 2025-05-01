@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import Button from '@erxes/ui/src/components/Button';
 import { Shell } from '@erxes/ui-engage/src/styles';
 import { IEngageLog } from '@erxes/ui-engage/src/types';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 const ButtonWrapper = styled.div`
   padding: 10px 0;

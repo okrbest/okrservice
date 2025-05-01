@@ -5,6 +5,7 @@ import "erxes-icon/css/erxes.min.css";
 import { GlobalStyle } from "@erxes/ui/src/styles/global-styles";
 
 import { ApolloProvider } from "@apollo/client";
+import { AppProvider } from "./appContext";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import dayjs from "dayjs";
@@ -107,8 +108,10 @@ const onResponse = response => {
 
   createRoot(target).render(
     <ApolloProvider client={apolloClient}>
-      <Routes />
-      <GlobalStyle />
+      <AppProvider>
+        <Routes />
+        <GlobalStyle />
+      </AppProvider>
     </ApolloProvider>
   );
 };

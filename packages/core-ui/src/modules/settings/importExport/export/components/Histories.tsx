@@ -13,7 +13,7 @@ import Sidebar from "../../common/containers/SideBar";
 import Table from "modules/common/components/table";
 import { Title } from "@erxes/ui-settings/src/styles";
 import Wrapper from "modules/layout/components/Wrapper";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   queryParams: Record<string, string>;

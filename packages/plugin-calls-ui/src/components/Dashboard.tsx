@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
 

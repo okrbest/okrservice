@@ -21,7 +21,7 @@ import {
   PostContainer
 } from '@erxes/ui-inbox/src/inbox/components/conversationDetail/workarea/facebook/styles';
 import { IConversation } from '@erxes/ui-inbox/src/inbox/types';
-import { __, renderFullName } from '@erxes/ui/src/utils';
+import { __, renderFullName } from 'coreui/utils';
 import {
   formatText,
   getIconAndColor

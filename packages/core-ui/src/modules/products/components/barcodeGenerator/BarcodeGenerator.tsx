@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 
 //erxes
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 // local
 import LeftSidebar from './LeftSidebar';

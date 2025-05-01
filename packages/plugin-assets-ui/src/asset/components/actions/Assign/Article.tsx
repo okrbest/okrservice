@@ -3,7 +3,7 @@ import { FormControl } from "@erxes/ui/src";
 import { IAsset } from "../../../../common/types";
 import { KbArticles } from "../../../../style";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   objects?: IAsset[];

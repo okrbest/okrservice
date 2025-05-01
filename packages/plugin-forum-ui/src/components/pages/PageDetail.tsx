@@ -1,7 +1,7 @@
 import React from 'react';
 import { IPage } from '../../types';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
 import { Title } from '@erxes/ui-settings/src/styles';
 import { FlexContent, FlexItem } from '@erxes/ui/src/layout/styles';

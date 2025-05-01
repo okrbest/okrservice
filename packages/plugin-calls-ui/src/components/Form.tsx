@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 
 import { IFormProps } from '@erxes/ui/src/types';
 import { ModalFooter } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 interface IProps {
   closeModal?: () => void;

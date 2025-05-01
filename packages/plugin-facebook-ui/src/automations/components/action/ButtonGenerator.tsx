@@ -11,7 +11,7 @@ import FormControl from "@erxes/ui/src/components/form/Control";
 import Icon from "@erxes/ui/src/components/Icon";
 import LinkAction from "./LinkAction";
 import { Menu } from "@headlessui/react";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { QuickRepliesImgUploader } from "./QuickRepliesImageUploader";
 
 type Props = {

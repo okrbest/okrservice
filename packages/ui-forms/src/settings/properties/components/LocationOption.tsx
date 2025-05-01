@@ -13,7 +13,7 @@ import Button from "@erxes/ui/src/components/Button";
 import { Column } from "@erxes/ui/src/styles/main";
 import { ILocationOption } from "@erxes/ui/src/types";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   onChangeOption: (option: ILocationOption, index: number) => void;

@@ -1,4 +1,4 @@
-import { Alert, __ } from "@erxes/ui/src";
+import { Alert, __ } from "coreui/utils";
 import { FormControl, FormGroup } from "@erxes/ui/src/components/form";
 
 import Button from "@erxes/ui/src/components/Button";

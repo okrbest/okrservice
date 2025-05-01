@@ -1,6 +1,7 @@
 import React from 'react';
 import { OrdersByCustomer } from '../types';
-import { Button, __ } from '@erxes/ui/src';
+import { Button } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import { useNavigate } from 'react-router-dom';
 
 type Props = {

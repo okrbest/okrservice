@@ -4,7 +4,7 @@ import {
   FormControl,
   FormGroup
 } from '@erxes/ui/src/components/form';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { ILocationOption } from '@erxes/ui/src/types';
 import React from 'react';
 import { LogicItem, LogicRow, RowFill, RowSmall } from '../styles';

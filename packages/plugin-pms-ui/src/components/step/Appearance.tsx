@@ -3,7 +3,8 @@ import Popover from '@erxes/ui/src/components/Popover';
 import React, { useState } from 'react';
 import TwitterPicker from 'react-color/lib/Twitter';
 import { LeftItem } from '@erxes/ui/src/components/step/styles';
-import { __, AvatarUpload, FormControl, FormGroup } from '@erxes/ui/src';
+import { AvatarUpload, FormControl, FormGroup } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import {
   AppearanceRow,
   ColorPick,

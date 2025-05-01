@@ -7,7 +7,7 @@ import {
   FormGroup,
 } from '@erxes/ui/src/components/form';
 import { FormColumn, FormWrapper } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import React from 'react';
 
 type Props = {

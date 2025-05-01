@@ -17,7 +17,7 @@ import Sidebar from "modules/layout/components/Sidebar";
 import { SidebarItem } from "../styles";
 import Tip from "modules/common/components/Tip";
 import Wrapper from "modules/layout/components/Wrapper";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 const { Section } = Wrapper.Sidebar;
 

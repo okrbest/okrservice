@@ -1,7 +1,8 @@
 import React from 'react';
 import { IGrantRequest, IGrantResponse } from '../../common/type';
 import { ResponseCard, Row } from '../../styles';
-import { ControlLabel, Icon, NameCard, Tip, __, colors } from '@erxes/ui/src';
+import { ControlLabel, Icon, NameCard, Tip, colors } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import dayjs from 'dayjs';
 import { ActivityDate } from '@erxes/ui-log/src/activityLogs/styles';
 import { FormColumn, FormWrapper } from '@erxes/ui/src/styles/main';

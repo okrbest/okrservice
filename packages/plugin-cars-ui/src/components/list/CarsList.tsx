@@ -12,7 +12,7 @@ import {
 } from "@erxes/ui/src";
 import { FlexRow, Title } from "@erxes/ui-settings/src/styles";
 import React, { useRef, useState } from "react";
-import { __, router } from "@erxes/ui/src/utils/core";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import CarForm from "../../containers/CarForm";

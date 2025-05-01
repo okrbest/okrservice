@@ -6,7 +6,7 @@ import { IConfigColumn } from "../types";
 import React from "react";
 import { ScrollWrapper } from "@erxes/ui/src/styles/main";
 import SortableList from "@erxes/ui/src/components/SortableList";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { colors } from "@erxes/ui/src/styles";
 import styled from "styled-components";
 

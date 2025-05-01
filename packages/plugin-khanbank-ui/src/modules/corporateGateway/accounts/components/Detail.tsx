@@ -4,7 +4,7 @@ import Button from "@erxes/ui/src/components/Button";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import Toggle from "@erxes/ui/src/components/Toggle";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React from "react";
 import { getCurrencySymbol } from "../../../../utils";
 import TransactionForm from "../../transactions/containers/Form";

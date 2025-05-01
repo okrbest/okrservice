@@ -19,7 +19,7 @@ import Table from '@erxes/ui/src/components/table';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 
 import { IForm } from '@erxes/ui-forms/src/forms/types';
-import { __, router } from '../../../common/utils';
+import { __, router } from 'coreui/utils';
 import Sidebar from './Sidebar';
 
 type Props = {

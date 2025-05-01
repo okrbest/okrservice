@@ -8,7 +8,7 @@ import Icon from "modules/common/components/Icon";
 import ModalTrigger from "modules/common/components/ModalTrigger";
 import React from "react";
 import Tip from "modules/common/components/Tip";
-import { __ } from "../../../common/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   brands: IBrand[];

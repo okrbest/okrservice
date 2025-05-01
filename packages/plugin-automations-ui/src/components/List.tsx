@@ -1,5 +1,5 @@
 import { AutomationsCount, IAutomation } from "../types";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 
 import { BarItems } from "@erxes/ui/src/layout/styles";
 import Button from "@erxes/ui/src/components/Button";

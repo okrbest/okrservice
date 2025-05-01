@@ -10,7 +10,7 @@ import {
 } from '../sites/styles';
 import { ModalFooter, Title } from '@erxes/ui/src/styles/main';
 import React, { useState } from 'react';
-import { __, getEnv, router } from '@erxes/ui/src/utils/core';
+import { __, getEnv, router } from 'coreui/utils';
 
 import { BarItems } from '@erxes/ui/src/layout/styles';
 import Button from '@erxes/ui/src/components/Button';

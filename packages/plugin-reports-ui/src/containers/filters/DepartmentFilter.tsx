@@ -6,7 +6,7 @@ import { queries } from '@erxes/ui/src/team/graphql';
 import Box from '@erxes/ui/src/components/Box';
 import ErrorMsg from '@erxes/ui/src/components/ErrorMsg';
 import { MenuFooter } from '../../styles';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import List from '../../components/department/DepartmentFilter';
 
 export default function DepartmentFilterContainer() {

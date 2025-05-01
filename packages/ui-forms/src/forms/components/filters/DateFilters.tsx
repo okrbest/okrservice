@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { __, router } from '@erxes/ui/src/utils/core';
+import { __, router } from 'coreui/utils';
 
 import Box from '@erxes/ui/src/components/Box';
 import Button from '@erxes/ui/src/components/Button';

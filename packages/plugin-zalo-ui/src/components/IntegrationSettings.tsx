@@ -6,7 +6,7 @@ import FormGroup from '@erxes/ui/src/components/form/Group';
 import { IConfigsMap } from '@erxes/ui-settings/src/general/types';
 import Icon from '@erxes/ui/src/components/Icon';
 import React, { useState } from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 const KEY_LABELS = {
   ZALO_APP_ID: 'ZALO APP ID',

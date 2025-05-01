@@ -1,5 +1,5 @@
 import Button from '../Button';
-import { __ } from '../../utils/core';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {

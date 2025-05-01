@@ -10,7 +10,7 @@ import React from 'react';
 import { StepButton } from '@erxes/ui/src/components/step/styles';
 import TypeForm from '../containers/TypeForm';
 import Wrapper from 'modules/layout/components/Wrapper';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { IAttachment } from '@erxes/ui/src/types';
 
 type Props = {

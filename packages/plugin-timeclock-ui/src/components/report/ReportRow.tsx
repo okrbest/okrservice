@@ -1,6 +1,6 @@
 import React from 'react';
 import { IReport, IUserReport } from '../../types';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import dayjs from 'dayjs';
 import { timeFormat } from '../../constants';
 import { returnDeviceTypes } from '../../utils';

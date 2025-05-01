@@ -5,7 +5,7 @@ import React from 'react';
 import Spinner from '@erxes/ui/src/components/Spinner';
 import Table from '@erxes/ui/src/components/table';
 import TextInfo from '@erxes/ui/src/components/TextInfo';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { FlexContent, FlexItem } from '@erxes/ui/src/layout/styles';
 import moment from 'moment';
 
