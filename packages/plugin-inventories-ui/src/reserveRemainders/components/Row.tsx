@@ -1,6 +1,6 @@
 import ActionButtons from "@erxes/ui/src/components/ActionButtons";
 import React, { useState, useEffect } from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { FormControl } from "@erxes/ui/src/components";
 import { IReserveRem } from "../types";
 

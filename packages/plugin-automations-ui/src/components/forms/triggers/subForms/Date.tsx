@@ -1,4 +1,4 @@
-import { __ } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import DateControl from "@erxes/ui/src/components/form/DateControl";
 import FormGroup from "@erxes/ui/src/components/form/Group";

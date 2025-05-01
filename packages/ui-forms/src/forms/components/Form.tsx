@@ -12,7 +12,7 @@ import FormGroup from '@erxes/ui/src/components/form/Group';
 import { IField } from '@erxes/ui/src/types';
 import { LeftItem } from '@erxes/ui/src/components/step/styles';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   renderPreviewWrapper?: (previewRenderer, fields: IField[]) => any;

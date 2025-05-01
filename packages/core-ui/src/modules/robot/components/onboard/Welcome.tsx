@@ -1,6 +1,6 @@
 import { colors } from 'modules/common/styles';
 import { rgba } from 'modules/common/styles/color';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import styled from 'styled-components';
 

@@ -2,7 +2,7 @@ import Popover from "@erxes/ui/src/components/Popover";
 import React, { useEffect, useState } from "react";
 import SelectProductCategory from "@erxes/ui-products/src/containers/SelectProductCategory";
 import TwitterPicker from "react-color/lib/Twitter";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import {
   Button,
   ControlLabel,

@@ -5,7 +5,7 @@ import { FormContainer } from "../../styles";
 import React from "react";
 import Spinner from "@erxes/ui/src/components/Spinner";
 import { Box as StatusBox } from "../../styles";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { generateParams } from "./List";
 import queries from "../graphql/queries";
 

@@ -1,4 +1,5 @@
-import { Button, ControlLabel, FormGroup, __ } from '@erxes/ui/src';
+import { Button, ControlLabel, FormGroup } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import { DrawerDetail } from '@erxes/ui-automations/src/styles';
 import BoardSelect from '@erxes/ui-sales/src/boards/containers/BoardSelect';
 import { ITrigger } from '@erxes/ui-segments/src/types';

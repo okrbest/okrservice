@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Row from "./Row";
 import Sidebar from "./Sidebar";
-import { __, Alert, confirm, router } from "@erxes/ui/src/utils";
+import { __, Alert, confirm, router } from "coreui/utils";
 import { BarItems, Wrapper } from "@erxes/ui/src/layout";
 import {
   Button,

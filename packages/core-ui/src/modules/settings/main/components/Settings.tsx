@@ -1,5 +1,5 @@
 import WithPermission from 'modules/common/components/WithPermission';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import Wrapper from 'modules/layout/components/Wrapper';
 import { pluginsSettingsNavigations } from 'pluginUtils';
 import React from 'react';

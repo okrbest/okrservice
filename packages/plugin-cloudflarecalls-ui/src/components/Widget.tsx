@@ -3,7 +3,7 @@ import Popover from '@erxes/ui/src/components/Popover';
 import React from 'react';
 import WidgetPopover from './WidgetPopover';
 import { WidgetWrapper } from '../styles';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   callUserIntegrations: any;

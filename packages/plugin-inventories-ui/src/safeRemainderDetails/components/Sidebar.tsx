@@ -4,7 +4,7 @@ import Button from "@erxes/ui/src/components/Button";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { router, __ } from "@erxes/ui/src/utils/core";
+import { router, __ } from "coreui/utils";
 import dayjs from "dayjs";
 import queryString from "query-string";
 import React from "react";

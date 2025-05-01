@@ -8,7 +8,7 @@ import ControlLabel from "@erxes/ui/src/components/form/Label";
 import Icon from "@erxes/ui/src/components/Icon";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React from "react";
 import Dropdown from "@erxes/ui/src/components/Dropdown";
 import Dialog from "@erxes/ui/src/components/Dialog";

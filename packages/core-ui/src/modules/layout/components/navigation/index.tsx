@@ -1,5 +1,5 @@
 import { BottomMenu, FlexBox, LeftNavigation, NavImage } from '../../styles';
-import { __, readFile } from 'modules/common/utils';
+import { __, readFile } from 'coreui/utils';
 import { getThemeItem, getVersion } from '@erxes/ui/src/utils/core';
 
 import { NavLink } from 'react-router-dom';

@@ -1,6 +1,7 @@
 import { Alert, confirm } from "@erxes/ui/src/utils";
 import { BarItems, Wrapper } from "@erxes/ui/src/layout";
-import { DataWithLoader, Pagination, Table, __ } from "@erxes/ui/src";
+import { DataWithLoader, Pagination, Table } from "@erxes/ui/src";
+import { __ } from 'coreui/utils';
 import React, { useState } from "react";
 
 import Button from "@erxes/ui/src/components/Button";

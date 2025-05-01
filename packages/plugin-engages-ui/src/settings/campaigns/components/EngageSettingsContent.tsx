@@ -2,7 +2,7 @@ import { Recipient, Recipients } from '@erxes/ui-engage/src/styles';
 import { ContentBox, FlexRow } from '@erxes/ui-settings/src/styles';
 import { IButtonMutateProps, IFormProps } from '@erxes/ui/src/types';
 import Alert from '@erxes/ui/src/utils/Alert';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 import { Verify } from '@erxes/ui-settings/src/general/components/styles';
 import { IConfigsMap } from '@erxes/ui-settings/src/general/types';

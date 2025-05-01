@@ -13,7 +13,7 @@ import { CenterText } from "@erxes/ui-log/src/activityLogs/styles";
 import Icon from "@erxes/ui/src/components/Icon";
 import { Link } from "react-router-dom";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import { getIconAndColor } from "@erxes/ui-log/src/activityLogs/utils";
 

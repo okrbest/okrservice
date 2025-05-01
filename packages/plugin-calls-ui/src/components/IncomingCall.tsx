@@ -1,6 +1,6 @@
 import * as PropTypes from 'prop-types';
 
-import { Alert, __ } from '@erxes/ui/src/utils';
+import { Alert, __ } from 'coreui/utils';
 import {
   CALL_STATUS_ACTIVE,
   CALL_STATUS_IDLE,

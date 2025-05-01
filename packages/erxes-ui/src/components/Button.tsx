@@ -3,7 +3,7 @@ import styled, { css } from "styled-components";
 
 import Icon from "./Icon";
 import React from "react";
-import { __ } from "../utils/core";
+import { __ } from "coreui/utils";
 import { colors } from "../styles";
 import styledTS from "styled-components-ts";
 

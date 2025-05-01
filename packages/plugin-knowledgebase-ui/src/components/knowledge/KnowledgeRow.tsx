@@ -15,7 +15,7 @@ import { ITopic } from "@erxes/ui-knowledgebase/src/types";
 import Icon from "@erxes/ui/src/components/Icon";
 import KnowledgeForm from "../../containers/knowledge/KnowledgeForm";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import SaveTemplate from "@erxes/ui-template/src/components/SaveTemplate";
 
 type Props = {

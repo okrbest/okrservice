@@ -8,7 +8,7 @@ import Datetime from '@nateradebaugh/react-datetime';
 import dayjs from 'dayjs';
 import { I{Name}, IType } from '../types';
 import { IButtonMutateProps, IFormProps } from '@erxes/ui/src/types';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { ICommonFormProps } from '@erxes/ui-settings/src/common/types';
 

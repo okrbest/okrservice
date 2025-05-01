@@ -1,4 +1,4 @@
-import { Alert, __ } from '@erxes/ui/src/utils';
+import { Alert, __ } from 'coreui/utils';
 
 import ControlLabel from '@erxes/ui/src/components/form/Label';
 import FieldChoices from './FieldChoices';

@@ -10,7 +10,7 @@ import { IPage } from "../../types";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import React from "react";
 import { RichTextEditor } from "@erxes/ui/src/components/richTextEditor/TEditor";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   page?: IPage;

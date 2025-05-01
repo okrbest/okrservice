@@ -1,5 +1,5 @@
 import { menuTimeClock } from '../constants';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React, { useState, useEffect } from 'react';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';

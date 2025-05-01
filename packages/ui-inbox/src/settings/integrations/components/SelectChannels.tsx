@@ -9,7 +9,7 @@ import { IChannel } from "../../channels/types";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import React from "react";
 import Select from "react-select";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   channels: IChannel[];

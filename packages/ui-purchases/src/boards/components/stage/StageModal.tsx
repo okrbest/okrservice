@@ -2,7 +2,7 @@ import client from "@erxes/ui/src/apolloClient";
 import { gql } from "@apollo/client";
 import React from "react";
 import { queries } from "../../graphql";
-import { getEnv, __ } from "@erxes/ui/src/utils";
+import { getEnv, __ } from "coreui/utils";
 import Dropdown from "@erxes/ui/src/components/Dropdown";
 import { Button, Alert } from "@erxes/ui/src";
 import { IStage } from "../../types";

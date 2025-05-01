@@ -6,7 +6,7 @@ import Icon from '@erxes/ui/src/components/Icon';
 import Tip from '@erxes/ui/src/components/Tip';
 import { SidebarList } from '@erxes/ui/src/layout/styles';
 import { FlexCenter } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils/index';
+import { __ } from 'coreui/utils';
 import {
   CollapsibleListWrapper,
   FlexRow,

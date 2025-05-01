@@ -7,7 +7,7 @@ import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import moment from "moment";
 import React from "react";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { FormControl } from "@erxes/ui/src/components";
 import { IDayLabel } from "../types";
 

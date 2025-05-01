@@ -7,7 +7,7 @@ import HeaderDescription from '@erxes/ui/src/components/HeaderDescription';
 import List from '../../configs/containers/List';
 import React from 'react';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 // import Detail from '../containers/Detail';
 type Props = {

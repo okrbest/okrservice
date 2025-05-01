@@ -1,4 +1,4 @@
-import { __, readFile } from '../utils/core';
+import { __, readFile } from 'coreui/utils';
 
 import AttachmentWithPreview from './AttachmentWithPreview';
 import { IAttachment } from '../types';

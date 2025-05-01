@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import FormControl from "@erxes/ui/src/components/form/Control";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import Icon from 'modules/common/components/Icon';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import {
   ContentBox,
   ErxesContent,

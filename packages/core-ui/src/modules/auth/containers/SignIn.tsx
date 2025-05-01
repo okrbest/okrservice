@@ -2,7 +2,7 @@ import ButtonMutate from "../../common/components/ButtonMutate";
 import { IButtonMutateProps } from "@erxes/ui/src/types";
 import React from "react";
 import SignIn from "../components/SignIn";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import apolloClient from "apolloClient";
 import { mutations } from "../graphql";
 import { useLocation, useNavigate } from "react-router-dom";

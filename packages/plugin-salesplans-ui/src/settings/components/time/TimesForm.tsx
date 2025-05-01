@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
 import SelectDepartments from "@erxes/ui/src/team/containers/SelectDepartments";
 import SelectProductCategory from "@erxes/ui-products/src/containers/SelectProductCategory";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import {
   Button,
   ControlLabel,

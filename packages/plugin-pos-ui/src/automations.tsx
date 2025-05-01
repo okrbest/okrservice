@@ -1,7 +1,7 @@
 import { DrawerDetail } from "@erxes/ui-automations/src/styles";
 import Button from "@erxes/ui/src/components/Button";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React from "react";
 import { Link } from "react-router-dom";
 

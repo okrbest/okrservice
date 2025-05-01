@@ -2,7 +2,7 @@ import client from '@erxes/ui/src/apolloClient';
 import { gql } from '@apollo/client';
 import * as compose from 'lodash.flowright';
 import { queries } from '../graphql';
-import { __, Alert, confirm, withProps } from '@erxes/ui/src/utils';
+import { __, Alert, confirm, withProps } from 'coreui/utils';
 import React from 'react';
 import { graphql } from '@apollo/client/react/hoc';
 import Stage from '../components/stage/Stage';

@@ -1,6 +1,6 @@
 import React from 'react';
 // erxes
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 // local
 import Form from '../containers/plan/Form';

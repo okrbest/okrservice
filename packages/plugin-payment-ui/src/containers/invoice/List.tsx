@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@apollo/client";
-import { __, router } from "@erxes/ui/src";
+import { __, router } from "coreui/utils";
 import Bulk from "@erxes/ui/src/components/Bulk";
 import React from "react";
 import List from "../../components/invoice/List";

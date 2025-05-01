@@ -9,7 +9,7 @@ import { ModalFooter } from "@erxes/ui/src/styles/main";
 import Select from "react-select";
 import React from "react";
 import { WEBHOOK_ACTIONS } from "@erxes/ui-settings/src/constants";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   renderButton: (props: IButtonMutateProps) => JSX.Element;

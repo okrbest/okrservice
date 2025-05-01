@@ -3,7 +3,7 @@ import Button from 'modules/common/components/Button';
 import Icon from 'modules/common/components/Icon';
 import TextInfo from 'modules/common/components/TextInfo';
 import Tip from 'modules/common/components/Tip';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { Capitalize } from '@erxes/ui-settings/src/permissions/styles';
 import { IActions, IModule, IPermissionDocument } from '../types';

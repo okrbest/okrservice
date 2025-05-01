@@ -14,7 +14,8 @@ import {
   StageTitle,
 } from "../../styles/stage";
 import { IItem, IOptions, IStage } from "../../types";
-import { __, isEnabled } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
+import { isEnabled } from "@erxes/ui/src/utils/core";
 
 import { AddForm } from "../../containers/portable";
 import { Draggable } from "react-beautiful-dnd";

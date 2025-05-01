@@ -6,7 +6,7 @@ import { IDepartment } from "../types";
 import { IOption } from "@erxes/ui/src/types";
 import React from "react";
 import Select from "react-select";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   departments: IDepartment[];

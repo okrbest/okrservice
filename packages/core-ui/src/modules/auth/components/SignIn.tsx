@@ -1,4 +1,4 @@
-import { __, readFile } from 'modules/common/utils';
+import { __, readFile } from 'coreui/utils';
 
 import { AuthBox } from '../styles';
 import Form from 'modules/common/components/form/Form';

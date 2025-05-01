@@ -14,7 +14,7 @@ import { Statistics } from "../containers/Statistic";
 import Table from "@erxes/ui/src/components/table";
 import { TableHead } from "./ListHead";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { headers } from "../common/Headers";
 
 type Props = {

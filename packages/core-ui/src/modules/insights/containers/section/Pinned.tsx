@@ -5,7 +5,7 @@ import { gql, useQuery, useMutation } from "@apollo/client";
 import * as compose from 'lodash.flowright';
 import withCurrentUser from '@erxes/ui/src/auth/containers/withCurrentUser';
 import { IUser } from '@erxes/ui/src/auth/types';
-import { __ } from "@erxes/ui/src/utils/index";
+import { __ } from "coreui/utils";
 import { router } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 import Alert from "@erxes/ui/src/utils/Alert/index";

@@ -11,7 +11,7 @@ import CommonPortal from "@erxes/ui/src/components/CommonPortal";
 import Icon from "@erxes/ui/src/components/Icon";
 import Tip from "@erxes/ui/src/components/Tip";
 import { Flex } from "@erxes/ui/src/styles/main";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { getVersion, isEnabled } from "@erxes/ui/src/utils/core";
 
 import { ModalWrapper } from "../styles";

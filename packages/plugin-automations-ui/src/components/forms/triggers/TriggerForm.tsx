@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabTitle } from '@erxes/ui/src/components/tabs';
-import { __, confirm } from '@erxes/ui/src';
+import { __, confirm } from 'coreui/utils';
 import {
   TypeBox,
   Description,

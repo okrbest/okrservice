@@ -1,5 +1,5 @@
 import Icon from '@erxes/ui/src/components/Icon';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { loadDynamicComponent } from '@erxes/ui/src/utils/core';
 import React from 'react';
 import { FieldWrapper, Options } from '../styles';

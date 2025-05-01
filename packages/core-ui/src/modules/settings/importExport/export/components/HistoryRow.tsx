@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import Button from 'modules/common/components/Button';
 import { DateWrapper } from 'modules/common/styles/main';
-import { getEnv, readFile, __ } from 'modules/common/utils';
+import { getEnv, readFile, __ } from 'coreui/utils';
 import React from 'react';
 
 import {

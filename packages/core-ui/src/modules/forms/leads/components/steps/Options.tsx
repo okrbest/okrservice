@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import Select from 'react-select';
 
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { IFormData } from '@erxes/ui-forms/src/forms/types';
 import SelectBrand from '@erxes/ui-inbox/src/settings/integrations/containers/SelectBrand';
 import SelectChannels from '@erxes/ui-inbox/src/settings/integrations/containers/SelectChannels';

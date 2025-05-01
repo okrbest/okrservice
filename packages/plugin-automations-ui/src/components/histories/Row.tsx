@@ -1,6 +1,6 @@
 import EmptyState from '@erxes/ui/src/components/EmptyState';
 import Label from '@erxes/ui/src/components/Label';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import dayjs from 'dayjs';
 import React from 'react';
 import {

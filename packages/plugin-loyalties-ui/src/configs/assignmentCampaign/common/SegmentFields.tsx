@@ -1,7 +1,7 @@
 import { gql, useQuery } from "@apollo/client";
 import { queries as formQueries } from "@erxes/ui-forms/src/forms/graphql";
 import { ControlLabel, FormGroup, Spinner } from "@erxes/ui/src/components";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import React from "react";
 import Select from "react-select";
 

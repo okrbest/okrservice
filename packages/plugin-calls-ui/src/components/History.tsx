@@ -6,7 +6,7 @@ import {
   PhoneNumber,
 } from '../styles';
 import { TabTitle, Tabs } from '@erxes/ui/src/components/tabs';
-import { __, renderFullName } from '@erxes/ui/src/utils';
+import { __, renderFullName } from 'coreui/utils';
 
 import Dropdown from '@erxes/ui/src/components/Dropdown';
 import DropdownToggle from '@erxes/ui/src/components/DropdownToggle';

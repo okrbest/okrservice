@@ -1,5 +1,5 @@
 import { IEditFormContent, IItem, IItemParams, IOptions } from "../../types";
-import { __, router as routerUtils } from "@erxes/ui/src/utils";
+import { __, router as routerUtils } from "coreui/utils";
 
 import { ArchiveStatus } from "../../styles/item";
 import { CloseModal } from "@erxes/ui/src/styles/main";
