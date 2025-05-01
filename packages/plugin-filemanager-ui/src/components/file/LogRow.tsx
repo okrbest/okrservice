@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { __, renderUserFullName } from '@erxes/ui/src/utils';
+import { __, renderUserFullName } from 'coreui/utils';
 
 import TextInfo from '@erxes/ui/src/components/TextInfo';
 import dayjs from 'dayjs';

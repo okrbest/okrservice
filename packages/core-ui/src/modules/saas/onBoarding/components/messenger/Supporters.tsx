@@ -1,6 +1,6 @@
 import { IUser } from '@erxes/ui/src/auth/types';
 import React from 'react';
-import { __, readFile } from 'modules/common/utils';
+import { __, readFile } from 'coreui/utils';
 import {
   ErxesStaffProfile,
   StateSpan,

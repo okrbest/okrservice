@@ -5,7 +5,7 @@ import Button from "./Button";
 import Icon from "./Icon";
 import Modal from "react-bootstrap/Modal";
 import React from "react";
-import { __ } from "../utils/core";
+import { __ } from "coreui/utils";
 import { rgba } from "../styles/ecolor";
 import styled from "styled-components";
 

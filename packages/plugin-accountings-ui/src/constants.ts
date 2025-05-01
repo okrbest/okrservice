@@ -1,4 +1,4 @@
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 export const AccountingsSubMenus = [
   { title: `${__('Transactions')}`, link: '/accountings/ptrs' },

@@ -4,7 +4,7 @@ import {
   ScrolledContent
 } from "@erxes/ui-purchases/src/boards/styles/common";
 
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import Stages from "../../containers/conversion/Stages";
 import Header from "@erxes/ui/src/layout/components/Header";
 import * as React from "react";

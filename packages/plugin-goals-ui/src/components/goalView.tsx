@@ -1,5 +1,6 @@
 import { BoardHeader } from '@erxes/ui-cards/src/settings/boards/styles';
-import { __, ControlLabel, FormGroup } from '@erxes/ui/src';
+import { ControlLabel, FormGroup } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import { IUser, UsersQueryResponse } from '@erxes/ui/src/auth/types';
 import Table from '@erxes/ui/src/components/table';
 import { FlexContent, FlexItem } from '@erxes/ui/src/layout/styles';

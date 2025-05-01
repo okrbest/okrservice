@@ -6,7 +6,7 @@ import CURRENCIES from '@erxes/ui/src/constants/currencies';
 import Header from '@erxes/ui-settings/src/general/components/Header';
 import { IConfigsMap } from '@erxes/ui-settings/src/general/types';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import FormGroup from '@erxes/ui/src/components/form/Group';
 import ControlLabel from '@erxes/ui/src/components/form/Label';
 import FormControl from '@erxes/ui/src/components/form/Control';

@@ -17,7 +17,7 @@ import React from "react";
 import { RenderDynamicComponent } from "@erxes/ui/src/utils/core";
 import { Row } from "../styles";
 import Toggle from "@erxes/ui/src/components/Toggle";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import ProductPropertGroupForm from "@erxes/ui-products/src/containers/form/PropertyGroupForm";
 
 type Props = {

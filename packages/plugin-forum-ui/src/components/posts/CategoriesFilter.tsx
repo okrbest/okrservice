@@ -1,4 +1,4 @@
-import { __, router } from '@erxes/ui/src/utils/core';
+import { __, router } from 'coreui/utils';
 
 import Box from '@erxes/ui/src/components/Box';
 import FilterByParams from '@erxes/ui/src/components/FilterByParams';

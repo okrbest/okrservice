@@ -11,7 +11,7 @@ import React from "react";
 import Row from "./Row";
 import { SubTitle } from "../sites/styles";
 import Table from "@erxes/ui/src/components/table";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   loading: boolean;

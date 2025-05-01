@@ -17,7 +17,7 @@ import Icon from "@erxes/ui/src/components/Icon";
 import List from "@erxes/ui-settings/src/common/components/List";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import { router } from "@erxes/ui/src";
 

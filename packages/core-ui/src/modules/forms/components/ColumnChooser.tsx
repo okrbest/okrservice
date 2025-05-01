@@ -1,6 +1,6 @@
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import asyncComponent from "@erxes/ui/src/components/AsyncComponent";
 
 const ManageColumns = asyncComponent(

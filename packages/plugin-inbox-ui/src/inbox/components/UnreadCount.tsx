@@ -1,4 +1,4 @@
-import { __, setBadge } from "@erxes/ui/src/utils/core";
+import { __, setBadge } from "coreui/utils";
 
 import Label from "@erxes/ui/src/components/Label";
 import React from "react";

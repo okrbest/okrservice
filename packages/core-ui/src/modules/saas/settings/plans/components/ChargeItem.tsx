@@ -1,7 +1,7 @@
 import { ChargeUsage } from "../types";
 import Label from "modules/common/components/Label";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { formatNumber } from "../utils";
 
 type Props = {

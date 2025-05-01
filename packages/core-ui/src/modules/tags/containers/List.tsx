@@ -9,7 +9,7 @@ import List from "../components/List";
 import React from "react";
 import Spinner from "@erxes/ui/src/components/Spinner";
 import { TagsQueryResponse } from "../types";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { generatePaginationParams } from "@erxes/ui/src/utils/router";
 import { gql } from "@apollo/client";
 import { NavigateFunction, Location } from 'react-router-dom';

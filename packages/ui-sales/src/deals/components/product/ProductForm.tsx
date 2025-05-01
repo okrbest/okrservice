@@ -21,7 +21,7 @@ import { TabTitle, Tabs } from "@erxes/ui/src/components/tabs";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
 import SelectDepartments from "@erxes/ui/src/team/containers/SelectDepartments";
-import { Alert, __ } from "@erxes/ui/src/utils";
+import { Alert, __ } from "coreui/utils";
 import { isEnabled } from '@erxes/ui/src/utils/core';
 import lodash from "lodash";
 import React from "react";

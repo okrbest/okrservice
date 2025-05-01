@@ -20,7 +20,7 @@ import Icon from "@erxes/ui/src/components/Icon";
 import { Menu } from "@headlessui/react";
 import NameCard from "@erxes/ui/src/components/nameCard/NameCard";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 
 type MailHeaderProps = {

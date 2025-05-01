@@ -3,7 +3,7 @@ import {
   ICommonListProps,
 } from "@erxes/ui-settings/src/common/types";
 import { Link, useLocation } from "react-router-dom";
-import { __, router } from "modules/common/utils";
+import { __, router } from "coreui/utils";
 
 import ActionButtons from "@erxes/ui/src/components/ActionButtons";
 import { AppConsumer } from "appContext";

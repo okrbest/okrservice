@@ -1,4 +1,4 @@
-import { __, router } from '../utils/core';
+import { __, router } from 'coreui/utils';
 
 import Box from './Box';
 import FilterByParams from './FilterByParams';

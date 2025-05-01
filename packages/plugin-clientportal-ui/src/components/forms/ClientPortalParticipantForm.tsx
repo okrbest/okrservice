@@ -23,7 +23,7 @@ import FormGroup from "@erxes/ui/src/components/form/Group";
 import { IUser } from "@erxes/ui/src/auth/types";
 import React from "react";
 import SelectCompanies from "@erxes/ui-contacts/src/companies/containers/SelectCompanies";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   currentUser: IUser;

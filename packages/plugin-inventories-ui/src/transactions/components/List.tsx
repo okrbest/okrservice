@@ -1,6 +1,6 @@
 import React from 'react';
 // erxes
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import Table from '@erxes/ui/src/components/table';
 import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';

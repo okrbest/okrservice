@@ -7,7 +7,7 @@ import { AddNew } from "@erxes/ui-tickets/src/boards/styles/stage";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import Icon from "@erxes/ui/src/components/Icon";
 import { IDateColumn } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React from "react";
 import options from "@erxes/ui-tickets/src/tickets/options";
 import { ITicket } from "@erxes/ui-tickets/src/tickets/types";

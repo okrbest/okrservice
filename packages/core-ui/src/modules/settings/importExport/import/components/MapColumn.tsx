@@ -6,7 +6,7 @@ import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
 import { Info } from '@erxes/ui/src/styles/main';
 import React from 'react';
 import Row from './Row';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { IColumnWithChosenField, IImportColumn } from '../../types';
 import { FieldsCombinedByType } from '@erxes/ui-forms/src/settings/properties/types';
 

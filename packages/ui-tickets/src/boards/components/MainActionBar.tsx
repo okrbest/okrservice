@@ -7,7 +7,8 @@ import {
   PageHeader
 } from "../styles/header";
 import { IBoard, IOptions, IPipeline } from "../types";
-import { __, isEnabled } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
+import { isEnabled } from "@erxes/ui/src/utils/core";
 import {
   chartTypes,
   groupByGantt,

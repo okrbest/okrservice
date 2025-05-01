@@ -15,7 +15,7 @@ import { ModalFooter } from "@erxes/ui/src/styles/main";
 import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
 import { Title } from "@erxes/ui-settings/src/styles";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   renderButton: (props: IButtonMutateProps) => JSX.Element;

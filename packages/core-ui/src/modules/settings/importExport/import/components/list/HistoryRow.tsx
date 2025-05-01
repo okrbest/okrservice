@@ -2,7 +2,7 @@ import {
   ImportHistoryActions,
   ImportTitle,
 } from "modules/settings/importExport/styles";
-import { __, getEnv, readFile } from "modules/common/utils";
+import { __, getEnv, readFile } from "coreui/utils";
 
 import Button from "modules/common/components/Button";
 import { DateWrapper } from "modules/common/styles/main";

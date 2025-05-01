@@ -1,4 +1,5 @@
-import { CollapseContent, Table, __ } from "@erxes/ui/src";
+import { CollapseContent, Table } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs"
 import { IBurenScoring } from "../types";
 import React from "react";

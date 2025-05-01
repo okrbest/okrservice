@@ -1,4 +1,4 @@
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { isEnabled } from '@erxes/ui/src/utils/core';
 
 const COLORS = {

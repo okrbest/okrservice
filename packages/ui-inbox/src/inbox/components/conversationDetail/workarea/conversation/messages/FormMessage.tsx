@@ -26,7 +26,7 @@ import Select from "react-select";
 import { SidebarList } from "@erxes/ui/src/layout/styles";
 import { Table } from "@erxes/ui/src/components";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import { readFile } from "@erxes/ui/src/utils/core";
 

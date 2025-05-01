@@ -1,4 +1,4 @@
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import React from "react";
 import dayjs from "dayjs";
 import { DateContainer } from "@erxes/ui/src/styles/main";

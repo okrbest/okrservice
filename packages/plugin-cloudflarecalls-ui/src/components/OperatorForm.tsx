@@ -5,7 +5,7 @@ import FormGroup from '@erxes/ui/src/components/form/Group';
 import { Operator } from '../types';
 import React from 'react';
 import SelectTeamMembers from '@erxes/ui/src/team/containers/SelectTeamMembers';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   operator?: Operator;

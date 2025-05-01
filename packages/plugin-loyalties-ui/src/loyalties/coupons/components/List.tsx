@@ -10,7 +10,7 @@ import {
 } from '@erxes/ui/src/components';
 import { Wrapper } from '@erxes/ui/src/layout';
 import { SimpleButton } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import queryString from 'query-string';
 import React, { useState } from 'react';
 import { menuLoyalties } from '../../common/constants';

@@ -1,6 +1,6 @@
 import { IUser } from '@erxes/ui/src/auth/types';
 import React from 'react';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { ErxesMiddleTitle, ErxesTopbar } from 'modules/saas/onBoarding/styles';
 
 type Props = {

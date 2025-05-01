@@ -1,4 +1,4 @@
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import BrandFilter from "@erxes/ui/src/brands/components/BrandFilter";

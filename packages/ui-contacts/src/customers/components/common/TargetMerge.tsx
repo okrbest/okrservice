@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import EmptyState from '@erxes/ui/src/components/EmptyState';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import Select from 'react-select';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import debounce from 'lodash/debounce';
 
 type Props = {

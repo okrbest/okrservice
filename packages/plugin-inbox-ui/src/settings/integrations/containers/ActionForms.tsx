@@ -6,7 +6,7 @@ import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import React from 'react';
 import SmsForm from '@erxes/ui-inbox/src/settings/integrations/containers/telnyx/SmsForm';
 import Tip from '@erxes/ui/src/components/Tip';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import EmailWidget from '@erxes/ui-inbox/src/inbox/components/EmailWidget';
 import { isEnabled } from '@erxes/ui/src/utils/core';
 

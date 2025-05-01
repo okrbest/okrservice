@@ -1,5 +1,5 @@
 import { Button, DataWithLoader } from "@erxes/ui/src/components";
-import { __, confirm } from "@erxes/ui/src/utils";
+import { __, confirm } from "coreui/utils";
 
 import { ContentBox } from "../styles";
 import Header from "./Header";

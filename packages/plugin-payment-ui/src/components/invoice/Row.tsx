@@ -1,5 +1,5 @@
 import { ActionButtons, Button, Icon, Tip } from "@erxes/ui/src/components";
-import { __, renderUserFullName } from "@erxes/ui/src/utils/core";
+import { __, renderUserFullName } from "coreui/utils";
 
 import { DateWrapper } from "@erxes/ui/src/styles/main";
 import { FormControl } from "@erxes/ui/src/components/form";

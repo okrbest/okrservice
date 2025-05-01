@@ -4,7 +4,7 @@ import FormControl from "./form/Control";
 import { IFormProps } from "../types";
 import Icon from "./Icon";
 import React from "react";
-import { __ } from "../utils/core";
+import { __ } from "coreui/utils";
 import Select from "react-select";
 import styled from "styled-components";
 

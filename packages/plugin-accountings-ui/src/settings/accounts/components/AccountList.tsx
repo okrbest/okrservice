@@ -1,6 +1,6 @@
 import { IAccount, IAccountCategory } from "../types";
 import React, { useEffect, useRef, useState } from "react";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { ACCOUNT_JOURNALS } from "../../../constants";

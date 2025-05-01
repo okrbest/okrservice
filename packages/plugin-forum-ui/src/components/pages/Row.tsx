@@ -10,7 +10,7 @@ import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import PageForm from "./PageForm";
 import React from "react";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   page: IPage;

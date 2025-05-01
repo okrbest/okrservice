@@ -1,6 +1,6 @@
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
 import { IUser, IUserDetails, IUserLinks } from "@erxes/ui/src/auth/types";
-import { __, getConstantFromStore } from "@erxes/ui/src/utils";
+import { __, getConstantFromStore } from "coreui/utils";
 
 import CollapseContent from "@erxes/ui/src/components/CollapseContent";
 import CommonForm from "@erxes/ui-settings/src/common/components/Form";

@@ -18,7 +18,7 @@ import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import SortableList from "@erxes/ui/src/components/SortableList";
 import Toggle from "@erxes/ui/src/components/Toggle";
 import { IField } from "@erxes/ui/src/types";
-import { __, Alert, confirm } from "@erxes/ui/src/utils";
+import { __, Alert, confirm } from "coreui/utils";
 import React from "react";
 import Collapse from "@erxes/ui/src/components/Collapse";
 

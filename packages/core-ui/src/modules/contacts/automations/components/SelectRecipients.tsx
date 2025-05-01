@@ -1,6 +1,7 @@
 import SelectCompanies from "@erxes/ui-contacts/src/companies/containers/SelectCompanies";
 import SelectCustomers from "@erxes/ui-contacts/src/customers/containers/SelectCustomers";
-import { ControlLabel, EmptyState, FormGroup, __ } from "@erxes/ui/src";
+import { ControlLabel, EmptyState, FormGroup } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import React from "react";
 type Props = {
   type: string;

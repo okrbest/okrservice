@@ -11,7 +11,7 @@ import {
   Table,
   Wrapper,
 } from '@erxes/ui/src';
-import { __, router } from '@erxes/ui/src/utils/core';
+import { __, router } from 'coreui/utils';
 import React, { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../../general/components/Sidebar';
