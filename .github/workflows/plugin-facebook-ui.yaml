@@ -95,4 +95,4 @@ jobs:
         run: |
           tar -cf build.tar --directory=packages/plugin-facebook-ui/dist .
           cp build.tar packages/plugin-facebook-ui/dist
-          aws s3 sync packages/plugin-facebook-ui/dist s3://service-desk-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-facebook-ui --delete
+          aws s3 sync packages/plugin-facebook-ui/dist s3://okrservice-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-facebook-ui --delete

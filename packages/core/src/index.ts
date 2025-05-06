@@ -263,7 +263,7 @@ app.get(
     registerOnboardHistory({ models, type: `${name}Download`, user: req.user });
 
     return res.redirect(
-      `https://service-desk-docs.s3-ap-northeast-2.amazonaws.com/templates/${name}`
+      `https://okrservice-docs.s3-ap-northeast-2.amazonaws.com/templates/${name}`
     );
   })
 );
