@@ -16,7 +16,7 @@ import { KEY_LABELS } from "../../constants";
 import { MainStyleModalFooter as ModalFooter } from "@erxes/ui/src/styles/eindex";
 import React from "react";
 import SelectBrand from "@erxes/ui-inbox/src/settings/integrations/containers/SelectBrand";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import BoardSelectContainer from "@erxes/ui-sales/src/boards/containers/BoardSelect";
 
 type Props = {

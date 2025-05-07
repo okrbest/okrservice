@@ -10,7 +10,7 @@ import { ControlLabel } from "@erxes/ui/src/components/form";
 import FormControl from "@erxes/ui/src/components/form/Control";
 import { IItem } from "../../types";
 import Icon from "@erxes/ui/src/components/Icon";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   item: IItem;

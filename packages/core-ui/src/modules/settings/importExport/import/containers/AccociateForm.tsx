@@ -3,7 +3,7 @@ import { gql } from "@apollo/client";
 import * as compose from "lodash.flowright";
 import Spinner from "modules/common/components/Spinner";
 
-import { withProps, __ } from "modules/common/utils";
+import { withProps, __ } from "coreui/utils";
 import React from "react";
 import { graphql } from "@apollo/client/react/hoc";
 import {

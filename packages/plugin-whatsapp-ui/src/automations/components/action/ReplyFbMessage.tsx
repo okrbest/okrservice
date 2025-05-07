@@ -33,7 +33,7 @@ import PreviewWidget from "./Preview";
 import SortableList from "@erxes/ui/src/components/SortableList";
 import { TimeSetter } from "./utils";
 import Uploader from "@erxes/ui/src/components/Uploader";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import colors from "@erxes/ui/src/styles/colors";
 import dimensions from "@erxes/ui/src/styles/dimensions";
 import styled from "styled-components";

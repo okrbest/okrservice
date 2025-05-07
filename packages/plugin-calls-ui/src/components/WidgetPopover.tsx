@@ -6,7 +6,7 @@ import HistoryContainer from "../containers/History";
 import { ICallConfigDoc } from "../types";
 import { Icon } from "@erxes/ui/src/components";
 import KeyPadContainer from "../containers/KeyPad";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { callPropType } from "../lib/types";
 import { extractPhoneNumberFromCounterpart } from "../utils";
 

@@ -7,7 +7,7 @@ import { FormControl } from "@erxes/ui/src/components";
 import Icon from "@erxes/ui/src/components/Icon";
 import { MONTHS } from "../../constants";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   yearPlan: IYearPlan;

@@ -5,7 +5,7 @@ import {
   FormControl,
   DataWithLoader
 } from "@erxes/ui/src";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import React from "react";
 import { CustomPadding } from "@erxes/ui-contacts/src/customers/styles";
 import { useLocation, useNavigate } from "react-router-dom";

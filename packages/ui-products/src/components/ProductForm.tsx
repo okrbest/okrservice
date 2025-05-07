@@ -13,7 +13,7 @@ import {
 import { IProduct, IProductCategory, IUom, IVariant } from '../types';
 import React, { useEffect, useState } from 'react';
 import { TYPES } from '../constants';
-import { __, router } from '@erxes/ui/src/utils/core';
+import { __, router } from 'coreui/utils';
 
 import ActionButtons from '@erxes/ui/src/components/ActionButtons';
 import AutoCompletionSelect from '@erxes/ui/src/components/AutoCompletionSelect';

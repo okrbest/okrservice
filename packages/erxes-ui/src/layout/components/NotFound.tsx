@@ -1,4 +1,4 @@
-import { __ } from '../../utils';
+import { __ } from 'coreui/utils';
 import { NotFoundWrapper } from '../styles';
 import Button from '@erxes/ui/src/components/Button';
 import Icon from '@erxes/ui/src/components/Icon';

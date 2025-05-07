@@ -4,7 +4,7 @@ import FormControl from '@erxes/ui/src/components/form/Control';
 import Form from '@erxes/ui/src/components/form/Form';
 import FormGroup from '@erxes/ui/src/components/form/Group';
 import ControlLabel from '@erxes/ui/src/components/form/Label';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { BANK_CODES } from '../../../../constants';
 import { IAccountHolder, IKhanbankAccount } from '../../accounts/types';
 import { IKhanbankTransactionInput } from '../types';

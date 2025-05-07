@@ -1,4 +1,4 @@
-import { Alert, __, confirm, router } from "@erxes/ui/src/utils";
+import { Alert, __, confirm, router } from "coreui/utils";
 import { IProduct, IProductCategory } from "../../types";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";

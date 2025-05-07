@@ -1,6 +1,6 @@
 import React from 'react';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import Table from '@erxes/ui/src/components/table';
 import Button from '@erxes/ui/src/components/Button';
 import Row from './InventoryProductsRow';

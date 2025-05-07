@@ -15,7 +15,7 @@ import { Label } from "@erxes/ui/src/components/form/styles";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import React, { useState } from "react";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import Popover from "@erxes/ui/src/components/Popover";
 
 type Props = {

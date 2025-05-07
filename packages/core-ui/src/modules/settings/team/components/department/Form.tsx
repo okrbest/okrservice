@@ -8,7 +8,7 @@ import Form from "@erxes/ui/src/components/form/Form";
 import { IDepartment } from "@erxes/ui/src/team/types";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import SelectDepartments from "@erxes/ui/src/team/containers/SelectDepartments";
 
 type Props = {

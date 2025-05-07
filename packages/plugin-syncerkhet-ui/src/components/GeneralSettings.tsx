@@ -15,7 +15,7 @@ import React from 'react';
 import Sidebar from './Sidebar';
 import { Title } from '@erxes/ui-settings/src/styles';
 import { Wrapper } from '@erxes/ui/src/layout';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { isEnabled } from '@erxes/ui/src/utils/core';
 
 type Props = {

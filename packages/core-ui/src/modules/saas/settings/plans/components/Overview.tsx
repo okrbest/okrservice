@@ -6,7 +6,7 @@ import {
   StatusTitle,
 } from "../styles";
 import { IOrganization, chargeItemWithCountResponse } from "../types";
-import { __, getEnv } from "@erxes/ui/src/utils";
+import { __, getEnv } from "coreui/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import ChargeItem from "./ChargeItem";

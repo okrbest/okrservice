@@ -10,7 +10,7 @@ import React from "react";
 import { RenderDynamicComponent } from "@erxes/ui/src/utils/core";
 import { SegmentBackIcon } from "../styles";
 import Select from "react-select";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import FormSubmissionSegmentForm from "@erxes/ui-forms/src/segmenForm";
 
 type Props = {

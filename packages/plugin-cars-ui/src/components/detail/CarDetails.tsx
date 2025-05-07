@@ -5,7 +5,7 @@ import LeftSidebar from "./LeftSidebar";
 import React from "react";
 import RightSidebar from "./RightSidebar";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import asyncComponent from "@erxes/ui/src/components/AsyncComponent";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 

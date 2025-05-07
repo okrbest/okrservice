@@ -25,7 +25,7 @@ import Search from "../containers/Search";
 import { SubMenu } from "modules/saas/navigation/styles";
 import Tip from "modules/common/components/Tip";
 import Usage from "modules/saas/settings/plans/components/Usage";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import asyncComponent from "modules/common/components/AsyncComponent";
 import { getVersion } from "@erxes/ui/src/utils/core";
 import { pluginsOfTopNavigations } from "pluginUtils";

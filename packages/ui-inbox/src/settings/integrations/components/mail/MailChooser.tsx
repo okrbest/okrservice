@@ -2,7 +2,7 @@ import React, { FC, useMemo } from "react";
 import Select, { SingleValue } from "react-select";
 import styled from "styled-components";
 import FormGroup from "@erxes/ui/src/components/form/Group";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { IIntegration } from "../../types";
 
 const Wrapper = styled.div`

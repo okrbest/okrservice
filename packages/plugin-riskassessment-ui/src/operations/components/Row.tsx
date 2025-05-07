@@ -1,5 +1,5 @@
-import { FormControl, ModalTrigger, __ } from "@erxes/ui/src";
-
+import { FormControl, ModalTrigger } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import Form from "../containers/Form";
 import React from "react";
 import moment from "moment";

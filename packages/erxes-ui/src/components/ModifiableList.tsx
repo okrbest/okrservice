@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { colors } from '../styles';
 import Alert from '../utils/Alert';
-import { __ } from '../utils/core';
+import { __ } from 'coreui/utils';
 import Button from './Button';
 import FormControl from './form/Control';
 import Icon from './Icon';

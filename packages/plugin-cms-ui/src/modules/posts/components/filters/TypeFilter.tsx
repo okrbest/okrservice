@@ -2,7 +2,7 @@ import React from 'react';
 import queries from '../../../customPostTypes/graphql/queries';
 import { useQuery } from '@apollo/client';
 import Box from '@erxes/ui/src/components/Box';
-import { __, router } from '@erxes/ui/src/utils/core';
+import { __, router } from 'coreui/utils';
 import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
 import {
   FieldStyle,

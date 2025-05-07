@@ -1,4 +1,4 @@
-import { __, router } from "@erxes/ui/src/utils/core";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import ControlLabel from "@erxes/ui/src/components/form/Label";

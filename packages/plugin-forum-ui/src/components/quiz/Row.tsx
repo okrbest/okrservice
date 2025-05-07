@@ -8,7 +8,7 @@ import { PostTitle } from "../../styles";
 import QuizForm from "../../containers/quiz/QuizForm";
 import React from "react";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   quiz: IQuiz;

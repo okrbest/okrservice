@@ -6,7 +6,8 @@ import FormGroup from '@erxes/ui/src/components/form/Group';
 import Icon from '@erxes/ui/src/components/Icon';
 import Popover from '@erxes/ui/src/components/Popover';
 import React from 'react';
-import { __, colors } from '@erxes/ui/src';
+import { colors } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 
 type Props = {
   config: any;

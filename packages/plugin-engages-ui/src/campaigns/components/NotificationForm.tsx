@@ -5,7 +5,7 @@ import ControlLabel from '@erxes/ui/src/components/form/Label';
 import { FlexItem, FlexPad } from '@erxes/ui/src/components/step/styles';
 import colors from '@erxes/ui/src/styles/colors';
 import { rgba } from '@erxes/ui/src/styles/ecolor';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import styled from 'styled-components';
 import styledTS from 'styled-components-ts';

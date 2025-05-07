@@ -8,7 +8,7 @@ import {
 import { ICompany } from "../../types";
 import { IField } from "@erxes/ui/src/types";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   company: ICompany;

@@ -1,5 +1,5 @@
-import { Button, FormControl, Label, __ } from '@erxes/ui/src';
-
+import { Button, FormControl, Label } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import moment from 'moment';
 import React from 'react';
 import { FormContainer } from '../../../styles';

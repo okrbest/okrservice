@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import ControlLabel from "@erxes/ui/src/components/form/Label";

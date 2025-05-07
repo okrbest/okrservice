@@ -23,7 +23,7 @@ import Table from "@erxes/ui/src/components/table";
 import Tip from "@erxes/ui/src/components/Tip";
 import { Title } from "@erxes/ui-settings/src/styles";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 
 type Props = {

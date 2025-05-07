@@ -5,7 +5,7 @@ import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import moment from 'moment';
 import React from 'react';
 import Tip from '@erxes/ui/src/components/Tip';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { DateWrapper } from '@erxes/ui/src/styles/main';
 
 const RowModalContent = AsyncComponent(() =>

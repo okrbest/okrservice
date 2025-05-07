@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { IUser } from "@erxes/ui/src/auth/types";
 import Select from "react-select";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import { gql } from "@apollo/client";
 import { queries } from "@erxes/ui/src/team/graphql";
 import { useQuery } from "@apollo/client";

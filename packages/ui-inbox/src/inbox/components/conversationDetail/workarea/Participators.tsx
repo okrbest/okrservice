@@ -1,4 +1,4 @@
-import { __, getUserAvatar } from '@erxes/ui/src/utils';
+import { __, getUserAvatar } from 'coreui/utils';
 
 import { IUser } from '@erxes/ui/src/auth/types';
 import React from 'react';

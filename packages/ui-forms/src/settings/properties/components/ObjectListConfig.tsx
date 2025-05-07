@@ -10,7 +10,7 @@ import ControlLabel from "@erxes/ui/src/components/form/Label";
 import FormControl from "@erxes/ui/src/components/form/Control";
 import { IObjectListConfig } from "@erxes/ui/src/types";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   onChangeOption: (option: IObjectListConfig, index: number) => void;

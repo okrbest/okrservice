@@ -5,7 +5,7 @@ import FormGroup from "@erxes/ui/src/components/form/Group";
 import { IIntegrationWithPhone } from "@erxes/ui-engage/src/types";
 import { ISelectedOption } from "@erxes/ui/src/types";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import colors from "@erxes/ui/src/styles/colors";
 import Select, { components } from "react-select";
 import styled from "styled-components";

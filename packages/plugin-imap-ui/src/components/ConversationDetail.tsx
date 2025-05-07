@@ -1,6 +1,6 @@
 import React from 'react';
 import { gql, useQuery } from '@apollo/client';
-import { __ } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import MailConversation from '@erxes/ui-inbox/src/inbox/components/conversationDetail/workarea/mail/MailConversation';
 import { queries } from '../graphql';
 import { IConversation } from '@erxes/ui-inbox/src/inbox/types';

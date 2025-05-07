@@ -2,7 +2,7 @@ import { AlertItem } from "@erxes/ui/src/utils/Alert/Alert";
 import { CSSTransition } from "react-transition-group";
 import Icon from "@erxes/ui/src/components/Icon";
 import React from "react";
-import { __ } from "../../utils/core";
+import { __ } from "coreui/utils";
 import { dimensions } from "@erxes/ui/src/styles";
 import styled from "styled-components";
 

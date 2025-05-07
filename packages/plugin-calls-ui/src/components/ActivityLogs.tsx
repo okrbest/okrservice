@@ -14,7 +14,7 @@ import Icon from '@erxes/ui/src/components/Icon';
 import { Link } from 'react-router-dom';
 import React from 'react';
 import Tip from '@erxes/ui/src/components/Tip';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { can } from '@erxes/ui/src/utils/core';
 import dayjs from 'dayjs';
 import { getIconAndColor } from '@erxes/ui-log/src/activityLogs/utils';

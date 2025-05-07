@@ -21,7 +21,7 @@ on:
       - "scripts/pluginsMap.js"
       - ".github/workflows/plugins-map.yaml"
 
-jobs: 
+jobs:
   ui:
     runs-on: ubuntu-22.04
 
@@ -39,9 +39,9 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
+          aws-region: ap-northeast-2
 
       - name: Deploy
         if: github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/rc' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/v2')
         run: |
-          aws s3 cp scripts/pluginsMap.js s3://erxes-${GITHUB_REF#refs/heads/}-plugins
+          aws s3 cp scripts/pluginsMap.js s3://okrservice-${GITHUB_REF#refs/heads/}-plugins

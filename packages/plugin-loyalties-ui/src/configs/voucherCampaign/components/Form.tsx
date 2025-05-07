@@ -23,7 +23,7 @@ import {
 } from "@erxes/ui/src/types";
 import { IVoucherCampaign } from "../types";
 import Select from "react-select";
-import { extractAttachment, __ } from "@erxes/ui/src/utils";
+import { extractAttachment, __ } from "coreui/utils";
 import { ISpinCampaign } from "../../spinCampaign/types";
 import { ILotteryCampaign } from "../../lotteryCampaign/types";
 import { VOUCHER_TYPES } from "../../../constants";

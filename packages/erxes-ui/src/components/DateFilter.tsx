@@ -6,7 +6,7 @@ import Alert from '../utils/Alert';
 import Button from './Button';
 import Icon from './Icon';
 import { Popover } from '@headlessui/react';
-import { __ } from '../utils/core';
+import { __ } from 'coreui/utils';
 import asyncComponent from './AsyncComponent';
 import client from '@erxes/ui/src/apolloClient';
 import dayjs from 'dayjs';

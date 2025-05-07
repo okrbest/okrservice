@@ -12,15 +12,15 @@ const {
   UI_PORT = 3000,
   MONGO_PORT = 27017,
   REDIS_PORT = 6379,
-  RABBITMQ_PORT = 5672
+  RABBITMQ_PORT = 5672,
 } = process.env;
 
 const isSwarm = DEPLOYMENT_METHOD !== "docker-compose";
 
 const buildPlugins = ["dev", "staging", "v2", "rc", "master", "v1"];
 
-const commonEnvs = configs => {
-  const enabledServices = (configs.plugins || []).map(plugin => plugin.name);
+const commonEnvs = (configs) => {
+  const enabledServices = (configs.plugins || []).map((plugin) => plugin.name);
   const be_env = configs.be_env || {};
   enabledServices.push("workers");
   const enabledServicesJson = JSON.stringify(enabledServices);
@@ -54,7 +54,7 @@ const commonEnvs = configs => {
     ENABLED_SERVICES_JSON: enabledServicesJson,
     RELEASE: configs.image_tag || "",
     VERSION: configs.version || "os",
-    MESSAGE_BROKER_PREFIX: rabbitmq.prefix || ""
+    MESSAGE_BROKER_PREFIX: rabbitmq.prefix || "",
   };
 };
 
@@ -91,13 +91,13 @@ const healthcheck = {
     "CMD",
     "curl",
     "-i",
-    `http://localhost:${SERVICE_INTERNAL_PORT}/health`
+    `http://localhost:${SERVICE_INTERNAL_PORT}/health`,
   ],
   interval: "30s",
-  start_period: "30s"
+  start_period: "30s",
 };
 
-const generateLBaddress = address =>
+const generateLBaddress = (address) =>
   `${address}${
     SERVICE_INTERNAL_PORT !== 80 ? `:${SERVICE_INTERNAL_PORT}` : ""
   }`;
@@ -138,15 +138,15 @@ const generatePluginBlock = (configs, plugin) => {
         `http://plugin-${plugin.name}-api`
       ),
       ...commonEnvs(configs),
-      ...(plugin.extra_env || {})
+      ...(plugin.extra_env || {}),
     },
     networks: ["erxes"],
-    extra_hosts
+    extra_hosts,
   };
 
   if (isSwarm && plugin.replicas) {
     conf.deploy = {
-      replicas: plugin.replicas
+      replicas: plugin.replicas,
     };
   }
 
@@ -173,12 +173,12 @@ const syncUI = async ({ name, image_tag, ui_location }) => {
     let s3_location = "";
 
     if (!tag) {
-      s3_location = `https://erxes-plugins.s3.us-west-2.amazonaws.com/uis/${plName}`;
+      s3_location = `https://okrservice-plugins.s3.ap-northeast-2.amazonaws.com/uis/${plName}`;
     } else {
       if (buildPlugins.includes(tag)) {
-        s3_location = `https://erxes-${tag}-plugins.s3.us-west-2.amazonaws.com/uis/${plName}`;
+        s3_location = `https://okrservice-${tag}-plugins.s3.ap-northeast-2.amazonaws.com/uis/${plName}`;
       } else {
-        s3_location = `https://erxes-release-plugins.s3.us-west-2.amazonaws.com/uis/${plName}/${tag}`;
+        s3_location = `https://okrservice-release-plugins.s3.ap-northeast-2.amazonaws.com/uis/${plName}/${tag}`;
       }
     }
 
@@ -204,9 +204,9 @@ const updateLocales = async () => {
   let s3_location = "";
 
   if (tag === "dev") {
-    s3_location = `https://erxes-dev-plugins.s3.us-west-2.amazonaws.com`;
+    s3_location = `https://okrservice-dev-plugins.s3.ap-northeast-2.amazonaws.com`;
   } else {
-    s3_location = `https://erxes-release-plugins.s3.us-west-2.amazonaws.com/${tag}`;
+    s3_location = `https://okrservice-release-plugins.s3.ap-northeast-2.amazonaws.com/${tag}`;
   }
 
   log(`Downloading locales from ${s3_location}`);
@@ -250,21 +250,21 @@ const updateLocales = async () => {
   }
 };
 
-const generateNetworks = configs => {
+const generateNetworks = (configs) => {
   if (configs.db_server_address) {
     return {
-      driver: "overlay"
+      driver: "overlay",
     };
   }
 
   if (!isSwarm) {
     return {
-      driver: "bridge"
+      driver: "bridge",
     };
   }
 
   return {
-    external: true
+    external: true,
   };
 };
 
@@ -276,16 +276,16 @@ const deployDbs = async () => {
   const dockerComposeConfig = {
     version: "3.3",
     networks: {
-      erxes: generateNetworks(configs)
+      erxes: generateNetworks(configs),
     },
-    services: {}
+    services: {},
   };
 
   if (configs.kibana) {
     dockerComposeConfig.services.kibana = {
       image: "docker.elastic.co/kibana/kibana:7.6.0",
       ports: ["5601:5601"],
-      networks: ["erxes"]
+      networks: ["erxes"],
     };
   }
 
@@ -300,12 +300,12 @@ const deployDbs = async () => {
       ports: [`0.0.0.0:${MONGO_PORT}:27017`],
       environment: {
         MONGO_INITDB_ROOT_USERNAME: configs.mongo.username,
-        MONGO_INITDB_ROOT_PASSWORD: configs.mongo.password
+        MONGO_INITDB_ROOT_PASSWORD: configs.mongo.password,
       },
       networks: ["erxes"],
       volumes: ["./mongodata:/data/db"],
       command: ["--replSet", "rs0", "--bind_ip_all"],
-      extra_hosts: ["mongo:127.0.0.1"]
+      extra_hosts: ["mongo:127.0.0.1"],
     };
   }
 
@@ -332,7 +332,7 @@ const deployDbs = async () => {
     );
     dockerComposeConfig.services.mongo.extra_hosts = [
       `mongo:${configs.db_server_address}`,
-      `mongo-secondary:${configs.secondary_server_address}`
+      `mongo-secondary:${configs.secondary_server_address}`,
     ];
   }
 
@@ -344,7 +344,7 @@ const deployDbs = async () => {
     dockerComposeConfig.services.elasticsearch = {
       image: "docker.elastic.co/elasticsearch/elasticsearch:7.8.0",
       environment: {
-        "discovery.type": "single-node"
+        "discovery.type": "single-node",
       },
       ports: ["9200:9200"],
       networks: ["erxes"],
@@ -352,9 +352,9 @@ const deployDbs = async () => {
       ulimits: {
         memlock: {
           soft: -1,
-          hard: -1
-        }
-      }
+          hard: -1,
+        },
+      },
     };
   }
 
@@ -368,7 +368,7 @@ const deployDbs = async () => {
       command: `redis-server --appendonly yes --requirepass ${configs.redis.password}`,
       ports: [`${REDIS_PORT}:6379`],
       networks: ["erxes"],
-      volumes: ["./redisdata:/data"]
+      volumes: ["./redisdata:/data"],
     };
   }
 
@@ -385,11 +385,11 @@ const deployDbs = async () => {
         RABBITMQ_ERLANG_COOKIE: configs.rabbitmq.cookie,
         RABBITMQ_DEFAULT_USER: configs.rabbitmq.user,
         RABBITMQ_DEFAULT_PASS: configs.rabbitmq.pass,
-        RABBITMQ_DEFAULT_VHOST: configs.rabbitmq.vhost
+        RABBITMQ_DEFAULT_VHOST: configs.rabbitmq.vhost,
       },
       ports: [`${RABBITMQ_PORT}:5672`, "15672:15672"],
       networks: ["erxes"],
-      volumes: ["./rabbitmq-data:/var/lib/rabbitmq"]
+      volumes: ["./rabbitmq-data:/var/lib/rabbitmq"],
     };
   }
 
@@ -452,7 +452,7 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
   const dockerComposeConfig = {
     version: "3.7",
     networks: {
-      erxes: generateNetworks(configs)
+      erxes: generateNetworks(configs),
     },
     services: {
       coreui: {
@@ -469,15 +469,15 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
           NODE_ENV: "production",
           REACT_APP_FILE_UPLOAD_MAX_SIZE: 524288000,
           REACT_APP_RELEASE: configs.image_tag || "",
-          ...((configs.coreui || {}).extra_env || {})
+          ...((configs.coreui || {}).extra_env || {}),
         },
         ports: [`${UI_PORT}:${SERVICE_INTERNAL_PORT}`],
         volumes: [
           "./plugins.js:/usr/share/nginx/html/js/plugins.js",
           "./plugin-uis:/usr/share/nginx/html/js/plugins",
-          "./locales:/usr/share/nginx/html/locales"
+          "./locales:/usr/share/nginx/html/locales",
         ],
-        networks: ["erxes"]
+        networks: ["erxes"],
       },
       "plugin-core-api": {
         image: `erxes/core:${(configs.core || {}).image_tag || image_tag}`,
@@ -494,14 +494,14 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
             configs.email_verifier_endpoint ||
             "https://email-verifier.erxes.io",
           ...commonEnvs(configs),
-          ...((configs.core || {}).extra_env || {})
+          ...((configs.core || {}).extra_env || {}),
         },
         extra_hosts,
         volumes: [
           "./permissions.json:/erxes/packages/core/permissions.json",
-          "./core-api-uploads:/erxes/packages/core/src/private/uploads"
+          "./core-api-uploads:/erxes/packages/core/src/private/uploads",
         ],
-        networks: ["erxes"]
+        networks: ["erxes"],
       },
       gateway: {
         image: `erxes/gateway:${
@@ -517,12 +517,12 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
           MONGO_URL: mongoEnv(configs),
           NODE_INSPECTOR: configs.nodeInspector ? "enabled" : undefined,
           ...commonEnvs(configs),
-          ...((configs.gateway || {}).extra_env || {})
+          ...((configs.gateway || {}).extra_env || {}),
         },
         healthcheck,
         extra_hosts,
         ports: [`${GATEWAY_PORT}:${SERVICE_INTERNAL_PORT}`],
-        networks: ["erxes"]
+        networks: ["erxes"],
       },
       crons: {
         image: `erxes/crons:${image_tag}`,
@@ -530,9 +530,9 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
           OTEL_SERVICE_NAME: "crons",
           NODE_INSPECTOR: configs.nodeInspector ? "enabled" : undefined,
           MONGO_URL: mongoEnv(configs),
-          ...commonEnvs(configs)
+          ...commonEnvs(configs),
         },
-        networks: ["erxes"]
+        networks: ["erxes"],
       },
       "plugin-workers-api": {
         image: `erxes/workers:${image_tag}`,
@@ -545,12 +545,12 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
           MONGO_URL: mongoEnv(configs),
           NODE_INSPECTOR: configs.nodeInspector ? "enabled" : undefined,
           ...commonEnvs(configs),
-          ...((configs.workers || {}).extra_env || {})
+          ...((configs.workers || {}).extra_env || {}),
         },
         extra_hosts,
-        networks: ["erxes"]
-      }
-    }
+        networks: ["erxes"],
+      },
+    },
   };
 
   if (isSwarm) {
@@ -560,8 +560,8 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
       update_config: {
         order: "start-first",
         failure_action: "rollback",
-        delay: "1s"
-      }
+        delay: "1s",
+      },
     };
 
     dockerComposeConfig.services["plugin-core-api"].deploy = deploy;
@@ -585,11 +585,11 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
         }:9200`,
         MONGO_URL: `${mongoEnv(configs)}${
           (configs.essyncer || {}).mongoOptions || ""
-        }`
+        }`,
       },
       volumes: ["./essyncerData:/data/essyncerData"],
       extra_hosts,
-      networks: ["erxes"]
+      networks: ["erxes"],
     };
   }
 
@@ -601,10 +601,10 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
         PORT: "3200",
         ROOT_URL: widgets_domain,
         API_URL: gateway_url,
-        API_SUBSCRIPTIONS_URL: subscription_url
+        API_SUBSCRIPTIONS_URL: subscription_url,
       },
       ports: ["3200:3200"],
-      networks: ["erxes"]
+      networks: ["erxes"],
     };
   }
 
@@ -628,13 +628,13 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
   }
 
   let pluginsMapLocation =
-    "https://erxes-plugins.s3.us-west-2.amazonaws.com/pluginsMap.js";
+    "https://okrservice-plugins.s3.ap-northeast-2.amazonaws.com/pluginsMap.js";
 
   if (configs.image_tag) {
     if (buildPlugins.includes(configs.image_tag)) {
-      pluginsMapLocation = `https://erxes-${configs.image_tag}-plugins.s3.us-west-2.amazonaws.com/pluginsMap.js`;
+      pluginsMapLocation = `https://okrservice-${configs.image_tag}-plugins.s3.ap-northeast-2.amazonaws.com/pluginsMap.js`;
     } else {
-      pluginsMapLocation = `https://erxes-release-plugins.s3.us-west-2.amazonaws.com/${image_tag}/pluginsMap.js`;
+      pluginsMapLocation = `https://okrservice-release-plugins.s3.ap-northeast-2.amazonaws.com/${image_tag}/pluginsMap.js`;
     }
   }
 
@@ -670,7 +670,7 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
           {
             name: "users",
             schema: '{"customFieldsData": <nested>}',
-            script: ""
+            script: "",
           },
           {
             name: "conformities",
@@ -690,56 +690,56 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
               }
             }
           `,
-            script: ""
+            script: "",
           },
           {
             name: "tags",
             schema: "{}",
-            script: ""
+            script: "",
           },
           {
             name: "forms",
             schema: "{}",
-            script: ""
+            script: "",
           },
           {
             name: "fields",
             schema: "{}",
-            script: ""
+            script: "",
           },
           {
             name: "fields_groups",
             schema: "{}",
-            script: ""
+            script: "",
           },
           {
             name: "form_submissions",
             schema: "{ 'value': { 'type': 'text' } }",
-            script: ""
+            script: "",
           },
           {
             name: "customers",
             schema:
               "{'createdAt': { 'type': 'date' }, 'organizationId': { 'type': 'keyword' }, 'state': { 'type': 'keyword' }, 'primaryEmail': { 'type': 'text', 'analyzer': 'uax_url_email_analyzer', 'fields': { 'keyword' : { 'type':'keyword' } } }, 'primaryPhone': { 'type': 'text', 'fields': { 'raw': { 'type': 'keyword' } } }, 'primaryAddress': { 'type': 'text', 'fields': { 'raw': { 'type': 'keyword' } } }, 'code': { 'type': 'text', 'fields': { 'raw': { 'type': 'keyword' } } }, 'integrationId': { 'type': 'keyword' }, 'relatedIntegrationIds': { 'type': 'keyword' }, 'scopeBrandIds': { 'type': 'keyword' }, 'ownerId': { 'type': 'keyword' }, 'position': { 'type': 'keyword' }, 'leadStatus': { 'type': 'keyword' }, 'tagIds': { 'type': 'keyword' }, 'companyIds': { 'type': 'keyword' }, 'mergedIds': { 'type': 'keyword' }, 'status': { 'type': 'keyword' }, 'emailValidationStatus': { 'type': 'keyword' }, 'customFieldsData': <nested>, 'trackedData': <nested>}",
             script:
-              "if (ns.indexOf('customers') > -1) { if (doc.urlVisits) { delete doc.urlVisits } if (doc.trackedDataBackup) { delete doc.trackedDataBackup } if (doc.customFieldsDataBackup) { delete doc.customFieldsDataBackup } if (doc.messengerData) { delete doc.messengerData } if (doc.data) {delete doc.data}}"
+              "if (ns.indexOf('customers') > -1) { if (doc.urlVisits) { delete doc.urlVisits } if (doc.trackedDataBackup) { delete doc.trackedDataBackup } if (doc.customFieldsDataBackup) { delete doc.customFieldsDataBackup } if (doc.messengerData) { delete doc.messengerData } if (doc.data) {delete doc.data}}",
           },
           {
             name: "companies",
             schema:
               "{ 'createdAt': { 'type': 'date' }, 'primaryEmail': { 'type': 'text', 'analyzer': 'uax_url_email_analyzer', 'fields': { 'keyword' : { 'type':'keyword' } } }, 'primaryName': { 'type': 'text', 'fields': { 'raw': { 'type': 'keyword' } } }, 'primaryAddress': { 'type': 'text', 'fields': { 'raw': { 'type': 'keyword' } } }, 'scopeBrandIds': { 'type': 'keyword' }, 'plan': { 'type': 'keyword' }, 'industry': { 'type': 'keyword' }, 'parentCompanyId': { 'type': 'keyword' }, 'ownerId': { 'type': 'keyword' }, 'tagIds': { 'type': 'keyword' }, 'mergedIds': { 'type': 'keyword' }, 'status': { 'type': 'keyword' }, 'businessType': { 'type': 'keyword' }, 'customFieldsData' : <nested>, 'trackedData': <nested> }",
-            script: ""
+            script: "",
           },
           {
             name: "products",
             schema:
               "{ 'code': { 'type': 'keyword' }, 'name': { 'type': 'keyword' }, 'shortName': { 'type': 'keyword' }, 'status': { 'type': 'keyword' }, 'barcodeDescription': { 'type': 'keyword' }, 'order': { 'type': 'keyword' }, 'description': { 'type': 'keyword' }, 'tagIds': { 'type': 'keyword' }, 'categoryId': { 'type': 'keyword' }, 'type': { 'type': 'keyword' }, 'unitPrice': { 'type': 'float' }, 'createdAt': { 'type': 'date' }, 'uom': { 'type': 'keyword' }, 'vendorId': { 'type': 'keyword' }, 'sameMasks': { 'type': 'keyword' }, 'sameDefault': { 'type': 'keyword' }, 'customFieldsData': <nested>, 'attachment': <nested>, 'attachmentMore': <nested>, 'subUoms': <nested>, 'barcodes': { 'type': 'keyword' } }",
             script:
-              "if (ns.indexOf('products') > -1) { if (doc.variants) { delete doc.variants }}"
-          }
-        ]
-      }
-    ]
+              "if (ns.indexOf('products') > -1) { if (doc.variants) { delete doc.variants }}",
+          },
+        ],
+      },
+    ],
   };
 
   const permissionsJSON = [];
@@ -755,7 +755,7 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
         uiPlugins.push(
           JSON.stringify({
             name: plugin.name,
-            ...pluginsMap[plugin.name].ui
+            ...pluginsMap[plugin.name].ui,
           })
         );
       }
@@ -773,7 +773,7 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
 
           essyncerJSON.plugins.push({
             db_name: db_name || configs.mongo.db_name || "erxes",
-            collections: apiConfig.essyncer
+            collections: apiConfig.essyncer,
           });
         }
 
@@ -804,7 +804,7 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
     window.plugins = [
       ${uiPlugins.join(",")}
     ]
-  `.replace(/plugin-uis.s3.us-west-2.amazonaws.com/g, NGINX_HOST)
+  `.replace(/plugin-uis.s3.ap-northeast-2.amazonaws.com/g, NGINX_HOST)
   );
 
   const extraServices = configs.extra_services || {};
@@ -814,7 +814,7 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
 
     dockerComposeConfig.services[serviceName] = {
       ...service,
-      networks: ["erxes"]
+      networks: ["erxes"],
     };
   }
 
@@ -903,7 +903,7 @@ const update = async ({ serviceNames, noimage, uis }) => {
   const configs = await fse.readJSON(filePath("configs.json"));
 
   for (const name of serviceNames.split(",")) {
-    const pluginConfig = (configs.plugins || []).find(p => p.name === name);
+    const pluginConfig = (configs.plugins || []).find((p) => p.name === name);
     const image_tag =
       (pluginConfig && pluginConfig.image_tag) ||
       (configs[name] && configs[name].image_tag) ||
@@ -990,7 +990,7 @@ const update = async ({ serviceNames, noimage, uis }) => {
   await execCommand(`docker service update --force erxes_gateway`);
 };
 
-const restart = async name => {
+const restart = async (name) => {
   await cleaning();
 
   log(`Restarting .... ${name}`);
@@ -1010,7 +1010,7 @@ module.exports.installerUpdateConfigs = async () => {
   const configs = await fse.readJSON(filePath("configs.json"));
 
   if (type === "install") {
-    const prevEntry = configs.plugins.find(p => p.name === name);
+    const prevEntry = configs.plugins.find((p) => p.name === name);
 
     if (!prevEntry) {
       configs.plugins.push({ name: name });
@@ -1018,7 +1018,7 @@ module.exports.installerUpdateConfigs = async () => {
   }
 
   if (type === "uninstall") {
-    configs.plugins = configs.plugins.filter(p => p.name !== name);
+    configs.plugins = configs.plugins.filter((p) => p.name !== name);
   }
 
   log("Updating configs.json ....");
@@ -1034,15 +1034,15 @@ module.exports.removeService = async () => {
   await execCommand(`docker service rm ${name}`, true);
 };
 
-module.exports.up = program => {
+module.exports.up = (program) => {
   return up({
     uis: program.uis,
     fromInstaller: program.fromInstaller,
-    downloadLocales: program.locales
+    downloadLocales: program.locales,
   });
 };
 
-const dumpDb = async program => {
+const dumpDb = async (program) => {
   if (process.argv.length < 4) {
     return console.log("Pass db name !!!");
   }
@@ -1082,7 +1082,7 @@ const dumpDb = async program => {
 module.exports.deployDbs = deployDbs;
 module.exports.dumpDb = dumpDb;
 
-module.exports.update = program => {
+module.exports.update = (program) => {
   if (process.argv.length < 4) {
     return console.log("Pass service names !!!");
   }

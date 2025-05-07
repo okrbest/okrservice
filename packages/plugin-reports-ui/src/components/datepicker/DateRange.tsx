@@ -1,6 +1,6 @@
 import * as dayjs from "dayjs";
 
-import { Alert, __ } from "@erxes/ui/src/utils";
+import { Alert, __ } from "coreui/utils";
 import { FlexCenter, FlexRow, MarginY } from "../../styles";
 import React, { useState } from "react";
 

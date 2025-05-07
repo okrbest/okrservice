@@ -9,7 +9,7 @@ import ErrorBoundary from "@erxes/ui/src/components/ErrorBoundary";
 import { IUser } from "modules/auth/types";
 import { NavItem } from "modules/layout/components/QuickNavigation";
 import React from "react";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import apolloClient from "@erxes/ui/src/apolloClient";
 import { createRoot } from "react-dom/client";
 

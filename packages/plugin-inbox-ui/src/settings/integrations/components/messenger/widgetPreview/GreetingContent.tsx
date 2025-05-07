@@ -10,7 +10,7 @@ import Button from "@erxes/ui/src/components/Button";
 import { IMessengerApps } from "@erxes/ui-inbox/src/settings/integrations/types";
 import Icon from "@erxes/ui/src/components/Icon";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 
 type Props = {

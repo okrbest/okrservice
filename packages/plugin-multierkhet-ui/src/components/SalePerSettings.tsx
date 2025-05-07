@@ -9,7 +9,7 @@ import {
 import client from "@erxes/ui/src/apolloClient";
 import { gql } from "@apollo/client";
 import BoardSelectContainer from "@erxes/ui-sales/src/boards/containers/BoardSelect";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { MainStyleModalFooter as ModalFooter } from "@erxes/ui/src/styles/eindex";
 import Select from "react-select";
 import React, { useState, useEffect } from "react";

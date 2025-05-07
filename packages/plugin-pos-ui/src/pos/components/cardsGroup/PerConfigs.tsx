@@ -9,7 +9,7 @@ import {
 import { MainStyleModalFooter as ModalFooter } from "@erxes/ui/src/styles/eindex";
 import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
 import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
-import { Alert, __ } from "@erxes/ui/src/utils";
+import { Alert, __ } from "coreui/utils";
 import React, { useState } from "react";
 import Select from "react-select";
 

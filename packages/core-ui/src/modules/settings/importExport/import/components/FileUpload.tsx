@@ -5,7 +5,7 @@ import {
   UploadText
 } from "../../styles";
 import { FlexItem, FlexPad } from "modules/common/components/step/styles";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 import { IAttachment } from "modules/common/types";
 import { IContentType } from "../../types";

@@ -5,7 +5,7 @@ import Pagination from '@erxes/ui/src/components/pagination/Pagination';
 import Table from '@erxes/ui/src/components/table';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import { BarItems, Contents } from '@erxes/ui/src/layout/styles';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { EmptyState, EmptyText, EmptyTitle } from '../../../styles';
 import TagForm from '../containers/Form';

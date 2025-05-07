@@ -9,7 +9,7 @@ import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import React from 'react';
 import { SidebarList } from '@erxes/ui/src/layout/styles';
 import Tip from 'modules/common/components/Tip';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 type Props = {

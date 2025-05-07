@@ -5,7 +5,7 @@ import Article from "./Article";
 import { ContainerBox } from "../../../../style";
 import { IAsset } from "../../../../common/types";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   objects?: IAsset[];

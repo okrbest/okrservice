@@ -1,5 +1,5 @@
 import { IUser, IUserDoc } from "modules/auth/types";
-import { __, getConstantFromStore } from "modules/common/utils";
+import { __, getConstantFromStore } from "coreui/utils";
 
 import Button from "modules/common/components/Button";
 import Form from "modules/common/components/form/Form";

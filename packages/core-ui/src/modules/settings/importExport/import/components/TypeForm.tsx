@@ -4,7 +4,7 @@ import { FlexPad } from "modules/common/components/step/styles";
 import { IContentType } from "../../types";
 import Icon from "modules/common/components/Icon";
 import React from "react";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   onChangeContentType: (value: IContentType) => void;

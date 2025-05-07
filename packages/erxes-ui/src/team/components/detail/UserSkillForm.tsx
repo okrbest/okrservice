@@ -1,4 +1,4 @@
-import { Alert, __ } from "@erxes/ui/src/utils";
+import { Alert, __ } from "coreui/utils";
 import React, { useState } from "react";
 
 import Button from "@erxes/ui/src/components/Button";

@@ -3,7 +3,7 @@ import Header from '@erxes/ui-settings/src/general/components/Header';
 import React from 'react';
 import { Title } from '@erxes/ui-settings/src/styles';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 function EngageConfigs() {
   const breadcrumb = [

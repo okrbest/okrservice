@@ -6,7 +6,7 @@ import {
 import { CenterText } from '@erxes/ui-log/src/activityLogs/styles';
 import Button from '@erxes/ui/src/components/Button';
 import EmptyState from '@erxes/ui/src/components/EmptyState';
-import { __, confirm } from '@erxes/ui/src/utils';
+import { __, confirm } from 'coreui/utils';
 import React from 'react';
 
 type Props = {

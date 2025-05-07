@@ -2,7 +2,8 @@ import { IField } from '@erxes/ui-segments/src/types';
 import { RichTextEditor } from '@erxes/ui/src/components/richTextEditor/TEditor';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import { IAttachment } from '@erxes/ui/src/types';
-import { __, clearTypename } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
+import { clearTypename } from '@erxes/ui/src/utils/core';
 import React from 'react';
 import LeftSideBar from './LeftSidebar';
 

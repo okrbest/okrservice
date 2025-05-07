@@ -9,7 +9,7 @@ import Icon from '@erxes/ui/src/components/Icon';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import Tip from '@erxes/ui/src/components/Tip';
 import { SectionBodyItem } from '@erxes/ui/src/layout/styles';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { Quantity } from '../../boards/styles/stage';
 import ProductForm from '../containers/product/ProductForm';

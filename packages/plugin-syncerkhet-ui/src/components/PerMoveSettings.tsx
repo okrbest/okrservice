@@ -14,7 +14,7 @@ import { IConfigsMap } from "../types";
 import { MainStyleModalFooter as ModalFooter } from "@erxes/ui/src/styles/eindex";
 import React from "react";
 import Select from "react-select";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import client from "@erxes/ui/src/apolloClient";
 import { queries as formQueries } from "@erxes/ui-forms/src/forms/graphql";
 import { gql } from "@apollo/client";

@@ -4,7 +4,7 @@ import Icon from '@erxes/ui/src/components/Icon';
 import { FlexRightItem } from '@erxes/ui/src/layout';
 import PropertyCondition from '../../containers/form/PropertyCondition';
 import { IField, ISegmentCondition, ISegmentMap } from '../../types';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import {
   Condition,

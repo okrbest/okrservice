@@ -5,7 +5,7 @@ import { IButtonMutateProps } from '@erxes/ui/src/types';
 import FormControl from 'modules/common/components/form/Control';
 import Form from 'modules/common/components/form/Form';
 import FormGroup from 'modules/common/components/form/Group';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { AuthBox, AuthButton, Seperator } from '../styles';
 import { readFile } from 'modules/common/utils';
 

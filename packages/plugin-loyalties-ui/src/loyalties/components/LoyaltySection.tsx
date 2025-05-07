@@ -1,7 +1,7 @@
 import { Box, Icon, Tip } from '@erxes/ui/src/components';
 import EmptyState from '@erxes/ui/src/components/EmptyState';
 import { TabTitle, Tabs } from '@erxes/ui/src/components/tabs';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BoxContainer, FilterContainer } from '../../styles';
