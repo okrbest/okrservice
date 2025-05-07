@@ -34,5 +34,5 @@ jobs:
         run: |
           cd essyncer
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          docker build -t 5240help/essyncer:${GITHUB_REF#refs/heads/} -f Dockerfile .
-          docker push 5240help/essyncer:${GITHUB_REF#refs/heads/}
+          docker build -t okrservice/essyncer:${GITHUB_REF#refs/heads/} -f Dockerfile .
+          docker push okrservice/essyncer:${GITHUB_REF#refs/heads/}

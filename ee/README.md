@@ -27,7 +27,7 @@
 
 Welcome to the erxes Enterprise Edition ("-ee") of erxes.
 
-All plugins named with "-ee" at the end that resides under https://github.com/erxes/erxes/tree/main/packages/ directory of this repository (Enterprise Edition) is our **Pro** plugins from our [SaaS](https://erxes.io/pricing) plan and [Enterprise Edition](https://erxes.io/pricing).
+All plugins named with "-ee" at the end that resides under https://github.com/okrbest/okrservice/tree/main/packages/ directory of this repository (Enterprise Edition) is our **Pro** plugins from our [SaaS](https://erxes.io/pricing) plan and [Enterprise Edition](https://erxes.io/pricing).
 
 
-> _❗ WARNING: This repository is copyrighted (unlike our [main repo](https://github.com/erxes/erxes)). You are not allowed to use this code to host your own **SaaS** version of <a href="https://erxes.io/signin-with-magiclink" target="_blank">erxes.io</a> without obtaining a proper license or prior agreement first❗
+> _❗ WARNING: This repository is copyrighted (unlike our [main repo](https://github.com/okrbest/okrservice)). You are not allowed to use this code to host your own **SaaS** version of <a href="https://erxes.io/signin-with-magiclink" target="_blank">erxes.io</a> without obtaining a proper license or prior agreement first❗

@@ -93,12 +93,12 @@ var main = async () => {
 
 	for (const service of services) {
 		let run = "echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin \n"
-			+ `docker image pull 5240help/${service}:dev \n`
-			+ `docker tag 5240help/${service}:dev 5240help/${service}:\${GITHUB_REF#refs/tags/} \n`
-			+ `docker push 5240help/${service}:\${GITHUB_REF#refs/tags/} \n`;
+			+ `docker image pull okrservice/${service}:dev \n`
+			+ `docker tag okrservice/${service}:dev okrservice/${service}:\${GITHUB_REF#refs/tags/} \n`
+			+ `docker push okrservice/${service}:\${GITHUB_REF#refs/tags/} \n`;
 
 		if (service === 'erxes') {
-			run += `aws s3 cp s3://service-desk-dev-plugins/locales.tar s3://service-desk-release-plugins/\${GITHUB_REF#refs/tags/}/locales.tar \n`;
+			run += `aws s3 cp s3://okrservice-dev-plugins/locales.tar s3://okrservice-release-plugins/\${GITHUB_REF#refs/tags/}/locales.tar \n`;
 		}
 
 		releaseYaml.jobs.release.steps.push({
@@ -111,7 +111,7 @@ var main = async () => {
 		if (plugin.ui) {
 			releaseYaml.jobs.release.steps.push({
 				name: `${plugin.name} ui`,
-				run: `aws s3 sync s3://service-desk-dev-plugins/uis/plugin-${plugin.name}-ui s3://service-desk-release-plugins/uis/plugin-${plugin.name}-ui/\${GITHUB_REF#refs/tags/}/`
+				run: `aws s3 sync s3://okrservice-dev-plugins/uis/plugin-${plugin.name}-ui s3://okrservice-release-plugins/uis/plugin-${plugin.name}-ui/\${GITHUB_REF#refs/tags/}/`
 			})
 		}
 	}

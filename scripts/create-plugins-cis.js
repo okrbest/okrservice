@@ -114,7 +114,7 @@ var main = async () => {
 
       delete uiConfigs.port;
 
-      const url = `https://plugin-uis.s3.ap-northeast-2.amazonaws.com/js/plugins/plugin-${plugin.name}-ui/remoteEntry.js`;
+      const url = `https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-${plugin.name}-ui/remoteEntry.js`;
       uiConfigs.url = url;
 
       if (uiConfigs.routes) {

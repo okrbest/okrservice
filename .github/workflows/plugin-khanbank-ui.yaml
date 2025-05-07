@@ -95,4 +95,4 @@ jobs:
         run: |
           tar -cf build.tar --directory=packages/plugin-khanbank-ui/dist .
           cp build.tar packages/plugin-khanbank-ui/dist
-          aws s3 sync packages/plugin-khanbank-ui/dist s3://service-desk-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-khanbank-ui --delete
+          aws s3 sync packages/plugin-khanbank-ui/dist s3://okrservice-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-khanbank-ui --delete

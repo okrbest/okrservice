@@ -209,7 +209,7 @@ Query parameters:
 | `isKiosk`           | зэрэг посыг нь ашиглаж байгаа тохиолдолд зөвхөн пос дээр харагдах бараануудыг нуух          |
 | `groupedSimilarity` | ижил төстэй бараануудыг багцалж харуулхад багцалсан төрлийг оруулана. `config` / `category` |
 
-Example: https://github.com/erxes/erxes-community/blob/main/pos/modules/products/products.main.tsx (with infinite scroll)
+Example: https://github.com/okrbest/okrservice-community/blob/main/pos/modules/products/products.main.tsx (with infinite scroll)
 
 ### Product detail
 
@@ -344,7 +344,7 @@ query PoscProductCategories(
 }
 ```
 
-Example: https://github.com/erxes/erxes/blob/master/pos/modules/products/components/CategoriesSheet.tsx (Мод байдлаар харуулсан дэлгэж хаах боломжтой)
+Example: https://github.com/okrbest/okrservice/blob/master/pos/modules/products/components/CategoriesSheet.tsx (Мод байдлаар харуулсан дэлгэж хаах боломжтой)
 
 ### Product similarity
 
@@ -428,7 +428,7 @@ sort products:
 products.sort((a: IProduct, b: IProduct) => a.unitPrice - b.unitPrice);
 ```
 
-Example: https://github.com/erxes/erxes/blob/master/pos/modules/products/components/ChooseFromSimilarities.tsx
+Example: https://github.com/okrbest/okrservice/blob/master/pos/modules/products/components/ChooseFromSimilarities.tsx
 
 # Orders
 
