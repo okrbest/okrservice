@@ -10,8 +10,8 @@ on:
       - v1
       - staging
     paths:
-      - 'exm-web/**'
-      - '.github/workflows/exm.yaml'
+      - "exm-web/**"
+      - ".github/workflows/exm.yaml"
 
   pull_request:
     branches:
@@ -21,10 +21,10 @@ on:
       - exm-improve
       - v1
     paths:
-      - 'exm-web/**'
-      - '.github/workflows/exm.yaml'
+      - "exm-web/**"
+      - ".github/workflows/exm.yaml"
 
-jobs: 
+jobs:
   exm-ui:
     runs-on: ubuntu-22.04
 
@@ -48,5 +48,5 @@ jobs:
         run: |
           cd exm-web
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          DOCKER_BUILDKIT=1 docker build -t 5240help/exm:${GITHUB_REF#refs/heads/} -f Dockerfile .
-          docker push 5240help/exm:${GITHUB_REF#refs/heads/}
+          DOCKER_BUILDKIT=1 docker build -t okrservice/exm:${GITHUB_REF#refs/heads/} -f Dockerfile .
+          docker push okrservice/exm:${GITHUB_REF#refs/heads/}

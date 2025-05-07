@@ -50,7 +50,7 @@ on:
       - "packages/plugin-assets-ui/**"
       - ".github/workflows/plugin-assets-ui.yaml"
 
-jobs: 
+jobs:
   ui:
     runs-on: ubuntu-22.04
 
@@ -95,4 +95,4 @@ jobs:
         run: |
           tar -cf build.tar --directory=packages/plugin-assets-ui/dist .
           cp build.tar packages/plugin-assets-ui/dist
-          aws s3 sync packages/plugin-assets-ui/dist s3://service-desk-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-assets-ui --delete
+          aws s3 sync packages/plugin-assets-ui/dist s3://okrservice-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-assets-ui --delete
