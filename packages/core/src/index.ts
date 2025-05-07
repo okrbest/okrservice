@@ -24,7 +24,7 @@ import {
   readFileRequest,
   registerOnboardHistory,
   routeErrorHandling,
-  uploadsFolderPath
+  uploadsFolderPath,
 } from "./data/utils";
 
 import { debugBase, debugError, debugInit } from "./debuggers";
@@ -35,7 +35,7 @@ import {
   getServices,
   isEnabled,
   join,
-  leave
+  leave,
 } from "@erxes/api-utils/src/serviceDiscovery";
 import logs from "./logUtils";
 
@@ -58,14 +58,14 @@ import search from "./search";
 import tags from "./tags";
 import {
   updateContactsValidationStatus,
-  updateContactValidationStatus
+  updateContactValidationStatus,
 } from "./data/modules/coc/verifierUtils";
 import { buildFile } from "./exporterByUrl";
 import reports from "./reports/reports";
 import { getOrganizationDetail } from "@erxes/api-utils/src/saas/saas";
 import {
   authorizeClient,
-  refreshAccessToken
+  refreshAccessToken,
 } from "./data/modules/oauth/controller";
 
 const {
@@ -73,7 +73,7 @@ const {
   WIDGETS_DOMAIN,
   DOMAIN,
   CLIENT_PORTAL_DOMAINS,
-  VERSION
+  VERSION,
 } = process.env;
 
 if (!JWT_TOKEN_SECRET) {
@@ -85,7 +85,7 @@ app.use(express.urlencoded({ limit: "15mb", extended: true }));
 
 app.use(
   express.json({
-    limit: "15mb"
+    limit: "15mb",
   })
 );
 
@@ -97,8 +97,10 @@ const corsOptions = {
     DOMAIN || "http://localhost:3000",
     WIDGETS_DOMAIN || "http://localhost:3200",
     ...(CLIENT_PORTAL_DOMAINS || "").split(","),
-    ...(process.env.ALLOWED_ORIGINS || "").split(",").map(c => c && RegExp(c))
-  ]
+    ...(process.env.ALLOWED_ORIGINS || "")
+      .split(",")
+      .map((c) => c && RegExp(c)),
+  ],
 };
 
 app.use(cors(corsOptions));
@@ -132,7 +134,7 @@ app.get(
             subdomain,
             action: "initialSetup",
             serviceName,
-            data: {}
+            data: {},
           });
         }
       }
@@ -145,7 +147,7 @@ app.get(
     }
 
     const configs = await models.Configs.find({
-      code: new RegExp(`.*THEME_.*`, "i")
+      code: new RegExp(`.*THEME_.*`, "i"),
     }).lean();
 
     await models.FieldsGroups.createSystemGroupsFields();
@@ -170,7 +172,7 @@ app.get(
     } else {
       organizationInfo = {
         type: "os",
-        config: {}
+        config: {},
       };
     }
 
@@ -198,7 +200,7 @@ app.get(
             subdomain,
             action: "initialSetup",
             serviceName,
-            data: {}
+            data: {},
           });
         }
       }
@@ -211,7 +213,7 @@ app.get(
     }
 
     const configs = await models.Configs.find({
-      code: new RegExp(`.*THEME_.*`, "i")
+      code: new RegExp(`.*THEME_.*`, "i"),
     }).lean();
 
     await models.FieldsGroups.createSystemGroupsFields();
@@ -227,7 +229,7 @@ app.get("/get-frontend-plugins", async (_req, res) => {
 
   plugins.push({
     name: "inbox",
-    url: "https://plugins.erxes.io/latest/inbox_ui/remoteEntry.js"
+    url: "https://plugins.erxes.io/latest/inbox_ui/remoteEntry.js",
   });
 
   return res.json({ plugins });
@@ -263,7 +265,7 @@ app.get(
     registerOnboardHistory({ models, type: `${name}Download`, user: req.user });
 
     return res.redirect(
-      `https://okrservice-docs.s3-ap-northeast-2.amazonaws.com/templates/${name}`
+      `https://erxes-docs.s3-us-west-2.amazonaws.com/templates/${name}`
     );
   })
 );
@@ -279,7 +281,7 @@ app.get(
     registerOnboardHistory({
       models,
       type: `importDownloadTemplate`,
-      user: req.user
+      user: req.user,
     });
 
     const { name, response } = await templateExport(req.query);
@@ -306,7 +308,7 @@ app.get("/read-file", async (req: any, res, next) => {
       subdomain,
       models,
       userId: req.headers.userid,
-      width
+      width,
     });
 
     if (inline && inline === "true") {
@@ -399,7 +401,7 @@ app.get("/verify", async (req, res) => {
     return res.send("Customer email does not match");
   }
 
-  if (customer.emails?.findIndex(e => e === email) === -1) {
+  if (customer.emails?.findIndex((e) => e === email) === -1) {
     return res.send("Customer email does not match");
   }
 
@@ -506,7 +508,7 @@ httpServer.listen(PORT, async () => {
 
       debugBase("Startup successfully started");
     })
-    .catch(e => {
+    .catch((e) => {
       debugError(`Error occured while starting init: ${e.message}`);
     });
 
@@ -527,10 +529,10 @@ httpServer.listen(PORT, async () => {
       imports,
       exporter,
       cronjobs: {
-        handle10MinutelyJobAvailable: VERSION === "saas" ? true : false
+        handle10MinutelyJobAvailable: VERSION === "saas" ? true : false,
       },
-      reports
-    }
+      reports,
+    },
   });
 
   debugInit(`GraphQL Server is now running on ${PORT}`);
@@ -574,7 +576,7 @@ async function closeHttpServer() {
 }
 
 // If the Node process ends, close the http-server and mongoose.connection and leave service discovery.
-(["SIGINT", "SIGTERM"] as NodeJS.Signals[]).forEach(sig => {
+(["SIGINT", "SIGTERM"] as NodeJS.Signals[]).forEach((sig) => {
   process.on(sig, async () => {
     await closeHttpServer();
     await closeMongooose();

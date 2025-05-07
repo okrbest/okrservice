@@ -1,9 +1,9 @@
-import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from 'coreui/utils';
-import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
-import { SUBMENU } from '../../constants';
-import LeftSidebar from './LogLeftSidebar';
+import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
+import { __ } from "coreui/utils";
+import dayjs from "dayjs";
+import React, { useEffect, useState } from "react";
+import { SUBMENU } from "../../constants";
+import LeftSidebar from "./LogLeftSidebar";
 
 type Props = {
   params: any;
@@ -20,23 +20,23 @@ const RemaindersLog = (props: Props) => {
   }, [params, remaindersLog]);
 
   const updatePrint = () => {
-    const iframeElement: any = document.getElementById('ifmcontentstoprint');
+    const iframeElement: any = document.getElementById("ifmcontentstoprint");
 
-    let printContentHTML = '';
+    let printContentHTML = "";
 
     printContentHTML += `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
-      <link rel="stylesheet" href="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/print.css" media="print">
+      <link rel="stylesheet" href="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/print.css" media="print">
     </head>
     <body>
       <div class="wrapper">
       <div class="paper">
           <div><span>Date: ${dayjs(params.beginDate).format(
-            'YYYY-MM-DD HH:mm'
-          )} - ${dayjs(params.endDate).format('YYYY-MM-DD HH:mm')}</span></div>
+            "YYYY-MM-DD HH:mm"
+          )} - ${dayjs(params.endDate).format("YYYY-MM-DD HH:mm")}</span></div>
           <table>
           <thead>
             <th>Code</th>
@@ -50,7 +50,7 @@ const RemaindersLog = (props: Props) => {
 
     for (const branchId of Object.keys(remaindersLog)) {
       const branchValue = remaindersLog[branchId];
-      const branch = branchValue.branch || '';
+      const branch = branchValue.branch || "";
       const branchValues = branchValue.values || ({} as any);
 
       printContentHTML += `<tr>
@@ -90,7 +90,7 @@ const RemaindersLog = (props: Props) => {
             for (const perform of values.performs || []) {
               printContentHTML += `<tr class='detail'>
                 <td>&nbsp;&nbsp;&nbsp;&nbsp;${dayjs(perform.date).format(
-                  'YYYY-MM-DD HH:mm'
+                  "YYYY-MM-DD HH:mm"
                 )}</td>
                 <td>${perform.spec}</td>
                 <td></td>
@@ -211,11 +211,11 @@ const RemaindersLog = (props: Props) => {
       <iframe
         id="ifmcontentstoprint"
         style={{
-          width: '100%',
-          height: '100%',
-          border: 'none',
-          outline: 'none',
-          backgroundColor: '#F0F0F0'
+          width: "100%",
+          height: "100%",
+          border: "none",
+          outline: "none",
+          backgroundColor: "#F0F0F0",
         }}
       />
     </>
@@ -223,7 +223,7 @@ const RemaindersLog = (props: Props) => {
 
   return (
     <Wrapper
-      header={<Wrapper.Header title={__('Remainders LOG')} submenu={SUBMENU} />}
+      header={<Wrapper.Header title={__("Remainders LOG")} submenu={SUBMENU} />}
       leftSidebar={<LeftSidebar handlePrint={handlePrint} />}
       content={content}
       transparent={true}
