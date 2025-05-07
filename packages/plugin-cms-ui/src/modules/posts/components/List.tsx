@@ -4,7 +4,7 @@ import Submenu from '@erxes/ui/src/components/subMenu/Submenu';
 import Table from '@erxes/ui/src/components/table';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import { BarItems, Contents } from '@erxes/ui/src/layout/styles';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { menu } from '../../../routes';

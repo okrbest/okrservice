@@ -1,6 +1,6 @@
 import { SidebarList as List } from "@erxes/ui/src/layout";
 import { Wrapper } from "@erxes/ui/src/layout";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import React from "react";
 import { Link } from "react-router-dom";
 

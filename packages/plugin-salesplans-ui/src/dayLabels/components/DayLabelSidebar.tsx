@@ -9,7 +9,7 @@ import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
 import SelectDepartments from "@erxes/ui/src/team/containers/SelectDepartments";
 import SelectLabels from "../../settings/containers/SelectLabels";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import { DateContainer } from "@erxes/ui/src/styles/main";
 import { SidebarFilters } from "../../styles";
 import { SidebarList as List } from "@erxes/ui/src/layout";

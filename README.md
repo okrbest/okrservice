@@ -1,7 +1,7 @@
 <br>
 
 <p align="center">
- <img src="https://github.com/erxes/erxes/assets/1748857/53a70732-7385-475d-9cb5-efd0ec801db5" alt="erxes logo" width="20%" />
+ <img src="https://github.com/okrbest/okrservice/assets/1748857/53a70732-7385-475d-9cb5-efd0ec801db5" alt="erxes logo" width="20%" />
 </p>
 
 <p align="center">Welcome to erxes, the source available experience management infrastructure. Pioneering the future of experiences through XOS (Experience Operating System), a term coined by us. erxes serves as an alternative to the combined functionalities of Hubspot (CRM & Marketing automation) and Qualtrics (Experience management)</p>
@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-   <a href="https://github.com/erxes/erxes/blob/master/LICENSE.md">
+   <a href="https://github.com/okrbest/okrservice/blob/master/LICENSE.md">
       <img alt="License Badge" src="https://img.shields.io/badge/license-AGPLv3-brightgreen">
   </a>
     <a href="https://ossrank.com/p/416">
@@ -120,7 +120,7 @@ Let’s start growing together. Join our **<a href="https://discord.com/invite/a
 
 ## Contributing 
 
-Please read our **<a href="https://github.com/erxes/erxes/blob/master/CONTRIBUTING.md" >contributing guide<a>** before submitting a Pull Request to the project.
+Please read our **<a href="https://github.com/okrbest/okrservice/blob/master/CONTRIBUTING.md" >contributing guide<a>** before submitting a Pull Request to the project.
 
 ## Community support
 
@@ -128,11 +128,11 @@ Please read our **<a href="https://github.com/erxes/erxes/blob/master/CONTRIBUTI
 For general help using erxes, please refer to the erxes documentation. For additional help, you can use one of these channels to ask a question:
 
 - **<a href="https://discord.com/invite/aaGzy3gQK5" > Discord</a>** For live discussion with the community
-- **<a href="https://github.com/erxes/erxes" > GitHub</a>** Bug reports, contributions
-- **<a href="https://github.com/erxes/erxes/issues" > Feedback section</a>** Roadmap, feature requests & bugs
+- **<a href="https://github.com/okrbest/okrservice" > GitHub</a>** Bug reports, contributions
+- **<a href="https://github.com/okrbest/okrservice/issues" > Feedback section</a>** Roadmap, feature requests & bugs
 - **<a href="https://twitter.com/erxesHQ" > Twitter</a>** Get the news fast
 
  
 ## License
-See the <a href="https://github.com/erxes/erxes/blob/master/LICENSE.md" >**LICENSE**</a> file for licensing information.
+See the <a href="https://github.com/okrbest/okrservice/blob/master/LICENSE.md" >**LICENSE**</a> file for licensing information.
 

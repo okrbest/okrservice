@@ -19,8 +19,9 @@ import {
   IAttachment,
   IButtonMutateProps,
   IFormProps,
+
 } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { extractAttachment } from "@erxes/ui/src/utils/core";
 import React, { useState } from "react";
 import Select from "react-select";

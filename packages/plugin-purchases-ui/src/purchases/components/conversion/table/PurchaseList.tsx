@@ -1,5 +1,5 @@
 import Button from "@erxes/ui/src/components/Button";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { IPurchase } from "@erxes/ui-purchases/src/purchases/types";
 import * as React from "react";
 import { CenterButton, Purchases, SubHead } from "../style";

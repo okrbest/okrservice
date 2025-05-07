@@ -6,7 +6,6 @@ on:
       - dev
       - master
       - rc
-      - staging
       - v1
     paths:
       - 'pos/**'
@@ -33,12 +32,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18.18.0
+          cache: 'yarn'
+
+      # Yarn classic 고정
+      - name: Enable Yarn classic
+        run: |
+          corepack enable
+          corepack prepare yarn@1.22.19 --activate
 
       - name: Build
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
         run: |
           cd pos
-          rm -rf node_modules
-          yarn install --frozen-lockfile
+          yarn install --frozen-lockfile --network-timeout 600000
           yarn build
 
       - name: Build docker image
@@ -46,5 +53,5 @@ jobs:
         run: |
           cd pos
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          DOCKER_BUILDKIT=1 docker build -t erxes/pos-ui:${GITHUB_REF#refs/heads/} -f Dockerfile .
-          docker push erxes/pos-ui:${GITHUB_REF#refs/heads/}
+          DOCKER_BUILDKIT=1 docker build -t okrservice/pos-ui:${GITHUB_REF#refs/heads/} -f Dockerfile .
+          docker push okrservice/pos-ui:${GITHUB_REF#refs/heads/}

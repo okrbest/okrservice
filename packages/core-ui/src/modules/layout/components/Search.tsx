@@ -5,7 +5,7 @@ import Icon from "modules/common/components/Icon";
 import { Link } from "react-router-dom";
 import React from "react";
 import Spinner from "modules/common/components/Spinner";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import styled from "styled-components";
 import styledTS from "styled-components-ts";
 

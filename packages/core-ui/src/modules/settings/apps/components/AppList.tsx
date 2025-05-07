@@ -11,7 +11,7 @@ import React from "react";
 import Table from "modules/common/components/table";
 import { Title } from "@erxes/ui-settings/src/styles";
 import Wrapper from "modules/layout/components/Wrapper";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import styled from "styled-components";
 import { IUserGroup } from "@erxes/ui-settings/src/permissions/types";
 

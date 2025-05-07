@@ -18,7 +18,7 @@ import { RightDrawerContainer } from "../../styles";
 import SelectMembersPopover from "../utils/SelectMembersPopover";
 import { Title } from "@erxes/ui-settings/src/styles";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "@erxes/ui/src/utils/index";
+import { __ } from "coreui/utils";
 import confirm from "@erxes/ui/src/utils/confirmation/confirm";
 import { getEnv } from "@erxes/ui/src/utils/index";
 import queryString from "query-string";

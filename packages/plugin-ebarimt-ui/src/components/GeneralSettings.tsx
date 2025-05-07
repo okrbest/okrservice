@@ -6,7 +6,7 @@ import {
   FormGroup,
   Icon,
 } from '@erxes/ui/src/components';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { Wrapper } from '@erxes/ui/src/layout';
 import React, { useState } from 'react';
 import { KEY_LABELS } from '../constants';

@@ -3,7 +3,7 @@ import { Description, Price, Service, ServiceText } from './styles';
 import Icon from 'modules/common/components/Icon';
 import React from 'react';
 import Tip from 'modules/common/components/Tip';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { Plugin } from '../types';
 
 type Props = {

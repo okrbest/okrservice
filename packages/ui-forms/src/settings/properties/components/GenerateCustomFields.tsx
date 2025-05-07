@@ -9,7 +9,8 @@ import {
 } from "@erxes/ui/src/styles/main";
 import { IField, ILocationOption } from "@erxes/ui/src/types";
 import { IFieldGroup, LogicParams } from "../types";
-import { __, getConfig, setConfig } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
+import { getConfig, setConfig } from "@erxes/ui/src/utils/core";
 
 import { Alert } from "@erxes/ui/src/utils";
 import Box from "@erxes/ui/src/components/Box";

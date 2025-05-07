@@ -5,7 +5,7 @@ import Tip from '@erxes/ui/src/components/Tip';
 import Icon from '@erxes/ui/src/components/Icon';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import Button from '@erxes/ui/src/components/Button';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import QuestionForm from '../../containers/quiz/QuestionForm';
 import { StepBody, StepHeader, StepItem, MarginAuto } from '../../styles';
 import { FlexContent, FlexItem } from '@erxes/ui/src/layout/styles';

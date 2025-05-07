@@ -15,7 +15,7 @@ import FormControl from "@erxes/ui/src/components/form/Control";
 import { IDeal, IPaymentsData } from "../../types";
 import { PAYMENT_TYPES } from "../../constants";
 import React from "react";
-import { __, Alert, confirm } from "@erxes/ui/src/utils";
+import { __, Alert, confirm } from "coreui/utils";
 import { pluginsOfPaymentForm } from "coreui/pluginUtils";
 import { selectConfigOptions } from "../../utils";
 import { gql, useMutation, useQuery } from "@apollo/client";

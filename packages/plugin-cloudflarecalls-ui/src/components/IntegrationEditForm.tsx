@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Button from '@erxes/ui/src/components/Button';
 import FormGroup from '@erxes/ui/src/components/form/Group';
 import OperatorForm from './OperatorForm';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 interface IProps {
   integrationKind: string;

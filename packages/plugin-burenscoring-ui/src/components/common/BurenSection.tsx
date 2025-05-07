@@ -1,7 +1,7 @@
 import dayjs from "dayjs"
 import Box from "@erxes/ui/src/components/Box";
 import React from "react";
-import { __ } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import { ButtonRelated, LinkButton } from "@erxes/ui/src/styles/main";
 import ScoringForm from "../../containers/ScoringForm";

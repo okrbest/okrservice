@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import Button from '@erxes/ui/src/components/Button';
 import ReportFormModal from '../report/ReportFormModal';
 import { MarginX } from '../../styles';

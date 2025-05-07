@@ -5,7 +5,7 @@ import Icon from '@erxes/ui/src/components/Icon';
 import React from 'react';
 import { SidebarList } from '@erxes/ui/src/layout/styles';
 import Tagger from '@erxes/ui-tags/src/containers/Tagger';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   data: any;

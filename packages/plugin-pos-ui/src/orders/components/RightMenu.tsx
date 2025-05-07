@@ -15,7 +15,8 @@ import {
   TabContent
 } from "../../styles";
 import React, { useRef, useState } from "react";
-import { __, isEnabled } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
+import { isEnabled } from "@erxes/ui/src/utils/core";
 
 import { CSSTransition } from "react-transition-group";
 import Datetime from "@nateradebaugh/react-datetime";

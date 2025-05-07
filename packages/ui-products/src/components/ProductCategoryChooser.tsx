@@ -2,7 +2,7 @@ import React from "react";
 import Select, { components } from "react-select";
 
 import Icon from "@erxes/ui/src/components/Icon";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { CategoryContainer } from "../styles";
 import { IProductCategory } from "../types";
 import { IOption } from "@erxes/ui/src/types";

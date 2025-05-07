@@ -1,6 +1,6 @@
 import Icon from 'modules/common/components/Icon';
 
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { FlexItem, FlexPad } from 'modules/common/components/step/styles';
 import React from 'react';
 

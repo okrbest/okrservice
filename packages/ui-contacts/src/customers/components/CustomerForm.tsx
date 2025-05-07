@@ -1,4 +1,4 @@
-import { Alert, __, getConstantFromStore } from "@erxes/ui/src/utils";
+import { Alert, __, getConstantFromStore } from "coreui/utils";
 import {
   DateContainer,
   FormColumn,

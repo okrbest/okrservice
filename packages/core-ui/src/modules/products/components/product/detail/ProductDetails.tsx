@@ -5,7 +5,7 @@ import { IUser } from "@erxes/ui/src/auth/types";
 import LeftSidebar from "./LeftSidebar";
 import React from "react";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 import { ContentBox } from "@erxes/ui-settings/src/styles";
 

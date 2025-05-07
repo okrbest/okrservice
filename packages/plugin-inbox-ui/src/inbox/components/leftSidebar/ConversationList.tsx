@@ -4,7 +4,7 @@ import { ConversationItems } from './styles';
 import EmptyState from '@erxes/ui/src/components/EmptyState';
 import { IConversation } from '@erxes/ui-inbox/src/inbox/types';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 type Props = {
   conversations: IConversation[];

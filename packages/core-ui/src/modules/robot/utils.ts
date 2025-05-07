@@ -1,5 +1,5 @@
 import { IUser } from 'modules/auth/types';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 
 type Options = {
   _id: string;

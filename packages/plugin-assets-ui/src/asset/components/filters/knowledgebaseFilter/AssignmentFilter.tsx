@@ -1,6 +1,7 @@
 import React from 'react';
 import { router } from '@erxes/ui/src/utils/core';
-import { Box, FieldStyle, SidebarList, __ } from '@erxes/ui/src';
+import { Box, FieldStyle, SidebarList } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import { checkKnowledge } from '../../../../common/constant';
 import { useLocation, useNavigate } from 'react-router-dom';
 

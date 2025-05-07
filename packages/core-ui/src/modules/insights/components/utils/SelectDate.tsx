@@ -5,7 +5,7 @@ import Select from "react-select";
 import Button from "@erxes/ui/src/components/Button";
 import Popover from "@erxes/ui/src/components/Popover";
 import { PopoverButton } from "@erxes/ui/src/styles/main";
-import { __ } from "@erxes/ui/src/utils/index";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import DateRange, { type DateRangeType } from './DateRange';
 

@@ -15,7 +15,7 @@ import Info from "@erxes/ui/src/components/Info";
 import { LeftItem } from "@erxes/ui/src/components/step/styles";
 import React from "react";
 import Spinner from "@erxes/ui/src/components/Spinner";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { readFile } from "@erxes/ui/src/utils/core";
 import { uploadHandler } from "@erxes/ui/src/utils";
 

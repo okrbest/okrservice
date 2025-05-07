@@ -10,7 +10,7 @@ import Icon from "@erxes/ui/src/components/Icon";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import React from "react";
 import Select from "react-select";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { icons } from "../../icons.constant";
 
 type Props = {

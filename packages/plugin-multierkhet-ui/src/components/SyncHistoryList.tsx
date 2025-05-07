@@ -10,7 +10,7 @@ import { IQueryParams } from "@erxes/ui/src/types";
 
 import React from "react";
 import SyncHistorySidebar from "./syncHistorySidebar";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import { menuMultierkhet } from "../constants";
 

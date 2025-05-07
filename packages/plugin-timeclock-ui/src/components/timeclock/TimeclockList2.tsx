@@ -29,7 +29,7 @@ import TimeclockActionBar from "./ActionBar";
 import TimeclockEditForm from "./TimeclockEditForm";
 import Tip from "@erxes/ui/src/components/Tip";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   reportByUsers: [IUserReport] | [];

@@ -1,4 +1,4 @@
-import { __, urlParser } from "@erxes/ui/src/utils";
+import { __, urlParser } from "coreui/utils";
 
 import Box from "@erxes/ui/src/components/Box";
 import { ButtonRelated } from "@erxes/ui/src/styles/main";

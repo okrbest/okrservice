@@ -1,7 +1,7 @@
 import { IBreadCrumbItem } from "../../types";
 import MenuItem from "./MenuItem";
 import React from "react";
-import { __ } from "../../utils/core";
+import { __ } from "coreui/utils";
 import styled from "styled-components";
 
 const Items = styled.ul`

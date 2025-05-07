@@ -26,7 +26,7 @@ import FormControl from '@erxes/ui/src/components/form/Control';
 import PageContent from '@erxes/ui/src/layout/components/PageContent';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import Alert from '@erxes/ui/src/utils/Alert/index';
-import { __, isEnabled, router } from '@erxes/ui/src/utils/core';
+import { __, isEnabled, router } from 'coreui/utils';
 import { Transition } from '@headlessui/react';
 import React from 'react';
 import { Link } from 'react-router-dom';

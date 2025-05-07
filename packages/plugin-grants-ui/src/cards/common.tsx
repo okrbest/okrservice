@@ -5,7 +5,8 @@ import { queries as tasksQueries } from '@erxes/ui-tasks/src/boards/graphql';
 import { queries as dealsQueries } from '@erxes/ui-sales/src/boards/graphql';
 import { useQuery } from "@apollo/client";
 import Select from "react-select";
-import { FormGroup, ControlLabel, __, BarItems, Icon } from "@erxes/ui/src";
+import { FormGroup, ControlLabel, BarItems, Icon } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import { Card } from "./styles";
 
 const stageQueries = {

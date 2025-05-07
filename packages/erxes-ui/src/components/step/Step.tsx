@@ -16,7 +16,7 @@ import { BoxRow } from "./style";
 import Button from "../Button";
 import { Link } from "react-router-dom";
 import React from "react";
-import { __ } from "../../utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   stepNumber?: number;

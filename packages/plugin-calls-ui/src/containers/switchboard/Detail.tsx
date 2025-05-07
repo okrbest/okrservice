@@ -1,5 +1,5 @@
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { gql, useQuery, useSubscription } from '@apollo/client';
 
 import Detail from '../../components/switchboard/Detail';

@@ -4,7 +4,7 @@ import ControlLabel from "@erxes/ui/src/components/form/Label";
 import FormControl from "@erxes/ui/src/components/form/Control";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import Icon from "@erxes/ui/src/components/Icon";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import colors from "@erxes/ui/src/styles/colors";
 import typography from "@erxes/ui/src/styles/typography";
 import { FlexRow } from "@erxes/ui/src/components/filterableList/styles";

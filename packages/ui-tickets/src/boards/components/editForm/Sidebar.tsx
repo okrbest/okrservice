@@ -6,7 +6,7 @@ import { RightContent } from "../../styles/item";
 import { IItem, IOptions } from "../../types";
 import SidebarConformity from "./SidebarConformity";
 import { isEnabled } from "@erxes/ui/src/utils/core";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
 import SelectDepartments from "@erxes/ui/src/team/containers/SelectDepartments";
 import { IUser } from "@erxes/ui/src/auth/types";

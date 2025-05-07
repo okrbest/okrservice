@@ -8,8 +8,8 @@
   ],
   "description": "Free and open fair-code licensed all-in-one growth marketing & management software",
   "homepage": "https://erxes.io",
-  "repository": "https://github.com/erxes/erxes",
-  "bugs": "https://github.com/erxes/erxes/issues",
+  "repository": "https://github.com/okrbest/okrservice",
+  "bugs": "https://github.com/okrbest/okrservice/issues",
   "keywords": [
     "node",
     "graphql",

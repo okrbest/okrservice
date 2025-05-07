@@ -4,7 +4,7 @@ import FormGroup from "@erxes/ui/src/components/form/Group";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import { FlexContent } from "@erxes/ui/src/layout/styles";
 import { ColorPick, ColorPicker } from "@erxes/ui/src/styles/main";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React from "react";
 import Popover from "@erxes/ui/src/components/Popover";
 import TwitterPicker from "react-color/lib/Twitter";

@@ -1,6 +1,6 @@
 import { ColorButton } from '../../boards/styles/common';
 import Icon from '@erxes/ui/src/components/Icon';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import * as React from 'react';
 import Popover from '@erxes/ui/src/components/Popover';
 import AddForm from '../containers/AddForm';

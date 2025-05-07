@@ -1,7 +1,7 @@
 import Icon from '@erxes/ui/src/components/Icon';
 import EmptyState from '@erxes/ui/src/components/EmptyState';
 import { colors } from '@erxes/ui/src/styles';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import moment from 'moment';
 import React from 'react';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';

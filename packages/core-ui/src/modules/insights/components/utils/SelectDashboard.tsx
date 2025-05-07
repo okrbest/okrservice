@@ -4,7 +4,7 @@ import DropdownToggle from "@erxes/ui/src/components/DropdownToggle";
 import Dropdown from "@erxes/ui/src/components/Dropdown";
 
 import Button from "@erxes/ui/src/components/Button";
-import { __ } from "@erxes/ui/src/utils/index";
+import { __ } from "coreui/utils";
 
 import { ISection } from "../../types";
 

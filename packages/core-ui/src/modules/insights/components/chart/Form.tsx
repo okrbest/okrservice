@@ -22,7 +22,7 @@ import FormControl from "@erxes/ui/src/components/form/Control";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import { IChart } from "../../types";
 import Select from "react-select";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { SERVICE_MAP } from "modules/insights/constants";
 
 type Props = {

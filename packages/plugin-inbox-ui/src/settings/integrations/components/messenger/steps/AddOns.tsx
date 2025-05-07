@@ -20,7 +20,7 @@ import { Options } from "@erxes/ui-inbox/src/settings/integrations/styles";
 import React from "react";
 import Select, { components } from "react-select";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import styled from "styled-components";
 
 const WebsiteItem = styled.div`

@@ -12,6 +12,7 @@ on:
       - "packages/api-utils/**"
       - "packages/core/**"
       - ".github/workflows/core.yaml"
+    workflow_dispatch:
 
 jobs: 
   core:
@@ -51,5 +52,5 @@ jobs:
         run: |
           cd dist/erxes
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          docker buildx build -t erxes/core:${GITHUB_REF#refs/heads/} -f Dockerfile .
-          docker push erxes/core:${GITHUB_REF#refs/heads/}
+          docker buildx build -t okrservice/core:${GITHUB_REF#refs/heads/} -f Dockerfile .
+          docker push okrservice/core:${GITHUB_REF#refs/heads/}

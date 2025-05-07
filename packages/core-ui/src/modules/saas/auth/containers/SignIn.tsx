@@ -1,7 +1,7 @@
 import React from "react";
 
 import apolloClient from "apolloClient";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 
 import { IButtonMutateProps } from "@erxes/ui/src/types";
 import SignIn from "../components/SignIn";

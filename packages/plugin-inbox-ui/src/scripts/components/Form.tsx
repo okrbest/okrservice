@@ -10,7 +10,7 @@ import { IScript } from "../types";
 import { ITopic } from "@erxes/ui-knowledgeBase/src/types";
 import React from "react";
 import Select from "react-select";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   object?: IScript;

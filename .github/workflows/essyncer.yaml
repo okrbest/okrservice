@@ -24,7 +24,7 @@ on:
 
 jobs: 
   essyncer:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v2
@@ -34,5 +34,5 @@ jobs:
         run: |
           cd essyncer
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          docker build -t erxes/essyncer:${GITHUB_REF#refs/heads/} -f Dockerfile .
-          docker push erxes/essyncer:${GITHUB_REF#refs/heads/}
+          docker build -t okrservice/essyncer:${GITHUB_REF#refs/heads/} -f Dockerfile .
+          docker push okrservice/essyncer:${GITHUB_REF#refs/heads/}

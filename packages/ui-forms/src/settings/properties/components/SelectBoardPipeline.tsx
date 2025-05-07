@@ -4,7 +4,7 @@ import ControlLabel from "@erxes/ui/src/components/form/Label";
 import { IOption } from "@erxes/ui/src/types";
 import React from "react";
 import Select from "react-select";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import Button from "@erxes/ui/src/components/Button";
 import Icon from "@erxes/ui/src/components/Icon";
 import { LinkButton } from "@erxes/ui/src/styles/main";
