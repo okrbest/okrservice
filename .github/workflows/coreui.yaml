@@ -25,14 +25,14 @@ on:
       - "packages/ui-team/**"
       - "packages/ui-tags/**"
       - "packages/ui-automations/**"
-      - "packages/core-ui/**"      
+      - "packages/core-ui/**"
       - ".github/workflows/coreui.yaml"
       - "!ui/nginx/**"
       - "!ui/docker-entrypoint.sh"
       - "!ui/Dockerfile"
       - "!ui/.dockerignore"
 
-jobs: 
+jobs:
   ui:
     runs-on: ubuntu-22.04
 
@@ -75,21 +75,21 @@ jobs:
         if: github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/rc' || github.ref == 'refs/heads/dev' ||  github.ref == 'refs/heads/v1' || github.ref == 'refs/heads/staging')
         run: |
           tar -cf locales.tar --directory=packages/core-ui/public/locales .
-          aws s3 cp locales.tar s3://service-desk-${GITHUB_REF#refs/heads/}-plugins/locales.tar
+          aws s3 cp locales.tar s3://okrservice-${GITHUB_REF#refs/heads/}-plugins/locales.tar
 
       - name: Deploy Core UI
         if: github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/rc' || github.ref == 'refs/heads/dev' ||  github.ref == 'refs/heads/v1' || github.ref == 'refs/heads/staging')
         run: |
           tar -czf build.tar --directory=packages/core-ui/dist .
           cp build.tar packages/core-ui/dist
-          aws s3 sync packages/core-ui/dist s3://service-desk-${GITHUB_REF#refs/heads/}-plugins/uis/core-ui --delete
+          aws s3 sync packages/core-ui/dist s3://okrservice-${GITHUB_REF#refs/heads/}-plugins/uis/core-ui --delete
 
       - name: Build docker image
         if: github.event_name == 'push' && ( github.ref == 'refs/heads/master' || github.ref == 'refs/heads/rc' || github.ref == 'refs/heads/dev' ||  github.ref == 'refs/heads/v1' || github.ref == 'refs/heads/staging')
         env:
-          BASE_IMAGE: erxes/erxes:base-1.18-alpine
+          BASE_IMAGE: okrservice/erxes:base-1.18-alpine
         run: |
           cd packages/core-ui
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          DOCKER_BUILDKIT=1 docker build --build-arg BASE_IMAGE=$BASE_IMAGE -t erxes/erxes:${GITHUB_REF#refs/heads/} -f Dockerfile .
-          docker push 5240help/erxes:${GITHUB_REF#refs/heads/}
+          DOCKER_BUILDKIT=1 docker build --build-arg BASE_IMAGE=$BASE_IMAGE -t okrservice/erxes:${GITHUB_REF#refs/heads/} -f Dockerfile .
+          docker push okrservice/erxes:${GITHUB_REF#refs/heads/}

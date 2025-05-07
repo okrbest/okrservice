@@ -9,8 +9,8 @@ on:
       - staging
       - v1
     paths:
-      - 'pos/**'
-      - '.github/workflows/pos-ui.yaml'
+      - "pos/**"
+      - ".github/workflows/pos-ui.yaml"
 
   pull_request:
     branches:
@@ -19,10 +19,10 @@ on:
       - rc
       - v1
     paths:
-      - 'pos/**'
-      - '.github/workflows/pos-ui.yaml'
+      - "pos/**"
+      - ".github/workflows/pos-ui.yaml"
 
-jobs: 
+jobs:
   pos-ui:
     runs-on: ubuntu-22.04
 
@@ -46,5 +46,5 @@ jobs:
         run: |
           cd pos
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          DOCKER_BUILDKIT=1 docker build -t 5240help/pos-ui:${GITHUB_REF#refs/heads/} -f Dockerfile .
-          docker push 5240help/pos-ui:${GITHUB_REF#refs/heads/}
+          DOCKER_BUILDKIT=1 docker build -t okrservice/pos-ui:${GITHUB_REF#refs/heads/} -f Dockerfile .
+          docker push okrservice/pos-ui:${GITHUB_REF#refs/heads/}

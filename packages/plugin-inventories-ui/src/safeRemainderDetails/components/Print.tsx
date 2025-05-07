@@ -1,10 +1,10 @@
-import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import dayjs from "dayjs";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 // erxes
-import Button from '@erxes/ui/src/components/Button';
-import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from 'coreui/utils';
+import Button from "@erxes/ui/src/components/Button";
+import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
+import { __ } from "coreui/utils";
 
 type Props = {
   safeRemainder: any;
@@ -12,15 +12,15 @@ type Props = {
 };
 
 const displayNumber = (value: number) => {
-  return (value || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+  return (value || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
 };
 
 export default function List(props: Props) {
   const { safeRemainder, safeRemainderItems } = props;
 
   const breadcrumb = [
-    { title: __('Safe Remainders'), link: '/inventories/safe-remainders' },
-    { title: __('Safe Remainder') }
+    { title: __("Safe Remainders"), link: "/inventories/safe-remainders" },
+    { title: __("Safe Remainder") },
   ];
 
   // Hooks
@@ -36,16 +36,16 @@ export default function List(props: Props) {
   }, []);
 
   const updatePrint = () => {
-    const iframeElement: any = document.getElementById('ifmcontentstoprint');
+    const iframeElement: any = document.getElementById("ifmcontentstoprint");
 
-    let printContentHTML = '';
+    let printContentHTML = "";
 
     printContentHTML += `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="utf-8">
-      <link rel="stylesheet" href="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/print.css" media="print">
+      <link rel="stylesheet" href="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/print.css" media="print">
     </head>
     <body>
       <div class="wrapper">
@@ -56,8 +56,8 @@ export default function List(props: Props) {
         <div>
           <span><Strong>Date: </Strong>
             ${dayjs(safeRemainder.beginDate).format(
-              'YYYY-MM-DD HH:mm'
-            )} - ${dayjs(safeRemainder.endDate).format('YYYY-MM-DD HH:mm')}
+              "YYYY-MM-DD HH:mm"
+            )} - ${dayjs(safeRemainder.endDate).format("YYYY-MM-DD HH:mm")}
           </span>
           <span>
             <Strong>Branch: </Strong>
@@ -71,23 +71,17 @@ export default function List(props: Props) {
         <table>
         <thead>
           <tr>
-            <th>${__('Product')}</th>
-            <th>${__('Live')}</th>
-            <th>${__('UOM')}</th>
-            <th>${__('Safe')}</th>
+            <th>${__("Product")}</th>
+            <th>${__("Live")}</th>
+            <th>${__("UOM")}</th>
+            <th>${__("Safe")}</th>
           </tr>
         </thead>
     `;
 
     for (const remainderItem of safeRemainderItems) {
-      const {
-        product,
-        modifiedAt,
-        count,
-        preCount,
-        uom,
-        status
-      } = remainderItem;
+      const { product, modifiedAt, count, preCount, uom, status } =
+        remainderItem;
 
       printContentHTML += `<tr>
         <td>${product && `${product.code} - ${product.name} `}</td>
@@ -106,7 +100,7 @@ export default function List(props: Props) {
         <p className="signature">
           <label>Тоолсон:</label>
           <span> _____________________</span>
-          <span>/${safeRemainder.modifiedUser?.details?.fullName || ''}/</span>
+          <span>/${safeRemainder.modifiedUser?.details?.fullName || ""}/</span>
         </p>
         <p className="signature">
           <label>Хянасан:</label>
@@ -245,11 +239,11 @@ export default function List(props: Props) {
       <iframe
         id="ifmcontentstoprint"
         style={{
-          width: '100%',
-          height: '100%',
-          border: 'none',
-          outline: 'none',
-          backgroundColor: '#F0F0F0'
+          width: "100%",
+          height: "100%",
+          border: "none",
+          outline: "none",
+          backgroundColor: "#F0F0F0",
         }}
       />
     </>
@@ -259,7 +253,7 @@ export default function List(props: Props) {
     <Wrapper
       header={
         <Wrapper.Header
-          title={__('Remainder detail')}
+          title={__("Remainder detail")}
           breadcrumb={breadcrumb}
         />
       }
@@ -271,7 +265,7 @@ export default function List(props: Props) {
                 to={`/inventories/safe-remainders/details/${props.safeRemainder._id}/${location.search}`}
               >
                 <Button btnStyle="success" icon="check-circle" size="small">
-                  {__('Back')}
+                  {__("Back")}
                 </Button>
               </Link>
               <Button
@@ -280,7 +274,7 @@ export default function List(props: Props) {
                 size="small"
                 onClick={handlePrint}
               >
-                {__('Print')}
+                {__("Print")}
               </Button>
             </>
           }

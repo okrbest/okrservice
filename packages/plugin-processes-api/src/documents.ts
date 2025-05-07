@@ -1,10 +1,8 @@
 import * as moment from "moment";
 import { generateModels } from "./connectionResolver";
-import {
-  sendCoreMessage
-} from "./messageBroker";
+import { sendCoreMessage } from "./messageBroker";
 
-const toMoney = value => {
+const toMoney = (value) => {
   if (!value) {
     return "-";
   }
@@ -17,14 +15,14 @@ const productsInfo = async (
   isPrice = false,
   isSeries = false
 ) => {
-  const productIds = productData.map(p => p.productId);
+  const productIds = productData.map((p) => p.productId);
 
   const products = await sendCoreMessage({
     subdomain,
     action: "products.find",
     data: { query: { _id: { $in: productIds } }, limit: productIds.length },
     isRPC: true,
-    defaultValue: []
+    defaultValue: [],
   });
 
   const productById = {};
@@ -75,8 +73,8 @@ export default {
     {
       type: "processes",
       label: "Processes",
-      subTypes: ["income", "move", "outcome", "job"]
-    }
+      subTypes: ["income", "move", "outcome", "job"],
+    },
   ],
 
   editorAttributes: async ({}) => {
@@ -103,7 +101,7 @@ export default {
       { value: "spendProducts", name: "Spend products" },
       { value: "receiptProducts", name: "Receipt products" },
       { value: "spendProductsSeries", name: "Spend products with series" },
-      { value: "receiptProductsPrice", name: "Receipt products with price" }
+      { value: "receiptProductsPrice", name: "Receipt products with price" },
     ];
   },
 
@@ -119,19 +117,19 @@ export default {
       content.includes("{{ seriesQrcode }}")
     ) {
       results.push(
-        '::heads::<script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/jquery.js"></script>'
+        '::heads::<script src="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/jquery.js"></script>'
       );
     }
 
     if (content.includes("{{ seriesBarcode }}")) {
       results.push(
-        '::heads::<script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/JsBarcode.all.min.js"></script>'
+        '::heads::<script src="https://nmgplugins.s3.us-west-2.amazonaws.com/JsBarcode.all.min.js"></script>'
       );
     }
 
     if (content.includes("{{ seriesQrcode }}")) {
       results.push(
-        '::heads::<script src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/qrcodegen.js"></script>'
+        '::heads::<script src="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/qrcodegen.js"></script>'
       );
     }
 
@@ -179,7 +177,7 @@ export default {
           subdomain,
           action: "branches.findOne",
           data: { _id: perform.inBranchId },
-          isRPC: true
+          isRPC: true,
         });
       }
 
@@ -200,7 +198,7 @@ export default {
           subdomain,
           action: "departments.findOne",
           data: { _id: perform.inDepartmentId },
-          isRPC: true
+          isRPC: true,
         });
       }
 
@@ -221,7 +219,7 @@ export default {
           subdomain,
           action: "branches.findOne",
           data: { _id: perform.outBranchId },
-          isRPC: true
+          isRPC: true,
         });
       }
 
@@ -242,7 +240,7 @@ export default {
           subdomain,
           action: "departments.findOne",
           data: { _id: perform.outDepartmentId },
-          isRPC: true
+          isRPC: true,
         });
       }
 
@@ -266,7 +264,7 @@ export default {
           subdomain,
           action: "users.findOne",
           data: { _id: perform.assignedUserIds[0] },
-          isRPC: true
+          isRPC: true,
         });
       }
 
@@ -286,10 +284,10 @@ export default {
           subdomain,
           action: "companies.findOne",
           data: {
-            _id: perform.companyId
+            _id: perform.companyId,
           },
           isRPC: true,
-          defaultValue: {}
+          defaultValue: {},
         });
 
         replacedContent = replacedContent.replace(
@@ -307,10 +305,10 @@ export default {
           subdomain,
           action: "customers.findOne",
           data: {
-            _id: perform.customerId
+            _id: perform.customerId,
           },
           isRPC: true,
-          defaultValue: {}
+          defaultValue: {},
         });
 
         replacedContent = replacedContent.replace(
@@ -400,5 +398,5 @@ export default {
     `);
 
     return results;
-  }
+  },
 };
