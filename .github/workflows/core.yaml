@@ -14,7 +14,7 @@ on:
       - ".github/workflows/core.yaml"
     workflow_dispatch:
 
-jobs: 
+jobs:
   core:
     runs-on: ubuntu-22.04
 
@@ -52,5 +52,5 @@ jobs:
         run: |
           cd dist/erxes
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          docker buildx build -t 5240help/core:${GITHUB_REF#refs/heads/} -f Dockerfile .
-          docker push 5240help/core:${GITHUB_REF#refs/heads/}
+          docker buildx build -t okrservice/core:${GITHUB_REF#refs/heads/} -f Dockerfile .
+          docker push okrservice/core:${GITHUB_REF#refs/heads/}

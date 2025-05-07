@@ -1,16 +1,16 @@
-import React from 'react';
+import React from "react";
 
 const getNum = (n) => {
   return (n || 0).toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })
-}
+  });
+};
 
 let totalDiscount = 0;
 
-const getRows = receipts => {
-  let res = '';
+const getRows = (receipts) => {
+  let res = "";
   let ind = 0;
 
   for (const receipt of receipts) {
@@ -39,24 +39,18 @@ const getRows = receipts => {
 
 const customerInfo = (response) => {
   if (!(response.customerTin || response.customerName)) {
-    return '';
+    return "";
   }
   return `
     <div>
       <br />
       <p><strong>Худалдан авагч:</strong></p>
-      ${response.customerTin
-      ? `<p>ТТД: ${response.customerTin}</p>`
-      : ''}
-      ${response.consumerNo
-      ? `<p>РД: ${response.consumerNo}</p>`
-      : ''}
-      ${response.customerName
-      ? `<p>Нэр: ${response.customerName} </p>`
-      : ''}
+      ${response.customerTin ? `<p>ТТД: ${response.customerTin}</p>` : ""}
+      ${response.consumerNo ? `<p>РД: ${response.consumerNo}</p>` : ""}
+      ${response.customerName ? `<p>Нэр: ${response.customerName} </p>` : ""}
     </div>
   `;
-}
+};
 
 const customize = (response, field, defaultVal) => {
   if (response[field]) {
@@ -68,31 +62,32 @@ const customize = (response, field, defaultVal) => {
   }
 
   return defaultVal;
-}
+};
 
 export default (response, counter?) => {
   totalDiscount = 0;
   return `
-    <div class="receipt" id="${(response._id || '')}">
-      ${(counter > 0 && '<div class="splitter"></div>') || ''}
+    <div class="receipt" id="${response._id || ""}">
+      ${(counter > 0 && '<div class="splitter"></div>') || ""}
       <div class="center">
-        <img src="https://nmgplugins.s3.ap-northeast-2.amazonaws.com/ebarimt/ebarimt.png">
+        <img src="https://nmgplugins.s3.us-west-2.amazonaws.com/ebarimt/ebarimt.png">
       </div>
       <p class="center">
-        ${response.companyName ? response.companyName : ''}
+        ${response.companyName ? response.companyName : ""}
       </p>
 
       <p class="center">
-        ${response.status !== 'SUCCESS' ? response.message : ''}
+        ${response.status !== "SUCCESS" ? response.message : ""}
       </p>
 
-      ${response.id
-      ? `
+      ${
+        response.id
+          ? `
         <div>
           <p>ТТД: ${response.merchantTin}</p>
-          ${(response.id && `<p>ДДТД: ${response.id}</p>`) || ''}
+          ${(response.id && `<p>ДДТД: ${response.id}</p>`) || ""}
           <p>Огноо: ${response.date}</p>
-          ${(response.number && `<p>№: ${response.number}</p>`) || ''}
+          ${(response.number && `<p>№: ${response.number}</p>`) || ""}
         </div>
 
         ${customerInfo(response)}
@@ -114,40 +109,45 @@ export default (response, counter?) => {
 
         <div class="total">
           
-          ${response.totalVAT > 0 && `<p><label>НӨАТ:</label> ${getNum(response.totalVAT)}</p>` || ''}
-          ${response.totalCityTax > 0 && `<p><label>НХАТ:</label> ${getNum(response.totalCityTax)}</p>` || ''}
+          ${(response.totalVAT > 0 && `<p><label>НӨАТ:</label> ${getNum(response.totalVAT)}</p>`) || ""}
+          ${(response.totalCityTax > 0 && `<p><label>НХАТ:</label> ${getNum(response.totalCityTax)}</p>`) || ""}
           <p><label>Бүгд үнэ:</label> ${getNum(response.totalAmount)}</p>
-          ${totalDiscount > 0 && `<p><label>ХӨН:</label> ${getNum(totalDiscount)}</p>` || ''}
+          ${(totalDiscount > 0 && `<p><label>ХӨН:</label> ${getNum(totalDiscount)}</p>`) || ""}
         </div>
 
         <div class="center barcode">
           <div class="lottery">
-            ${response.lottery ? `Сугалаа: ${response.lottery}` : ''}
+            ${response.lottery ? `Сугалаа: ${response.lottery}` : ""}
           </div>
           <div>
-            ${response.qrData && `<canvas id="qrcode${response._id}"></canvas>` || ''}
+            ${(response.qrData && `<canvas id="qrcode${response._id}"></canvas>`) || ""}
           </div>
 
           ${customize(response, "footerText", "<p>Манайхаар үйлчлүүлсэн танд баярлалаа !!!</p>")}
 
-          ${response.description && (`<div>
+          ${
+            response.description &&
+            `<div>
             ${response.description}
-          </div>`)}
+          </div>`
+          }
         </div>
-      ` : `
+      `
+          : `
         Буцаалт амжилттай.
       `
-    }
+      }
     </div>
     <script>
       window.onbeforeunload = function () {
         return 'Уг цонхыг хаавал энэ баримтыг ахиж хэвлэх боломжгүй болохыг анхаарна уу';
       }
 
-      ${response.qrData
-      ? `
+      ${
+        response.qrData
+          ? `
         // QRCODE
-        var canvas = document.getElementById("qrcode${response._id || ''}");
+        var canvas = document.getElementById("qrcode${response._id || ""}");
         var ecl = qrcodegen.QrCode.Ecc.LOW;
         var text = '${response.qrData}';
         var segs = qrcodegen.QrSegment.makeSegments(text);
@@ -156,10 +156,10 @@ export default (response, counter?) => {
         // 4=Scale, 1=border
         qr.drawCanvas(4, 0, canvas);
 
-        $("#qrcode${response._id || ''}").after('<img src="' + canvas.toDataURL() + '" />')
+        $("#qrcode${response._id || ""}").after('<img src="' + canvas.toDataURL() + '" />')
       `
-      : ''
-    }
+          : ""
+      }
     </script>
   `;
 };
