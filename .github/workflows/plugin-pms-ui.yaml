@@ -50,7 +50,7 @@ on:
       - "packages/plugin-pms-ui/**"
       - ".github/workflows/plugin-pms-ui.yaml"
 
-jobs: 
+jobs:
   ui:
     runs-on: ubuntu-22.04
 
@@ -95,4 +95,4 @@ jobs:
         run: |
           tar -cf build.tar --directory=packages/plugin-pms-ui/dist .
           cp build.tar packages/plugin-pms-ui/dist
-          aws s3 sync packages/plugin-pms-ui/dist s3://service-desk-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-pms-ui --delete
+          aws s3 sync packages/plugin-pms-ui/dist s3://okrservice-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-pms-ui --delete

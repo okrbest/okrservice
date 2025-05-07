@@ -50,7 +50,7 @@ on:
       - "packages/plugin-forum-ui/**"
       - ".github/workflows/plugin-forum-ui.yaml"
 
-jobs: 
+jobs:
   ui:
     runs-on: ubuntu-22.04
 
@@ -95,4 +95,4 @@ jobs:
         run: |
           tar -cf build.tar --directory=packages/plugin-forum-ui/dist .
           cp build.tar packages/plugin-forum-ui/dist
-          aws s3 sync packages/plugin-forum-ui/dist s3://service-desk-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-forum-ui --delete
+          aws s3 sync packages/plugin-forum-ui/dist s3://okrservice-${GITHUB_REF#refs/heads/}-plugins/uis/plugin-forum-ui --delete
