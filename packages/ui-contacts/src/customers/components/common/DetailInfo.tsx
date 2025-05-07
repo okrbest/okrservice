@@ -12,7 +12,7 @@ import { IFieldsVisibility } from "../../types";
 import PrimaryEmail from "./PrimaryEmail";
 import PrimaryPhone from "./PrimaryPhone";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 
 type Props = {

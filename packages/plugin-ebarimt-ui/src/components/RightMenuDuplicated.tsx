@@ -16,7 +16,7 @@ import { CSSTransition } from "react-transition-group";
 import Datetime from "@nateradebaugh/react-datetime";
 import { IQueryParams } from "@erxes/ui/src/types";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 
 type Props = {

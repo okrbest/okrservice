@@ -1,6 +1,6 @@
 import * as compose from "lodash.flowright";
 
-import { Alert, __, confirm } from "modules/common/utils";
+import { Alert, __, confirm } from "coreui/utils";
 import {
   AppsAddMutationResponse,
   AppsEditMutationResponse,

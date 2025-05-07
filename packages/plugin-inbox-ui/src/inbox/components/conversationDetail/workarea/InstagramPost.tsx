@@ -2,7 +2,7 @@ import { IConversation, IMessage } from '@erxes/ui-inbox/src/inbox/types';
 import Button from '@erxes/ui/src/components/Button';
 import Icon from '@erxes/ui/src/components/Icon';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import styled from 'styled-components';
 
 const Container = styled.div`

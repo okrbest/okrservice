@@ -1,6 +1,6 @@
 import React from "react";
 import Select from "react-select";
-import { extractAttachment, __, Alert } from "@erxes/ui/src/utils";
+import { extractAttachment, __, Alert } from "coreui/utils";
 import {
   Button,
   ControlLabel,

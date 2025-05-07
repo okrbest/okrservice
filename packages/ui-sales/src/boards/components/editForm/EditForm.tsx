@@ -7,7 +7,7 @@ import {
 } from "../../styles/rightMenu";
 import { IEditFormContent, IItem, IItemParams, IOptions } from "../../types";
 import React, { useEffect, useRef, useState } from "react";
-import { __, router as routerUtils } from "@erxes/ui/src/utils";
+import { __, router as routerUtils } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { ActionItem } from "../../styles/popup";

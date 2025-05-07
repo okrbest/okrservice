@@ -5,7 +5,7 @@ import {
   ImageUpload,
 } from "@erxes/ui/src/components/step/style";
 import Spinner from 'modules/common/components/Spinner';
-import { __, readFile, uploadHandler } from 'modules/common/utils';
+import { __, readFile, uploadHandler } from 'coreui/utils';
 import React from 'react';
 
 import Button from '../../../../common/components/Button';

@@ -4,7 +4,7 @@ import FormGroup from '@erxes/ui/src/components/form/Group';
 import FormLabel from '@erxes/ui/src/components/form/Label';
 import FormControl from '@erxes/ui/src/components/form/Control';
 import SelectProducts from '@erxes/ui-products/src/containers/SelectProducts';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   type: string;

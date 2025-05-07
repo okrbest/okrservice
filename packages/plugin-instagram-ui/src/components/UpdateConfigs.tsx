@@ -7,7 +7,7 @@ import { IConfigsMap } from '@erxes/ui-settings/src/general/types';
 import Icon from '@erxes/ui/src/components/Icon';
 import Info from '@erxes/ui/src/components/Info';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 const KEY_LABELS = {
   INSTAGRAM_APP_ID: 'Instagram App Id',

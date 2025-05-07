@@ -13,7 +13,7 @@ import FormGroup from "@erxes/ui/src/components/form/Group";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import React from "react";
 import Uploader from "@erxes/ui/src/components/Uploader";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { readFile } from "@erxes/ui/src/utils";
 
 type Props = {

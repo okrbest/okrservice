@@ -2,7 +2,7 @@ import Datetime from "@nateradebaugh/react-datetime";
 import Icon from "@erxes/ui/src/components/Icon";
 import Popover from "@erxes/ui/src/components/Popover";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 
 type Props = {

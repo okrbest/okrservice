@@ -3,7 +3,7 @@ import { SmallLoader } from '@erxes/ui/src/components/ButtonMutate';
 import Icon from '@erxes/ui/src/components/Icon';
 import { Column, Columns, Title } from '@erxes/ui/src/styles/chooser';
 import { ModalFooter } from '@erxes/ui/src/styles/main';
-import { __, renderFullName } from '@erxes/ui/src/utils';
+import { __, renderFullName } from 'coreui/utils';
 import React from 'react';
 import { IUser } from '@erxes/ui/src/auth/types';
 import {

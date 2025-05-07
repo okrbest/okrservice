@@ -1,6 +1,7 @@
 import React from 'react';
 import { SlotListItem as StyledSlotListItem } from '../../../styles';
-import { Button, Icon, Tip, __ } from '@erxes/ui/src';
+import { Button, Icon, Tip } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 
 const PosSlotItem = ({
   setActiveSlot,

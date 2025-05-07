@@ -4,7 +4,7 @@ import EmptyState from '@erxes/ui/src/components/EmptyState';
 import React from 'react';
 import Row from './Row';
 import Table from '@erxes/ui/src/components/table';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import withTableWrapper from '@erxes/ui/src/components/table/withTableWrapper';
 import { Pagination } from '@erxes/ui/src';
 

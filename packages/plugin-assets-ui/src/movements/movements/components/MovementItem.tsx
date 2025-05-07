@@ -9,7 +9,8 @@ import {
   MovementItemInfoContainer,
   RemoveRow
 } from "../../../style";
-import { FormControl, Icon, TextInfo, __ } from "@erxes/ui/src";
+import { FormControl, Icon, TextInfo } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 
 import { Flex } from "@erxes/ui/src/styles/main";
 import { IMovementItem } from "../../../common/types";

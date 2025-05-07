@@ -8,7 +8,7 @@ import {
   CenterContent,
   MobileRecommend,
 } from '../../styles';
-import { __, bustIframe } from '../../../utils';
+import { __, bustIframe } from 'coreui/utils';
 
 import Button from '@erxes/ui/src/components/Button';
 import React from 'react';

@@ -13,7 +13,7 @@ import { IPaymentsData } from "../../types";
 import { PAYMENT_TYPES } from "../../constants";
 import React from "react";
 import Select, { components } from "react-select";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { pluginsOfPaymentForm } from "coreui/pluginUtils";
 import { selectConfigOptions } from "../../utils";
 

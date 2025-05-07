@@ -1,4 +1,4 @@
-import { Alert, __ } from "@erxes/ui/src/utils";
+import { Alert, __ } from "coreui/utils";
 import { Appearance, Availability, Greeting, Intro, Options } from "./steps";
 import {
   Content,

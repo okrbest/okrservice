@@ -3,7 +3,7 @@ import {
   ImagePreview,
   ImageUpload,
 } from "@erxes/ui/src/components/step/style";
-import { __, readFile, uploadHandler } from "@erxes/ui/src/utils";
+import { __, readFile, uploadHandler } from "coreui/utils";
 
 import { RichTextEditor } from "@erxes/ui/src/components/richTextEditor/TEditor";
 import Button from "@erxes/ui/src/components/Button";

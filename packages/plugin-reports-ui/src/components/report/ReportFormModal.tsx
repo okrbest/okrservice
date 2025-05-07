@@ -12,7 +12,7 @@ import { FlexRow } from "@erxes/ui-settings/src/styles";
 import { Form } from "@erxes/ui/src";
 import { IFormProps } from "@erxes/ui/src/types";
 import SelectMembersForm from "../utils/SelectMembersForm";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   history: any;

@@ -5,7 +5,7 @@ import { Bot, BotWrapper } from "./styles";
 import AssistantContent from "../containers/AssistantContent";
 import { CSSTransition } from "react-transition-group";
 import { IUser } from "modules/auth/types";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import debounce from "lodash/debounce";
 
 type Props = {

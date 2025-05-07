@@ -18,7 +18,7 @@ import SelectProductCategory from "@erxes/ui-products/src/containers/SelectProdu
 import SelectProducts from "@erxes/ui-products/src/containers/SelectProducts";
 import SelectSegments from "@erxes/ui-segments/src/containers/SelectSegments";
 import SelectTags from "@erxes/ui-tags/src/containers/SelectTags";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   formValues: PricingPlan;

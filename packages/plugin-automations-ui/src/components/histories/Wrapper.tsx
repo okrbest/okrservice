@@ -1,5 +1,5 @@
 import Icon from '@erxes/ui/src/components/Icon';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import Datetime from '@nateradebaugh/react-datetime';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';

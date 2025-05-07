@@ -3,7 +3,7 @@ import BreadCrumb from '@erxes/ui/src/components/breadcrumb/BreadCrumb';
 import Filter from '@erxes/ui/src/components/filter/Filter';
 import Submenu from '@erxes/ui/src/components/subMenu/Submenu';
 import { IBreadCrumbItem } from '@erxes/ui/src/types';
-import { __, setTitle } from '@erxes/ui/src/utils/core';
+import { __, setTitle } from 'coreui/utils';
 import { PageHeader } from '../styles';
 
 type Props = {

@@ -12,7 +12,7 @@ import {
 import ActionButtons from "@erxes/ui/src/components/ActionButtons";
 import { Wrapper } from '@erxes/ui/src/layout';
 import { FormColumn } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React, { useEffect, useState } from 'react';
 import { SYNC_TYPES } from '../../constants';
 import { ContentBox } from '../../styles';

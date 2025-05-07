@@ -10,7 +10,7 @@ import {
 import { NavLink } from 'react-router-dom';
 import React from 'react';
 import WithPermission from 'modules/common/components/WithPermission';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { getLink } from './utils';
 
 type Props = {

@@ -2,7 +2,7 @@ import React from "react";
 
 import { IPaymentDocument, IPaymentConfig } from "../../types";
 import { IOption } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { ControlLabel } from "@erxes/ui/src/components/form";
 import Select from "react-select";
 

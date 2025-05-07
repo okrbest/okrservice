@@ -13,7 +13,7 @@ import Select from 'react-select';
 import { Box } from '@erxes/ui/src/components/step/style';
 import { FlexRow } from '@erxes/ui/src/components/filterableList/styles';
 import { DaySelector } from './DaySelector';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 type Props = {
   uom?: IUom;

@@ -8,7 +8,7 @@ import {
   Tip,
   Wrapper,
 } from '@erxes/ui/src';
-import { __, router } from '@erxes/ui/src/utils';
+import { __, router } from 'coreui/utils';
 import CollapsibleList from '@erxes/ui/src/components/collapsibleList/CollapsibleList';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';

@@ -11,7 +11,7 @@ import React from "react";
 import Row from "./InventoryPriceRow";
 import SelectBrands from "@erxes/ui/src/brands/containers/SelectBrands";
 import { Wrapper } from "@erxes/ui/src/layout";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { menuDynamic } from "../../constants";
 
 type Props = {

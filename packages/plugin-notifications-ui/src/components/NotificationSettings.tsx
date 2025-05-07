@@ -1,5 +1,5 @@
 import Toggle from '@erxes/ui/src/components/Toggle';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import HeaderDescription from '@erxes/ui/src/components/HeaderDescription';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
 import React from 'react';

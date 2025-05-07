@@ -16,7 +16,7 @@ import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import SortableList from '@erxes/ui/src/components/SortableList';
 import Tip from '@erxes/ui/src/components/Tip';
 import { IField } from '@erxes/ui/src/types';
-import { __, Alert, confirm } from '@erxes/ui/src/utils';
+import { __, Alert, confirm } from 'coreui/utils';
 import React, { useEffect, useState } from 'react';
 import FieldForm from './FieldForm';
 import GroupForm from './GroupForm';

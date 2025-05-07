@@ -8,7 +8,7 @@ import { ISegment } from "@erxes/ui-segments/src/types";
 import { ITrigger } from "../../../types";
 import React from "react";
 import Toggle from "@erxes/ui/src/components/Toggle";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 export type ReEnrollmentRule = {
   property: string;

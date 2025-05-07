@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Icon from "@erxes/ui/src/components/Icon";
 import React from "react";
 import { SideList } from "../../styles";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import queryString from "query-string";
 
 type Props = {

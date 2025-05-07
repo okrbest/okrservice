@@ -6,7 +6,7 @@ import {
   FormGroup,
 } from '@erxes/ui/src/components';
 import SelectBrands from '@erxes/ui/src/brands/containers/SelectBrands';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React, { useState } from 'react';
 import { KEY_LABELS } from '../constants';
 import { ContentBox } from '../styles';

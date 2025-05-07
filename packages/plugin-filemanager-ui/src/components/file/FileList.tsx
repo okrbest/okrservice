@@ -8,7 +8,7 @@ import { ItemName } from "../../styles";
 import React from "react";
 import SortHandler from "@erxes/ui/src/components/SortHandler";
 import Table from "@erxes/ui/src/components/table";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import withTableWrapper from "@erxes/ui/src/components/table/withTableWrapper";
 
 type Props = {

@@ -1,4 +1,4 @@
-import { Alert, __ } from "modules/common/utils";
+import { Alert, __ } from "coreui/utils";
 import { Divider, StepBody, StepHeader, StepItem } from "../styles";
 import { IActions, IModule } from "../types";
 import {

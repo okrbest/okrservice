@@ -1,7 +1,7 @@
 import { IUser } from '@erxes/ui/src/auth/types';
 import Icon from '@erxes/ui/src/components/Icon';
 import React from 'react';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import {
   ErxesGreeting,
   ErxesTopbar,

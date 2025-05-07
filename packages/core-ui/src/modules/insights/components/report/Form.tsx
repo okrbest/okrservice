@@ -12,7 +12,7 @@ import { IFormProps } from "@erxes/ui/src/types";
 import ReportTemplate from "../template/Report";
 import SelectMembersForm from "../utils/SelectMembersForm";
 import SelectSections from "../../containers/utils/SelectSections";
-import { __ } from "@erxes/ui/src/utils/index";
+import { __ } from "coreui/utils";
 import { getService } from "../../utils";
 
 type Props = {

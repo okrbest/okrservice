@@ -18,7 +18,7 @@ import { PluginCategories } from "../styles";
 import React from "react";
 import RightSidebar from "./RightSidebar";
 import Wrapper from "./Wrapper";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import client from "@erxes/ui/src/apolloClient";
 import { gql } from "@apollo/client";
 import { queries } from "../../graphql";

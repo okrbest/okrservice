@@ -12,7 +12,7 @@ import { RightDrawerContainer } from "../../styles";
 import { SidebarList } from "@erxes/ui/src/layout/styles";
 import Spinner from "@erxes/ui/src/components/Spinner";
 import Tip from "@erxes/ui/src/components/Tip";
-import { __ } from "@erxes/ui/src/utils/index";
+import { __ } from "coreui/utils";
 import { colors } from "@erxes/ui/src/styles";
 
 type Props = {

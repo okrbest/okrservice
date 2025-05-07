@@ -5,7 +5,7 @@ import {
 } from '@erxes/ui/src/styles/main';
 import { IContentTypeDoc, IEntryDoc } from '../../types';
 import React, { useEffect, useState } from 'react';
-import { __, readFile } from '@erxes/ui/src/utils';
+import { __, readFile } from 'coreui/utils';
 
 import Button from '@erxes/ui/src/components/Button';
 import { RichTextEditor } from '@erxes/ui/src/components/richTextEditor/TEditor';

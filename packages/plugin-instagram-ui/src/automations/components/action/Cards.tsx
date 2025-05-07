@@ -1,7 +1,7 @@
 import Button from '@erxes/ui/src/components/Button';
 import Icon from '@erxes/ui/src/components/Icon';
 import { TabTitle, Tabs } from '@erxes/ui/src/components/tabs/index';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import styledTS from 'styled-components-ts';

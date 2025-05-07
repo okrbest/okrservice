@@ -4,7 +4,7 @@ import PersistentMenu from "./PersistentMenu";
 import { Column, Flex, MenuDivider } from "@erxes/ui/src/styles/main";
 import { CustomChip, OPERATOR_TYPES } from "./DirectMessage";
 import { colors } from "@erxes/ui/src/styles";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 const renderDirectMessageContent = ({ conditions }) => {
   if (!conditions?.length) {

@@ -8,7 +8,7 @@ import {
 } from "./styles";
 import React, { useState } from "react";
 import { TabTitle, Tabs } from "@erxes/ui/src/components/tabs";
-import { __, readFile } from "@erxes/ui/src/utils";
+import { __, readFile } from "coreui/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import EmptyState from "@erxes/ui/src/components/EmptyState";

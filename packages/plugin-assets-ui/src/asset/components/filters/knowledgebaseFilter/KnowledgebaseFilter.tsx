@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Box, SidebarList, __, router } from "@erxes/ui/src";
+import { Box, SidebarList, router } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 
 import CollapsibleList from "@erxes/ui/src/components/collapsibleList/CollapsibleList";
 import KnowledgebaseAssignmentFilter from "./AssignmentFilter";

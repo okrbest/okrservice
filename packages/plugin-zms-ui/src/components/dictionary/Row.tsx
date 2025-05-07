@@ -9,7 +9,7 @@ import styled from "styled-components";
 import styledTS from "styled-components-ts";
 import { IDictionary, IParent } from "../../types";
 import { IButtonMutateProps } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { FormControl } from "@erxes/ui/src/components/form";
 import { colors, dimensions } from "@erxes/ui/src/styles";
 

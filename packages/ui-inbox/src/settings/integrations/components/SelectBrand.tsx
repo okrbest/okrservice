@@ -9,7 +9,7 @@ import { IBrand } from "@erxes/ui/src/brands/types";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import React from "react";
 import { Row } from "../styles";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   brands: IBrand[];

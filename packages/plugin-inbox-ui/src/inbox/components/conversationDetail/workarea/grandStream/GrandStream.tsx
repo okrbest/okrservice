@@ -17,7 +17,7 @@ import { IUser } from '@erxes/ui/src/auth/types';
 import Icon from '@erxes/ui/src/components/Icon';
 import NameCard from '@erxes/ui/src/components/nameCard/NameCard';
 import Tip from '@erxes/ui/src/components/Tip';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { can } from '@erxes/ui/src/utils/core';
 import dayjs from 'dayjs';
 import { readFile } from '@erxes/ui/src/utils/core';

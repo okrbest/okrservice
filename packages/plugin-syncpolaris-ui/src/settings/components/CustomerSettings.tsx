@@ -13,7 +13,7 @@ import {
 } from '@erxes/ui/src/components';
 import { Wrapper } from '@erxes/ui/src/layout';
 import { FormColumn } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { isEnabled } from '@erxes/ui/src/utils/core';
 import React, { useEffect, useState } from 'react';
 import { ContentBox } from '../../styles';

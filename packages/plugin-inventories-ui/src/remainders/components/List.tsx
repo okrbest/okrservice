@@ -8,7 +8,7 @@ import Row from "./Row";
 import Sidebar from "./Sidebar";
 import Table from "@erxes/ui/src/components/table";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { BarItems } from "@erxes/ui/src/layout/styles";
 import { IRemainderProduct } from "../types";
 import { SUBMENU } from "../../constants";

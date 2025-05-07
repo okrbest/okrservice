@@ -14,7 +14,7 @@ import Button from '@erxes/ui/src/components/Button';
 import Icon from '@erxes/ui/src/components/Icon';
 import { Link } from 'react-router-dom';
 import React from 'react';
-import { __ } from 'modules/common/utils';
+import { __ } from 'coreui/utils';
 import { Plugin, IPluginCreator } from '../../types';
 
 type Props = {

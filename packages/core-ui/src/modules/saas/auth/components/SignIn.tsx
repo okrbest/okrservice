@@ -1,4 +1,4 @@
-import { __, readFile } from 'modules/common/utils';
+import { __, readFile } from 'coreui/utils';
 import React from 'react';
 import Form from 'modules/common/components/form/Form';
 import FormControl from 'modules/common/components/form/Control';

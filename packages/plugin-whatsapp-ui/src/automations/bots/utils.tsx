@@ -7,7 +7,7 @@ import {
 import Button from "@erxes/ui/src/components/Button";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import Spinner from "@erxes/ui/src/components/Spinner";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React from "react";
 import { queries } from "../../graphql";
 import client from "@erxes/ui/src/apolloClient";

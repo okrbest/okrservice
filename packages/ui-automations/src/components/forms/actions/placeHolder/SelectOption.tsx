@@ -9,7 +9,7 @@ import { IOption } from "@erxes/ui/src/types";
 import Icon from "@erxes/ui/src/components/Icon";
 import Popover from "@erxes/ui/src/components/Popover";
 import React, { useRef, useState } from "react";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { gql, useQuery } from "@apollo/client";
 
 type Props = {

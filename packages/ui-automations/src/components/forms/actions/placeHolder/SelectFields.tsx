@@ -11,7 +11,7 @@ import { FieldsCombinedByType } from "@erxes/ui-forms/src/settings/properties/ty
 import Icon from "@erxes/ui/src/components/Icon";
 import PlaceHolderInput from "./PlaceHolderInput";
 import Popover from "@erxes/ui/src/components/Popover";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   triggerType: string;
