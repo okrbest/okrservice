@@ -111,22 +111,25 @@ export type IClientPortalComment = {
 };
 
 export type IWidgetsComment = {
-    _id:string;
-    createdAt:string;
-    content:string;
-    createdCustomer:{
-      avatar:string,
-      fullName:string,
-      _id:string;
-      firstName:string;
-      lastName:string;
-    }
+  _id: string;
+  createdAt: string;
+  content: string;
+  createdCustomer: {
+    avatar: string,
+    fullName: string,
+    _id: string;
+    firstName: string;
+    lastName: string;
+  }
 };
 
 export type ClientPortalCommentQueryResponse = {
   clientPortalComments: IClientPortalComment[];
 } & QueryResponse;
-
+export type WidgetsTicketCommentsQueryResponse = {
+  widgetsTicketComments: IWidgetsComment[];
+} & QueryResponse;
 export type CommentRemoveMutationResponse = {
   removeMutation: (params: { variables: { _id: string } }) => Promise<any>;
+  removeCommentMutation: (params: { variables: { _id: string } }) => Promise<any>;
 };
