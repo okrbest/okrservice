@@ -70,7 +70,7 @@ services:
 
   essyncer:
     container_name: essyncer
-    image: "erxes/essyncer:dev"
+    image: "okrservice/essyncer:dev"
     environment:
       DB_NAME: "erxes"
       ELASTICSEARCH_URL: "http://elasticsearch:9200"
