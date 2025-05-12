@@ -3,13 +3,13 @@ import * as strip from "strip";
 import {
   CONVERSATION_OPERATOR_STATUS,
   CONVERSATION_STATUSES,
-  MESSAGE_TYPES
+  MESSAGE_TYPES,
 } from "../../models/definitions/constants";
 
 import {
   IAttachment,
   IIntegrationDocument,
-  IMessengerDataMessagesItem
+  IMessengerDataMessagesItem,
 } from "../../models/definitions/integrations";
 
 import { debugError, debugInfo } from "@erxes/api-utils/src/debuggers";
@@ -19,7 +19,7 @@ import graphqlPubsub from "@erxes/api-utils/src/graphqlPubsub";
 
 import {
   AUTO_BOT_MESSAGES,
-  BOT_MESSAGE_TYPES
+  BOT_MESSAGE_TYPES,
 } from "../../models/definitions/constants";
 
 import { getEnv, sendToWebhook } from "@erxes/api-utils/src";
@@ -34,7 +34,7 @@ import {
   sendAutomationsMessage,
   handleAutomation,
   sendCoreMessage,
-  sendIntegrationsMessage
+  sendIntegrationsMessage,
 } from "../../messageBroker";
 import fetch from "node-fetch";
 import { compileFunction } from "vm";
@@ -56,7 +56,7 @@ export const pConversationClientMessageInserted = async (
 ) => {
   const conversation = await models.Conversations.findOne(
     {
-      _id: message.conversationId
+      _id: message.conversationId,
     },
     { integrationId: 1 }
   );
@@ -66,7 +66,7 @@ export const pConversationClientMessageInserted = async (
   if (conversation) {
     integration = await models.Integrations.findOne(
       {
-        _id: conversation.integrationId
+        _id: conversation.integrationId,
       },
       { _id: 1, name: 1 }
     );
@@ -77,7 +77,7 @@ export const pConversationClientMessageInserted = async (
   if (integration) {
     const channels = await models.Channels.find(
       {
-        integrationIds: { $in: [integration._id] }
+        integrationIds: { $in: [integration._id] },
       },
       { _id: 1, memberIds: 1 }
     );
@@ -91,7 +91,7 @@ export const pConversationClientMessageInserted = async (
     conversationMessageInserted: message,
     subdomain,
     conversation,
-    integration
+    integration,
   });
 
   for (const userId of channelMemberIds) {
@@ -101,7 +101,7 @@ export const pConversationClientMessageInserted = async (
         conversationClientMessageInserted: message,
         subdomain,
         conversation,
-        integration
+        integration,
       }
     );
   }
@@ -116,9 +116,9 @@ export const pConversationClientMessageInserted = async (
         receivers: channelMemberIds,
         data: {
           type: "conversation",
-          id: conversation._id
-        }
-      }
+          id: conversation._id,
+        },
+      },
     });
   }
 };
@@ -158,14 +158,14 @@ export const getMessengerData = async (
   // knowledgebase app =======
   const kbApp: any = await models.MessengerApps.findOne({
     kind: "knowledgebase",
-    "credentials.integrationId": integration._id
+    "credentials.integrationId": integration._id,
   });
   const topicId = kbApp && kbApp.credentials ? kbApp.credentials.topicId : null;
 
   // lead app ==========
   const leadApps: any[] = await models.MessengerApps.find({
     kind: "lead",
-    "credentials.integrationId": integration._id
+    "credentials.integrationId": integration._id,
   });
   const formCodes = [] as string[];
 
@@ -178,7 +178,7 @@ export const getMessengerData = async (
   // website app ============
   const websiteApps = await models.MessengerApps.find({
     kind: "website",
-    "credentials.integrationId": integration._id
+    "credentials.integrationId": integration._id,
   });
   let getStartedCondition: { isSelected?: boolean } | false = false;
   if (isEnabled("automations")) {
@@ -188,10 +188,10 @@ export const getMessengerData = async (
       data: {
         query: {
           triggerType: "inbox:messages",
-          botId: integration._id
-        }
+          botId: integration._id,
+        },
       },
-      isRPC: true
+      isRPC: true,
     }).catch((error) => {
       throw error;
     });
@@ -207,7 +207,7 @@ export const getMessengerData = async (
     messages: messagesByLanguage,
     knowledgeBaseTopicId: topicId,
     websiteApps,
-    formCodes
+    formCodes,
   };
 };
 
@@ -217,17 +217,17 @@ const createVisitor = async (subdomain: string, visitorId: string) => {
     action: "customers.createCustomer",
     data: {
       state: "visitor",
-      visitorId
+      visitorId,
     },
-    isRPC: true
+    isRPC: true,
   });
 
   await sendCoreMessage({
     subdomain,
     action: "visitor.convertRequest",
     data: {
-      visitorId
-    }
+      visitorId,
+    },
   });
 
   return customer;
@@ -273,7 +273,7 @@ const widgetMutations = {
 
       cachedCustomerId,
       deviceToken,
-      visitorId
+      visitorId,
     } = args;
 
     const customData = data;
@@ -284,11 +284,11 @@ const widgetMutations = {
       action: "brands.findOne",
       data: {
         query: {
-          code: brandCode
-        }
+          code: brandCode,
+        },
       },
       isRPC: true,
-      defaultValue: {}
+      defaultValue: {},
     });
 
     if (!brand) {
@@ -298,7 +298,7 @@ const widgetMutations = {
     // find integration
     const integration = await models.Integrations.findOne({
       brandId: brand._id,
-      kind: "messenger"
+      kind: "messenger",
     });
 
     if (!integration) {
@@ -316,9 +316,9 @@ const widgetMutations = {
           cachedCustomerId,
           email,
           phone,
-          code
+          code,
         },
-        isRPC: true
+        isRPC: true,
       });
 
       const doc = {
@@ -328,7 +328,7 @@ const widgetMutations = {
         code,
         isUser,
         deviceToken,
-        scopeBrandIds: [brand._id]
+        scopeBrandIds: [brand._id],
       };
 
       customer = customer
@@ -338,18 +338,18 @@ const widgetMutations = {
             data: {
               _id: customer._id,
               doc,
-              customData
+              customData,
             },
-            isRPC: true
+            isRPC: true,
           })
         : await sendCoreMessage({
             subdomain,
             action: "customers.createMessengerCustomer",
             data: {
               doc,
-              customData
+              customData,
             },
-            isRPC: true
+            isRPC: true,
           });
     }
 
@@ -360,8 +360,8 @@ const widgetMutations = {
         data: {
           visitorId,
           integrationId: integration._id,
-          scopeBrandIds: [brand._id]
-        }
+          scopeBrandIds: [brand._id],
+        },
       });
     }
 
@@ -371,7 +371,7 @@ const widgetMutations = {
         subdomain,
         action: "companies.findOne",
         data: companyData,
-        isRPC: true
+        isRPC: true,
       });
 
       const { customFieldsData, trackedData } = await sendCoreMessage({
@@ -379,9 +379,9 @@ const widgetMutations = {
         action: "fields.generateCustomFieldsData",
         data: {
           customData: companyData,
-          contentType: "core:company"
+          contentType: "core:company",
         },
-        isRPC: true
+        isRPC: true,
       });
 
       companyData.customFieldsData = customFieldsData;
@@ -396,9 +396,9 @@ const widgetMutations = {
           action: "companies.createCompany",
           data: {
             ...companyData,
-            scopeBrandIds: [brand._id]
+            scopeBrandIds: [brand._id],
           },
-          isRPC: true
+          isRPC: true,
         });
       } else {
         company = await sendCoreMessage({
@@ -407,16 +407,16 @@ const widgetMutations = {
           data: {
             _id: company._id,
             doc: companyData,
-            scopeBrandIds: [brand._id]
+            scopeBrandIds: [brand._id],
           },
-          isRPC: true
+          isRPC: true,
         });
         sendAutomationsMessage({
           subdomain,
           action: "trigger",
-          data: {type:"core:company",targets:[company]},
+          data: { type: "core:company", targets: [company] },
           isRPC: true,
-          defaultValue: null
+          defaultValue: null,
         });
       }
 
@@ -429,8 +429,8 @@ const widgetMutations = {
             mainType: "customer",
             mainTypeId: customer._id,
             relType: "company",
-            relTypeId: company._id
-          }
+            relTypeId: company._id,
+          },
         });
       }
     }
@@ -446,8 +446,8 @@ const widgetMutations = {
         action: "registerOnboardHistory",
         data: {
           type: "erxesMessagerConnect",
-          user
-        }
+          user,
+        },
       });
     }
     return {
@@ -458,7 +458,7 @@ const widgetMutations = {
       messengerData: await getMessengerData(models, integration, subdomain),
       customerId: customer && customer._id,
       visitorId: customer ? null : visitorId,
-      brand
+      brand,
     };
   },
   /*
@@ -487,7 +487,7 @@ const widgetMutations = {
       skillId,
       attachments,
       contentType,
-      payload
+      payload,
     } = args;
 
     if (contentType === MESSAGE_TYPES.VIDEO_CALL_REQUEST) {
@@ -510,9 +510,9 @@ const widgetMutations = {
             subdomain,
             action: "api_to_integrations",
             data: {
-              action: "getConfigs"
+              action: "getConfigs",
             },
-            isRPC: true
+            isRPC: true,
           });
         } catch (e) {
           debugError(e);
@@ -565,7 +565,7 @@ const widgetMutations = {
 
     if (conversationId) {
       conversation = await models.Conversations.findOne({
-        _id: conversationId
+        _id: conversationId,
       }).lean();
       conversation = await models.Conversations.findByIdAndUpdate(
         conversationId,
@@ -574,7 +574,7 @@ const widgetMutations = {
           readUserIds: [],
 
           // reopen this conversation if it's closed
-          status: CONVERSATION_STATUSES.OPEN
+          status: CONVERSATION_STATUSES.OPEN,
         },
         { new: true }
       );
@@ -590,7 +590,7 @@ const widgetMutations = {
           : CONVERSATION_OPERATOR_STATUS.OPERATOR,
         status: CONVERSATION_STATUSES.OPEN,
         content: conversationContent,
-        ...(skillId ? { skillId } : {})
+        ...(skillId ? { skillId } : {}),
       });
     }
 
@@ -601,7 +601,7 @@ const widgetMutations = {
       attachments,
       contentType,
       content: message,
-      botId: botId
+      botId: botId,
     });
 
     await models.Conversations.updateOne(
@@ -620,8 +620,8 @@ const widgetMutations = {
           customerId,
 
           // clear visitorId
-          visitorId: ""
-        }
+          visitorId: "",
+        },
       }
     );
 
@@ -630,19 +630,19 @@ const widgetMutations = {
       subdomain,
       action: "customers.markCustomerAsActive",
       data: {
-        customerId: conversation.customerId
+        customerId: conversation.customerId,
       },
-      isRPC: true
+      isRPC: true,
     });
 
     await pConversationClientMessageInserted(models, subdomain, msg);
     graphqlPubsub.publish(`conversationMessageInserted:${msg.conversationId}`, {
-      conversationMessageInserted: msg
+      conversationMessageInserted: msg,
     });
     if (isEnabled("automations")) {
       await handleAutomation(subdomain, {
         conversationMessage: msg, // Pass msg as conversationMessage
-        payload: payload
+        payload: payload,
       });
     }
 
@@ -657,8 +657,8 @@ const widgetMutations = {
         {
           conversationBotTypingStatus: {
             conversationId: msg.conversationId,
-            typing: true
-          }
+            typing: true,
+          },
         }
       );
 
@@ -669,9 +669,9 @@ const widgetMutations = {
             method: "POST",
             body: JSON.stringify({
               type: "text",
-              text: message
+              text: message,
             }),
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           }
         ).then((r) => r.json());
 
@@ -683,15 +683,15 @@ const widgetMutations = {
             : [
                 {
                   type: "text",
-                  text: AUTO_BOT_MESSAGES.NO_RESPONSE
-                }
+                  text: AUTO_BOT_MESSAGES.NO_RESPONSE,
+                },
               ];
 
         const botMessage = await models.ConversationMessages.createMessage({
           conversationId: conversation._id,
           customerId,
           contentType,
-          botData
+          botData,
         });
 
         graphqlPubsub.publish(
@@ -699,15 +699,15 @@ const widgetMutations = {
           {
             conversationBotTypingStatus: {
               conversationId: msg.conversationId,
-              typing: false
-            }
+              typing: false,
+            },
           }
         );
 
         graphqlPubsub.publish(
           `conversationMessageInserted:${botMessage.conversationId}`,
           {
-            conversationMessageInserted: botMessage
+            conversationMessageInserted: botMessage,
           }
         );
       } catch (e) {
@@ -733,7 +733,7 @@ const widgetMutations = {
         graphqlPubsub.publish(
           `conversationMessageInserted:${mg.conversationId}`,
           {
-            conversationMessageInserted: mg
+            conversationMessageInserted: mg,
           }
         );
       }
@@ -742,8 +742,8 @@ const widgetMutations = {
       graphqlPubsub.publish(`customerConnectionChanged:${customerId}`, {
         customerConnectionChanged: {
           _id: customerId,
-          status: "connected"
-        }
+          status: "connected",
+        },
       });
     }
 
@@ -752,8 +752,8 @@ const widgetMutations = {
       data: {
         action: "create",
         type: "inbox:customerMessages",
-        params: msg
-      }
+        params: msg,
+      },
     });
 
     return msg;
@@ -771,7 +771,7 @@ const widgetMutations = {
       {
         conversationId: args.conversationId,
         userId: { $exists: true },
-        isCustomerRead: { $ne: true }
+        isCustomerRead: { $ne: true },
       },
       { isCustomerRead: true },
       { multi: true }
@@ -797,7 +797,7 @@ const widgetMutations = {
       );
       await models.Conversations.updateMany(
         {
-          visitorId
+          visitorId,
         },
         { $set: { customerId: customer._id, visitorId: "" } }
       );
@@ -807,7 +807,7 @@ const widgetMutations = {
       subdomain,
       action: "customers.saveVisitorContactInfo",
       data: args,
-      isRPC: true
+      isRPC: true,
     });
   },
 
@@ -819,7 +819,7 @@ const widgetMutations = {
     {
       visitorId,
       customerId,
-      browserInfo
+      browserInfo,
     }: { visitorId?: string; customerId?: string; browserInfo: IBrowserInfo },
     { subdomain }: IContext
   ) {
@@ -831,16 +831,16 @@ const widgetMutations = {
         action: "customers.updateLocation",
         data: {
           customerId,
-          browserInfo
-        }
+          browserInfo,
+        },
       });
 
       sendCoreMessage({
         subdomain,
         action: "customers.updateSession",
         data: {
-          customerId
-        }
+          customerId,
+        },
       });
     }
 
@@ -851,9 +851,9 @@ const widgetMutations = {
         data: {
           data: {
             visitorId,
-            location: browserInfo
-          }
-        }
+            location: browserInfo,
+          },
+        },
       });
     }
 
@@ -861,7 +861,7 @@ const widgetMutations = {
       await trackViewPageEvent(subdomain, {
         visitorId,
         customerId,
-        attributes: { url: browserInfo.url }
+        attributes: { url: browserInfo.url },
       });
     } catch (e) {
       /* istanbul ignore next */
@@ -880,7 +880,7 @@ const widgetMutations = {
     graphqlPubsub.publish(
       `conversationClientTypingStatusChanged:${args.conversationId}`,
       {
-        conversationClientTypingStatusChanged: args
+        conversationClientTypingStatusChanged: args,
       }
     );
 
@@ -901,16 +901,16 @@ const widgetMutations = {
       subdomain,
       action: "customers.findOne",
       data: {
-        _id: customerId
+        _id: customerId,
       },
-      isRPC: true
+      isRPC: true,
     });
 
     const form = await sendCoreMessage({
       subdomain,
       action: "formsFindOne",
       data: { _id: formId },
-      isRPC: true
+      isRPC: true,
     });
 
     let finalContent = content;
@@ -928,11 +928,11 @@ const widgetMutations = {
             subdomain,
             action: "users.findOne",
             data: {
-              _id: form.createdUserId
+              _id: form.createdUserId,
             },
             isRPC: true,
-            defaultValue: {}
-          })) || {}
+            defaultValue: {},
+          })) || {},
       });
 
       finalContent = replacedContent || "";
@@ -944,13 +944,13 @@ const widgetMutations = {
       mailAttachment = attachments.map((file) => {
         return {
           filename: file.name || "",
-          path: file.url || ""
+          path: file.url || "",
         };
       });
     }
 
     const integration = await models.Integrations.findOne({
-      formId
+      formId,
     });
 
     if (!integration) {
@@ -969,7 +969,7 @@ const widgetMutations = {
           JSON.stringify({
             email,
             formId,
-            customerId
+            customerId,
           })
         ).toString("base64");
 
@@ -990,8 +990,8 @@ const widgetMutations = {
             fromEmail,
             title,
             template: { data: { content: finalContent } },
-            attachments: mailAttachment
-          }
+            attachments: mailAttachment,
+          },
         });
       }
 
@@ -1006,8 +1006,8 @@ const widgetMutations = {
         fromEmail,
         title,
         template: { data: { content: finalContent } },
-        attachments: mailAttachment
-      }
+        attachments: mailAttachment,
+      },
     });
   },
 
@@ -1020,7 +1020,7 @@ const widgetMutations = {
       visitorId,
       message,
       payload,
-      type
+      type,
     }: {
       conversationId?: string;
       customerId?: string;
@@ -1045,7 +1045,7 @@ const widgetMutations = {
         conversationId,
         customerId,
         content: message,
-        botId: integrationId
+        botId: integrationId,
       });
     } else {
       let conversation = await models.Conversations.createConversation({
@@ -1053,17 +1053,17 @@ const widgetMutations = {
         customerId,
         integrationId,
         status: CONVERSATION_STATUSES.OPEN,
-        content: message
+        content: message,
       });
       msg = await models.ConversationMessages.createMessage({
         conversationId: conversation._id,
         customerId,
         content: message,
-        botId: integrationId
+        botId: integrationId,
       });
     }
     graphqlPubsub.publish(`conversationMessageInserted:${msg.conversationId}`, {
-      conversationMessageInserted: msg
+      conversationMessageInserted: msg,
     });
 
     const key = type.includes("persistentMenu") ? "persistentMenuId" : "btnId";
@@ -1071,7 +1071,7 @@ const widgetMutations = {
       if (key) {
         await handleAutomation(subdomain, {
           conversationMessage: msg,
-          payload: { [key]: payload, conversationId, customerId }
+          payload: { [key]: payload, conversationId, customerId },
         });
       }
     }
@@ -1100,9 +1100,9 @@ const widgetMutations = {
       method: "POST",
       body: JSON.stringify({
         type: "text",
-        text: "getStarted"
+        text: "getStarted",
       }),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     }).then((r) => r.json());
 
     await redis.set(
@@ -1111,7 +1111,7 @@ const widgetMutations = {
     );
 
     return { botData: botRequest.responses };
-  }
+  },
 };
 
 export default widgetMutations;

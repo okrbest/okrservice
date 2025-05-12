@@ -32,7 +32,7 @@ export const getEnv = () => {
 
   return {
     API_URL: getItem("API_URL"),
-    API_SUBSCRIPTIONS_URL: getItem("API_SUBSCRIPTIONS_URL")
+    API_SUBSCRIPTIONS_URL: getItem("API_SUBSCRIPTIONS_URL"),
     // CALLS_APP_ID: getItem('CALLS_APP_ID'),
     // CALLS_APP_SECRET: getItem('CALLS_APP_SECRET'),
   };
@@ -46,7 +46,7 @@ export const postMessage = (source: string, message: string, postData = {}) => {
       fromErxes: true,
       source,
       message,
-      ...postData
+      ...postData,
     },
     "*"
   );
@@ -70,7 +70,7 @@ export type LogicParams = {
 export const requestBrowserInfo = ({
   source,
   postData = {},
-  callback
+  callback,
 }: RequestBrowserInfoParams) => {
   postMessage(source, "requestingBrowserInfo", postData);
 
@@ -94,17 +94,31 @@ const setDayjsLocale = (code: string) => {
     .catch(() => dayjs.locale("en"));
 };
 
-export const setLocale = (code?: string, callBack?: () => void) => {
-  import(`../locales/${code}.json`)
+export const setLocale = (code: string = "en", callBack?: () => void) => {
+  // 코드가 유효한지 확인
+  const validCode = typeof code === "string" && code ? code : "ko";
+
+  console.log(`Setting locale to: ${validCode}`);
+
+  import(`../locales/${validCode}.json`)
     .then((translations) => {
       T.setTexts(translations);
-      setDayjsLocale(code || "en");
+      setDayjsLocale(validCode);
 
       if (callBack) {
         callBack();
       }
+
+      console.log(`Successfully set locale to: ${validCode}`);
     })
-    .catch((e) => console.error(e)); // tslint:disable-line
+    .catch((e) => {
+      console.error(`Failed to load locale: ${validCode}`, e);
+      // 로케일 로드 실패 시 영어로 폴백
+      if (validCode !== "en") {
+        console.log(`Falling back to 'en' locale`);
+        setLocale("en", callBack);
+      }
+    });
 };
 
 export const __ = (msg: string) => {
