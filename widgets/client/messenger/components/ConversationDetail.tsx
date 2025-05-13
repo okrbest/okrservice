@@ -176,7 +176,7 @@ const ConversationDetail: React.FC<Props> = ({
 
   return (
     <Container
-      withBottomNavBar={false}
+      withBottomNavBar={true}
       containerStyle={{ padding: "1.12rem 0" }}
       title={
         isLoading ? (

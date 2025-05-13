@@ -4229,6 +4229,10 @@ select.form-control:focus,
   flex-shrink: 0;
   margin: 1.25rem 2.25rem;
 }
+.persistent-navbar {
+  flex-shrink: 0;
+  margin: 1.25rem 2.25rem;
+}
 .extra-content {
   width: 100%;
   margin-bottom: 0.75rem;

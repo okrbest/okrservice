@@ -46,7 +46,7 @@ const Ticket: React.FC<Props> = ({
 
   return (
     <Container
-      withBottomNavBar={false}
+      withBottomNavBar={true}
       title={__("Ticket")}
       persistentFooter={
         <Button full onClick={handleButtonClick}>

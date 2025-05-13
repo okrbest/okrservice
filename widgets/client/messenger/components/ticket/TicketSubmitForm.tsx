@@ -104,7 +104,7 @@ const TicketSubmitForm: React.FC<Props> = ({
 
   return (
     <Container
-      withBottomNavBar={false}
+      withBottomNavBar={true}
       title={__("Submit a ticket")}
       backRoute="ticket"
       persistentFooter={

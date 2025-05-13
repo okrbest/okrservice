@@ -130,7 +130,7 @@ const Home: React.FC<Props> = ({
                   className="response-rate"
                   style={{ color: color ? color : "#4f33af" }}
                 >
-                  💬 {__(messengerData.responseRate)}
+                  💬 {__(messengerData.responseRate || '')}
                 </span>
               </div>
             </div>

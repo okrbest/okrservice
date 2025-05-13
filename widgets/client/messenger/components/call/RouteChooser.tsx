@@ -23,7 +23,7 @@ const RouteChooser = ({
   return (
     <Container
       title={__("Call")}
-      withBottomNavBar={false}
+      withBottomNavBar={true}
       onBackButton={() => onBack(false)}
     >
       <div className="call-container">

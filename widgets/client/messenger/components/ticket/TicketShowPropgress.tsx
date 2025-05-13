@@ -87,7 +87,7 @@ const TicketShowProgress: React.FC<Props> = ({
 
   return (
     <Container
-      withBottomNavBar={false}
+      withBottomNavBar={true}
       title={__("Ticket progress")}
       backRoute="ticket"
       persistentFooter={

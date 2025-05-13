@@ -18,11 +18,23 @@ const items = [
     icon: IconHome,
     route: 'home',
   },
-  { icon: IconChat, route: 'allConversations' },
-  { icon: IconPhone, route: 'call' },
-  { icon: IconTicket, route: 'ticket' },
+  { 
+    label: 'Messages',
+    icon: IconChat, 
+    route: 'allConversations' 
+  },
+  { 
+    label: 'Call',
+    icon: IconPhone, 
+    route: 'call' 
+  },
+  { 
+    label: 'Ticket',
+    icon: IconTicket, 
+    route: 'ticket' 
+  },
   {
-    label: 'Help',
+    label: 'FAQ',
     icon: IconQuestionMark,
     route: 'faqCategories',
     additionalRoutes: ['faqCategory', 'faqArticle'],
