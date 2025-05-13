@@ -29,8 +29,8 @@ const TicketCheckProgress: React.FC<Props> = ({
         <div className="ticket-form-item">
           <Input
             id="ticket-number"
-            label="Enter ticket number"
-            placeholder="Ticket number"
+            label={__("Enter ticket number")}
+            placeholder={__("Ticket number")}
             onChange={(e) => setNumber(e.target.value)}
           />
         </div>
@@ -49,17 +49,21 @@ const TicketCheckProgress: React.FC<Props> = ({
     return (
       <>
         <div className="ticket-form-item forget-form">
-          <p>You can enter either a phone number, an email address, or both.</p>
+          <p>
+            {__(
+              "You can enter either a phone number, an email address, or both."
+            )}
+          </p>
           <Input
             id="ticket-email"
-            label="Enter email"
-            placeholder="Email"
+            label={__("Enter email")}
+            placeholder={__("Email")}
             onChange={(e) => setEmail(e.target.value)}
           />
           <Input
             id="ticket-phone"
-            label="Enter phone number"
-            placeholder="Phone number"
+            label={__("Enter phone number")}
+            placeholder={__("Phone number")}
             onChange={(e) => setPhone(e.target.value)}
           />
         </div>
@@ -77,7 +81,7 @@ const TicketCheckProgress: React.FC<Props> = ({
           {isForget ? renderForgetForm() : renderCheckForm()}
           {!isForget && (
             <span className="forget" onClick={() => setIsForget(true)}>
-              Forget your ticket number?
+              {__("Forget your ticket number?")}
             </span>
           )}
         </div>

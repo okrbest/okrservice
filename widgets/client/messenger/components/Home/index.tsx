@@ -116,7 +116,6 @@ const Home: React.FC<Props> = ({
     return (
       <Card>
         <div className="getting-started-wrapper">
-          <span>{__("Getting started")}</span>
           <div className="getting-started-content-wrapper">
             <div className="supporters-info-wrapper">
               <Supporters
@@ -131,7 +130,7 @@ const Home: React.FC<Props> = ({
                   className="response-rate"
                   style={{ color: color ? color : "#4f33af" }}
                 >
-                  💬 {messengerData.responseRate}
+                  💬 {__(messengerData.responseRate)}
                 </span>
               </div>
             </div>

@@ -31,14 +31,14 @@ const Ticket: React.FC<Props> = ({
           onClick={() => handleSubmit("ticket-submit")}
         >
           <IconTicket size="30px" />
-          <span>Submit a ticket</span>
+          <span>{__("Submit a ticket")}</span>
         </div>
         <div
           className={`${activeRoute === "check" ? "active" : ""} ticket-box`}
           onClick={() => handleSubmit("check")}
         >
           <IconCheckTicket size="30px" />
-          <span>Check ticket progress</span>
+          <span>{__("Check ticket progress")}</span>
         </div>
       </div>
     );

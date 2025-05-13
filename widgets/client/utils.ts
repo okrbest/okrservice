@@ -121,8 +121,27 @@ export const setLocale = (code: string = "en", callBack?: () => void) => {
     });
 };
 
-export const __ = (msg: string) => {
-  return T.translate(msg);
+export const __ = (key: string, options?: any) => {
+  // T.texts에 안전하게 접근하기 위한 타입 체크 추가
+  if (key && key.includes(".") && T.texts && typeof T.texts === "object") {
+    // 타입 안전을 위한 인덱스 접근 방식 변경
+    const texts = T.texts as Record<string, any>;
+    if (key in texts) {
+      const value = texts[key];
+      const formatted = T.format(value, options);
+      return formatted ? formatted.toString() : "";
+    }
+  }
+
+  // 일반적인 번역 시도
+  const translation = T.translate(key, options);
+
+  // 번역 결과가 없는 경우 원본 키 반환
+  if (!translation) {
+    return key;
+  }
+
+  return translation.toString();
 };
 
 export const scrollTo = (element: any, to: number, duration: number) => {
