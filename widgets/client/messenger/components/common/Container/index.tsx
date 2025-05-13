@@ -72,10 +72,10 @@ const Container: React.FC<Props> = ({
         </div>
       )}
       <div className="container-content">{children}</div>
-      <div className="persistent-navbar">
-        {persistentFooter && (
+      {persistentFooter && (
           <div className="persistent-footer">{persistentFooter}</div>
-        )}        
+        )}  
+      <div className="persistent-navbar">
         {withBottomNavBar && <BottomNavBar />}</div>
     </div>
   );

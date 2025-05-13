@@ -19,7 +19,7 @@ const items = [
     route: 'home',
   },
   { 
-    label: 'Messages',
+    label: 'Chat',
     icon: IconChat, 
     route: 'allConversations' 
   },

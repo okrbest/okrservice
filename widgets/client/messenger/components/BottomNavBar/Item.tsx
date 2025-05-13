@@ -2,6 +2,7 @@ import * as React from 'react';
 import { m } from 'framer-motion';
 import { IconProps } from './Icons';
 import useHover from '../../hooks/useHover';
+import { __ } from "../../../utils";
 
 type Props = {
   label?: string;
@@ -24,10 +25,10 @@ const Item: React.FC<Props> = ({
 
   const renderLabel = () => {
     /* Render the label if the item is active and a label is provided */
-    if (!label || !isActive) {
-      return null;
-    }
-    return <span>{label}</span>;
+    // if (!label || !isActive) {
+    //   return null;
+    // }
+    return <span>{__(label || '')}</span>;
   };
 
   return (
