@@ -166,7 +166,11 @@ function EmailDelivery({
 
     return (
       <Wrapper.ActionBar
-        left={<Title>{__(`Email Deliveries (${count})`)}</Title>}
+        left={
+          <Title>
+            {__("Email Deliveries")} ({count})
+          </Title>
+        }
         right={content}
       />
     );
