@@ -16,7 +16,7 @@ export default class WebsiteAppDetail extends React.PureComponent<Props> {
     return (
       <Container
         title={websiteApp.credentials.description}
-        withBottomNavBar={false}
+        withBottomNavBar={true}
       >
         <div className="erxes-content">
           {loading ? (

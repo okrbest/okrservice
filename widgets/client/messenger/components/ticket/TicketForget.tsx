@@ -11,7 +11,7 @@ const TicketForget: React.FC = ({}) => {
 
   return (
     <Container
-      withBottomNavBar={false}
+      withBottomNavBar={true}
       title={__("Show ticket number")}
       backRoute="ticket"
     >

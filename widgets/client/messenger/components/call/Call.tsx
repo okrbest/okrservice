@@ -41,7 +41,7 @@ const Call: React.FC<Props> = ({
   };
 
   return (
-    <Container title={__('Call')} withBottomNavBar={false}>
+    <Container title={__('Call')} withBottomNavBar={true}>
       <div className="call-container">
         <div className="h-full flex flex-col justify-between">
           <div className="flex flex-col gap-4">

@@ -86,7 +86,7 @@ function ConversationList(props: Props) {
 
   return (
     <Container
-      withBottomNavBar={false}
+      withBottomNavBar={true}
       title={__('Messages')}
       persistentFooter={
         <Button icon={<IconChevronRight />} full onClick={createConversation}>

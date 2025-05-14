@@ -38,14 +38,14 @@ const TicketSubmitForm: React.FC<Props> = ({
           <div className="ticket-form-item">
             <Input
               id="firstName"
-              label="Name"
+              label={String(__("Name"))}
               onChange={handleChange}
-              placeholder="First name"
+              placeholder={String(__("First name"))}
               required={true}
             />
             <Input
               id="lastName"
-              placeholder="Last name"
+              placeholder={String(__("Last name"))}
               onChange={handleChange}
               required={true}
             />
@@ -53,15 +53,16 @@ const TicketSubmitForm: React.FC<Props> = ({
           <div className="ticket-form-item">
             <Input
               id="phone"
-              label="Phone number, Email"
-              placeholder="Phone number"
+              label={String(__("Phone number, Email"))}
+              placeholder={String(__("Phone number"))}
               onChange={handleChange}
               type="number"
               required={true}
             />
             <Input
               id="email"
-              placeholder="Email"
+              label={String(__("Email"))}
+              placeholder={String(__("Email"))}
               type="email"
               required={true}
               onChange={handleChange}
@@ -71,9 +72,9 @@ const TicketSubmitForm: React.FC<Props> = ({
             <div className="input-container">
               <label htmlFor="type">{__("Ticket type")}</label>
               <select id="ticketType" onChange={handleChange}>
-                <option value="">Choose type...</option>
-                <option value="request">Request</option>
-                <option value="complaint">Complaint</option>
+                <option value="">{__("Choose type...")}</option>
+                <option value="request">{__("Request")}</option>
+                <option value="complaint">{__("Complaint")}</option>
               </select>
             </div>
           </div>
@@ -82,13 +83,17 @@ const TicketSubmitForm: React.FC<Props> = ({
             <FileUploader handleFiles={handleFiles} />
           </div>
           <div className="ticket-form-item">
-            <Input id="title" label="Ticket title" onChange={handleChange} />
+            <Input
+              id="title"
+              label={String(__("Ticket title"))}
+              onChange={handleChange}
+            />
           </div>
           <div className="ticket-form-item">
             <Input
               textArea
               id="description"
-              label="Describe the problem"
+              label={String(__("Describe the problem"))}
               onChange={handleChange}
             />
           </div>
@@ -99,7 +104,7 @@ const TicketSubmitForm: React.FC<Props> = ({
 
   return (
     <Container
-      withBottomNavBar={false}
+      withBottomNavBar={true}
       title={__("Submit a ticket")}
       backRoute="ticket"
       persistentFooter={

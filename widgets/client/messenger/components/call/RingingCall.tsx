@@ -25,7 +25,7 @@ const RingingCallComponent: React.FC<IProps> = ({
   return (
     <Container
       title={__("Ongoing call")}
-      withBottomNavBar={false}
+      withBottomNavBar={true}
       onBackButton={() => onBack(false)}
     >
       <div className="call-container">

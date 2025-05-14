@@ -32,7 +32,7 @@ export const getEnv = () => {
 
   return {
     API_URL: getItem("API_URL"),
-    API_SUBSCRIPTIONS_URL: getItem("API_SUBSCRIPTIONS_URL")
+    API_SUBSCRIPTIONS_URL: getItem("API_SUBSCRIPTIONS_URL"),
     // CALLS_APP_ID: getItem('CALLS_APP_ID'),
     // CALLS_APP_SECRET: getItem('CALLS_APP_SECRET'),
   };
@@ -46,7 +46,7 @@ export const postMessage = (source: string, message: string, postData = {}) => {
       fromErxes: true,
       source,
       message,
-      ...postData
+      ...postData,
     },
     "*"
   );
@@ -70,7 +70,7 @@ export type LogicParams = {
 export const requestBrowserInfo = ({
   source,
   postData = {},
-  callback
+  callback,
 }: RequestBrowserInfoParams) => {
   postMessage(source, "requestingBrowserInfo", postData);
 
@@ -94,21 +94,50 @@ const setDayjsLocale = (code: string) => {
     .catch(() => dayjs.locale("en"));
 };
 
-export const setLocale = (code?: string, callBack?: () => void) => {
-  import(`../locales/${code}.json`)
+export const setLocale = (code: string = "en", callBack?: () => void) => {
+  // 코드가 유효한지 확인
+  const validCode = typeof code === "string" && code ? code : "ko";
+
+  import(`../locales/${validCode}.json`)
     .then((translations) => {
       T.setTexts(translations);
-      setDayjsLocale(code || "en");
+      setDayjsLocale(validCode);
 
       if (callBack) {
         callBack();
       }
     })
-    .catch((e) => console.error(e)); // tslint:disable-line
+    .catch((e) => {
+      console.error(`Failed to load locale: ${validCode}`, e);
+      // 로케일 로드 실패 시 영어로 폴백
+      if (validCode !== "en") {
+        console.log(`Falling back to 'en' locale`);
+        setLocale("en", callBack);
+      }
+    });
 };
 
-export const __ = (msg: string) => {
-  return T.translate(msg);
+export const __ = (key: string, options?: any) => {
+  // T.texts에 안전하게 접근하기 위한 타입 체크 추가
+  if (key && key.includes(".") && T.texts && typeof T.texts === "object") {
+    // 타입 안전을 위한 인덱스 접근 방식 변경
+    const texts = T.texts as Record<string, any>;
+    if (key in texts) {
+      const value = texts[key];
+      const formatted = T.format(value, options);
+      return formatted ? formatted.toString() : "";
+    }
+  }
+
+  // 일반적인 번역 시도
+  const translation = T.translate(key, options);
+
+  // 번역 결과가 없는 경우 원본 키 반환
+  if (!translation) {
+    return key;
+  }
+
+  return translation.toString();
 };
 
 export const scrollTo = (element: any, to: number, duration: number) => {

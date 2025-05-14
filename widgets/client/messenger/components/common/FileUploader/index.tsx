@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { IconUpload } from "../../../../icons/Icons";
 import { useDropzone } from "react-dropzone";
+import { __ } from "../../../../utils";
 
 const img = {
   display: "block",
@@ -65,7 +66,7 @@ const FileUploader = ({
         <input {...getInputProps()} />
         <div className="dropzone-field-description">
           <IconUpload />
-          <p>Upload screenshot or your a file here</p>
+          <p>{__("Upload screenshot or your a file here")}</p>
         </div>
       </div>
       <aside className="dropzone-thumbs-container">{thumbs}</aside>

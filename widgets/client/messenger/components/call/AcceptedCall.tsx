@@ -33,7 +33,7 @@ const AcceptedCallComponent = ({ stopCall, activeDepartment }: Props) => {
   };
 
   return (
-    <Container title={__("Call")} withBottomNavBar={false}>
+    <Container title={__("Call")} withBottomNavBar={true}>
       <div className="call-container">
         <div className="outgoing-call">
           <div>
