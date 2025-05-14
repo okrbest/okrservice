@@ -98,8 +98,6 @@ export const setLocale = (code: string = "en", callBack?: () => void) => {
   // 코드가 유효한지 확인
   const validCode = typeof code === "string" && code ? code : "ko";
 
-  console.log(`Setting locale to: ${validCode}`);
-
   import(`../locales/${validCode}.json`)
     .then((translations) => {
       T.setTexts(translations);
@@ -108,8 +106,6 @@ export const setLocale = (code: string = "en", callBack?: () => void) => {
       if (callBack) {
         callBack();
       }
-
-      console.log(`Successfully set locale to: ${validCode}`);
     })
     .catch((e) => {
       console.error(`Failed to load locale: ${validCode}`, e);

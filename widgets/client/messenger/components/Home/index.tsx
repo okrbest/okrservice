@@ -124,15 +124,15 @@ const Home: React.FC<Props> = ({
                 loading={loading}
                 isOnline={isOnline}
               />
-              <div className="schedule-info-wrapper">
-                <span>{__("Our usually reply time")}</span>
-                <span
-                  className="response-rate"
-                  style={{ color: color ? color : "#4f33af" }}
-                >
-                  💬 {__(messengerData.responseRate || '')}
-                </span>
-              </div>
+            </div>
+            <div className="schedule-info-wrapper">
+              <span>{__("Our usually reply time")}</span>{" "}
+              <span
+                className="response-rate"
+                style={{ color: color ? color : "#4f33af" }}
+              >
+                💬 {__(messengerData.responseRate || "")}
+              </span>
             </div>
             <div>
               <Button icon={<IconEnvelope />} onClick={createConversation}>
