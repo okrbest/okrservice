@@ -2,7 +2,7 @@ import Button from "modules/common/components/Button";
 import Info from "modules/common/components/Info";
 import TextInfo from "modules/common/components/TextInfo";
 import { ModalFooter } from "modules/common/styles/main";
-import { Alert } from "modules/common/utils";
+import { Alert, __ } from "modules/common/utils";
 import React from "react";
 
 type Props = {
@@ -62,9 +62,8 @@ export default class PermissionFixer extends React.Component<Props, State> {
     return (
       <>
         <Info>
-          When a team member has all permissions of a specific module &
-          <TextInfo> can't perform some actions</TextInfo>, then this command
-          comes to the rescue.
+          {__("When a team member has all permissions of a specific module & ")}
+          <TextInfo>can't perform some actions</TextInfo>, {__("then this command comes to the rescue.")}
         </Info>
         {this.renderMessages()}
         <ModalFooter>

@@ -139,7 +139,8 @@ class GeneralSettings extends React.Component<Props, State> {
     key: string,
     description?: string,
     componentClass?: string,
-    actionComponent?: React.ReactNode
+    actionComponent?: React.ReactNode,
+    type?: string
   ) => {
     const { configsMap } = this.state;
 
@@ -155,6 +156,10 @@ class GeneralSettings extends React.Component<Props, State> {
           componentclass={componentClass}
           defaultValue={configsMap[key]}
           onChange={this.onChangeInput.bind(this, key)}
+          {...(type === "password" ? { 
+            type: "password", 
+            autoComplete: "new-password" 
+          } : {})}
         />
       </FormGroup>
     );
@@ -273,15 +278,15 @@ class GeneralSettings extends React.Component<Props, State> {
       >
         <FlexRow $alignItems="flex-start" $justifyContent="space-between">
           {this.renderItem("CLOUDFLARE_ACCOUNT_ID")}
-          {this.renderItem("CLOUDFLARE_API_TOKEN")}
+          {this.renderItem("CLOUDFLARE_API_TOKEN","","","","password")}
         </FlexRow>
         <FlexRow $alignItems="flex-start" $justifyContent="space-between">
           {this.renderItem("CLOUDFLARE_ACCESS_KEY_ID")}
-          {this.renderItem("CLOUDFLARE_SECRET_ACCESS_KEY")}
+          {this.renderItem("CLOUDFLARE_SECRET_ACCESS_KEY","","","","password")}
         </FlexRow>
         <FlexRow $alignItems="flex-start" $justifyContent="space-between">
           {this.renderItem("CLOUDFLARE_BUCKET_NAME")}
-          {this.renderItem("CLOUDFLARE_ACCOUNT_HASH")}
+          {this.renderItem("CLOUDFLARE_ACCOUNT_HASH","","","","password")}
         </FlexRow>
         <FormGroup>
           <ControlLabel>{KEY_LABELS.CLOUDFLARE_USE_CDN}</ControlLabel>
@@ -325,7 +330,7 @@ class GeneralSettings extends React.Component<Props, State> {
 
     const emailServiceOptions = [
       { label: "SES", value: "SES" },
-      { label: "Custom", value: "custom" },
+      { label: __("Custom"), value: "custom" },
     ];
 
     const handleChange = (e: React.FormEvent<HTMLElement>) => {
@@ -574,7 +579,7 @@ class GeneralSettings extends React.Component<Props, State> {
           </Info>
           <FlexRow $alignItems="flex-start" $justifyContent="space-between">
             {this.renderItem("AWS_ACCESS_KEY_ID")}
-            {this.renderItem("AWS_SECRET_ACCESS_KEY")}
+            {this.renderItem("AWS_SECRET_ACCESS_KEY","","","","password")}
           </FlexRow>
           <FlexRow $alignItems="flex-start" $justifyContent="space-between">
             {this.renderItem("AWS_BUCKET")}
@@ -608,7 +613,7 @@ class GeneralSettings extends React.Component<Props, State> {
           </Info>
           <FlexRow $alignItems="flex-start" $justifyContent="space-between">
             {this.renderItem("AWS_SES_ACCESS_KEY_ID")}
-            {this.renderItem("AWS_SES_SECRET_ACCESS_KEY")}
+            {this.renderItem("AWS_SES_SECRET_ACCESS_KEY","","","","password")}
           </FlexRow>
           <FlexRow $alignItems="flex-start" $justifyContent="space-between">
             {this.renderItem("AWS_REGION")}
@@ -622,12 +627,12 @@ class GeneralSettings extends React.Component<Props, State> {
           beforeTitle={<Icon icon="cloud-check" />}
         >
           <FormGroup>
-            <ControlLabel>Container Name</ControlLabel>
+            <ControlLabel>{__("Container name")}</ControlLabel>
             {this.renderItem("AZURE_STORAGE_CONTAINER")}
           </FormGroup>
           <FormGroup>
-            <ControlLabel>Connection String</ControlLabel>
-            {this.renderItem("AZURE_STORAGE_CONNECTION_STRING")}
+            <ControlLabel>{__("Connection string")}</ControlLabel>
+            {this.renderItem("AZURE_STORAGE_CONNECTION_STRING","","","","password")}
           </FormGroup>
         </CollapseContent>
 
@@ -652,11 +657,14 @@ class GeneralSettings extends React.Component<Props, State> {
           <FlexRow $alignItems="flex-start" $justifyContent="space-between">
             {this.renderItem(
               "GOOGLE_CLIENT_SECRET",
-              "Client Secret key are required for authentication and authorization purposes"
+              __("Client Secret key are required for authentication and authorization purposes"),
+              "",
+              "",
+              "password"
             )}
             {this.renderItem(
               "GOOGLE_GMAIL_TOPIC",
-              "The topic value created in Gmail setup"
+              __("The topic value created in Gmail setup")
             )}
           </FlexRow>
           <FlexRow $alignItems="flex-start" $justifyContent="space-between">
@@ -700,7 +708,7 @@ class GeneralSettings extends React.Component<Props, State> {
                 )
               )}
             </FlexColumn>
-            {this.renderItem("GOOGLE_MAP_API_KEY", "Google Map Api Key")}
+            {this.renderItem("GOOGLE_MAP_API_KEY", "Google Map Api Key", "", "", "password")}
           </FlexRow>
           <FlexRow $alignItems="flex-start" $justifyContent="space-between">
             {this.renderItem(
@@ -736,7 +744,7 @@ class GeneralSettings extends React.Component<Props, State> {
             isSaved={this.state.isSaved}
           />
           <FormGroup>
-            <ControlLabel>DEFAULT EMAIL SERVICE</ControlLabel>
+            <ControlLabel>{__("DEFAULT EMAIL SERVICE")}</ControlLabel>
             <p>
               {__(
                 "Choose your email service name. The default email service is SES."
@@ -777,7 +785,7 @@ class GeneralSettings extends React.Component<Props, State> {
           </FlexRow>
           <FlexRow $alignItems="flex-start" $justifyContent="space-between">
             {this.renderItem("MAIL_USER")}
-            {this.renderItem("MAIL_PASS")}
+            {this.renderItem("MAIL_PASS","","","","password")}
           </FlexRow>
           {this.renderItem("MAIL_HOST")}
         </CollapseContent>
@@ -848,7 +856,7 @@ class GeneralSettings extends React.Component<Props, State> {
           beforeTitle={<Icon icon="comment-alt-verify" />}
         >
           <FlexRow $alignItems="flex-start" $justifyContent="space-between">
-            {this.renderItem("MESSAGE_PRO_API_KEY")}
+            {this.renderItem("MESSAGE_PRO_API_KEY","","","","password")}
             {this.renderItem("MESSAGE_PRO_PHONE_NUMBER")}
           </FlexRow>
         </CollapseContent>

@@ -7,7 +7,7 @@ import {
   FormGroup
 } from 'modules/common/components/form';
 import Info from 'modules/common/components/Info';
-import { Alert } from 'modules/common/utils';
+import { __, Alert } from 'modules/common/utils';
 import React, { useEffect, useState } from 'react';
 import { mutations, queries } from '@erxes/ui-settings/src/general/graphql';
 
@@ -59,7 +59,7 @@ const ActivateInstallation = () => {
   };
 
   if (activated) {
-    return <Info>Already activated</Info>;
+    return <Info>{__("Already activated")}</Info>;
   }
 
   return (
@@ -73,6 +73,8 @@ const ActivateInstallation = () => {
           name="token"
           required={true}
           autoFocus={true}
+          type="password"
+          autoComplete="new-password"
         />
       </FormGroup>
       <Button btnStyle="success" type="submit" icon="check-circle">

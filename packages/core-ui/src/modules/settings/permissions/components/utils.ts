@@ -1,4 +1,5 @@
 import { IModule } from '../types';
+import { __ } from "coreui/utils";
 
 export type generatedList = {
   value: string;
@@ -7,7 +8,7 @@ export type generatedList = {
 
 export const generateModuleParams = (list: IModule[]): generatedList[] => {
   const sortedList = [...list].sort((a, b) => {
-    return (a.description || '').localeCompare(b.description || '');
+    return (__(a.description) || '').localeCompare(__(b.description) || '');
   });
 
   return sortedList.map(item => ({

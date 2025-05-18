@@ -3,6 +3,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { dimensions } from '../../styles';
 import BreadCrumbItem from './BreadCrumbItem';
+import { __ } from 'coreui/utils';
 
 const Items = styled.ul`
   display: inline-block;
@@ -26,7 +27,7 @@ class BreadCrumb extends React.Component<{
       <Items role="navigation" aria-label="breadcrumbs">
         {breadcrumbs.map(b => (
           <BreadCrumbItem to={b.link || ''} active={!b.link} key={b.title}>
-            {b.title}
+            {__(b.title)}
           </BreadCrumbItem>
         ))}
       </Items>

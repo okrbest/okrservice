@@ -59,7 +59,7 @@ const Divider = styled.span`
   border: 1px solid ${colors.colorCoreRed};
   border-radius: 2px;
   padding: 3px 5px;
-  font-size: 8px;
+  font-size: 12px;
   display: inline-block;
   font-weight: bold;
   text-transform: uppercase;

@@ -48,7 +48,7 @@ export default function NavigationMoreItem(props: Props) {
                 onClick={() => toggleMenu(plugin.text)}
               >
                 <NavIcon className={plugin.icon} />
-                <label>{plugin.text}</label>
+                <label>{__(plugin.text)}</label>
               </NavLink>
             </NavMenuItem>
           </Tip>

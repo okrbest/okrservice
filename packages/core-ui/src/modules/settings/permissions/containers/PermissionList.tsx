@@ -21,7 +21,7 @@ import { generatePaginationParams } from "modules/common/utils/router";
 import { gql } from "@apollo/client";
 import { graphql } from "@apollo/client/react/hoc";
 import { NavigateFunction } from 'react-router-dom';
-
+import { __ } from 'coreui/utils';
 type Props = {
   navigate: NavigateFunction;
   queryParams: Record<string, string>;
@@ -52,14 +52,14 @@ const List = (props: FinalProps) => {
 
   // remove action
   const remove = (id: string) => {
-    confirm("This will permanently delete are you absolutely sure?", {
+    confirm(__("This will permanently delete are you absolutely sure?"), {
       hasDeleteConfirm: true,
     }).then(() => {
       removeMutation({
         variables: { ids: [id] },
       })
         .then(() => {
-          Alert.success("You successfully deleted a permission.");
+          Alert.success(__("You successfully deleted a permission."));
         })
         .catch((error) => {
           Alert.error(error.message);

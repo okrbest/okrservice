@@ -51,23 +51,23 @@ export const FILE_SYSTEM_TYPES = [
 ];
 
 export const DATA_RETENTION_DURATION = [
-  { label: __('3 months'), value: 3 },
-  { label: __('4 months'), value: 4 },
-  { label: __('5 months'), value: 5 },
-  { label: __('6 months'), value: 6 },
-  { label: __('9 months'), value: 9 },
-  { label: __('12 months'), value: 12 }
+  { label: `3 ${__('months')}`, value: 3 },
+  { label: `4 ${__('months')}`, value: 4 },
+  { label: `5 ${__('months')}`, value: 5 },
+  { label: `6 ${__('months')}`, value: 6 },
+  { label: `9 ${__('months')}`, value: 9 },
+  { label: `12 ${__('months')}`, value: 12 }
 ];
 
 export const LOG_RETENTION_DURATION = [
-  { label: __('1 month'), value: 1 },
-  { label: __('2 months'), value: 2 },
-  { label: __('3 months'), value: 3 },
-  { label: __('4 months'), value: 4 },
-  { label: __('5 months'), value: 5 },
-  { label: __('6 months'), value: 6 },
-  { label: __('9 months'), value: 9 },
-  { label: __('12 months'), value: 12 }
+  { label: `1 ${__('months')}`, value: 1 },
+  { label: `2 ${__('months')}`, value: 2 },
+  { label: `3 ${__('months')}`, value: 3 },
+  { label: `4 ${__('months')}`, value: 4 },
+  { label: `5 ${__('months')}`, value: 5 },
+  { label: `6 ${__('months')}`, value: 6 },
+  { label: `9 ${__('months')}`, value: 9 },
+  { label: `12 ${__('months')}`, value: 12 }
 ];
 
 export const KEY_LABELS = {

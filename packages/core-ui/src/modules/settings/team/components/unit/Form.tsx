@@ -99,6 +99,7 @@ export default function DepartmentForm(props: Props) {
 
           <SelectStructureMembers
             name="supervisorId"
+            placeholder={__('Choose supervisor')}
             objectId={object._id}
             value={supervisorId}
             onSelect={onSelectSupervisor}
@@ -124,6 +125,7 @@ export default function DepartmentForm(props: Props) {
 
           <SelectStructureMembers
             objectId={object._id}
+            placeholder={__('Choose team members')}
             value={userIds}
             onSelect={onSelectUsers}
             multi={true}
