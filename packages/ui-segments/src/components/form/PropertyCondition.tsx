@@ -43,11 +43,11 @@ class PropertyCondition extends React.Component<Props, State> {
 
     this.state = {
       propertyType: contentType,
-      searchValue: ""
+      searchValue: "",
     };
   }
 
-  onClickProperty = field => {
+  onClickProperty = (field) => {
     this.setState({ chosenProperty: field });
   };
 
@@ -55,7 +55,7 @@ class PropertyCondition extends React.Component<Props, State> {
     this.setState({ chosenProperty: undefined, searchValue: "" });
   };
 
-  onSearch = e => {
+  onSearch = (e) => {
     const value = e.target.value;
 
     this.setState({ searchValue: value });
@@ -89,7 +89,7 @@ class PropertyCondition extends React.Component<Props, State> {
               propertyType,
               onChangeConfig,
               hideDetailForm,
-              component: "filter"
+              component: "filter",
             }}
           />
         );
@@ -105,22 +105,22 @@ class PropertyCondition extends React.Component<Props, State> {
 
     const { chosenProperty, propertyType, searchValue } = this.state;
 
-    const onChange = e => {
+    const onChange = (e) => {
       const value = e.value;
 
       this.setState({ propertyType: value, chosenProperty: undefined });
     };
 
-    const options = associationTypes.map(option => ({
+    const options = associationTypes.map((option) => ({
       value: option.value,
-      label: option.description
+      label: __(option.description),
     }));
 
     const generateSelect = () => {
       return (
         <Select
           isClearable={false}
-          value={options.find(option => option.value === propertyType)}
+          value={options.find((option) => option.value === propertyType)}
           options={options}
           onChange={onChange}
         />
@@ -164,7 +164,7 @@ class PropertyCondition extends React.Component<Props, State> {
     return (
       <>
         <SegmentBackIcon onClick={this.onClickBack}>
-          <Icon icon="angle-left" size={20} /> back
+          <Icon icon="angle-left" size={20} /> {__("back")}
         </SegmentBackIcon>
         <PropertyForm
           {...this.props}

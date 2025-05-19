@@ -1,13 +1,13 @@
-import { ITrigger } from '../../types';
-import Spinner from '@erxes/ui/src/components/Spinner';
-import { Title } from '@erxes/ui/src/styles/main';
-import { IButtonMutateProps } from '@erxes/ui/src/types';
-import { __ } from 'coreui/utils';
-import { Sidebar, Wrapper, FlexContent } from '@erxes/ui/src/layout';
-import React from 'react';
-import { IEvent, ISegment, ISegmentCondition } from '../../types';
-import Form from './Form';
-import { ResultCount, SegmentResult } from '../styles';
+import { ITrigger } from "../../types";
+import Spinner from "@erxes/ui/src/components/Spinner";
+import { Title } from "@erxes/ui/src/styles/main";
+import { IButtonMutateProps } from "@erxes/ui/src/types";
+import { __ } from "coreui/utils";
+import { Sidebar, Wrapper, FlexContent } from "@erxes/ui/src/layout";
+import React from "react";
+import { IEvent, ISegment, ISegmentCondition } from "../../types";
+import Form from "./Form";
+import { ResultCount, SegmentResult } from "../styles";
 
 type Props = {
   contentType: string;
@@ -53,7 +53,7 @@ const SegmentsForm = (props: Props) => {
     previewCount,
     count,
     filterContent,
-    serviceConfig
+    serviceConfig,
   } = props;
 
   const renderSidebar = () => {
@@ -70,7 +70,7 @@ const SegmentsForm = (props: Props) => {
                 <span>{count}</span>
               )}
             </ResultCount>
-            {renderHelpText()}
+            {__(renderHelpText())}
           </SegmentResult>
         </FlexContent>
       </Sidebar>
@@ -83,8 +83,8 @@ const SegmentsForm = (props: Props) => {
 
   const pageTitle = <Title>{title}</Title>;
   const breadcrumb = [
-    { title: __('Segments'), link: `/segments?contentType=${contentType}` },
-    { title }
+    { title: __("Segments"), link: `/segments?contentType=${contentType}` },
+    { title },
   ];
 
   const content = (
