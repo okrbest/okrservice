@@ -9,7 +9,7 @@ import FormControl from "../../components/form/Control";
 import FormGroup from "../../components/form/Group";
 import { IBrand } from "../types";
 import { ModalFooter } from "../../styles/main";
-
+import { __ } from "coreui/utils";
 type Props = {
   brand?: IBrand;
   closeModal?: () => void;
@@ -68,7 +68,9 @@ const BrandForm = (props: Props) => {
 
     return (
       <EmailConfigForm
-        emailText="Set an email address you wish to send your transactional emails to your customers. For example, chat reply notification to offline customers."
+        emailText={__(
+          "Set an email address you wish to send your transactional emails to your customers. For example, chat reply notification to offline customers."
+        )}
         emailConfig={emailConfig}
         setEmailConfig={setEmailConfig}
         templateName="conversationCron"

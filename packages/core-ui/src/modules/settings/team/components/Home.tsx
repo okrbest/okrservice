@@ -31,12 +31,7 @@ type Props = {
 
 export default function Home(props: Props) {
   let timer;
-  const {
-    queryParams,
-    loading,
-    configsEnvQuery = {},
-    totalCount,
-  } = props;
+  const { queryParams, loading, configsEnvQuery = {}, totalCount } = props;
   const [searchValue, setSearchValue] = useState("");
   const [active, setActive] = useState(queryParams.isActive || true);
   const location = useLocation();
@@ -136,12 +131,12 @@ export default function Home(props: Props) {
       >
         <li>
           <a href="#" onClick={() => onStatusChange(true)}>
-            Active
+            {__("Active")}
           </a>
         </li>
         <li>
           <a href="#" onClick={() => onStatusChange(false)}>
-            Deactivated
+            {__("Deactivated")}
           </a>
         </li>
       </Dropdown>
@@ -164,13 +159,18 @@ export default function Home(props: Props) {
     />
   );
 
+  const breadcrumb = [
+    { title: "Settings", link: "/settings" },
+    { title: "Team members" },
+  ];
+
   return (
     <Wrapper
       header={
         <Wrapper.Header
           title={__("Team members")}
           queryParams={queryParams}
-          breadcrumb={[{ title: "Team members" }]}
+          breadcrumb={breadcrumb}
         />
       }
       leftSidebar={

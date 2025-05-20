@@ -1,11 +1,11 @@
-import Icon from 'modules/common/components/Icon';
+import Icon from "modules/common/components/Icon";
 
-import { __ } from 'coreui/utils';
-import { FlexItem, FlexPad } from 'modules/common/components/step/styles';
-import React from 'react';
+import { __ } from "coreui/utils";
+import { FlexItem, FlexPad } from "modules/common/components/step/styles";
+import React from "react";
 
-import { Box, FullContent } from '../../styles';
-import { Description, SubHeading } from '@erxes/ui-settings/src/styles';
+import { Box, FullContent } from "../../styles";
+import { Description, SubHeading } from "@erxes/ui-settings/src/styles";
 
 type Props = {
   onChangeType: (value: string) => void;
@@ -31,15 +31,15 @@ class SettingsForm extends React.Component<Props> {
     return (
       <FlexItem>
         <FlexPad direction="column">
-          <SubHeading>{__('Select type')}</SubHeading>
+          <SubHeading>{__("Select type")}</SubHeading>
           <Description>
-            You can upload one file or multiple files at a time. You'll be able
-            to choose how many objects you're importing later. You can upload
-            one file or multiple files at a time.
+            {__(
+              "You can upload one file or multiple files at a time. You'll be able to choose how many objects you're importing later. You can upload one file or multiple files at a time."
+            )}
           </Description>
 
           <FullContent center={true}>
-            {this.renderBox('One file', 'file-alt', 'single')}
+            {this.renderBox("One file", "file-alt", "single")}
             {/* {this.renderBox(
               'Multiple files with associations',
               'file-copy-alt',

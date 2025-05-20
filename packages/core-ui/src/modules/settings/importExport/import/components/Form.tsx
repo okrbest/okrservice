@@ -1,17 +1,21 @@
-import { Content, LeftContent } from '../../styles';
-import { Step, Steps } from '@erxes/ui/src/components/step';
+import { Content, LeftContent } from "../../styles";
+import { Step, Steps } from "@erxes/ui/src/components/step";
 
-import AccociateForm from '../containers/AccociateForm';
-import Details from './Details';
-import FileUpload from './FileUpload';
-import { IColumnWithChosenField, IImportCreate, IContentType } from '../../types';
-import MapColumn from '../containers/MapColumn';
-import React from 'react';
-import { StepButton } from '@erxes/ui/src/components/step/styles';
-import TypeForm from '../containers/TypeForm';
-import Wrapper from 'modules/layout/components/Wrapper';
-import { __ } from 'coreui/utils';
-import { IAttachment } from '@erxes/ui/src/types';
+import AccociateForm from "../containers/AccociateForm";
+import Details from "./Details";
+import FileUpload from "./FileUpload";
+import {
+  IColumnWithChosenField,
+  IImportCreate,
+  IContentType,
+} from "../../types";
+import MapColumn from "../containers/MapColumn";
+import React from "react";
+import { StepButton } from "@erxes/ui/src/components/step/styles";
+import TypeForm from "../containers/TypeForm";
+import Wrapper from "modules/layout/components/Wrapper";
+import { __ } from "coreui/utils";
+import { IAttachment } from "@erxes/ui/src/types";
 
 type Props = {
   contentType: string;
@@ -42,13 +46,13 @@ class Form extends React.Component<Props, State> {
     this.state = {
       attachments: {} as IAttachment,
       columnWithChosenField: {},
-      importName: '',
+      importName: "",
       disclaimer: false,
-      type: 'single',
-      contentType: props.contentType || '',
+      type: "single",
+      contentType: props.contentType || "",
       contentTypes: [],
-      associatedField: '',
-      associatedContentType: '',
+      associatedField: "",
+      associatedContentType: "",
       columnNumber: 0,
       columnWithSelected: 0,
     };
@@ -110,7 +114,7 @@ class Form extends React.Component<Props, State> {
   onChangeContentType = (contentType: IContentType) => {
     const { type, contentTypes } = this.state;
 
-    if (type === 'single') {
+    if (type === "single") {
       return this.setState({ contentTypes: [contentType] });
     }
 
@@ -176,7 +180,7 @@ class Form extends React.Component<Props, State> {
     if (disclaimer && importName) {
       return (
         <StepButton next={true} onClick={this.onSubmit}>
-          Import
+          {__("Import")}
         </StepButton>
       );
     }
@@ -185,7 +189,7 @@ class Form extends React.Component<Props, State> {
   };
 
   renderAssociateForm = () => {
-    if (this.state.type === 'multi') {
+    if (this.state.type === "multi") {
       const { attachments, contentTypes } = this.state;
       const attachmentNames: string[] = [];
 
@@ -229,7 +233,7 @@ class Form extends React.Component<Props, State> {
               columnWithChosenField={columnWithChosenField}
               onChangeColumn={this.onChangeColumn}
             />
-          </Step>,
+          </Step>
         );
       }
     }
@@ -241,11 +245,11 @@ class Form extends React.Component<Props, State> {
     const { importName, disclaimer, type, contentType, contentTypes } =
       this.state;
 
-    const title = __('Import');
+    const title = __("Import");
 
     const breadcrumb = [
-      { title: __('Settings'), link: '/settings' },
-      { title: __('Import & Export'), link: '/settings/importHistories' },
+      { title: __("Settings"), link: "/settings" },
+      { title: __("Import & Export"), link: "/settings/importHistories" },
       { title },
     ];
 
@@ -288,7 +292,7 @@ class Form extends React.Component<Props, State> {
 
     return (
       <Wrapper
-        header={<Wrapper.Header title={__('')} breadcrumb={breadcrumb} />}
+        header={<Wrapper.Header title={__("")} breadcrumb={breadcrumb} />}
         content={content}
         transparent={true}
       />

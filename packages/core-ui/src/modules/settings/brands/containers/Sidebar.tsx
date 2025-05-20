@@ -12,7 +12,7 @@ import React from "react";
 import Sidebar from "../components/Sidebar";
 import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-
+import { __ } from "coreui/utils";
 type Props = {
   queryParams: Record<string, string>;
   currentBrandId?: string;
@@ -32,14 +32,17 @@ const SidebarContainer = (props: ChildProps<FinalProps>) => {
 
   // remove action
   const remove = (brandId) => {
-    confirm("This will permanently delete a brand. Are you absolutely sure?", {
-      hasDeleteConfirm: true,
-    }).then(() => {
+    confirm(
+      __("This will permanently delete a brand. Are you absolutely sure?"),
+      {
+        hasDeleteConfirm: true,
+      }
+    ).then(() => {
       removeMutation({
         variables: { _id: brandId },
       })
         .then(() => {
-          Alert.success("You successfully deleted a brand.");
+          Alert.success(__("You successfully deleted a brand."));
           navigate("/settings/brands");
         })
         .catch((error) => {
@@ -88,7 +91,11 @@ export default withProps<Props>(
       gql(queries.brands),
       {
         name: "brandsQuery",
-        options: ({ queryParams }: { queryParams: Record<string, string> }) => ({
+        options: ({
+          queryParams,
+        }: {
+          queryParams: Record<string, string>;
+        }) => ({
           variables: {
             perPage: queryParams.limit ? parseInt(queryParams.limit, 10) : 20,
           },

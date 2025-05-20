@@ -2,7 +2,7 @@ import {
   FileUploadBox,
   FullContent,
   ImportHeader,
-  UploadText
+  UploadText,
 } from "../../styles";
 import { FlexItem, FlexPad } from "modules/common/components/step/styles";
 import { __ } from "coreui/utils";
@@ -24,14 +24,14 @@ class FileUpload extends React.Component<Props, {}> {
   rendertContent = () => {
     const { contentTypes, onChangeAttachment } = this.props;
 
-    return contentTypes.map(contentType => {
-      const onChange = attachmentsAtt =>
+    return contentTypes.map((contentType) => {
+      const onChange = (attachmentsAtt) =>
         onChangeAttachment(attachmentsAtt, contentType.contentType);
 
       return (
         <FileUploadBox key={contentType.contentType}>
           <UploadText>
-            <p>{renderText(contentType.contentType)}</p>
+            <p>{__(renderText(contentType.contentType))}</p>
             <ColumnChooser contentType={contentType.contentType} />
           </UploadText>
 
