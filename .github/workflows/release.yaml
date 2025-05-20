@@ -820,5 +820,5 @@ jobs:
           s3://okrservice-release-plugins/uis/plugin-activedirectory-ui/${GITHUB_REF#refs/tags/}/
 
       - name: cloudflarecalls ui
-        run: aws s3 sync s3:/okrservice-master-plugins/uis/plugin-cloudflarecalls-ui
+        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-cloudflarecalls-ui
           s3://okrservice-release-plugins/uis/plugin-cloudflarecalls-ui/${GITHUB_REF#refs/tags/}/
