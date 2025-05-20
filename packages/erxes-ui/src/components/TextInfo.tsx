@@ -1,5 +1,5 @@
 import React from "react";
-import { __ } from "../utils/core";
+import { __ } from "coreui/utils";
 import { colors } from "../styles";
 import styled from "styled-components";
 import styledTS from "styled-components-ts";

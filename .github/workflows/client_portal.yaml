@@ -59,5 +59,6 @@ jobs:
         run: |
           cd client-portal
           echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-          docker buildx build -t erxes/client-portal:${GITHUB_REF#refs/heads/} -f Dockerfile .
-          docker push erxes/client-portal:${GITHUB_REF#refs/heads/}
+
+          docker buildx build -t okrservice/client-portal:${GITHUB_REF#refs/heads/} -f Dockerfile .
+          docker push okrservice/client-portal:${GITHUB_REF#refs/heads/}

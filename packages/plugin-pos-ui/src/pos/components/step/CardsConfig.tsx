@@ -1,6 +1,7 @@
 import { queries as formQueries } from "@erxes/ui-forms/src/forms/graphql";
 import { FieldsCombinedByType } from "@erxes/ui-forms/src/settings/properties/types";
-import { Alert, Button, __ } from "@erxes/ui/src";
+import { Alert, Button } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import client from "@erxes/ui/src/apolloClient";
 import { LeftItem } from "@erxes/ui/src/components/step/styles";
 import { isEnabled } from "@erxes/ui/src/utils/core";

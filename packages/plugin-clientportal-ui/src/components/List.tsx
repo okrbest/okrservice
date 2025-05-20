@@ -8,7 +8,7 @@ import Tip from "@erxes/ui/src/components/Tip";
 import LeftSidebar from "@erxes/ui/src/layout/components/Sidebar";
 import { FieldStyle, SidebarList } from "@erxes/ui/src/layout/styles";
 import { TopHeader } from "@erxes/ui/src/styles/main";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import React from "react";
 import { Link } from "react-router-dom";
 

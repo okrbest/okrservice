@@ -1,5 +1,5 @@
 import { Button, Icon, Tip } from '@erxes/ui/src/components';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import Alert from '@erxes/ui/src/utils/Alert';
 

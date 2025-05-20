@@ -1,4 +1,4 @@
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import React, { useState } from "react";
 
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";

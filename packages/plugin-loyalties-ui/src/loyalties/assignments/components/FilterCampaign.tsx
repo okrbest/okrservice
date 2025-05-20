@@ -5,7 +5,7 @@ import {
 } from "@erxes/ui/src/components/form";
 import { Icon, Tip } from "@erxes/ui/src/components";
 import { Sidebar, Wrapper } from "@erxes/ui/src/layout";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 
 import React from "react";
 import SelectCustomers from "@erxes/ui-contacts/src/customers/containers/SelectCustomers";

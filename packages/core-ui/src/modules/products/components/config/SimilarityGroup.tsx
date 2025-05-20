@@ -14,7 +14,7 @@ import PerSettings from "./PerSimilarityGroup";
 import Sidebar from "./Sidebar";
 import { Title } from "@erxes/ui-settings/src/styles";
 import { Wrapper } from "@erxes/ui/src/layout";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import client from "@erxes/ui/src/apolloClient";
 import { queries as fieldQueries } from "@erxes/ui-forms/src/settings/properties/graphql";
 import { gql } from "@apollo/client";

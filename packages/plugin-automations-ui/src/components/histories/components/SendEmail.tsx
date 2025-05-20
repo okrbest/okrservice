@@ -1,6 +1,7 @@
 import React from 'react';
 import EmailTemplate from '@erxes/ui-emailtemplates/src/components/EmailTemplate';
-import { ControlLabel, FormGroup, Label, Tip, __ } from '@erxes/ui/src';
+import { ControlLabel, FormGroup, Label, Tip } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import { LabelContainer } from '../styles';
 
 type Props = {

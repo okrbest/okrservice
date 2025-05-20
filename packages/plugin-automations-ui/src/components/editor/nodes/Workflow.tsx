@@ -1,6 +1,7 @@
 import { gql, useQuery } from '@apollo/client';
 import { IAction } from '@erxes/ui-automations/src/types';
-import { __, color, colors, Spinner } from '@erxes/ui/src';
+import { color, colors, Spinner } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import CommonForm from '@erxes/ui/src/components/form/Form';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import React, { memo, useState } from 'react';

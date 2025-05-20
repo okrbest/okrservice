@@ -12,7 +12,7 @@ import { generateTree, removeTypename } from "../utils";
 import Button from "@erxes/ui/src/components/Button";
 import { IExm } from "../types";
 import Select from "react-select";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 const getEmptyFeature = () => ({
   _id: Math.random().toString(),

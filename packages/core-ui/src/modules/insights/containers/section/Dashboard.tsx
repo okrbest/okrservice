@@ -4,7 +4,7 @@ import { gql, useQuery, useMutation } from "@apollo/client";
 
 import Alert from "@erxes/ui/src/utils/Alert/index";
 import confirm from "@erxes/ui/src/utils/confirmation/confirm";
-import { __ } from "@erxes/ui/src/utils/index";
+import { __ } from "coreui/utils";
 import { router } from "@erxes/ui/src/utils";
 
 import DashboardSection from "../../components/section/Dashboard";

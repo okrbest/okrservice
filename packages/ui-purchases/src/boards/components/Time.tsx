@@ -16,7 +16,7 @@ import EditForm from "../containers/editForm/EditForm";
 import Dialog from "@erxes/ui/src/components/Dialog";
 import React from "react";
 import { Transition } from "react-transition-group";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import moment from "moment";
 
 type Props = {

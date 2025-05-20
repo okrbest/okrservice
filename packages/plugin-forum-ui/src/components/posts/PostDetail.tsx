@@ -14,7 +14,7 @@ import React from 'react';
 import { Thumbnail, Space } from '../../styles';
 import { Title } from '@erxes/ui-settings/src/styles';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { postUsername } from '../../utils';
 import dayjs from 'dayjs';
 

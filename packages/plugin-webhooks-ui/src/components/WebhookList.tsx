@@ -22,7 +22,7 @@ import SelectBrands from "@erxes/ui/src/brands/containers/SelectBrands";
 import Table from "@erxes/ui/src/components/table";
 import WebhookForm from "../containers/WebhookForm";
 import WebhookRow from "./WebhookRow";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { router } from "@erxes/ui/src/utils";
 
 type Props = {

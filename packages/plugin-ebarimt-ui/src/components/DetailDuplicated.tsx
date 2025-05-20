@@ -1,4 +1,4 @@
-import { Alert, __, confirm, formatValue } from "@erxes/ui/src/utils";
+import { Alert, __, confirm, formatValue } from "coreui/utils";
 import { Button, Table } from "@erxes/ui/src/components";
 
 import { IPutResponse } from "../types";

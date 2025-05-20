@@ -4,7 +4,7 @@ import { gql, useMutation } from '@apollo/client';
 import { Alert } from '@erxes/ui/src/utils';
 import { ICustomer } from '../types';
 import IncomingCall from '../components/IncomingCall';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { callPropType } from '../lib/types';
 import { extractPhoneNumberFromCounterpart } from '../utils';
 import { mutations } from '../graphql';

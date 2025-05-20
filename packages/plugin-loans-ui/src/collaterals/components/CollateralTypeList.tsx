@@ -3,7 +3,7 @@ import Sidebar from "@erxes/ui/src/layout/components/Sidebar";
 import Tip from "@erxes/ui/src/components/Tip";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
 
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import React, { useMemo } from "react";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 

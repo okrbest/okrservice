@@ -9,7 +9,7 @@ import {
 import Button from "./Button";
 import { IDateColumn } from "../types";
 import React from "react";
-import { __ } from "../utils/core";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import styled from "styled-components";
 

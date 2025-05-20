@@ -28,7 +28,7 @@ import Icon from "@erxes/ui/src/components/Icon";
 import React from "react";
 import Wrapper from "modules/layout/components/Wrapper";
 import _ from "lodash";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 
 type Props = {

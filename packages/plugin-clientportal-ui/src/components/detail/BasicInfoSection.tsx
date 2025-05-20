@@ -1,5 +1,5 @@
 import { Actions, Flex } from "@erxes/ui/src/styles/main";
-import { __, loadDynamicComponent } from "@erxes/ui/src/utils";
+import { __, loadDynamicComponent } from "coreui/utils";
 
 import Alert from "@erxes/ui/src/utils/Alert";
 import Button from "@erxes/ui/src/components/Button";

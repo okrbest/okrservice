@@ -8,7 +8,7 @@ import InvoiceDetail from "../../containers/invoice/Detail";
 import Label from "@erxes/ui/src/components/Label";
 import React from "react";
 import Table from "@erxes/ui/src/components/table";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 export type Props = {
   invoices: IInvoice[];

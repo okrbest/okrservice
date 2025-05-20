@@ -5,7 +5,7 @@ import FormControl from "@erxes/ui/src/components/form/Control";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import { LinkButton } from "@erxes/ui/src/styles/main";
 import { IFieldLogic } from "@erxes/ui/src/types";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import React, { useEffect, useState } from "react";
 import { FieldsCombinedByType } from "../types";
 

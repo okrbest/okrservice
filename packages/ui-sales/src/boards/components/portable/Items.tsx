@@ -8,7 +8,7 @@ import { ItemChooser } from "../../containers/portable/";
 import { ItemsWrapper } from "../../styles/item";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type IData = {
   options: IOptions;

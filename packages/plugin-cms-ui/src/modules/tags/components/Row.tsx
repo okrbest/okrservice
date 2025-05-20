@@ -6,7 +6,7 @@ import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import Tip from '@erxes/ui/src/components/Tip';
 import NameCard from '@erxes/ui/src/components/nameCard/NameCard';
 import { DateWrapper } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import dayjs from 'dayjs';
 import React from 'react';
 import TagForm from '../containers/Form';

@@ -2,7 +2,7 @@ import { getThemeItem } from '@erxes/ui/src/utils/core';
 import Button from 'modules/common/components/Button';
 import FormControl from 'modules/common/components/form/Control';
 import FormGroup from 'modules/common/components/form/Group';
-import { readFile, __ } from 'modules/common/utils';
+import { readFile, __ } from 'coreui/utils';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { AuthBox } from '../styles';

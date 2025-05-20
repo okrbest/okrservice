@@ -28,7 +28,7 @@ import React from "react";
 import SelectBrands from "@erxes/ui/src/brands/containers/SelectBrands";
 import Tip from "@erxes/ui/src/components/Tip";
 import Uploader from "@erxes/ui/src/components/Uploader";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   categories: IProductCategory[];

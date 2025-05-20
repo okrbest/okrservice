@@ -6,7 +6,7 @@ import FormGroup from "@erxes/ui/src/components/form/Group";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import { Flex, FormColumn, FormWrapper } from "@erxes/ui/src/styles/main";
 import { IProductCategory } from "../types";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import { IFieldGroup } from "@erxes/ui-forms/src/settings/properties/types";
 import { TableOver } from "../styles";
 import { ActionButton } from "@erxes/ui/src/components/ActionButtons";

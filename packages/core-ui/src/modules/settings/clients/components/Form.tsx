@@ -10,7 +10,7 @@ import { IButtonMutateProps, IFormProps } from '@erxes/ui/src/types';
 import copy from 'copy-text-to-clipboard';
 import React, { useState } from 'react';
 
-import { Alert, __ } from 'modules/common/utils';
+import { Alert, __ } from 'coreui/utils';
 import IpInput from '../ui/IpInput';
 import { CredentialsRow } from '../styles';
 

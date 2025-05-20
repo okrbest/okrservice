@@ -20,7 +20,7 @@ import PluginBox from "./PluginBox";
 import React from "react";
 import ServiceBox from "./ServiceBox";
 import Wrapper from "modules/layout/components/Wrapper";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import { Plugin } from "../types";
 
 type Props = {

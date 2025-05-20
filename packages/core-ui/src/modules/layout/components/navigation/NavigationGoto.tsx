@@ -17,7 +17,7 @@ import React from "react";
 import Tip from "modules/common/components/Tip";
 import WithPermission from "modules/common/components/WithPermission";
 import _ from "lodash";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import { pluginNavigations } from "./utils";
 import { Plugin, Action, GeneralSetting } from "./types";
 

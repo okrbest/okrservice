@@ -7,7 +7,7 @@ import NavigationItemChildren from "./NavigationItemChildren";
 import React from "react";
 import Tip from "modules/common/components/Tip";
 import WithPermission from "modules/common/components/WithPermission";
-import { __ } from "modules/common/utils";
+import { __ } from "coreui/utils";
 import { customNavigationLabel } from "pluginUtils";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 

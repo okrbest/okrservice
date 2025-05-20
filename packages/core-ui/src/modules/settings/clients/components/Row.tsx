@@ -5,7 +5,7 @@ import Button from '@erxes/ui/src/components/Button';
 import Info from '@erxes/ui/src/components/Info';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import Tip from '@erxes/ui/src/components/Tip';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import copy from 'copy-text-to-clipboard';
 import dayjs from 'dayjs';
 import React from 'react';

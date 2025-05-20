@@ -1,6 +1,6 @@
 import { SidebarList } from '@erxes/ui/src/layout/styles';
 import { Box, Button } from '@erxes/ui/src/components';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { SideBarFooter } from '../../styles';

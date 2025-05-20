@@ -1,4 +1,5 @@
-import { Table, __ } from '@erxes/ui/src';
+import { Table } from '@erxes/ui/src';
+import { __ } from 'coreui/utils';
 import { IQueryParams } from '@erxes/ui/src/types';
 import React from 'react';
 import { ITransaction } from '../types';

@@ -1,5 +1,5 @@
 import { Option, PerPageButton } from "./styles";
-import { __, router } from "../../utils/core";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Dropdown from "../Dropdown";

@@ -5,7 +5,7 @@ import Header from "./Header";
 import { HeaderContent } from "../../styles/item";
 import Move from "../../containers/editForm/Move";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   item: IItem;

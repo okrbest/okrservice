@@ -8,7 +8,7 @@ import Box from '@erxes/ui/src/components/Box';
 import EmptyState from '@erxes/ui/src/components/EmptyState';
 import { IUrlVisits } from '../../types';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { calculatePercentage } from '@erxes/ui/src/utils/core';
 import styled from 'styled-components';
 

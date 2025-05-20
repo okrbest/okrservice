@@ -27,7 +27,7 @@ import React from "react";
 import Table from "@erxes/ui/src/components/table";
 import Tip from "@erxes/ui/src/components/Tip";
 import TwitterPicker from "react-color/lib/Twitter";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { colors } from "@erxes/ui/src/styles";
 
 type Props = {

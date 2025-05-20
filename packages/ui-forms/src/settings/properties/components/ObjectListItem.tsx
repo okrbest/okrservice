@@ -1,7 +1,7 @@
 import FormControl from "@erxes/ui/src/components/form/Control";
 import { IObjectListConfig } from "@erxes/ui/src/types";
 import React from "react";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   objectListConfigs: IObjectListConfig[];

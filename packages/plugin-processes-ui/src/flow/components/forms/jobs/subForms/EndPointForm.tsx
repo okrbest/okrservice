@@ -5,7 +5,7 @@ import Icon from "@erxes/ui/src/components/Icon";
 import JobReferChooser from "../../../../../job/containers/refer/Chooser";
 import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
 import React from "react";
-import { Alert, __ } from "@erxes/ui/src/utils";
+import { Alert, __ } from "coreui/utils";
 import { ControlLabel } from "@erxes/ui/src/components/form";
 import { IJob } from "../../../../types";
 import { IJobRefer } from "../../../../../job/types";

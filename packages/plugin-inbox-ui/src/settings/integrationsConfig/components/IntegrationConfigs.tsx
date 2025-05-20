@@ -1,5 +1,5 @@
 import { ContentBox, Title } from "@erxes/ui-settings/src/styles";
-import { __, loadDynamicComponent } from "@erxes/ui/src/utils/core";
+import { __, loadDynamicComponent } from "coreui/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import CollapseContent from "@erxes/ui/src/components/CollapseContent";

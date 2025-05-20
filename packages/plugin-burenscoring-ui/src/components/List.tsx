@@ -1,5 +1,6 @@
 import Row from "./Row";
-import { __, Pagination } from "@erxes/ui/src";
+import { Pagination } from "@erxes/ui/src";
+import { __ } from "coreui/utils";
 import React from "react";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
 import Table from "@erxes/ui/src/components/table";

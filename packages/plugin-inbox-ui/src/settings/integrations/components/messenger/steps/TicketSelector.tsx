@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { __, isEnabled } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
+import { isEnabled } from "@erxes/ui/src/utils/core";
 import TicketsBoardSelect from "@erxes/ui-tickets/src/boards/containers/BoardSelect";
 import { FlexItem, LeftItem } from "@erxes/ui/src/components/step/styles";
 import { IMessengerData } from "@erxes/ui-inbox/src/settings/integrations/types";

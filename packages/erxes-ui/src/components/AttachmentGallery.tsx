@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { __, confirm } from '../utils';
+import { __, confirm } from 'coreui/utils';
 
 import Attachment from './Attachment';
 import { IAttachment } from '../types';

@@ -1,7 +1,7 @@
 import CollapseContent from '@erxes/ui/src/components/CollapseContent';
 import Icon from '@erxes/ui/src/components/Icon';
 import React from 'react';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 const Settings = (props) => {
   const { renderItem } = props;

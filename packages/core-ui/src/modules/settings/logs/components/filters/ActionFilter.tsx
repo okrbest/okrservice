@@ -1,4 +1,4 @@
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import { FieldStyle, SidebarList, Box, DataWithLoader } from "@erxes/ui/src";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";

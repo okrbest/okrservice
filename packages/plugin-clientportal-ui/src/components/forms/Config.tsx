@@ -14,7 +14,7 @@ import { RichTextEditor } from '@erxes/ui/src/components/richTextEditor/TEditor'
 import Select from 'react-select';
 import SelectTeamMembers from '@erxes/ui/src/team/containers/SelectTeamMembers';
 import Toggle from '@erxes/ui/src/components/Toggle';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 import { isEnabled } from '@erxes/ui/src/utils/core';
 
 type Props = {

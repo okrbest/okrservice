@@ -1,4 +1,5 @@
-import { __, isEnabled } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
+import { isEnabled } from "@erxes/ui/src/utils/core";
 
 import ActionButtons from "@erxes/ui/src/components/ActionButtons";
 import Button from "@erxes/ui/src/components/Button";

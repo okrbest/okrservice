@@ -3,7 +3,7 @@ import { sendCommonMessage, sendCoreMessage } from "../messageBroker";
 import { dateToShortStr } from "@erxes/api-utils/src";
 import * as moment from "moment";
 
-const toMoney = value => {
+const toMoney = (value) => {
   if (!value) {
     return "-";
   }
@@ -13,8 +13,8 @@ export default {
   types: [
     {
       label: "Products",
-      contentType: "core:product"
-    }
+      contentType: "core:product",
+    },
   ],
   editorAttributes: async ({ subdomain, data: { contentType } }) => {
     console.log({ subdomain, contentType });
@@ -23,15 +23,15 @@ export default {
       action: "fields.fieldsCombinedByContentType",
       data: { contentType },
       isRPC: true,
-      defaultValue: []
+      defaultValue: [],
     });
 
     const fields = customFields
-      .filter(field => !["categoryId", "code"].includes(field.name))
-      .map(field => ({
+      .filter((field) => !["categoryId", "code"].includes(field.name))
+      .map((field) => ({
         value: field.name,
         name: field.label,
-        type: field.type
+        type: field.type,
       }));
 
     return [
@@ -46,7 +46,7 @@ export default {
       { value: "date", name: "Date" },
       { value: "barcodeDescription", name: "Barcode description" },
 
-      ...fields
+      ...fields,
     ];
   },
   replaceContent: async ({ subdomain, data }) => {
@@ -54,18 +54,18 @@ export default {
       const { branchId, departmentId, date, isDate, content } = data;
       const results: string[] = [];
       const copies = JSON.parse(data?.productIds || "[]");
-      const productIds = copies.map(c => c.id);
+      const productIds = copies.map((c) => c.id);
 
       const products = await sendCoreMessage({
         subdomain,
         action: "products.find",
         data: {
           query: {
-            _id: { $in: productIds }
-          }
+            _id: { $in: productIds },
+          },
         },
         isRPC: true,
-        defaultValue: []
+        defaultValue: [],
       });
 
       const productById = {};
@@ -92,15 +92,15 @@ export default {
             totalAmount: 0,
             departmentId,
             branchId,
-            products: products.map(pr => ({
+            products: products.map((pr) => ({
               itemId: pr._id,
               productId: pr._id,
               quantity: 1,
-              price: pr.unitPrice
-            }))
+              price: pr.unitPrice,
+            })),
           },
           isRPC: true,
-          defaultValue: {}
+          defaultValue: {},
         });
 
         for (const product of products) {
@@ -125,8 +125,8 @@ export default {
             prioritizeRule: "exclude",
             branchId,
             departmentId,
-            products
-          }
+            products,
+          },
         });
       }
 
@@ -207,7 +207,7 @@ export default {
             action: "companies.findOne",
             data: { _id: product.vendorId },
             isRPC: true,
-            defaultValue: null
+            defaultValue: null,
           });
 
           if (vendor?.primaryName) {
@@ -232,5 +232,5 @@ export default {
 
       return results;
     }
-  }
+  },
 };

@@ -1,7 +1,7 @@
 import { Icon } from '@erxes/ui/src/components';
 import { colors } from '@erxes/ui/src/styles';
 import { BoxRoot, FullContent } from '@erxes/ui/src/styles/main';
-import { __ } from '@erxes/ui/src/utils';
+import { __ } from 'coreui/utils';
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';

@@ -12,7 +12,7 @@ import { IKhanbankStatement } from "../types";
 import Pagination from "@erxes/ui/src/components/pagination/Pagination";
 import Row from "./Row";
 import Table from "@erxes/ui/src/components/table";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import { useLocation, useNavigate } from "react-router-dom";
 

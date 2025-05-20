@@ -8,7 +8,8 @@ import {
 } from '../../styles';
 import { IBoard, IPipeline } from '@erxes/ui-sales/src/boards/types';
 import React, { useState } from 'react';
-import { __, isEnabled } from '@erxes/ui/src/utils/core';
+import { isEnabled } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 
 import SalesBoardSelect from '@erxes/ui-sales/src/boards/containers/BoardSelect';
 import TicketsBoardSelect from '@erxes/ui-tickets/src/boards/containers/BoardSelect';

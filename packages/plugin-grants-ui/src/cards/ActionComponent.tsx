@@ -8,7 +8,7 @@ import {
   FormGroup,
 } from "@erxes/ui/src/components/form";
 import { FormColumn, FormWrapper, LinkButton } from "@erxes/ui/src/styles/main";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import Select from "react-select";
 import { DividerBox } from "../styles";
 import { SelectCardType, SelectStage } from "./common";

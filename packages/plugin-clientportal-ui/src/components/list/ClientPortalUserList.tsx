@@ -16,7 +16,7 @@ import Pagination from '@erxes/ui/src/components/pagination/Pagination';
 import Sidebar from './Sidebar';
 import Table from '@erxes/ui/src/components/table';
 import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { __ } from '@erxes/ui/src/utils/core';
+import { __ } from 'coreui/utils';
 import { menuContacts } from '@erxes/ui/src/utils/menus';
 import withTableWrapper from '@erxes/ui/src/components/table/withTableWrapper';
 import ClientPortalMoveForm from '../../containers/ClientPortalMoveForm';

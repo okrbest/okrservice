@@ -1,6 +1,6 @@
 import { EndDateContainer, FlexColumnCustom } from "../../styles";
 import React, { useState } from "react";
-import { __, router } from "@erxes/ui/src/utils";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Button from "@erxes/ui/src/components/Button";

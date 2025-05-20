@@ -1,7 +1,7 @@
 import Box from "@erxes/ui/src/components/Box";
 import React from "react";
 import { SidebarList } from "@erxes/ui/src/layout/styles";
-import { __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
 
 type Props = {
   allDatas: any[];

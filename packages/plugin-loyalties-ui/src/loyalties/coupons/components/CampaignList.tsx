@@ -4,7 +4,7 @@ import Dropdown from '@erxes/ui/src/components/Dropdown';
 import DropdownToggle from '@erxes/ui/src/components/DropdownToggle';
 import Tip from '@erxes/ui/src/components/Tip';
 import { SidebarList } from '@erxes/ui/src/layout';
-import { __, router } from '@erxes/ui/src/utils';
+import { __, router } from 'coreui/utils';
 import queryString from 'query-string';
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';

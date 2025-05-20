@@ -12,7 +12,7 @@ import { ICategory } from "../../types";
 import Info from "@erxes/ui/src/components/Info";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import TextInfo from "@erxes/ui/src/components/TextInfo";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   category?: ICategory;

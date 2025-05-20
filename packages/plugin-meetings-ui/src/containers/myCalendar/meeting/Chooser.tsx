@@ -7,7 +7,8 @@ import Chooser from "@erxes/ui/src/components/Chooser";
 import { Alert, withProps } from "@erxes/ui/src/utils";
 import { queries as productQueries } from "../../../graphql";
 
-import { isEnabled, __ } from "@erxes/ui/src/utils/core";
+import { __ } from "coreui/utils";
+import { isEnabled } from "@erxes/ui/src/utils/core";
 import SelectCompanies from "@erxes/ui-contacts/src/companies/containers/SelectCompanies";
 import { IDeal } from "@erxes/ui-sales/src/deals/types";
 import DealForm from "./DealForm";
