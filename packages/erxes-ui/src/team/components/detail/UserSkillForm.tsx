@@ -115,7 +115,7 @@ function UserSkillForm({
             callback={closeModal}
             refetchQueries={handleRefetch}
             isSubmitted={isSubmitted}
-            successMessage="You successfully added in skill"
+            successMessage={__("You successfully added in skill")}
             type="submit"
           />
         </ModalFooter>

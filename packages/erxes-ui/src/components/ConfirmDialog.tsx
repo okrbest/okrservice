@@ -186,19 +186,27 @@ class ConfirmDialog extends React.Component<Props, State> {
       case hasDeleteConfirm:
         label = (
           <>
-            Type <strong>delete</strong> in the field below to confirm.
+            <p
+              dangerouslySetInnerHTML={{
+                __html: __('Type <strong>delete</strong> in the field below to confirm.')
+              }}
+            />
           </>
         );
         break;
       case hasUpdateConfirm:
         label = (
           <>
-            Type <strong>update</strong> in the field below to confirm.
+            <p
+              dangerouslySetInnerHTML={{
+                __html: __('Type <strong>update</strong> in the field below to confirm.')
+              }}
+            />
           </>
         );
         break;
       case hasPasswordConfirm:
-        label = <>Enter your password in the field below to confirm.</>;
+        label = <>{__('Enter your password in the field below to confirm.')}</>;
         break;
       default:
         break;

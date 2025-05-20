@@ -1,17 +1,17 @@
-import React from 'react';
-import styled from 'styled-components';
-import styledTS from 'styled-components-ts';
-import colors from '../styles/colors';
-import { rgba } from '../styles/ecolor';
-import { IAttachment } from '../types';
-import Alert from '../utils/Alert';
-import { __ } from 'coreui/utils';
-import uploadHandler from '../utils/uploadHandler';
-import Spinner from './Spinner';
-import AttachmentsGallery from './AttachmentGallery';
-import Icon from './Icon';
-import { Meta } from './Attachment';
-import Tip from './Tip';
+import React from "react";
+import styled from "styled-components";
+import styledTS from "styled-components-ts";
+import colors from "../styles/colors";
+import { rgba } from "../styles/ecolor";
+import { IAttachment } from "../types";
+import Alert from "../utils/Alert";
+import { __ } from "coreui/utils";
+import uploadHandler from "../utils/uploadHandler";
+import Spinner from "./Spinner";
+import AttachmentsGallery from "./AttachmentGallery";
+import Icon from "./Icon";
+import { Meta } from "./Attachment";
+import Tip from "./Tip";
 
 const LoadingContainer = styledTS<{ showOnlyIcon?: boolean }>(styled.div)`
   ${(props) =>
@@ -50,7 +50,7 @@ const UploadBtn = styled.div`
       cursor: pointer;
     }
   }
-  input[type='file'] {
+  input[type="file"] {
     display: none;
   }
 `;
@@ -81,7 +81,7 @@ const UploadBtnWithIcon = styled.div`
     padding: 15px 30px;
   }
 
-  input[type='file'] {
+  input[type="file"] {
     display: none;
   }
 `;
@@ -151,12 +151,12 @@ class Uploader extends React.Component<Props, State> {
       },
 
       afterUpload: ({ status, response, fileInfo }) => {
-        if (status !== 'ok') {
+        if (status !== "ok") {
           Alert.error(response.statusText);
           return this.setState({ loading: false });
         }
 
-        Alert.info('Success');
+        Alert.info("Success");
 
         // set attachments
         const attachment = { url: response, ...fileInfo };
@@ -172,7 +172,7 @@ class Uploader extends React.Component<Props, State> {
       },
     });
 
-    target.value = '';
+    target.value = "";
   };
 
   removeAttachment = (index: number) => {
@@ -201,15 +201,15 @@ class Uploader extends React.Component<Props, State> {
       return (
         <UploadIconBtn>
           <label>
-            <Tip text={__('Attach file')} placement="top">
-              <Icon icon={icon || 'attach'} />
+            <Tip text={__("Attach file")} placement="top">
+              <Icon icon={icon || "attach"} />
             </Tip>
 
             <input
               type="file"
               multiple={multiple}
               onChange={this.handleFileInput}
-              accept={accept || ''}
+              accept={accept || ""}
             />
           </label>
         </UploadIconBtn>
@@ -220,12 +220,12 @@ class Uploader extends React.Component<Props, State> {
       return (
         <UploadBtn>
           <label>
-            {__('Upload an attachment')}
+            {__("Upload an attachment")}
             <input
               type="file"
               multiple={multiple}
               onChange={this.handleFileInput}
-              accept={accept || ''}
+              accept={accept || ""}
             />
           </label>
         </UploadBtn>
@@ -237,9 +237,9 @@ class Uploader extends React.Component<Props, State> {
         <label>
           {icon ? <Icon icon={icon} /> : null}
           <div>
-            <span>{text ? __(text) : __('Upload an attachment')}</span>
+            <span>{text ? __(text) : __("Upload an attachment")}</span>
             <Meta>
-              <span>{warningText}</span>
+              <span>{warningText ? __(warningText) : ""}</span>
             </Meta>
           </div>
 
@@ -247,7 +247,7 @@ class Uploader extends React.Component<Props, State> {
             type="file"
             multiple={multiple}
             onChange={this.handleFileInput}
-            accept={accept || ''}
+            accept={accept || ""}
           />
         </label>
       </UploadBtnWithIcon>
@@ -285,7 +285,7 @@ class Uploader extends React.Component<Props, State> {
     return (
       <LoadingContainer>
         <Spinner objective={true} size={18} />
-        {__('Uploading')}...
+        {__("Uploading")}...
       </LoadingContainer>
     );
   }

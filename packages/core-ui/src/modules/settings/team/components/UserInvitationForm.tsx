@@ -150,7 +150,7 @@ class UserInvitationForm extends React.Component<Props, State> {
     ).value;
 
     if (!values) {
-      return Alert.warning("No email address found!");
+      return Alert.warning(__("No email address found!"));
     }
 
     const emails = values.split(",");
@@ -171,7 +171,7 @@ class UserInvitationForm extends React.Component<Props, State> {
 
     for (const entry of entries) {
       if (!entry.email || !entry.groupId) {
-        return Alert.warning("Please fill all required fields");
+        return Alert.warning(__("Please fill all required fields"));
       }
     }
   };
@@ -317,7 +317,7 @@ class UserInvitationForm extends React.Component<Props, State> {
                     {...formProps}
                     name="password"
                     type="password"
-                    placeholder="Password"
+                    placeholder={__("Password")}
                     value={input.password}
                     onChange={this.onChange.bind(this, i, "password")}
                     required={true}
@@ -331,7 +331,7 @@ class UserInvitationForm extends React.Component<Props, State> {
                     name="groupId"
                     componentclass="select"
                     options={[
-                      { value: "", label: "Choose group ..." },
+                      { value: "", label: __("Choose group ...") },
                       ...this.generateGroupsChoices(),
                     ]}
                     onChange={this.onChange.bind(this, i, "groupId")}

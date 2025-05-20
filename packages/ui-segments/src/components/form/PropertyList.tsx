@@ -4,6 +4,7 @@ import { IField } from "../../types";
 import { OperatorList } from "../styles";
 import React from "react";
 import _ from "lodash";
+import { __ } from "coreui/utils";
 
 type Props = {
   contentType: string;
@@ -40,19 +41,19 @@ class PropertyList extends React.Component<Props, {}> {
     }, {});
   };
 
-  onClickProperty = field => {
+  onClickProperty = (field) => {
     this.props.onClickProperty(field);
   };
 
-  renderFields = fields => {
-    return fields.map(field => {
+  renderFields = (fields) => {
+    return fields.map((field) => {
       return (
         <FormControl
           key={Math.random()}
           componentclass="radio"
           onChange={this.onClickProperty.bind(this, field)}
         >
-          {field.label}
+          {__(field.label)}
         </FormControl>
       );
     });
@@ -61,7 +62,7 @@ class PropertyList extends React.Component<Props, {}> {
   render() {
     const objects = this.groupByType();
 
-    return Object.keys(objects).map(key => {
+    return Object.keys(objects).map((key) => {
       let groupName = key;
       const groupDetail = (objects[key] || []).find(
         ({ group }) => group === key
@@ -74,7 +75,7 @@ class PropertyList extends React.Component<Props, {}> {
       return (
         <OperatorList key={Math.random()}>
           <FormGroup>
-            <b>{groupName}</b>
+            <b>{__(groupName)}</b>
             {this.renderFields(objects[key])}
           </FormGroup>
         </OperatorList>

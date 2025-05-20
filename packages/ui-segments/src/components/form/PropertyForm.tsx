@@ -231,7 +231,7 @@ class PropertyForm extends React.Component<Props, State> {
             value={operator.value}
             checked={this.isChecked(operator)}
           >
-            {operator.name}
+            {__(operator.name)}
           </FormControl>
           {this.renderInput(operator)}
         </div>
@@ -262,7 +262,7 @@ class PropertyForm extends React.Component<Props, State> {
 
     return (
       <OperatorList>
-        <b>{field.label}</b>
+        <b>{__(field.label)}</b>
         <Formgroup>{this.renderOperators()}</Formgroup>
         <CenterContent>
           <Button onClick={this.onClick} btnStyle="default">

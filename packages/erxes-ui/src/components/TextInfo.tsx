@@ -27,7 +27,7 @@ const types = {
 
 const Text = styledTS<{ $textStyle: string; hugeness: string }>(styled.span)`
   text-transform: uppercase;
-  font-size: ${(props) => (props.hugeness !== "small" ? "14px" : "10px")};
+  font-size: ${(props) => (props.hugeness !== "small" ? "14px" : "14px")};
   font-weight: bold;
   color: ${(props) => types[props.$textStyle || "default"].color}
 `;
@@ -42,6 +42,7 @@ type Props = {
 class TextInfo extends React.PureComponent<Props> {
   render() {
     const { ignoreTrans, children, $textStyle, hugeness } = this.props;
+    console.log('TextInfo 속성:', { ignoreTrans, children, $textStyle, hugeness });
 
     let content;
 

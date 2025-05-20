@@ -121,27 +121,30 @@ const PermissionForm = (props: Props) => {
 
     const usersOnChange = (users) => select("selectedUserIds", users);
 
+    const moduleOptions = generateModuleParams(modules).map(option => ({
+      ...option,
+      label: __(option.label || '')
+    }));
+    
+
     return (
       <>
         <Info>
-          <strong>User vs. Group Permissions</strong>
+          <strong>{__("User vs. Group Permissions")}</strong>
           <br />
           <span>
-            When a team member is part of two or more User Groups with different
-            levels of permissions,
-          </span>
+            {__("When a team member is part of two or more User Groups with different levels of permissions, ")}
           <TextInfo $textStyle="danger">
-            the negative permission will overrule.
+            {__("the negative permission will overrule.")}
           </TextInfo>
+          </span>
           <br />
           <span>
-            For example, if you're part of the "Admin Group" with all
-            permissions allowed, but you've included yourself in the "Support
-            Group" with fewer permissions,
-          </span>
+            {__("For example, if you're part of the \"Admin Group\" with all permissions allowed, but you've included yourself in the \"Support Group\" with fewer permissions, ")}
           <TextInfo $textStyle="danger">
-            you might not be able to do certain actions.
+            {__("you might not be able to do certain actions.")}
           </TextInfo>
+          </span>
         </Info>
         <StepItem>
           <StepHeader
@@ -156,19 +159,22 @@ const PermissionForm = (props: Props) => {
               <Select
                 placeholder={__("Choose module")}
                 isClearable={true}
-                options={generateModuleParams(modules)}
-                value={generateModuleParams(modules).find(
+                options={moduleOptions}
+                value={moduleOptions.find(
                   (o) => o.value === selectedModule
                 )}
-                onChange={(p) => changeModule(p)}
+                onChange={(p) => p && changeModule(p)}
               />
             </FormGroup>
             <Divider>{__("Then")}</Divider>
             <FormGroup>
               <ControlLabel required={true}>Choose the actions</ControlLabel>
-              <Select
+              <Select<generatedList, true>
                 placeholder={__("Choose actions")}
-                options={filterActions(actions, selectedModule) || []}
+                options={filterActions(actions, selectedModule).map(option => ({
+                  ...option,
+                  label: __(option.label || '')
+                }))}
                 value={selectedActions}
                 isDisabled={!selectedModule}
                 onChange={select.bind(this, "selectedActions")}

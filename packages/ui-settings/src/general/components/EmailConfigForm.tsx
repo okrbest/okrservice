@@ -84,7 +84,7 @@ const EmailConfigForm = (props: Props) => {
     return (
       <ContentWrapper>
         <Info>
-          {__("Your email will be sent with Erxes email template") + "."}
+          {__("Your email will be sent with Erxes email template.")}
         </Info>
       </ContentWrapper>
     );
@@ -95,7 +95,7 @@ const EmailConfigForm = (props: Props) => {
       <FlexRow $alignItems="flex-start" $justifyContent="space-between">
         <FormGroup>
           <ControlLabel>Email</ControlLabel>
-          <p>{emailText}</p>
+          <p>{__(emailText)}</p>
 
           <FormControl
             type="email"
@@ -107,7 +107,7 @@ const EmailConfigForm = (props: Props) => {
 
         <FormGroup>
           <ControlLabel>Type</ControlLabel>
-          <p>Choose "custom" to change the template of transactional emails.</p>
+          <p>{__("Choose \"custom\" to change the template of transactional emails.")}</p>
 
           <FormControl
             componentclass="select"
@@ -115,10 +115,10 @@ const EmailConfigForm = (props: Props) => {
             onChange={onChangeType}
           >
             <option key="simple" value="simple">
-              Simple
+              {__("Simple")}
             </option>
             <option key="custom" value="custom">
-              Custom
+              {__("Custom")}
             </option>
           </FormControl>
         </FormGroup>

@@ -51,7 +51,7 @@ class AppListContainer extends React.Component<Props> {
     const addApp = (doc: IAppParams) => {
       addMutation({ variables: doc })
         .then(() => {
-          Alert.success("You successfully created an app");
+          Alert.success(__("You successfully created an app"));
         })
         .catch((e) => {
           Alert.error(__(e.message));
@@ -61,7 +61,7 @@ class AppListContainer extends React.Component<Props> {
     const editApp = (_id: string, doc: IAppParams) => {
       editMutation({ variables: { _id, ...doc } })
         .then(() => {
-          Alert.success("You successfully edited an app");
+          Alert.success(__("You successfully edited an app"));
         })
         .catch((e) => {
           Alert.error(__(e.message));
@@ -69,12 +69,12 @@ class AppListContainer extends React.Component<Props> {
     };
 
     const removeApp = (_id: string) => {
-      confirm("This will permanently delete are you absolutely sure?", {
+      confirm(__("This will permanently delete are you absolutely sure?"), {
         hasDeleteConfirm: true,
       }).then(() => {
         removeMutation({ variables: { _id } })
           .then(() => {
-            Alert.success("You successfully deleted an app");
+            Alert.success(__("You successfully deleted an app"));
           })
           .catch((e) => {
             Alert.error(__(e.message));

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Popover } from "@headlessui/react";
 import { TipContent } from "@erxes/ui/src/styles/main";
 import { usePopper } from "react-popper";
+import { __ } from 'coreui/utils';
 
 type Props = {
   text?: string | React.ReactNode;
@@ -59,7 +60,7 @@ const Tip = ({ text, children, placement }: Props) => {
               style={styles.popper}
               {...attributes.popper}
             >
-              {text}
+              {__(text)}
             </TipContent>
           )}
         </>

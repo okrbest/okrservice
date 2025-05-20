@@ -17,6 +17,7 @@ import NavigationMoreItem from "./NavigationMoreItem";
 
 import { Plugin } from "./types";
 import { pluginNavigations, filterPlugins } from "./utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   navCollapse: number;
@@ -121,7 +122,7 @@ export default class NavigationMore extends React.Component<Props, State> {
 
     const PinnedPluginsElement = () => (
       <React.Fragment>
-        <MoreTitle>Pinned plugins</MoreTitle>
+        <MoreTitle>{__("Pinned plugins")}</MoreTitle>
         <MoreMenus>
           {pinnedPlugins.map((plugin: Plugin, index: number) => {
             return (
@@ -146,7 +147,7 @@ export default class NavigationMore extends React.Component<Props, State> {
           <NavMenuItem $navCollapse={navCollapse}>
             <a onClick={() => toggleMenu("more")}>
               <NavIcon className="icon-ellipsis-h" />
-              {navCollapse !== 1 && <label>{text}</label>}
+              {navCollapse !== 1 && <label>{__(text)}</label>}
             </a>
           </NavMenuItem>
           <MoreMenuWrapper
@@ -157,7 +158,7 @@ export default class NavigationMore extends React.Component<Props, State> {
               <Icon icon="search-1" size={15} />
               <FormControl
                 type="text"
-                placeholder="Find plugins"
+                placeholder={__("Find plugins")}
                 value={searchText}
                 onChange={this.handleSearch}
               />
@@ -165,7 +166,7 @@ export default class NavigationMore extends React.Component<Props, State> {
             {pinnedPlugins.length !== 0 && searchText === "" && (
               <PinnedPluginsElement />
             )}
-            <MoreTitle>Other added plugins</MoreTitle>
+            <MoreTitle>{__("Other added plugins")}</MoreTitle>
             <MoreMenus>
               {otherPlugins.map((plugin: Plugin, index: number) => {
                 return (

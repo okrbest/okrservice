@@ -332,7 +332,7 @@ const QuickNavigation = ({
             {release ? (
               <Version>
                 <span>
-                  version <b>{release}</b>
+                  {__("Version ")} <b>{__(`${release}`)}</b>
                 </span>
               </Version>
             ) : null}

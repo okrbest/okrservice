@@ -249,7 +249,7 @@ const PermissionList = (props: Props) => {
 
   const breadcrumb = [
     { title: "Settings", link: "/settings" },
-    { title: __("Permissions") },
+    { title: "Permissions" },
   ];
 
   return (

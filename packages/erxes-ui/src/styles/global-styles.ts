@@ -777,7 +777,7 @@ a:hover {
 
 .css-9jq23d {
   color: ${colors.colorWhite} !important;
-  padding: 2px 10px 2px 0px !important;
+  padding: 2px 14px 2px 0px !important;
 }
 
 .css-1nmdiq5-menu {
@@ -798,7 +798,7 @@ a:hover {
 
 .css-wsp0cs-MultiValueGeneric {
   color: ${colors.colorWhite} !important;
-  padding: 2px !important;
+  padding: 2px 10px 2px 0px !important;
 }
 
 .css-12a83d4-MultiValueRemove {
@@ -808,7 +808,6 @@ a:hover {
   width: 20px;
   height: 20px;
   border-radius: 10px !important;
-  position: absolute;
   right: 0;
   top: 0;
   text-align: center;

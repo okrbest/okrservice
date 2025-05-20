@@ -104,7 +104,7 @@ class ManageColumns extends React.Component<Props, State> {
     const child = (col) => {
       return (
         <Child>
-          <span>{col.label}</span>
+          <span>{__(col.label)}</span>
           <FormControl
             id={String(col._id)}
             defaultChecked={col.checked}

@@ -70,7 +70,7 @@ module.exports = {
       },
       {
         name: "ticketPipelinesWatch",
-        description: "ticket pipeline watch"
+        description: "Ticket pipeline watch"
       },
       {
         name: "ticketStagesAdd",

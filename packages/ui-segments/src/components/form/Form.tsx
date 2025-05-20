@@ -314,7 +314,7 @@ class SegmentFormAutomations extends React.Component<Props, State> {
               onChange={onShouldWriteActivityLogChange}
               checked={shouldWriteActivityLog}
             >
-              Write activity log when items enter this segment
+              {__("Write activity log when items enter this segment")}
             </FormControl>
           </FlexItem>
         </FlexContent>
