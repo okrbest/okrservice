@@ -4,15 +4,15 @@ import {
   setLocalStorageItem,
 } from "../common";
 
-import { IConnectResponse } from "./types";
-import asyncComponent from "../AsyncComponent";
-import client from "../apollo-client";
-import { connection } from "./connection";
-import { enabledServicesQuery } from "../form/graphql";
-import gql from "graphql-tag";
-import graphqTypes from "./graphql";
-import { setLocale } from "../utils";
-import widgetConnect from "../widgetConnect";
+import { IConnectResponse } from './types';
+import asyncComponent from '../AsyncComponent';
+import client from '../apollo-client';
+import { connect } from './graphql/mutations';
+import { connection } from './connection';
+import { enabledServicesQuery } from '../form/graphql';
+import gql from 'graphql-tag';
+import { setLocale } from '../utils';
+import widgetConnect from '../widgetConnect';
 
 const App = asyncComponent(
   () => import(/* webpackChunkName: "MessengerApp" */ "./containers/App")
@@ -52,7 +52,7 @@ widgetConnect({
     const isTicketEnabled = connection.enabledServices.tickets;
 
     return client.mutate({
-      mutation: gql(graphqTypes.connect(isCallEnabled, isTicketEnabled)),
+      mutation: gql(connect(isCallEnabled, isTicketEnabled)),
       variables: {
         brandCode: setting.brand_id,
         email: setting.email,

@@ -1,25 +1,51 @@
 # Changelog
 
-## [2.11.3](https://github.com/okrbest/okrservice/compare/2.11.2...2.11.3) (2025-05-07)
+## [2.12.1](https://github.com/okrbest/okrservice/compare/2.12.0...2.12.1) (2025-05-20)
+
+## [2.12.0](https://github.com/okrbest/okrservice/compare/2.11.3...2.12.0) (2025-05-18)
 
 ### Features
 
-* **payment:** introduce ibanAcctNo in khanbank payment ([7bb6e98](https://github.com/okrbest/okrservice/commit/7bb6e98df76e4b493ffab3b24684855a9d982ee7))
+* **clientportal:** implement client portal comment addition with notifications ([2825c22](https://github.com/okrbest/okrservice/commit/2825c22038ea198e8d2b13b492a7cbf7f1ba79a0))
+* **clientportal:** Send email notifications to both assigned users and the ticket creator ([70aba57](https://github.com/okrbest/okrservice/commit/70aba57559349492f46bbe59cf3f021e0a8570dd))
+* **facebook:** enhance performance of facebookGetPosts query ([dd2e245](https://github.com/okrbest/okrservice/commit/dd2e245d86b35c9ac92527491df2cf81459fb1b8))
+* **notifications:** add userId variable to notifications query ([#6027](https://github.com/okrbest/okrservice/issues/6027)) ([c91369f](https://github.com/okrbest/okrservice/commit/c91369ff4899ee1a340d322ac1c5d6226903b65f))
 
 ### Bug Fixes
 
-* deals productsData save with check pricing ([bc691fa](https://github.com/okrbest/okrservice/commit/bc691fae3639dcbe585187c092570d8b1ac3845e))
-* export products with tagNames ([5cfce50](https://github.com/okrbest/okrservice/commit/5cfce503ab9dc762184df10fef28d14863fd577b))
-* **riskassessment:** can't filter by date type filters in plan ([dddd286](https://github.com/okrbest/okrservice/commit/dddd28632d49755cf5f3dcbae215add6a9fb1504))
-
-## [2.11.2](https://github.com/okrbest/okrservice/compare/2.11.1...2.11.2) (2025-05-06)
+* clientportal ci ([88146f7](https://github.com/okrbest/okrservice/commit/88146f7e7178a4910b83e57e6ee469999cfbc582))
+* clientportal ci ([9318936](https://github.com/okrbest/okrservice/commit/931893639ab02cb21a0f9fa99555ac592f1175ac))
+* **cp:** add ability replace subdomain in getEnv ([10ec8c1](https://github.com/okrbest/okrservice/commit/10ec8c14401586acb43c0c431f1a5a9d211b1b86))
+* **cp:** apollo client uri ([a86a7b4](https://github.com/okrbest/okrservice/commit/a86a7b474eedb1f70522059dc2922607844721b3))
+* **cp:** can't generate uri apollo client propertly ([5517213](https://github.com/okrbest/okrservice/commit/55172130c5c1f92d1646b8d93f27a61d6c9b3c1e))
+* Msdynamic double send ([#6028](https://github.com/okrbest/okrservice/issues/6028)) ([795c5ae](https://github.com/okrbest/okrservice/commit/795c5ae6e0a0a981278a76c9b820303f63a3a88f))
+* **payment:** 9ix callback on manual checking invoice ([a78a205](https://github.com/okrbest/okrservice/commit/a78a20572068100615b293e087e8268db2c428a6))
+* **sales:** refetch deal detail in Main Board ([36650a0](https://github.com/okrbest/okrservice/commit/36650a0e35399fffcf1c6e587bacea29248e4293))
+* **tms:** tourgroup ([a0a616f](https://github.com/okrbest/okrservice/commit/a0a616f75012f8f5f06be82d90ee530489f7801e))
+* **tms:** tourgroup ([39b06f4](https://github.com/okrbest/okrservice/commit/39b06f4aa19f6d9a8ebdde65ba3bffea906ba234))
+## [2.12.0-rc.0](https://github.com/okrbest/okrservice/compare/2.11.3...2.12.0) (2025-05-04)
 
 ### Bug Fixes
 
-* **core:** add ability display label primaryName of company in segment field config ([01d2ce5](https://github.com/okrbest/okrservice/commit/01d2ce5ec7b19358615e381aca8fa827baa8e43d))
-* **tickets:** update notification handling for ticket comments and client portal ([1b6e723](https://github.com/okrbest/okrservice/commit/1b6e723fbfc69a3c5a7fdfd15639eaf57550b7ac))
+* accountings correction inventories costs ([489a727](https://github.com/okrbest/okrservice/commit/489a727fa81ed02bdbbacdb943db7f68bf8d5c3e))
+* **loans:** fix detail bug and dropdown ([44de37b](https://github.com/okrbest/okrservice/commit/44de37bf6b0b40ded4ffd97315f4dc593dbc9abf))
+* **sales:** fix some ui ([d66973a](https://github.com/okrbest/okrservice/commit/d66973aa1c9b419970d4b16f3317a71da53623bd))
 
-## [2.11.1](https://github.com/okrbest/okrservice/compare/2.11.0...2.11.1) (2025-05-06)
+### Performance Improvements
+
+* **messenger:** update ticket and call ([#6014](https://github.com/okrbest/okrservice/issues/6014)) ([a799820](https://github.com/okrbest/okrservice/commit/a799820fa403dd6e736b61192c762c5ceeaf5848))
+
+## [2.12.0-rc.0](https://github.com/okrbest/okrservice/compare/2.11.0...2.12.0-rc.0) (2025-05-04)
+
+### Bug Fixes
+
+* accountings correction inventories costs ([489a727](https://github.com/okrbest/okrservice/commit/489a727fa81ed02bdbbacdb943db7f68bf8d5c3e))
+* **loans:** fix detail bug and dropdown ([44de37b](https://github.com/okrbest/okrservice/commit/44de37bf6b0b40ded4ffd97315f4dc593dbc9abf))
+* **sales:** fix some ui ([d66973a](https://github.com/okrbest/okrservice/commit/d66973aa1c9b419970d4b16f3317a71da53623bd))
+
+### Performance Improvements
+
+* **messenger:** update ticket and call ([#6014](https://github.com/okrbest/okrservice/issues/6014)) ([a799820](https://github.com/okrbest/okrservice/commit/a799820fa403dd6e736b61192c762c5ceeaf5848))
 
 ## [2.11.0](https://github.com/okrbest/okrservice/compare/2.11.0-rc.0...2.11.0) (2025-05-04)
 
@@ -2584,12 +2610,12 @@
 ## [1.11.0-rc.5](https://github.com/okrbest/okrservice/compare/1.11.0...1.11.0-rc.5) (2024-05-28)
 
 - chore: add burenscoring in release yaml (194418d9d2)
-- Merge branch 'master' of github.com:erxes/erxes into rc (0d664bad14)
+- Merge branch 'master' of github.com:okrbest/okrservice into rc (0d664bad14)
 - feat: ebarimt billType for customFieldsData (#5226) (59897b51b2)
 - chore: improve code quality (#5288) (6c2d30f5c6)
 - Merge branch 'master' into rc (5004b340cb)
 - chore(forms): handle strings starting with slash as plain regex (6955c5e0ab)
-- Merge branch 'master' of github.com:erxes/erxes (83655ec344)
+- Merge branch 'master' of github.com:okrbest/okrservice (83655ec344)
 - chore: add call history count (43f4573c8c)
 - chore: debug on call assigned used (125fabca68)
 - fix(calls): fixed history filter (122274dbce)
@@ -2603,7 +2629,7 @@
 - fix(calls): add go to conversation and search in history (b5e6e31b2b)
 - fix(calls): update agent status (4a066b2291)
 - fix(calls): agentStatus ui update (76bcff07ce)
-- Merge branch 'rc' of github.com:erxes/erxes into rc (8104adefd2)
+- Merge branch 'rc' of github.com:okrbest/okrservice into rc (8104adefd2)
 - fix(calls): add default open option in popover (bed6a668e8)
 - fix(calls): add conversation detail (e07a5aa2ab)
 - chore: update ui configs and essyncer (8ee46f8e29)
