@@ -16,6 +16,56 @@
     "pass": "",
     "vhost": ""
   },
+  "widgets": {},
   "allowed_origins": ".*",
-  "plugins": []
+  "plugins": [
+    {
+      "ui": "local",
+      "name": "inbox"
+    },
+    {
+      "ui": "local",
+      "name": "tasks"
+    },
+    {
+      "ui": "local",
+      "name": "tickets"
+    },
+    {
+      "ui": "local",
+      "name": "sales"
+    },
+    {
+      "ui": "local",
+      "name": "notifications"
+    },
+    {
+      "ui": "local",
+      "name": "automations"
+    },
+    {
+      "ui": "local",
+      "name": "engages"
+    },
+    {
+      "ui": "local",
+      "name": "clientportal"
+    },
+    {
+      "ui": "local",
+      "name": "webbuilder"
+    },
+    {
+      "ui": "local",
+      "name": "knowledgebase"
+    },
+    {
+      "ui": "local",
+      "name": "imap"
+    },
+    {
+      "ui": "local",
+      "name": "documents"
+    }
+  ]
 }
