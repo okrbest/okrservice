@@ -1,5 +1,6 @@
 import { Actions, InfoWrapper } from "@erxes/ui/src/styles/main";
-import { Alert, __, confirm } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert, confirm } from "@erxes/ui/src/utils";
 import {
   FieldStyle,
   SidebarCounter,
@@ -137,7 +138,7 @@ const BasicInfo: React.FC<Props> = (props) => {
       return null;
     }
 
-    const attachments = [item] as IAttachment[]
+    const attachments = [item] as IAttachment[];
 
     return <Attachment attachment={item} attachments={attachments} />;
   };

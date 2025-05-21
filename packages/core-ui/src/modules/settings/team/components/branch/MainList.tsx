@@ -1,6 +1,7 @@
 import { BranchesMainQueryResponse, IBranch } from "@erxes/ui/src/team/types";
 import { LeftActionBar, Title } from "@erxes/ui-settings/src/styles";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import ActionButtons from "@erxes/ui/src/components/ActionButtons";
 import { BarItems } from "modules/layout/styles";
@@ -82,7 +83,7 @@ const MainList = (props: Props) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [additionalBreadCrumb, setAdditionalBreadCrumb] = useState([] as any[]);
   const [searchValue, setSearchValue] = useState(
-    props.queryParams.searchValue || "",
+    props.queryParams.searchValue || ""
   );
 
   useEffect(() => {
@@ -178,7 +179,7 @@ const MainList = (props: Props) => {
     const handleSelect = () => {
       if (selectedItems.includes(branch._id)) {
         const removedSelectedItems = selectedItems.filter(
-          (selectItem) => selectItem !== branch._id,
+          (selectItem) => selectItem !== branch._id
         );
         return setSelectedItems(removedSelectedItems);
       }
@@ -313,10 +314,10 @@ const MainList = (props: Props) => {
           {generateTree(
             generateList(),
             queryParams?.parentId || null,
-            (branch, level) => renderRow(branch, level),
+            (branch, level) => renderRow(branch, level)
           )}
           {generateTree(generateList(), "", (branch, level) =>
-            renderRow(branch, level),
+            renderRow(branch, level)
           )}
         </tbody>
       </Table>
@@ -335,7 +336,7 @@ const MainList = (props: Props) => {
           btnStyle="white"
           onClick={() => {
             removeParams(navigate, location, "page");
-            setParams(navigate, location, { onlyFirstLevel })
+            setParams(navigate, location, { onlyFirstLevel });
           }}
         >
           {__(`${onlyFirstLevel ? "Show Only" : "Disable"} First Level`)}

@@ -4,19 +4,18 @@ import {
   ImagePreview,
   ImageUpload,
 } from "@erxes/ui/src/components/step/style";
-import Spinner from 'modules/common/components/Spinner';
-import { __, readFile, uploadHandler } from 'coreui/utils';
-import React from 'react';
+import Spinner from "modules/common/components/Spinner";
+import { __, readFile, uploadHandler } from "modules/common/utils";
+import React from "react";
 
-import Button from '../../../../common/components/Button';
-import Icon from '../../../../common/components/Icon';
-import Info from '../../../../common/components/Info';
-import FormControl from '../../../../common/components/form/Control';
-import FormGroup from '../../../../common/components/form/Group';
-import ControlLabel from '../../../../common/components/form/Label';
-import { LeftItem } from '../../../../common/components/step/styles';
-import ActionBar from '../../../../layout/components/ActionBar';
-
+import Button from "../../../../common/components/Button";
+import Icon from "../../../../common/components/Icon";
+import Info from "../../../../common/components/Info";
+import FormControl from "../../../../common/components/form/Control";
+import FormGroup from "../../../../common/components/form/Group";
+import ControlLabel from "../../../../common/components/form/Label";
+import { LeftItem } from "../../../../common/components/step/styles";
+import ActionBar from "../../../../layout/components/ActionBar";
 
 const defaultValue = {
   isSkip: false,
@@ -26,15 +25,15 @@ type Props = {
   type: string;
   onChange: (
     name:
-      | 'carousel'
-      | 'calloutBtnText'
-      | 'bodyValue'
-      | 'calloutTitle'
-      | 'isSkip'
-      | 'logo'
-      | 'logoPreviewStyle'
-      | 'defaultValue'
-      | 'calloutImgSize',
+      | "carousel"
+      | "calloutBtnText"
+      | "bodyValue"
+      | "calloutTitle"
+      | "isSkip"
+      | "logo"
+      | "logoPreviewStyle"
+      | "defaultValue"
+      | "calloutImgSize",
     value: string | boolean | object | any
   ) => void;
   calloutTitle?: string;
@@ -84,14 +83,14 @@ class CallOut extends React.Component<Props, State> {
 
     this.props.onChange(name, value);
 
-    if (name === 'isSkip') {
-      this.props.onChange('carousel', value ? 'form' : 'callout');
+    if (name === "isSkip") {
+      this.props.onChange("carousel", value ? "form" : "callout");
     }
   };
 
   removeImage = () => {
-    this.setState({ logo: '' });
-    this.props.onChange('logo', '');
+    this.setState({ logo: "" });
+    this.props.onChange("logo", "");
   };
 
   handleImage = (e: React.FormEvent<HTMLInputElement>) => {
@@ -101,16 +100,16 @@ class CallOut extends React.Component<Props, State> {
       files: imageFile,
 
       beforeUpload: () => {
-        this.setState({ logoPreviewStyle: { opacity: '0.9' } });
+        this.setState({ logoPreviewStyle: { opacity: "0.9" } });
       },
 
       afterUpload: ({ response }) => {
         this.setState({
           logo: response,
-          logoPreviewStyle: { opacity: '1' },
+          logoPreviewStyle: { opacity: "1" },
         });
 
-        this.props.onChange('logo', response);
+        this.props.onChange("logo", response);
       },
     });
   };
@@ -118,20 +117,20 @@ class CallOut extends React.Component<Props, State> {
   renderImagePreview() {
     const { logo, logoPreviewStyle } = this.state;
 
-    if (logoPreviewStyle && logoPreviewStyle.opacity === '0.9') {
+    if (logoPreviewStyle && logoPreviewStyle.opacity === "0.9") {
       return <Spinner />;
     }
 
     if (!logo) {
       return (
         <>
-          <Icon icon='plus' />
-          {__('Upload')}
+          <Icon icon="plus" />
+          {__("Upload")}
         </>
       );
     }
 
-    return <ImagePreview src={readFile(logo)} alt='previewImage' />;
+    return <ImagePreview src={readFile(logo)} alt="previewImage" />;
   }
 
   renderUploadImage() {
@@ -144,22 +143,22 @@ class CallOut extends React.Component<Props, State> {
 
     return (
       <ImageUpload>
-        <label htmlFor='file-upload'>
+        <label htmlFor="file-upload">
           <input
-            id='file-upload'
-            type='file'
+            id="file-upload"
+            type="file"
             onChange={onChange}
             disabled={skip}
-            accept='image/x-png,image/jpeg'
+            accept="image/x-png,image/jpeg"
           />
           {this.renderImagePreview()}
         </label>
 
         {image && (
           <Button
-            btnStyle='link'
-            icon='cancel'
-            size='small'
+            btnStyle="link"
+            icon="cancel"
+            size="small"
             onClick={onClick}
           />
         )}
@@ -170,7 +169,7 @@ class CallOut extends React.Component<Props, State> {
   footerActions = () => {
     const onChange = (e) =>
       this.onChangeState(
-        'isSkip',
+        "isSkip",
         (e.currentTarget as HTMLInputElement).checked
       );
 
@@ -179,11 +178,11 @@ class CallOut extends React.Component<Props, State> {
         right={
           <FormControl
             checked={this.props.skip || false}
-            id='isSkip'
-            componentclass='checkbox'
+            id="isSkip"
+            componentclass="checkbox"
             onChange={onChange}
           >
-            {__('Skip callOut')}
+            {__("Skip callOut")}
           </FormControl>
         }
       />
@@ -196,25 +195,25 @@ class CallOut extends React.Component<Props, State> {
 
     const onChangeTitle = (e: React.FormEvent<HTMLElement>) =>
       this.onChangeFunction(
-        'calloutTitle',
+        "calloutTitle",
         (e.currentTarget as HTMLInputElement).value
       );
 
     const onChangeBody = (e) =>
       this.onChangeFunction(
-        'bodyValue',
+        "bodyValue",
         (e.currentTarget as HTMLInputElement).value
       );
 
     const onChangeBtnText = (e) =>
       this.onChangeFunction(
-        'calloutBtnText',
+        "calloutBtnText",
         (e.currentTarget as HTMLInputElement).value
       );
 
     const onChangeImageWidth = (e) =>
       this.onChangeFunction(
-        'calloutImgSize',
+        "calloutImgSize",
         (e.currentTarget as HTMLInputElement).value
       );
 
@@ -224,14 +223,14 @@ class CallOut extends React.Component<Props, State> {
           <LeftItem $deactive={skip}>
             <Info>
               {__(
-                'Call Out is a brief message you wish to display before showing the full form.'
+                "Call Out is a brief message you wish to display before showing the full form."
               )}
             </Info>
             <FormGroup>
               <ControlLabel>Callout title</ControlLabel>
               <FormControl
-                id='callout-title'
-                type='text'
+                id="callout-title"
+                type="text"
                 value={calloutTitle}
                 disabled={skip}
                 onChange={onChangeTitle}
@@ -241,8 +240,8 @@ class CallOut extends React.Component<Props, State> {
             <FormGroup>
               <ControlLabel>Callout body</ControlLabel>
               <FormControl
-                id='callout-body'
-                componentclass='textarea'
+                id="callout-body"
+                componentclass="textarea"
                 value={bodyValue}
                 disabled={skip}
                 onChange={onChangeBody}
@@ -252,7 +251,7 @@ class CallOut extends React.Component<Props, State> {
             <FormGroup>
               <ControlLabel>Callout button text</ControlLabel>
               <FormControl
-                id='callout-btn-text'
+                id="callout-btn-text"
                 value={calloutBtnText}
                 disabled={skip}
                 onChange={onChangeBtnText}
@@ -261,20 +260,20 @@ class CallOut extends React.Component<Props, State> {
 
             <FormGroup>
               <ControlLabel>Featured image</ControlLabel>
-              <p>{__('You can upload only image file')}</p>
+              <p>{__("You can upload only image file")}</p>
               {this.renderUploadImage()}
             </FormGroup>
 
             <FormGroup>
               <ControlLabel>Callout image size</ControlLabel>
               <FormControl
-                id='validation'
-                componentclass='select'
+                id="validation"
+                componentclass="select"
                 value={calloutImgSize}
                 onChange={onChangeImageWidth}
               >
-                <option value='100%'>{__('Full width')}</option>
-                <option value='50%'>{__('Half width')}</option>
+                <option value="100%">{__("Full width")}</option>
+                <option value="50%">{__("Half width")}</option>
               </FormControl>
             </FormGroup>
           </LeftItem>

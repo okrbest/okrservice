@@ -4,7 +4,7 @@ import ConfigsForm from "../containers/ConfigsForm";
 import React from "react";
 import TypeForm from "../containers/TypeForm";
 import Wrapper from "modules/layout/components/Wrapper";
-import { Alert, __ } from "coreui/utils";
+import { Alert, __ } from "modules/common/utils";
 import { FlexPad } from "modules/common/components/step/styles";
 import { Description, SubHeading } from "@erxes/ui-settings/src/styles";
 import { StepButton } from "@erxes/ui/src/components/step/styles";
@@ -38,7 +38,7 @@ class Form extends React.Component<Props, State> {
       disclaimer: false,
       name: "",
       columns: [],
-      skipFilter: false
+      skipFilter: false,
     };
   }
 
@@ -55,15 +55,15 @@ class Form extends React.Component<Props, State> {
     this.setState({ skipFilter });
   };
 
-  onClickField = columns => {
+  onClickField = (columns) => {
     this.setState({ columns });
   };
 
-  onChangeExportName = value => {
+  onChangeExportName = (value) => {
     this.setState({ name: value });
   };
 
-  onChangeDisclaimer = value => {
+  onChangeDisclaimer = (value) => {
     this.setState({ disclaimer: value });
   };
 
@@ -74,9 +74,9 @@ class Form extends React.Component<Props, State> {
   onSubmit = () => {
     const { contentType, columns, segmentData, name } = this.state;
 
-    let columnsConfig = columns.filter(conf => conf.checked) as any;
+    let columnsConfig = columns.filter((conf) => conf.checked) as any;
 
-    columnsConfig = columnsConfig.map(conf => {
+    columnsConfig = columnsConfig.map((conf) => {
       return conf.name;
     });
 
@@ -84,7 +84,7 @@ class Form extends React.Component<Props, State> {
       contentType,
       columnsConfig,
       segmentData,
-      name
+      name,
     };
 
     return this.props.saveExport(doc);
@@ -110,8 +110,8 @@ class Form extends React.Component<Props, State> {
           const data: any = {
             ...values,
             conditions: (values.conditionSegments || []).flatMap(
-              segment => segment.conditions
-            )
+              (segment) => segment.conditions
+            ),
           };
 
           delete data.conditionSegments;
@@ -135,7 +135,7 @@ class Form extends React.Component<Props, State> {
     const breadcrumb = [
       { title: __("Settings"), link: "/settings" },
       { title: __("Import & Export"), link: "/settings/importHistories" },
-      { title }
+      { title },
     ];
 
     const content = (

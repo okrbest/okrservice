@@ -1,4 +1,5 @@
-import { Alert, __, confirm, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert, confirm, router } from "@erxes/ui/src/utils";
 import {
   Button,
   DataWithLoader,
@@ -7,11 +8,7 @@ import {
   Pagination,
   Table,
 } from "@erxes/ui/src/components";
-import {
-  FilterContainer,
-  FlexRow,
-  Title,
-} from "@erxes/ui-settings/src/styles";
+import { FilterContainer, FlexRow, Title } from "@erxes/ui-settings/src/styles";
 
 import CreateForm from "./CreateForm";
 import { IAssignmentCampaign } from "../types";

@@ -6,7 +6,8 @@ import ControlLabel from "@erxes/ui/src/components/form/Label";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import React, { useState } from "react";
 import { Sidebar, Wrapper } from "@erxes/ui/src/layout";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
 import FormControl from "@erxes/ui/src/components/form/Control";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -50,7 +51,7 @@ const CheckerSidebar = (props: IProps) => {
       stageChangedEndDate,
       dateType,
       search,
-      number
+      number,
     });
   };
 
@@ -121,7 +122,7 @@ const CheckerSidebar = (props: IProps) => {
     setConfigStageId(stageId);
   };
 
-  const onUserChange = userId => {
+  const onUserChange = (userId) => {
     setUserId(userId);
   };
 

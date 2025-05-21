@@ -1,4 +1,5 @@
-import { Alert, __, confirm, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert, confirm, router } from "@erxes/ui/src/utils";
 import { IProduct, IProductCategory } from "../../types";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
@@ -42,7 +43,7 @@ interface IProps {
   mergeProductLoading;
 }
 
-const List: React.FC<IProps> = props => {
+const List: React.FC<IProps> = (props) => {
   let timer;
 
   const {
@@ -59,7 +60,7 @@ const List: React.FC<IProps> = props => {
     mergeProducts,
     duplicateProduct,
     productsCount,
-    queryParams
+    queryParams,
   } = props;
 
   const [searchValue, setSearchValue] = useState<string>(props.searchValue);
@@ -75,12 +76,12 @@ const List: React.FC<IProps> = props => {
   }, [checked, bulk]);
 
   const renderRow = () => {
-    return products.map(product => (
+    return products.map((product) => (
       <Row
         key={product._id}
         product={product}
         toggleBulk={toggleBulk}
-        isChecked={(bulk || []).map(b => b._id).includes(product._id)}
+        isChecked={(bulk || []).map((b) => b._id).includes(product._id)}
         duplicateProduct={duplicateProduct}
       />
     ));
@@ -95,17 +96,17 @@ const List: React.FC<IProps> = props => {
     }
   };
 
-  const removeProducts = products => {
+  const removeProducts = (products) => {
     const productIds: string[] = [];
 
-    products.forEach(product => {
+    products.forEach((product) => {
       productIds.push(product._id);
     });
 
     remove({ productIds }, emptyBulk);
   };
 
-  const search = e => {
+  const search = (e) => {
     if (timer) {
       clearTimeout(timer);
     }
@@ -120,7 +121,7 @@ const List: React.FC<IProps> = props => {
     }, 500);
   };
 
-  const moveCursorAtTheEnd = e => {
+  const moveCursorAtTheEnd = (e) => {
     const tmpValue = e.target.value;
 
     e.target.value = "";
@@ -171,10 +172,10 @@ const List: React.FC<IProps> = props => {
 
   const breadcrumb = [
     { title: __("Settings"), link: "/settings" },
-    { title: __("Product & Service") }
+    { title: __("Product & Service") },
   ];
 
-  const onChangeChecked = e => {
+  const onChangeChecked = (e) => {
     const checked = e.target.checked;
 
     if (checked && (bulk || []).length) {
@@ -188,7 +189,7 @@ const List: React.FC<IProps> = props => {
         "categoryId"
       );
       router.setParams(navigate, location, {
-        ids: (bulk || []).map(b => b._id).join(",")
+        ids: (bulk || []).map((b) => b._id).join(","),
       });
     } else {
       setChecked(false);
@@ -202,9 +203,9 @@ const List: React.FC<IProps> = props => {
     </Button>
   );
 
-  const modalContent = props => <Form {...props} />;
+  const modalContent = (props) => <Form {...props} />;
 
-  const productsMerge = props => {
+  const productsMerge = (props) => {
     return (
       <ProductsMerge
         {...props}
@@ -222,7 +223,7 @@ const List: React.FC<IProps> = props => {
           .then(() => {
             removeProducts(bulk);
           })
-          .catch(error => {
+          .catch((error) => {
             Alert.error(error.message);
           });
 
@@ -319,7 +320,7 @@ const List: React.FC<IProps> = props => {
           title={__("Product & Service")}
           queryParams={queryParams}
           breadcrumb={breadcrumb}
-          extraFilterParams={[{ param: 'image', bool: false }]}
+          extraFilterParams={[{ param: "image", bool: false }]}
         />
       }
       mainHead={

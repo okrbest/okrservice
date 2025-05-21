@@ -1,11 +1,11 @@
-import { IUser } from '@erxes/ui/src/auth/types';
-import React from 'react';
-import { __, readFile } from 'coreui/utils';
+import { IUser } from "@erxes/ui/src/auth/types";
+import React from "react";
+import { __, readFile } from "modules/common/utils";
 import {
   ErxesStaffProfile,
   StateSpan,
   ErxesSupporters,
-} from 'modules/saas/onBoarding/styles';
+} from "modules/saas/onBoarding/styles";
 
 type Props = {
   currentUser: IUser;
@@ -18,7 +18,7 @@ class Supporters extends React.Component<Props> {
     const { avatar } = this.props;
 
     if (!avatar) {
-      return '/images/avatar-colored.svg';
+      return "/images/avatar-colored.svg";
     }
 
     return readFile(avatarUrl);
@@ -32,7 +32,7 @@ class Supporters extends React.Component<Props> {
         <div className="avatar">
           <img
             src={this.getUserAvatar(avatar)}
-            alt={currentUser?.details?.fullName || ''}
+            alt={currentUser?.details?.fullName || ""}
           />
           <StateSpan state={isOnline || false} />
         </div>

@@ -1,6 +1,7 @@
 import { SidebarList as List } from "@erxes/ui/src/layout";
 import { Wrapper } from "@erxes/ui/src/layout";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import React, { useRef } from "react";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import ControlLabel from "@erxes/ui/src/components/form/Label";

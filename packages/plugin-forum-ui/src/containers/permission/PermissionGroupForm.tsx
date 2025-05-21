@@ -1,11 +1,12 @@
-import { Alert, __ } from 'coreui/utils';
-import { mutations, queries } from '../../graphql';
-import { useQuery, useMutation } from '@apollo/client';
+import { __ } from "coreui/utils";
+import { Alert } from "@erxes/ui/src/utils";
+import { mutations, queries } from "../../graphql";
+import { useQuery, useMutation } from "@apollo/client";
 
-import { IUserGroupDocument } from '../../types';
-import PermissionForm from '../../components/permission/PermissionGroupForm';
-import React from 'react';
-import { gql } from '@apollo/client';
+import { IUserGroupDocument } from "../../types";
+import PermissionForm from "../../components/permission/PermissionGroupForm";
+import React from "react";
+import { gql } from "@apollo/client";
 
 type Props = {
   group?: IUserGroupDocument;
@@ -14,7 +15,7 @@ type Props = {
 
 function PermissionGroupFormContainer({ closeModal, group }: Props) {
   const allUsers = useQuery(gql(queries.clientPortalUsers), {
-    fetchPolicy: 'network-only'
+    fetchPolicy: "network-only",
   });
 
   const [addMut] = useMutation(gql(mutations.permissionGroupSetUsers));
@@ -27,25 +28,25 @@ function PermissionGroupFormContainer({ closeModal, group }: Props) {
       update({
         variables: {
           name,
-          _id
+          _id,
         },
         refetchQueries: [
           {
-            query: gql(queries.permissionGroupsQuery)
-          }
-        ]
+            query: gql(queries.permissionGroupsQuery),
+          },
+        ],
       })
         .then(() =>
           addMut({
             variables: { _id, cpUserIds: ids },
             refetchQueries: [
               {
-                query: gql(queries.permissionGroupsQuery)
-              }
-            ]
+                query: gql(queries.permissionGroupsQuery),
+              },
+            ],
           })
         )
-        .catch(error => {
+        .catch((error) => {
           Alert.error(error.message);
         });
     }
@@ -55,12 +56,12 @@ function PermissionGroupFormContainer({ closeModal, group }: Props) {
         variables: { name },
         refetchQueries: [
           {
-            query: gql(queries.permissionGroupsQuery)
-          }
-        ]
+            query: gql(queries.permissionGroupsQuery),
+          },
+        ],
       })
         .then(() => addMut({ variables: { _id, cpUserIds: ids } }))
-        .catch(error => {
+        .catch((error) => {
           Alert.error(error.message);
         });
     }

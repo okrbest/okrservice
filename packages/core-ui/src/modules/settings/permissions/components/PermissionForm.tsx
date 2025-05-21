@@ -1,4 +1,4 @@
-import { Alert, __ } from "coreui/utils";
+import { Alert, __ } from "modules/common/utils";
 import { Divider, StepBody, StepHeader, StepItem } from "../styles";
 import { IActions, IModule } from "../types";
 import {
@@ -64,7 +64,7 @@ const PermissionForm = (props: Props) => {
       return Alert.error("Please select at least one group or user!");
     }
 
-    return setIsSubmitted(true );
+    return setIsSubmitted(true);
   };
 
   const getVariables = () => {
@@ -94,22 +94,22 @@ const PermissionForm = (props: Props) => {
   };
 
   const select = <T extends keyof State>(name: T, value) => {
-    if(name === 'selectedUserIds'){
-      setSelectedUserIds(value)
+    if (name === "selectedUserIds") {
+      setSelectedUserIds(value);
     }
-    if(name === 'selectedActions'){
-      setSelectedActions(value)
+    if (name === "selectedActions") {
+      setSelectedActions(value);
     }
-    if(name === 'selectedGroups'){
-      setSelectedGroups(value)
+    if (name === "selectedGroups") {
+      setSelectedGroups(value);
     }
   };
 
   const changeModule = (item: generatedList) => {
     const newSelectedModule = correctValue(item);
 
-    setSelectedModule(newSelectedModule)
-    setSelectedActions([])
+    setSelectedModule(newSelectedModule);
+    setSelectedActions([]);
   };
 
   const collectValues = (items: generatedList[]) => {
@@ -121,11 +121,10 @@ const PermissionForm = (props: Props) => {
 
     const usersOnChange = (users) => select("selectedUserIds", users);
 
-    const moduleOptions = generateModuleParams(modules).map(option => ({
+    const moduleOptions = generateModuleParams(modules).map((option) => ({
       ...option,
-      label: __(option.label || '')
+      label: __(option.label || ""),
     }));
-    
 
     return (
       <>
@@ -133,17 +132,21 @@ const PermissionForm = (props: Props) => {
           <strong>{__("User vs. Group Permissions")}</strong>
           <br />
           <span>
-            {__("When a team member is part of two or more User Groups with different levels of permissions, ")}
-          <TextInfo $textStyle="danger">
-            {__("the negative permission will overrule.")}
-          </TextInfo>
+            {__(
+              "When a team member is part of two or more User Groups with different levels of permissions, "
+            )}
+            <TextInfo $textStyle="danger">
+              {__("the negative permission will overrule.")}
+            </TextInfo>
           </span>
           <br />
           <span>
-            {__("For example, if you're part of the \"Admin Group\" with all permissions allowed, but you've included yourself in the \"Support Group\" with fewer permissions, ")}
-          <TextInfo $textStyle="danger">
-            {__("you might not be able to do certain actions.")}
-          </TextInfo>
+            {__(
+              'For example, if you\'re part of the "Admin Group" with all permissions allowed, but you\'ve included yourself in the "Support Group" with fewer permissions, '
+            )}
+            <TextInfo $textStyle="danger">
+              {__("you might not be able to do certain actions.")}
+            </TextInfo>
           </span>
         </Info>
         <StepItem>
@@ -160,9 +163,7 @@ const PermissionForm = (props: Props) => {
                 placeholder={__("Choose module")}
                 isClearable={true}
                 options={moduleOptions}
-                value={moduleOptions.find(
-                  (o) => o.value === selectedModule
-                )}
+                value={moduleOptions.find((o) => o.value === selectedModule)}
                 onChange={(p) => p && changeModule(p)}
               />
             </FormGroup>
@@ -171,10 +172,12 @@ const PermissionForm = (props: Props) => {
               <ControlLabel required={true}>Choose the actions</ControlLabel>
               <Select<generatedList, true>
                 placeholder={__("Choose actions")}
-                options={filterActions(actions, selectedModule).map(option => ({
-                  ...option,
-                  label: __(option.label || '')
-                }))}
+                options={filterActions(actions, selectedModule).map(
+                  (option) => ({
+                    ...option,
+                    label: __(option.label || ""),
+                  })
+                )}
                 value={selectedActions}
                 isDisabled={!selectedModule}
                 onChange={select.bind(this, "selectedActions")}

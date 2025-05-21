@@ -11,7 +11,8 @@ import {
   Templates,
 } from "@erxes/ui-emailtemplates/src/styles";
 import { IButtonMutateProps } from "@erxes/ui/src/types";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import { Count } from "@erxes/ui/src/styles/main";
 import { EMPTY_CONTENT_SCRIPT } from "@erxes/ui-settings/src/constants";

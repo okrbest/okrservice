@@ -1,5 +1,5 @@
 import { StructureEditButton, StructureList } from "../../styles";
-import { __, readFile } from "coreui/utils";
+import { __, readFile } from "modules/common/utils";
 
 import { IStructure } from "@erxes/ui/src/team/types";
 import { IUser } from "@erxes/ui/src/auth/types";

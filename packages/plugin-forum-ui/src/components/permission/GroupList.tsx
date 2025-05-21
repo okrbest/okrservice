@@ -1,6 +1,7 @@
 import { ActionButtons, Header } from "@erxes/ui-settings/src/styles";
 import { FieldStyle, SidebarList } from "@erxes/ui/src/layout/styles";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";
@@ -48,7 +49,11 @@ const GroupList = (props: IProps) => {
     const content = (props) => <GroupForm {...props} group={object} />;
 
     return (
-      <ModalTrigger title={__("New Group")} trigger={trigger} content={content} />
+      <ModalTrigger
+        title={__("New Group")}
+        trigger={trigger}
+        content={content}
+      />
     );
   };
 

@@ -1,5 +1,6 @@
 import { FieldStyle, SidebarList } from "@erxes/ui/src/layout/styles";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import Box from "@erxes/ui/src/components/Box";
 import Button from "@erxes/ui/src/components/Button";

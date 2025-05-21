@@ -12,7 +12,8 @@ import {
   ZoomFlowJobs,
   ZoomIcon,
 } from "../../styles";
-import { Alert, __ } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert } from "@erxes/ui/src/utils";
 import {
   BarItems,
   FlexContent,

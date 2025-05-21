@@ -1,6 +1,7 @@
 import { DataWithLoader, Icon, Tip } from "@erxes/ui/src/components";
 import { Sidebar, Wrapper } from "@erxes/ui/src/layout";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { IAssignmentCampaign } from "../../../configs/assignmentCampaign/types";

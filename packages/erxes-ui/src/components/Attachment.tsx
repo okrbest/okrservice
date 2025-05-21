@@ -1,15 +1,16 @@
-import { __, readFile } from 'coreui/utils';
+import { __ } from "coreui/utils";
+import { readFile } from "../utils/core";
 
-import AttachmentWithPreview from './AttachmentWithPreview';
-import { IAttachment } from '../types';
-import Icon from './Icon';
-import ImageWithPreview from './ImageWithPreview';
-import React from 'react';
-import colors from '../styles/colors';
-import { rgba } from '../styles/ecolor';
-import styled from 'styled-components';
-import styledTS from 'styled-components-ts';
-import VideoPlayer from './VideoPlayer';
+import AttachmentWithPreview from "./AttachmentWithPreview";
+import { IAttachment } from "../types";
+import Icon from "./Icon";
+import ImageWithPreview from "./ImageWithPreview";
+import React from "react";
+import colors from "../styles/colors";
+import { rgba } from "../styles/ecolor";
+import styled from "styled-components";
+import styledTS from "styled-components-ts";
+import VideoPlayer from "./VideoPlayer";
 
 export const AttachmentWrapper = styled.div`
   border-radius: 4px;
@@ -54,8 +55,8 @@ const Download = styled.a`
 const PreviewWrapper = styledTS<{ large?: boolean; small?: boolean }>(
   styled.div
 )`
-  width: ${(props) => (props.large ? '300px' : props.small ? '55px' : '110px')};
-  height: ${(props) => (props.large ? '220px' : props.small ? '40px' : '80px')};
+  width: ${(props) => (props.large ? "300px" : props.small ? "55px" : "110px")};
+  height: ${(props) => (props.large ? "220px" : props.small ? "40px" : "80px")};
   background: ${rgba(colors.colorCoreDarkBlue, 0.08)};
   display: flex;
   justify-content: center;
@@ -168,30 +169,30 @@ class Attachment extends React.Component<Props> {
 
   renderOtherInfo = (attachment) => {
     const { small } = this.props;
-    const name = attachment.name || attachment.url || '';
+    const name = attachment.name || attachment.url || "";
 
     return (
       <>
         <h5>
           <AttachmentName>{name}</AttachmentName>
           <Download
-            rel='noopener noreferrer'
+            rel="noopener noreferrer"
             href={readFile(attachment.url)}
-            target='_blank'
+            target="_blank"
           >
-            <Icon icon='external-link-alt' />
+            <Icon icon="external-link-alt" />
           </Download>
         </h5>
         <Meta>
           <span>
             {attachment.size && (
               <div>
-                {__('Size')}: {this.renderFileSize(attachment.size)}
+                {__("Size")}: {this.renderFileSize(attachment.size)}
               </div>
             )}
             {!small && attachment.type && (
               <div>
-                {__('Type')}: {attachment.type}
+                {__("Type")}: {attachment.type}
               </div>
             )}
           </span>
@@ -216,7 +217,7 @@ class Attachment extends React.Component<Props> {
                 </AttachmentInfo>
                 <Icon
                   size={10}
-                  icon='cancel'
+                  icon="cancel"
                   onClick={() => removeAttachment && removeAttachment(i)}
                 />
               </div>
@@ -227,7 +228,11 @@ class Attachment extends React.Component<Props> {
     );
   };
 
-  renderOtherFile = (attachment: IAttachment, icon?: string, forceShowIcon?: boolean) => {
+  renderOtherFile = (
+    attachment: IAttachment,
+    icon?: string,
+    forceShowIcon?: boolean
+  ) => {
     const { index, attachments, large, small } = this.props;
 
     return (
@@ -252,11 +257,11 @@ class Attachment extends React.Component<Props> {
       autoplay: false,
       playbackRates: [0.5, 1, 1.25, 1.5, 2],
       controls: true,
-      width: '100%',
+      width: "100%",
       sources: [
         {
           src: readFile(attachment.url),
-          type: 'video/mp4',
+          type: "video/mp4",
         },
       ],
     };
@@ -279,11 +284,11 @@ class Attachment extends React.Component<Props> {
       autoplay: false,
       playbackRates: [0.5, 1, 1.25, 1.5, 2],
       controls: true,
-      width: '100%',
+      width: "100%",
       sources: [
         {
           src: attachment.url,
-          type: 'application/x-mpegURL',
+          type: "application/x-mpegURL",
         },
       ],
     };
@@ -316,21 +321,21 @@ class Attachment extends React.Component<Props> {
   renderAudioFile(attachment) {
     return (
       <audio controls={true}>
-        <source src={readFile(attachment.url)} type='audio/ogg' />
+        <source src={readFile(attachment.url)} type="audio/ogg" />
       </audio>
     );
   }
   renderAudioWavFile(attachment) {
     return (
       <audio controls={true}>
-        <source src={readFile(attachment.url)} type='audio/wav' />
+        <source src={readFile(attachment.url)} type="audio/wav" />
       </audio>
     );
   }
   renderMp3File(attachment) {
     return (
       <audio controls={true}>
-        <source src={readFile(attachment.url)} type='audio/mpeg' />
+        <source src={readFile(attachment.url)} type="audio/mpeg" />
       </audio>
     );
   }
@@ -342,14 +347,14 @@ class Attachment extends React.Component<Props> {
 
     const { simple, withoutPreview } = this.props;
 
-    const url = attachment.url || attachment.name || '';
-    const fileExtension = url.split('.').pop();
+    const url = attachment.url || attachment.name || "";
+    const fileExtension = url.split(".").pop();
 
     if (withoutPreview) {
       return this.renderWithoutPreview();
     }
 
-    if (attachment.type.startsWith('image')) {
+    if (attachment.type.startsWith("image")) {
       if (simple) {
         return this.renderImagePreview(attachment);
       }
@@ -357,75 +362,75 @@ class Attachment extends React.Component<Props> {
       return this.renderOtherFile(attachment);
     }
 
-    if (attachment.type.includes('audio')) {
+    if (attachment.type.includes("audio")) {
       return this.renderAudioFile(attachment);
     }
 
-    if (url.includes('cloudflarestream.com')) {
+    if (url.includes("cloudflarestream.com")) {
       return this.renderVideoStream(attachment, simple);
     }
 
-    if (attachment.type.includes('video')) {
+    if (attachment.type.includes("video")) {
       return this.renderVideoFile(attachment, simple);
     }
 
     let filePreview;
 
     switch (fileExtension) {
-      case 'docx':
-        filePreview = this.renderOtherFile(attachment, 'doc', true);
+      case "docx":
+        filePreview = this.renderOtherFile(attachment, "doc", true);
         break;
-      case 'pptx':
-        filePreview = this.renderOtherFile(attachment, 'ppt', true);
+      case "pptx":
+        filePreview = this.renderOtherFile(attachment, "ppt", true);
         break;
-      case 'xlsx':
-        filePreview = this.renderOtherFile(attachment, 'xls', true);
+      case "xlsx":
+        filePreview = this.renderOtherFile(attachment, "xls", true);
         break;
-      case 'mp4':
+      case "mp4":
         filePreview = this.renderVideoFile(attachment);
         break;
-      case 'video':
+      case "video":
         filePreview = this.renderVideoFile(attachment);
         break;
-      case 'audio':
+      case "audio":
         filePreview = this.renderAudioFile(attachment);
         break;
-      case 'wav':
+      case "wav":
         filePreview = this.renderAudioWavFile(attachment);
         break;
-      case 'wave':
+      case "wave":
         filePreview = this.renderAudioWavFile(attachment);
         break;
-      case 'm3u8':
+      case "m3u8":
         filePreview = this.renderVideoStream(attachment);
         break;
-      case 'zip':
-      case 'csv':
+      case "zip":
+      case "csv":
         filePreview = this.renderOtherFile(attachment);
         break;
-      case 'doc':
-      case 'ppt':
-      case 'psd':
-      case 'avi':
-      case 'txt':
-      case 'rar':
-      case 'mp3':
+      case "doc":
+      case "ppt":
+      case "psd":
+      case "avi":
+      case "txt":
+      case "rar":
+      case "mp3":
         filePreview = this.renderMp3File(attachment);
         break;
-      case 'pdf':
-      case 'png':
-      case 'xls':
-      case 'jpeg':
+      case "pdf":
+      case "png":
+      case "xls":
+      case "jpeg":
         filePreview = this.renderOtherFile(attachment, fileExtension);
         break;
-      case 'hwp':
-        filePreview = this.renderOtherFile(attachment, 'doc', true);
+      case "hwp":
+        filePreview = this.renderOtherFile(attachment, "doc", true);
         break;
-      case 'hwpx':
-        filePreview = this.renderOtherFile(attachment, 'doc', true);
+      case "hwpx":
+        filePreview = this.renderOtherFile(attachment, "doc", true);
         break;
       default:
-        filePreview = this.renderOtherFile(attachment, 'file-2', true);
+        filePreview = this.renderOtherFile(attachment, "file-2", true);
     }
     return filePreview;
   };

@@ -1,22 +1,23 @@
-import { LeftActionBar, Title } from '@erxes/ui-settings/src/styles';
-import { __, router } from 'coreui/utils';
+import { LeftActionBar, Title } from "@erxes/ui-settings/src/styles";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
-import ActionButtons from '@erxes/ui/src/components/ActionButtons';
-import { BarItems } from 'modules/layout/styles';
-import Button from 'modules/common/components/Button';
-import DataWithLoader from 'modules/common/components/DataWithLoader';
-import FormControl from 'modules/common/components/form/Control';
-import Icon from '@erxes/ui/src/components/Icon';
-import ModalTrigger from 'modules/common/components/ModalTrigger';
-import Pagination from 'modules/common/components/pagination/Pagination';
-import React, { useState } from 'react';
-import Table from 'modules/common/components/table';
-import Tip from '@erxes/ui/src/components/Tip';
-import Wrapper from 'modules/layout/components/Wrapper';
-import { useLocation, useNavigate } from 'react-router-dom';
-import dayjs from 'dayjs';
-import { IExchangeRate } from '../types';
-import ExchangeRateForm from '../containers/ExchangeRateForm';
+import ActionButtons from "@erxes/ui/src/components/ActionButtons";
+import { BarItems } from "modules/layout/styles";
+import Button from "modules/common/components/Button";
+import DataWithLoader from "modules/common/components/DataWithLoader";
+import FormControl from "modules/common/components/form/Control";
+import Icon from "@erxes/ui/src/components/Icon";
+import ModalTrigger from "modules/common/components/ModalTrigger";
+import Pagination from "modules/common/components/pagination/Pagination";
+import React, { useState } from "react";
+import Table from "modules/common/components/table";
+import Tip from "@erxes/ui/src/components/Tip";
+import Wrapper from "modules/layout/components/Wrapper";
+import { useLocation, useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
+import { IExchangeRate } from "../types";
+import ExchangeRateForm from "../containers/ExchangeRateForm";
 
 type Props = {
   rateList: IExchangeRate[];
@@ -34,7 +35,7 @@ const MainList = (props: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [searchValue, setSearchValue] = useState(queryParams.searchValue || '');
+  const [searchValue, setSearchValue] = useState(queryParams.searchValue || "");
 
   const remove = (_id?: string) => {
     if (_id) {
@@ -47,7 +48,7 @@ const MainList = (props: Props) => {
   const renderForm = () => {
     const trigger = (
       <Button btnStyle="success" icon="plus-circle">
-        {__('Add Exchange Rate')}
+        {__("Add Exchange Rate")}
       </Button>
     );
 
@@ -75,7 +76,7 @@ const MainList = (props: Props) => {
       setSearchValue(searchValue);
 
       timer = setTimeout(() => {
-        router.removeParams(navigate, location, 'page');
+        router.removeParams(navigate, location, "page");
         router.setParams(navigate, location, { searchValue });
       }, 500);
     };
@@ -83,14 +84,14 @@ const MainList = (props: Props) => {
     const moveCursorAtTheEnd = (e) => {
       const tmpValue = e.target.value;
 
-      e.target.value = '';
+      e.target.value = "";
       e.target.value = tmpValue;
     };
 
     return (
       <FormControl
         type="text"
-        placeholder={__('Type to search')}
+        placeholder={__("Type to search")}
         onChange={search}
         value={searchValue}
         autoFocus={true}
@@ -102,7 +103,7 @@ const MainList = (props: Props) => {
   const renderEditAction = (exchangeRate: IExchangeRate) => {
     const editTrigger = (
       <Button btnStyle="link">
-        <Tip text={__('Edit')} placement="top">
+        <Tip text={__("Edit")} placement="top">
           <Icon icon="edit-3" />
         </Tip>
       </Button>
@@ -144,15 +145,15 @@ const MainList = (props: Props) => {
             onClick={() => handleSelect(exchangeRate._id)}
           />
         </td>
-        <td>{dayjs(exchangeRate.date).format('YYYY-MM-DD')}</td>
-        <td>{exchangeRate?.mainCurrency || ''}</td>
-        <td>{exchangeRate?.rateCurrency || ''}</td>
+        <td>{dayjs(exchangeRate.date).format("YYYY-MM-DD")}</td>
+        <td>{exchangeRate?.mainCurrency || ""}</td>
+        <td>{exchangeRate?.rateCurrency || ""}</td>
         <td>{exchangeRate?.rate || 0}</td>
         <td>
           <ActionButtons>
             {renderEditAction(exchangeRate)}
 
-            <Tip text={__('Delete')} placement="top">
+            <Tip text={__("Delete")} placement="top">
               <Button
                 btnStyle="link"
                 onClick={() => remove(exchangeRate._id)}
@@ -186,10 +187,10 @@ const MainList = (props: Props) => {
                 onClick={handleSelectAll}
               />
             </th>
-            <th>{__('Date')}</th>
-            <th>{__('Main Currency')}</th>
-            <th>{__('Rate Currency')}</th>
-            <th>{__('Rate')}</th>
+            <th>{__("Date")}</th>
+            <th>{__("Main Currency")}</th>
+            <th>{__("Rate Currency")}</th>
+            <th>{__("Rate")}</th>
           </tr>
         </thead>
         <tbody>{rateList.map((rate) => renderRow(rate))}</tbody>
@@ -221,8 +222,8 @@ const MainList = (props: Props) => {
         <Wrapper.Header
           title="Exchange Rates"
           breadcrumb={[
-            { title: __('Settings'), link: '/settings' },
-            { title: __('Exchange Rates'), link: '/settings/exchangeRates' },
+            { title: __("Settings"), link: "/settings" },
+            { title: __("Exchange Rates"), link: "/settings/exchangeRates" },
           ]}
         />
       }
@@ -231,7 +232,7 @@ const MainList = (props: Props) => {
           left={
             <LeftActionBar>
               <Title $capitalize={true}>
-                {__('Exchange Rates')}&nbsp;
+                {__("Exchange Rates")}&nbsp;
                 {`(${totalCount || 0})`}
               </Title>
               {leftActionBar}

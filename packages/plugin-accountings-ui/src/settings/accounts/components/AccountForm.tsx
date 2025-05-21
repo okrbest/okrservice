@@ -7,7 +7,8 @@ import {
 import { IAccount, IAccountCategory } from "../types";
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
 import React, { useState } from "react";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import CommonForm from "@erxes/ui/src/components/form/Form";
@@ -134,8 +135,15 @@ function AccountForm(props: IProps): React.ReactNode {
     const { values, isSubmitted } = formProps;
     const object = account || ({} as IAccount);
 
-    const { code, categoryId, branchId, departmentId, maskStr, isOutBalance, isTemp } =
-      state;
+    const {
+      code,
+      categoryId,
+      branchId,
+      departmentId,
+      maskStr,
+      isOutBalance,
+      isTemp,
+    } = state;
 
     return (
       <>

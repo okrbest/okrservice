@@ -1,15 +1,16 @@
-import { colors } from '@erxes/ui/src';
-import { Box, DataWithLoader, Icon } from '@erxes/ui/src/components';
-import Dropdown from '@erxes/ui/src/components/Dropdown';
-import DropdownToggle from '@erxes/ui/src/components/DropdownToggle';
-import Tip from '@erxes/ui/src/components/Tip';
-import { SidebarList } from '@erxes/ui/src/layout';
-import { __, router } from 'coreui/utils';
-import queryString from 'query-string';
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { IScoreCampaign } from '../../../configs/scoreCampaign/types';
-import { ExtraButtons } from '../../../styles';
+import { colors } from "@erxes/ui/src";
+import { Box, DataWithLoader, Icon } from "@erxes/ui/src/components";
+import Dropdown from "@erxes/ui/src/components/Dropdown";
+import DropdownToggle from "@erxes/ui/src/components/DropdownToggle";
+import Tip from "@erxes/ui/src/components/Tip";
+import { SidebarList } from "@erxes/ui/src/layout";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
+import queryString from "query-string";
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { IScoreCampaign } from "../../../configs/scoreCampaign/types";
+import { ExtraButtons } from "../../../styles";
 
 interface IProps {
   queryParams: any;
@@ -25,11 +26,11 @@ const CampaignList = (props: IProps) => {
   const { queryParams, scoreCampaigns, loading } = props;
 
   const clearCategoryFilter = () => {
-    router.removeParams(navigate, location, 'campaignId');
+    router.removeParams(navigate, location, "campaignId");
   };
 
   const isActive = (id: string) => {
-    const currentGroup = queryParams?.campaignId || '';
+    const currentGroup = queryParams?.campaignId || "";
 
     return currentGroup === id;
   };
@@ -48,12 +49,12 @@ const CampaignList = (props: IProps) => {
         <li key={campaign._id}>
           <Link
             to={`?${qryString}&campaignId=${campaign._id}`}
-            className={isActive(campaign?._id || '') ? 'active' : ''}
+            className={isActive(campaign?._id || "") ? "active" : ""}
             style={{ color: colors.linkPrimary, fontWeight: 500 }}
           >
             {name}
           </Link>
-        </li>,
+        </li>
       );
     }
 
@@ -62,8 +63,8 @@ const CampaignList = (props: IProps) => {
 
   const extraButtons = (
     <ExtraButtons>
-      {queryParams['campaignId'] && (
-        <Tip text={'Clear Filter'}>
+      {queryParams["campaignId"] && (
+        <Tip text={"Clear Filter"}>
           <Icon icon="times-circle" onClick={() => clearCategoryFilter()} />
         </Tip>
       )}
@@ -72,7 +73,7 @@ const CampaignList = (props: IProps) => {
           to={`/erxes-plugin-loyalty/settings/score`}
           style={{ color: colors.linkPrimary, fontWeight: 500 }}
         >
-          {__('Manage Score Campaigns')}
+          {__("Manage Score Campaigns")}
         </Link>
       </Dropdown>
     </ExtraButtons>

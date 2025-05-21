@@ -2,18 +2,19 @@ import {
   FieldStyle,
   SidebarCounter,
   SidebarList,
-} from '@erxes/ui/src/layout/styles';
-import { __, router } from 'coreui/utils';
-import { useLocation, useNavigate } from 'react-router-dom';
+} from "@erxes/ui/src/layout/styles";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import Box from '@erxes/ui/src/components/Box';
-import { Counts } from '@erxes/ui/src/types';
-import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
-import React from 'react';
+import Box from "@erxes/ui/src/components/Box";
+import { Counts } from "@erxes/ui/src/types";
+import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";
+import React from "react";
 
 const statusFilters = [
-  { key: 'active', value: 'Active' },
-  { key: 'archived', value: 'Archived' },
+  { key: "active", value: "Active" },
+  { key: "archived", value: "Archived" },
 ];
 
 interface IProps {
@@ -36,12 +37,12 @@ function StatusFilter({ counts, emptyText }: IProps) {
         return (
           <li key={index}>
             <a
-              href='#filter'
+              href="#filter"
               tabIndex={0}
               className={
-                router.getParam(location, 'status') === status.key
-                  ? 'active'
-                  : ''
+                router.getParam(location, "status") === status.key
+                  ? "active"
+                  : ""
               }
               onClick={onClick}
             >
@@ -56,17 +57,17 @@ function StatusFilter({ counts, emptyText }: IProps) {
 
   return (
     <Box
-      title={__('Filter by status')}
+      title={__("Filter by status")}
       collapsible={statusFilters.length > 5}
-      name='showFilterByStatus'
+      name="showFilterByStatus"
     >
       <DataWithLoader
         data={data}
         loading={false}
         count={statusFilters.length}
-        emptyText={emptyText ? emptyText : 'Loading'}
-        emptyIcon='leaf'
-        size='small'
+        emptyText={emptyText ? emptyText : "Loading"}
+        emptyIcon="leaf"
+        size="small"
         objective={true}
       />
     </Box>

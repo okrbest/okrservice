@@ -1,15 +1,15 @@
-import dayjs from 'dayjs';
-import Button from 'modules/common/components/Button';
-import { DateWrapper } from 'modules/common/styles/main';
-import { getEnv, readFile, __ } from 'coreui/utils';
-import React from 'react';
+import dayjs from "dayjs";
+import Button from "modules/common/components/Button";
+import { DateWrapper } from "modules/common/styles/main";
+import { getEnv, readFile, __ } from "modules/common/utils";
+import React from "react";
 
 import {
   ImportTitle,
-  ImportHistoryActions
-} from 'modules/settings/importExport/styles';
-import TextInfo from '@erxes/ui/src/components/TextInfo';
-import Tip from 'modules/common/components/Tip';
+  ImportHistoryActions,
+} from "modules/settings/importExport/styles";
+import TextInfo from "@erxes/ui/src/components/TextInfo";
+import Tip from "modules/common/components/Tip";
 import { IExportHistory } from "../../types";
 
 type Props = {
@@ -24,7 +24,7 @@ class HistoryRow extends React.Component<Props> {
     const { exportLink, uploadType } = history;
 
     const onClick = () => {
-      if (uploadType === 'local') {
+      if (uploadType === "local") {
         return window.open(
           `${REACT_APP_API_URL}/pl:workers/read-file?key=${exportLink}`
         );
@@ -33,7 +33,7 @@ class HistoryRow extends React.Component<Props> {
       return window.open(readFile(exportLink));
     };
 
-    if (uploadType === 'local') {
+    if (uploadType === "local") {
       return (
         <Button btnStyle="simple" size="small" onClick={onClick}>
           {__(`Download result`)}
@@ -48,7 +48,7 @@ class HistoryRow extends React.Component<Props> {
     );
   };
 
-  renderStatus = history => {
+  renderStatus = (history) => {
     if (history.error) {
       return (
         <Tip placement="top" text={history.error}>
@@ -63,28 +63,28 @@ class HistoryRow extends React.Component<Props> {
   render() {
     const { history } = this.props;
 
-    const renderTotal = value => {
+    const renderTotal = (value) => {
       if (!value || value === 0) {
-        return '-';
+        return "-";
       }
 
       return value;
     };
 
-    const renderStatus = data => {
+    const renderStatus = (data) => {
       if (
-        data.status === 'Done' ||
+        data.status === "Done" ||
         data.percentage === 100 ||
-        data.status === 'success'
+        data.status === "success"
       ) {
         return <TextInfo $textStyle="success"> Done </TextInfo>;
       }
 
-      if (data.value === 'inProcess') {
+      if (data.value === "inProcess") {
         return <TextInfo $textStyle="warning"> In Process </TextInfo>;
       }
 
-      if (data.value === 'failed') {
+      if (data.value === "failed") {
         return (
           <Tip placement="bottom" text={data.errorMsg}>
             <TextInfo $textStyle="danger"> Failed </TextInfo>
@@ -103,7 +103,7 @@ class HistoryRow extends React.Component<Props> {
       <tr>
         <td>
           <ImportTitle>
-            <h6>{history.name || '-'}</h6>
+            <h6>{history.name || "-"}</h6>
           </ImportTitle>
         </td>
         <td>
@@ -114,7 +114,7 @@ class HistoryRow extends React.Component<Props> {
         </td>
 
         <td>
-          <DateWrapper>{dayjs(history.date).format('lll')}</DateWrapper>
+          <DateWrapper>{dayjs(history.date).format("lll")}</DateWrapper>
         </td>
 
         <td>

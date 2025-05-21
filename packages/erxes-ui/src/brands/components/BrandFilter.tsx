@@ -1,6 +1,7 @@
 import { FieldStyle, SidebarCounter, SidebarList } from "../../layout/styles";
 import React, { useEffect } from "react";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { IBrand } from "../../brands/types";
@@ -24,7 +25,7 @@ function Brands({ counts, brands, loading, emptyText }: IProps) {
 
   const data = (
     <SidebarList>
-      {brands.map(brand => {
+      {brands.map((brand) => {
         const onClick = () => {
           router.setParams(navigate, location, { brand: brand._id });
         };

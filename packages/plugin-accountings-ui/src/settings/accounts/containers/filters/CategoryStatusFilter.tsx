@@ -1,16 +1,17 @@
-import { FieldStyle, SidebarList } from '@erxes/ui/src/layout/styles';
-import { __, router } from 'coreui/utils';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { FieldStyle, SidebarList } from "@erxes/ui/src/layout/styles";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import Box from '@erxes/ui/src/components/Box';
-import React from 'react';
-import { categoryStatusChoises } from '../../../../utils';
+import Box from "@erxes/ui/src/components/Box";
+import React from "react";
+import { categoryStatusChoises } from "../../../../utils";
 
 type Props = {};
 
 const CategoryStatusFilter: React.FC<Props> = () => {
-  const productParam = 'state';
-  const categoryParam = 'status';
+  const productParam = "state";
+  const categoryParam = "status";
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,22 +24,22 @@ const CategoryStatusFilter: React.FC<Props> = () => {
   return (
     <>
       <Box
-        title={__('FILTER CATEGORY BY STATUS')}
+        title={__("FILTER CATEGORY BY STATUS")}
         name="showFilterByType"
         isOpen={router.getParam(location, [categoryParam])}
       >
         <SidebarList>
           {categoryStatusChoises(__).map(
             ({ value, label }) =>
-              (value === 'disabled' || value === 'archived') && (
+              (value === "disabled" || value === "archived") && (
                 <li key={value}>
                   <a
                     href="#filter"
                     tabIndex={0}
                     className={
                       router.getParam(location, [categoryParam]) === value
-                        ? 'active'
-                        : ''
+                        ? "active"
+                        : ""
                     }
                     onClick={onClick.bind(this, categoryParam, value)}
                   >
@@ -50,22 +51,22 @@ const CategoryStatusFilter: React.FC<Props> = () => {
         </SidebarList>
       </Box>
       <Box
-        title={__('FILTER PRODUCT BY STATUS')}
+        title={__("FILTER PRODUCT BY STATUS")}
         name="showFilterByType"
         isOpen={router.getParam(location, [productParam])}
       >
         <SidebarList>
           {categoryStatusChoises(__).map(
             ({ value, label }, index: number) =>
-              value === 'deleted' && (
+              value === "deleted" && (
                 <li key={`${value}${index}`}>
                   <a
                     href="#filter"
                     tabIndex={0}
                     className={
                       router.getParam(location, [productParam]) === value
-                        ? 'active'
-                        : ''
+                        ? "active"
+                        : ""
                     }
                     onClick={onClick.bind(this, productParam, value)}
                   >

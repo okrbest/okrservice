@@ -2,16 +2,17 @@ import {
   FieldStyle,
   SidebarCounter,
   SidebarList,
-} from '@erxes/ui/src/layout/styles';
-import { __, router } from 'coreui/utils';
+} from "@erxes/ui/src/layout/styles";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
-import Box from '@erxes/ui/src/components/Box';
-import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
-import Icon from '@erxes/ui/src/components/Icon';
-import { LEAD_STATUS_TYPES } from '@erxes/ui-contacts/src/customers/constants';
-import React from 'react';
-import { leadStatusChoices } from '../../utils';
-import { useLocation, useNavigate } from 'react-router-dom';
+import Box from "@erxes/ui/src/components/Box";
+import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";
+import Icon from "@erxes/ui/src/components/Icon";
+import { LEAD_STATUS_TYPES } from "@erxes/ui-contacts/src/customers/constants";
+import React from "react";
+import { leadStatusChoices } from "../../utils";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface IProps {
   counts: { [key: string]: number };
@@ -24,11 +25,11 @@ function LeadStatusFilter({ counts, loading, searchable }: IProps) {
   const location = useLocation();
 
   const renderCounts = () => {
-    const paramKey = 'leadStatus';
+    const paramKey = "leadStatus";
 
     const onClick = (key, value) => {
       router.setParams(navigate, location, { [key]: value });
-      router.removeParams(navigate, location, 'page');
+      router.removeParams(navigate, location, "page");
     };
 
     return (
@@ -42,8 +43,8 @@ function LeadStatusFilter({ counts, loading, searchable }: IProps) {
                   tabIndex={0}
                   className={
                     router.getParam(location, [paramKey]) === value
-                      ? 'active'
-                      : ''
+                      ? "active"
+                      : ""
                   }
                   onClick={onClick.bind(this, paramKey, value)}
                 >
@@ -52,7 +53,7 @@ function LeadStatusFilter({ counts, loading, searchable }: IProps) {
                 </a>
               </li>
             );
-          },
+          }
         )}
       </SidebarList>
     );
@@ -62,7 +63,7 @@ function LeadStatusFilter({ counts, loading, searchable }: IProps) {
     router.setParams(navigate, location, { leadStatus: null });
   };
 
-  const extraButtons = router.getParam(location, 'leadStatus') && (
+  const extraButtons = router.getParam(location, "leadStatus") && (
     <a href="#cancel" tabIndex={0} onClick={onClear}>
       <Icon icon="times-circle" />
     </a>
@@ -71,7 +72,7 @@ function LeadStatusFilter({ counts, loading, searchable }: IProps) {
   return (
     <Box
       extraButtons={extraButtons}
-      title={__('Filter by lead status')}
+      title={__("Filter by lead status")}
       name="showFilterByStatus"
     >
       <DataWithLoader

@@ -1,6 +1,7 @@
-import { Alert, __ } from 'coreui/utils';
-import React from 'react';
-import { BarItems, Wrapper } from '@erxes/ui/src/layout';
+import { __ } from "coreui/utils";
+import { Alert } from "@erxes/ui/src/utils";
+import React from "react";
+import { BarItems, Wrapper } from "@erxes/ui/src/layout";
 import {
   Button,
   DataWithLoader,
@@ -9,13 +10,13 @@ import {
   Pagination,
   SortHandler,
   Table,
-} from '@erxes/ui/src/components';
-import { FlexRow, Title } from '@erxes/ui-settings/src/styles';
-import { confirm } from '@erxes/ui/src/utils';
+} from "@erxes/ui/src/components";
+import { FlexRow, Title } from "@erxes/ui-settings/src/styles";
+import { confirm } from "@erxes/ui/src/utils";
 
-import { ILoanResearch } from '../types';
-import LoansResearchRow from './LoansResearchRow';
-import LoansResearchForm from '../containers/LoansResearchForm';
+import { ILoanResearch } from "../types";
+import LoansResearchRow from "./LoansResearchRow";
+import LoansResearchForm from "../containers/LoansResearchForm";
 
 type Props = {
   queryParams: any;
@@ -48,7 +49,7 @@ const LoansResearchList = (props: Props) => {
   } = props;
 
   const onChange = () => {
-    toggleAll(loanResearches, 'loanResearches');
+    toggleAll(loanResearches, "loanResearches");
   };
 
   const loanForm = (formProps) => {
@@ -94,7 +95,7 @@ const LoansResearchList = (props: Props) => {
     return (
       <BarItems>
         <ModalTrigger
-          title={__('New Loans Research')}
+          title={__("New Loans Research")}
           trigger={addTrigger}
           autoOpenKey="showLoansResearchModal"
           size="lg"
@@ -125,28 +126,28 @@ const LoansResearchList = (props: Props) => {
             />
           </th>
           <th>
-            <SortHandler sortField={'dealId'} label={__('Deal Id')} />
+            <SortHandler sortField={"dealId"} label={__("Deal Id")} />
           </th>
           <th>
             <SortHandler
-              sortField={'customerType'}
-              label={__('Customer Type')}
+              sortField={"customerType"}
+              label={__("Customer Type")}
             />
           </th>
           <th>
             <SortHandler
-              sortField={'debtIncomeRatio'}
-              label={__('Debt Income Ratio')}
+              sortField={"debtIncomeRatio"}
+              label={__("Debt Income Ratio")}
             />
           </th>
           <th>
             <SortHandler
-              sortField={'increaseMonthlyPaymentAmount'}
-              label={__('Increase amount')}
+              sortField={"increaseMonthlyPaymentAmount"}
+              label={__("Increase amount")}
             />
           </th>
 
-          <th>{__('Actions')}</th>
+          <th>{__("Actions")}</th>
         </tr>
       </thead>
       <tbody id="loanResearches">
@@ -166,8 +167,8 @@ const LoansResearchList = (props: Props) => {
     <Wrapper
       header={
         <Wrapper.Header
-          title={__('Loans Research')}
-          breadcrumb={[{ title: 'Loans Research' }]}
+          title={__("Loans Research")}
+          breadcrumb={[{ title: "Loans Research" }]}
           queryParams={queryParams}
         />
       }

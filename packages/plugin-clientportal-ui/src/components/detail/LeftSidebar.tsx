@@ -3,23 +3,24 @@ import {
   SectionContainer,
   SidebarCounter,
   SidebarList,
-} from '@erxes/ui/src/layout/styles';
-import { __, renderFullName } from 'coreui/utils';
+} from "@erxes/ui/src/layout/styles";
+import { __ } from "coreui/utils";
+import { renderFullName } from "@erxes/ui/src/utils/core";
 
-import Box from '@erxes/ui/src/components/Box';
-import CustomFieldsSection from '../../containers/CustomFieldsSection';
-import DetailInfo from './DetailInfo';
-import { IClientPortalUser } from '../../types';
-import Icon from '@erxes/ui/src/components/Icon';
-import { LinkButton } from '@erxes/ui/src/styles/main';
-import { List } from '../../styles';
-import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
-import React from 'react';
-import Sidebar from '@erxes/ui/src/layout/components/Sidebar';
-import VerificationForm from '../../containers/details/VerificationForm';
-import CompanyAssignForm from '../../containers/details/CompanyAssignForm';
-import { Button } from '@erxes/ui/src/components';
-import { useNavigate } from 'react-router-dom';
+import Box from "@erxes/ui/src/components/Box";
+import CustomFieldsSection from "../../containers/CustomFieldsSection";
+import DetailInfo from "./DetailInfo";
+import { IClientPortalUser } from "../../types";
+import Icon from "@erxes/ui/src/components/Icon";
+import { LinkButton } from "@erxes/ui/src/styles/main";
+import { List } from "../../styles";
+import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
+import React from "react";
+import Sidebar from "@erxes/ui/src/layout/components/Sidebar";
+import VerificationForm from "../../containers/details/VerificationForm";
+import CompanyAssignForm from "../../containers/details/CompanyAssignForm";
+import { Button } from "@erxes/ui/src/components";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   clientPortalUser: IClientPortalUser;
@@ -29,7 +30,7 @@ type Props = {
 
 const LeftSidebar: React.FC<Props> = (props: Props) => {
   const { clientPortalUser, queryParams } = props;
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const renderCustomer = () => {
     return renderFullName(clientPortalUser.customer);
   };
@@ -57,7 +58,7 @@ const LeftSidebar: React.FC<Props> = (props: Props) => {
 
     const extraButtons = (
       <ModalTrigger
-        title={'Assign corresponding company to user'}
+        title={"Assign corresponding company to user"}
         trigger={trigger}
         content={content}
       />
@@ -72,7 +73,7 @@ const LeftSidebar: React.FC<Props> = (props: Props) => {
       >
         <SidebarList className="no-link">
           <li>
-            <FieldStyle>{__('Company Name')}</FieldStyle>
+            <FieldStyle>{__("Company Name")}</FieldStyle>
             <SidebarCounter>{clientPortalUser.companyName}</SidebarCounter>
           </li>
         </SidebarList>
@@ -82,23 +83,23 @@ const LeftSidebar: React.FC<Props> = (props: Props) => {
 
   const renderVerificationSection = () => {
     const verificationRequest = clientPortalUser.verificationRequest || {
-      status: 'notVerified',
+      status: "notVerified",
     };
 
-    let verificationStatus = 'notVerified';
+    let verificationStatus = "notVerified";
 
     switch (verificationRequest.status) {
-      case 'verified':
-        verificationStatus = 'verified';
+      case "verified":
+        verificationStatus = "verified";
         break;
-      case 'pending':
-        verificationStatus = 'pending';
+      case "pending":
+        verificationStatus = "pending";
         break;
-      case 'notVerified':
-        verificationStatus = 'not verified';
+      case "notVerified":
+        verificationStatus = "not verified";
         break;
       default:
-        verificationStatus = 'not Verified';
+        verificationStatus = "not Verified";
         break;
     }
 
@@ -131,7 +132,7 @@ const LeftSidebar: React.FC<Props> = (props: Props) => {
       >
         <SidebarList className="no-link">
           <li>
-            <FieldStyle>{__('status')}</FieldStyle>
+            <FieldStyle>{__("status")}</FieldStyle>
             <SidebarCounter>{__(verificationStatus)}</SidebarCounter>
           </li>
         </SidebarList>
@@ -140,10 +141,10 @@ const LeftSidebar: React.FC<Props> = (props: Props) => {
   };
 
   const onClick = () => {
-    if (clientPortalUser.type === 'customer') {
+    if (clientPortalUser.type === "customer") {
       navigate(`/contacts/details/${clientPortalUser.erxesCustomerId}`);
     }
-    if (clientPortalUser.type === 'company') {
+    if (clientPortalUser.type === "company") {
       navigate(`/companies/details/${clientPortalUser.erxesCompanyId}`);
     }
   };
@@ -158,9 +159,9 @@ const LeftSidebar: React.FC<Props> = (props: Props) => {
       {!clientPortalUser.customer && !clientPortalUser.company ? null : (
         <Box
           title={
-            clientPortalUser.type === 'customer'
-              ? 'Customer Detail'
-              : 'Company Detail'
+            clientPortalUser.type === "customer"
+              ? "Customer Detail"
+              : "Company Detail"
           }
           name="showDetail"
         >

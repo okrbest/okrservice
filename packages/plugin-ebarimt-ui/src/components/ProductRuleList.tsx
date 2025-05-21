@@ -9,16 +9,17 @@ import {
   Pagination,
   SortHandler,
   Table,
-  Wrapper
+  Wrapper,
 } from "@erxes/ui/src";
 import { confirm } from "@erxes/ui/src/utils";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import React, { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ProductRuleForm from "../containers/ProductRuleForm";
 import { IEbarimtProductRule } from "../types";
 import ProductRuleRow from "./ProductRuleRow";
-import Sidebar from './Sidebar';
+import Sidebar from "./Sidebar";
 
 type Props = {
   productRules: IEbarimtProductRule[];
@@ -44,20 +45,20 @@ const ProductRuleList = (props: Props) => {
     isAllSelected,
     emptyBulk,
     remove,
-    queryParams
+    queryParams,
   } = props;
 
   const navigate = useNavigate();
   const location = useLocation();
   const timerRef = useRef<number | null>(null);
-  const [search, setSearch] = useState<string>(queryParams.searchValue || '');
+  const [search, setSearch] = useState<string>(queryParams.searchValue || "");
 
   const onChange = () => {
     toggleAll(productRules, "productRules");
   };
 
-  const removeProductRules = productRules => {
-    const ids: string[] = productRules.map(pr => pr._id) || [];
+  const removeProductRules = (productRules) => {
+    const ids: string[] = productRules.map((pr) => pr._id) || [];
 
     remove({ ids }, emptyBulk);
   };
@@ -66,7 +67,7 @@ const ProductRuleList = (props: Props) => {
     return <ProductRuleForm {...formProps} queryParams={queryParams} />;
   };
 
-  const handleSearch = e => {
+  const handleSearch = (e) => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
@@ -80,7 +81,7 @@ const ProductRuleList = (props: Props) => {
     }, 500);
   };
 
-  const moveCursorAtTheEnd = e => {
+  const moveCursorAtTheEnd = (e) => {
     const tmpValue = e.target.value;
     e.target.value = "";
     e.target.value = tmpValue;
@@ -99,7 +100,7 @@ const ProductRuleList = (props: Props) => {
           .then(() => {
             removeProductRules(bulk);
           })
-          .catch(error => {
+          .catch((error) => {
             Alert.error(error.message);
           });
 
@@ -154,36 +155,24 @@ const ProductRuleList = (props: Props) => {
               />
             </th>
             <th>
-              <SortHandler
-                sortField={"title"}
-                label={__("Title")}
-              />
+              <SortHandler sortField={"title"} label={__("Title")} />
             </th>
             <th>
               <SortHandler sortField={"kind"} label={__("Kind")} />
             </th>
             <th>
-              <SortHandler
-                sortField={"taxType"}
-                label={__("Tax Type")}
-              />
+              <SortHandler sortField={"taxType"} label={__("Tax Type")} />
             </th>
             <th>
-              <SortHandler
-                sortField={"taxCode"}
-                label={__("tax Code")}
-              />
+              <SortHandler sortField={"taxCode"} label={__("tax Code")} />
             </th>
             <th>
-              <SortHandler
-                sortField={"percent"}
-                label={__("Percent")}
-              />
+              <SortHandler sortField={"percent"} label={__("Percent")} />
             </th>
           </tr>
         </thead>
         <tbody id="productRules">
-          {productRules.map(productRule => (
+          {productRules.map((productRule) => (
             <ProductRuleRow
               productRule={productRule}
               isChecked={bulk.includes(productRule)}

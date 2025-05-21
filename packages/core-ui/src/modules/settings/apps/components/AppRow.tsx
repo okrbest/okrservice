@@ -1,14 +1,14 @@
-import { Alert, __ } from 'coreui/utils';
-import { IApp, IAppParams } from '../types';
+import { Alert, __ } from "modules/common/utils";
+import { IApp, IAppParams } from "../types";
 
-import ActionButtons from 'modules/common/components/ActionButtons';
-import Button from 'modules/common/components/Button';
-import Icon from 'modules/common/components/Icon';
-import React from 'react';
-import Tip from 'modules/common/components/Tip';
-import copy from 'copy-text-to-clipboard';
-import dayjs from 'dayjs';
-import styled from 'styled-components';
+import ActionButtons from "modules/common/components/ActionButtons";
+import Button from "modules/common/components/Button";
+import Icon from "modules/common/components/Icon";
+import React from "react";
+import Tip from "modules/common/components/Tip";
+import copy from "copy-text-to-clipboard";
+import dayjs from "dayjs";
+import styled from "styled-components";
 
 const TokenWrapper = styled.div`
   color: #6569df;
@@ -39,10 +39,10 @@ export default class AppRow extends React.Component<Props> {
     const onClickToken = () => {
       copy(app.accessToken);
 
-      Alert.success(__('Token has been copied to clipboard'));
+      Alert.success(__("Token has been copied to clipboard"));
     };
 
-    const dateFormat = 'YYYY-MM-DD HH:mm:ss';
+    const dateFormat = "YYYY-MM-DD HH:mm:ss";
 
     return (
       <tr>
@@ -57,10 +57,10 @@ export default class AppRow extends React.Component<Props> {
           </Tip>
         </td>
         <td>
-          {app.noExpire ? 'No expire date' : ''}
+          {app.noExpire ? "No expire date" : ""}
           {app.expireDate && !app.noExpire
             ? dayjs(app.expireDate).format(dateFormat)
-            : ''}
+            : ""}
         </td>
         <td>
           <ActionButtons>

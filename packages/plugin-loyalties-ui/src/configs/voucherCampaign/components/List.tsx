@@ -1,4 +1,5 @@
-import { Alert, __, confirm, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert, confirm, router } from "@erxes/ui/src/utils";
 import {
   Button,
   DataWithLoader,
@@ -8,9 +9,7 @@ import {
   Pagination,
   Table,
 } from "@erxes/ui/src/components";
-import {
-  Title,
-} from "@erxes/ui-settings/src/styles";
+import { Title } from "@erxes/ui-settings/src/styles";
 
 import Form from "../containers/Form";
 import { IVoucherCampaign } from "../types";

@@ -1,4 +1,5 @@
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import BrandFilter from "@erxes/ui/src/brands/components/BrandFilter";
@@ -31,7 +32,7 @@ interface IProps {
   brandsLoading: boolean;
 }
 
-const List: React.FC<IProps> = props => {
+const List: React.FC<IProps> = (props) => {
   const { productCategories, loading, queryParams, remove } = props;
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,7 +41,7 @@ const List: React.FC<IProps> = props => {
     trigger: React.ReactNode,
     category?: IProductCategory
   ) => {
-    const content = props => (
+    const content = (props) => (
       <CategoryForm
         {...props}
         category={category}
@@ -81,20 +82,16 @@ const List: React.FC<IProps> = props => {
   };
 
   const renderTemplateModal = (category: IProductCategory) => {
-    const {
-      isRoot,
-      productCount,
-      ...productCategoryContent
-    } = category
+    const { isRoot, productCount, ...productCategoryContent } = category;
 
     const content = {
       content: JSON.stringify(productCategoryContent),
-      contentType: 'productCategories',
-      serviceName: 'core'
+      contentType: "productCategories",
+      serviceName: "core",
     };
 
     return <SaveTemplate as="icon" {...content} />;
-  }
+  };
 
   const onClick = (id: string) => {
     router.removeParams(navigate, location, "page");
@@ -102,14 +99,13 @@ const List: React.FC<IProps> = props => {
   };
 
   const renderAdditionalActions = (category: IProductCategory) => {
-
     return (
       <>
         {renderTemplateModal(category)}
         {pluginsOfProductCategoryActions(category)}
       </>
-    )
-  }
+    );
+  };
 
   const renderContent = () => {
     return (

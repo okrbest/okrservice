@@ -1,15 +1,16 @@
-import React from 'react';
-import queries from '../../../customPostTypes/graphql/queries';
-import { useQuery } from '@apollo/client';
-import Box from '@erxes/ui/src/components/Box';
-import { __, router } from 'coreui/utils';
-import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
+import React from "react";
+import queries from "../../../customPostTypes/graphql/queries";
+import { useQuery } from "@apollo/client";
+import Box from "@erxes/ui/src/components/Box";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
+import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";
 import {
   FieldStyle,
   SidebarCounter,
   SidebarList,
-} from '@erxes/ui/src/layout/styles';
-import { useLocation, useNavigate } from 'react-router-dom';
+} from "@erxes/ui/src/layout/styles";
+import { useLocation, useNavigate } from "react-router-dom";
 
 type Props = {
   clientPortalId: string;
@@ -37,10 +38,10 @@ const TypeFilter = (props: Props) => {
         return (
           <li key={type.label}>
             <a
-              href='#filter'
+              href="#filter"
               tabIndex={0}
               className={
-                router.getParam(location, 'type') === type.code ? 'active' : ''
+                router.getParam(location, "type") === type.code ? "active" : ""
               }
               onClick={onClick}
             >
@@ -54,17 +55,17 @@ const TypeFilter = (props: Props) => {
 
   return (
     <Box
-      title={__('Filter by types')}
-      name='showFilterByType'
-      isOpen={router.getParam(location, 'type')}
+      title={__("Filter by types")}
+      name="showFilterByType"
+      isOpen={router.getParam(location, "type")}
     >
       <DataWithLoader
         data={Content}
         loading={loading}
         count={data?.cmsCustomPostTypes?.length || 0}
-        emptyText={'Empty'}
-        emptyIcon='leaf'
-        size='small'
+        emptyText={"Empty"}
+        emptyIcon="leaf"
+        size="small"
         objective={true}
       />
     </Box>

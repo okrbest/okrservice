@@ -1,4 +1,5 @@
-import { __, renderFullName } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { renderFullName } from "@erxes/ui/src/utils";
 
 import Box from "@erxes/ui/src/components/Box";
 import { ButtonRelated } from "@erxes/ui/src/styles/main";
@@ -40,9 +41,9 @@ function Component({
   mainTypeId = "",
   onSelect,
   actionSection,
-  title = ""
+  title = "",
 }: Props) {
-  const renderRelatedCustomerChooser = props => {
+  const renderRelatedCustomerChooser = (props) => {
     return (
       <CustomerChooser
         {...props}
@@ -67,7 +68,7 @@ function Component({
     />
   );
 
-  const renderActionSection = customer => {
+  const renderActionSection = (customer) => {
     if (!actionSection) {
       return;
     }
@@ -98,7 +99,7 @@ function Component({
     );
   };
 
-  const customerChooser = props => {
+  const customerChooser = (props) => {
     return (
       <CustomerChooser
         {...props}

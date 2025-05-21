@@ -1,17 +1,21 @@
+import React, { useEffect, useState } from "react";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
-import React, { useEffect, useState } from 'react';
-import { __, router } from 'coreui/utils';
-
-import Box from '@erxes/ui/src/components/Box';
-import Button from '@erxes/ui/src/components/Button';
-import ControlLabel from '@erxes/ui/src/components/form/Label';
-import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
-import DateControl from '@erxes/ui/src/components/form/DateControl';
-import Icon from '@erxes/ui/src/components/Icon';
-import dayjs from 'dayjs';
-import queryString from 'query-string';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { CustomRangeContainer, EndDateContainer, FilterContainer } from '../../styles';
+import Box from "@erxes/ui/src/components/Box";
+import Button from "@erxes/ui/src/components/Button";
+import ControlLabel from "@erxes/ui/src/components/form/Label";
+import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";
+import DateControl from "@erxes/ui/src/components/form/DateControl";
+import Icon from "@erxes/ui/src/components/Icon";
+import dayjs from "dayjs";
+import queryString from "query-string";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  CustomRangeContainer,
+  EndDateContainer,
+  FilterContainer,
+} from "../../styles";
 
 interface IProps {
   counts: { [key: string]: number };
@@ -25,7 +29,7 @@ function DateFilters(props: IProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { dateFilters = '{}' } = queryString.parse(location.search);
+  const { dateFilters = "{}" } = queryString.parse(location.search);
 
   const [filterParams, setFilterParams] = useState(JSON.parse(dateFilters));
 
@@ -34,12 +38,12 @@ function DateFilters(props: IProps) {
   }, [dateFilters]);
 
   const onRemove = () => {
-    router.removeParams(navigate, location, 'dateFilters');
+    router.removeParams(navigate, location, "dateFilters");
   };
 
   const extraButtons = (
     <>
-      {router.getParam(location, 'dateFilters') && (
+      {router.getParam(location, "dateFilters") && (
         <a href="#" tabIndex={0} onClick={onRemove}>
           <Icon icon="times-circle" />
         </a>
@@ -47,12 +51,12 @@ function DateFilters(props: IProps) {
     </>
   );
 
-  const onChangeRangeFilter = (key: string, op: 'gte' | 'lte', date) => {
-    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : '';
+  const onChangeRangeFilter = (key: string, op: "gte" | "lte", date) => {
+    const formattedDate = date ? dayjs(date).format("YYYY-MM-DD") : "";
 
     const value: any = (filterParams[key] && filterParams[key]) || {
-      gte: '',
-      lte: '',
+      gte: "",
+      lte: "",
     };
 
     value[op] = formattedDate;
@@ -63,12 +67,11 @@ function DateFilters(props: IProps) {
   };
 
   const onChangeFilters = () => {
-    router.removeParams(navigate, location, 'page');
-    
+    router.removeParams(navigate, location, "page");
+
     router.setParams(navigate, location, {
       dateFilters: JSON.stringify(filterParams),
     });
-
   };
 
   const data = (
@@ -82,32 +85,32 @@ function DateFilters(props: IProps) {
               <DateControl
                 value={
                   (filterParams[`${field.name}`] &&
-                    filterParams[`${field.name}`]['gte']) ||
-                  ''
+                    filterParams[`${field.name}`]["gte"]) ||
+                  ""
                 }
                 required={false}
                 name="startDate"
                 onChange={(date) =>
-                  onChangeRangeFilter(`${field.name}`, 'gte', date)
+                  onChangeRangeFilter(`${field.name}`, "gte", date)
                 }
-                placeholder={'Start date'}
-                dateFormat={'YYYY-MM-DD'}
+                placeholder={"Start date"}
+                dateFormat={"YYYY-MM-DD"}
               />
 
               <EndDateContainer>
                 <DateControl
                   value={
                     (filterParams[`${field.name}`] &&
-                      filterParams[`${field.name}`]['lte']) ||
-                    ''
+                      filterParams[`${field.name}`]["lte"]) ||
+                    ""
                   }
                   required={false}
                   name="endDate"
-                  placeholder={'End date'}
+                  placeholder={"End date"}
                   onChange={(date) =>
-                    onChangeRangeFilter(`${field.name}`, 'lte', date)
+                    onChangeRangeFilter(`${field.name}`, "lte", date)
                   }
-                  dateFormat={'YYYY-MM-DD'}
+                  dateFormat={"YYYY-MM-DD"}
                 />
               </EndDateContainer>
             </CustomRangeContainer>
@@ -121,14 +124,14 @@ function DateFilters(props: IProps) {
         onClick={onChangeFilters}
         icon="filter"
       >
-        {__('Filter')}
+        {__("Filter")}
       </Button>
     </FilterContainer>
   );
 
   return (
     <Box
-      title={__('Filter by date')}
+      title={__("Filter by date")}
       collapsible={fields.length > 5}
       extraButtons={extraButtons}
       name="showFilterByBrand"
@@ -137,7 +140,7 @@ function DateFilters(props: IProps) {
         data={data}
         loading={loading}
         count={fields.length}
-        emptyText={emptyText || 'Empty'}
+        emptyText={emptyText || "Empty"}
         emptyIcon="leaf"
         size="small"
         objective={true}

@@ -1,4 +1,5 @@
-import { Alert, __ } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert } from "../utils";
 import React, { useCallback, useEffect, useState } from "react";
 
 import Icon from "./Icon";

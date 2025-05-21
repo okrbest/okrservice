@@ -38,6 +38,10 @@ cli/permissions.json
 cli/enabled-services.js
 cli/enabled-services.json
 cli/configs.json
+cli-okrservice/permissions.json
+cli-okrservice/enabled-services.js
+cli-okrservice/enabled-services.json
+cli-okrservice/configs.json
 essyncer/plugins.json
 packages/core/src/private/uploads/
 packages/workers/src/private/uploads/

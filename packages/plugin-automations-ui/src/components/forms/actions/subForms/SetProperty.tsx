@@ -1,4 +1,5 @@
-import { Alert, __ } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert } from "@erxes/ui/src";
 import { FormControl, FormGroup } from "@erxes/ui/src/components/form";
 
 import Button from "@erxes/ui/src/components/Button";
@@ -52,7 +53,7 @@ class SetProperty extends React.Component<Props, State> {
     this.state = {
       config: fillConfig,
       type: fillConfig.module || "",
-      fields: this.props.fields || []
+      fields: this.props.fields || [],
     };
   }
 
@@ -74,7 +75,7 @@ class SetProperty extends React.Component<Props, State> {
       .query({
         query: gql(formQueries.fieldsCombinedByContentType),
         fetchPolicy: "network-only",
-        variables: { contentType: value, excludedNames }
+        variables: { contentType: value, excludedNames },
       })
       .then((data) => {
         this.setState({ fields: data.data.fieldsCombinedByContentType });
@@ -136,7 +137,7 @@ class SetProperty extends React.Component<Props, State> {
           _id: String(Math.random()),
           type: "Default",
           name: "name",
-          label: "label"
+          label: "label",
         };
 
       const operatorType: string = chosenField.name.includes("customFieldsData")
@@ -179,12 +180,12 @@ class SetProperty extends React.Component<Props, State> {
 
       const fieldOptions = fields.map((f) => ({
         label: f.label,
-        value: f.name
+        value: f.name,
       }));
 
       const operatorOptions = operators.map((f) => ({
         label: f.label,
-        value: f.value
+        value: f.value,
       }));
 
       return (
@@ -260,7 +261,7 @@ class SetProperty extends React.Component<Props, State> {
 
     const options = propertyTypesConst.map((p) => ({
       label: p.label,
-      value: p.value
+      value: p.value,
     }));
 
     const selectedProperty = options.find(({ value }) => value === type);

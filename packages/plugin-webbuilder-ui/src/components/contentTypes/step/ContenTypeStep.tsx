@@ -1,13 +1,14 @@
-import { Alert, __ } from 'coreui/utils';
+import { __ } from "coreui/utils";
+import { Alert } from "@erxes/ui/src/utils";
 
-import ControlLabel from '@erxes/ui/src/components/form/Label';
-import FieldChoices from './FieldChoices';
-import FieldForm from '../FieldForm';
-import FormControl from '@erxes/ui/src/components/form/Control';
-import FormGroup from '@erxes/ui/src/components/form/Group';
-import { GroupTitle } from '../styles';
-import { LeftItem } from '@erxes/ui/src/components/step/styles';
-import React from 'react';
+import ControlLabel from "@erxes/ui/src/components/form/Label";
+import FieldChoices from "./FieldChoices";
+import FieldForm from "../FieldForm";
+import FormControl from "@erxes/ui/src/components/form/Control";
+import FormGroup from "@erxes/ui/src/components/form/Group";
+import { GroupTitle } from "../styles";
+import { LeftItem } from "@erxes/ui/src/components/step/styles";
+import React from "react";
 
 type Props = {
   onChange: (key: string, value: any) => void;
@@ -27,7 +28,7 @@ class Step extends React.Component<Props, State> {
 
     this.state = {
       currentMode: undefined,
-      currentField: undefined
+      currentField: undefined,
     };
   }
 
@@ -37,25 +38,25 @@ class Step extends React.Component<Props, State> {
 
     let duplicated: boolean = false;
 
-    fields.forEach(fld => {
+    fields.forEach((fld) => {
       if (fld.code === field.code) {
         duplicated = true;
       }
     });
 
     if (duplicated) {
-      return Alert.error('Sorry field code duplicated!');
+      return Alert.error("Sorry field code duplicated!");
     }
 
     let updatedFields = fields;
 
-    if (currentMode === 'create') {
+    if (currentMode === "create") {
       field._id = Math.random();
 
       updatedFields = [...fields, field];
     }
 
-    onChange('fields', updatedFields);
+    onChange("fields", updatedFields);
 
     this.setState({ currentField: undefined });
   };
@@ -70,48 +71,48 @@ class Step extends React.Component<Props, State> {
 
     const onChoiceClick = (choice: string) => {
       this.setState({
-        currentMode: 'create',
+        currentMode: "create",
         currentField: {
-          code: '',
-          text: '',
+          code: "",
+          text: "",
           type: choice,
-          show: false
-        }
+          show: false,
+        },
       });
     };
 
     return (
       <LeftItem deactive={false}>
         <FormGroup>
-          <ControlLabel required={true}>{__('Display name')}</ControlLabel>
+          <ControlLabel required={true}>{__("Display name")}</ControlLabel>
           <FormControl
             required={true}
             name="displayName"
             value={displayName}
-            onChange={(e: any) => onChange('displayName', e.target.value)}
+            onChange={(e: any) => onChange("displayName", e.target.value)}
           />
         </FormGroup>
 
         <FormGroup>
-          <ControlLabel required={true}>{__('Code')}</ControlLabel>
+          <ControlLabel required={true}>{__("Code")}</ControlLabel>
           <FormControl
             required={true}
             name="code"
             value={code}
-            onChange={(e: any) => onChange('code', e.target.value)}
+            onChange={(e: any) => onChange("code", e.target.value)}
           />
         </FormGroup>
 
         <GroupTitle>
-          <h4>{__('Add a new field')}</h4>
-          <p>{__('Choose a field type from the options below.')}</p>
+          <h4>{__("Add a new field")}</h4>
+          <p>{__("Choose a field type from the options below.")}</p>
         </GroupTitle>
 
-        <FieldChoices type={'input'} onChoiceClick={onChoiceClick} />
+        <FieldChoices type={"input"} onChoiceClick={onChoiceClick} />
 
         {currentField && (
           <FieldForm
-            mode={currentMode || 'create'}
+            mode={currentMode || "create"}
             field={currentField}
             onSubmit={this.onFieldSubmit}
             onCancel={onFieldFormCancel}

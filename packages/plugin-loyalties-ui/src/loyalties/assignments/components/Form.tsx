@@ -3,19 +3,20 @@ import {
   ControlLabel,
   Form,
   FormControl,
-  FormGroup
-} from '@erxes/ui/src/components';
-import { IButtonMutateProps, IFormProps } from '@erxes/ui/src/types';
-import { IAssignment, IAssignmentDoc } from '../types';
+  FormGroup,
+} from "@erxes/ui/src/components";
+import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
+import { IAssignment, IAssignmentDoc } from "../types";
 import {
   MainStyleModalFooter as ModalFooter,
-  MainStyleScrollWrapper as ScrollWrapper
-} from '@erxes/ui/src/styles/eindex';
-import React from 'react';
-import SelectCampaigns from '../../containers/SelectCampaigns';
-import SelectCustomers from '@erxes/ui-contacts/src/customers/containers/SelectCustomers';
-import { __, router } from 'coreui/utils';
-import { queries } from '../../../configs/assignmentCampaign/graphql';
+  MainStyleScrollWrapper as ScrollWrapper,
+} from "@erxes/ui/src/styles/eindex";
+import React from "react";
+import SelectCampaigns from "../../containers/SelectCampaigns";
+import SelectCustomers from "@erxes/ui-contacts/src/customers/containers/SelectCustomers";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
+import { queries } from "../../../configs/assignmentCampaign/graphql";
 
 type Props = {
   renderButton: (props: IButtonMutateProps) => JSX.Element;
@@ -39,11 +40,11 @@ class AssignmentForm extends React.Component<Props, State> {
     }
 
     if (!assignment.ownerType) {
-      assignment.ownerType = 'customer';
+      assignment.ownerType = "customer";
     }
 
     this.state = {
-      assignment
+      assignment,
     };
   }
 
@@ -57,19 +58,19 @@ class AssignmentForm extends React.Component<Props, State> {
     }
 
     return {
-      ...this.state.assignment
+      ...this.state.assignment,
     };
   };
 
-  onChangeInput = e => {
+  onChangeInput = (e) => {
     const name = e.target.name;
     let value = e.target.value;
-    if (e.target.type === 'number') {
+    if (e.target.type === "number") {
       value = Number(value);
     }
 
     this.setState({
-      assignment: { ...this.state.assignment, [name]: value }
+      assignment: { ...this.state.assignment, [name]: value },
     } as any);
   };
 
@@ -82,12 +83,12 @@ class AssignmentForm extends React.Component<Props, State> {
     );
   };
 
-  onChangeCampaign = value => {
+  onChangeCampaign = (value) => {
     const { assignment } = this.state;
     this.setState({ assignment: { ...assignment, campaignId: value } });
   };
 
-  onChangeSelect = e => {
+  onChangeSelect = (e) => {
     const { assignment } = this.state;
     const target = e.currentTarget as HTMLInputElement;
     const value = target.value;
@@ -96,14 +97,14 @@ class AssignmentForm extends React.Component<Props, State> {
     this.setState({ assignment: { ...assignment, [name]: value } });
   };
 
-  onChangeOwnerId = ownerId => {
+  onChangeOwnerId = (ownerId) => {
     const { assignment } = this.state;
     this.setState({ assignment: { ...assignment, ownerId } });
   };
 
   renderOwner = () => {
     const { assignment } = this.state;
-    if (assignment.ownerType === 'customer') {
+    if (assignment.ownerType === "customer") {
       return (
         <SelectCustomers
           label="Customer"
@@ -153,10 +154,10 @@ class AssignmentForm extends React.Component<Props, State> {
           </Button>
 
           {renderButton({
-            name: 'assignment',
+            name: "assignment",
             values: this.generateDoc(values),
             isSubmitted,
-            object: this.props.assignment
+            object: this.props.assignment,
           })}
         </ModalFooter>
       </>

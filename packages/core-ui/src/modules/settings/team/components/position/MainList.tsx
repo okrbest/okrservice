@@ -4,7 +4,8 @@ import {
   PositionsMainQueryResponse,
 } from "@erxes/ui/src/team/types";
 import React, { useState } from "react";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import ActionButtons from "@erxes/ui/src/components/ActionButtons";
 import { BarItems } from "modules/layout/styles";
@@ -69,7 +70,7 @@ const MainList = (props: Props) => {
     const handleSelect = () => {
       if (selectedItems.includes(position._id)) {
         const removedSelectedItems = selectedItems.filter(
-          (selectItem) => selectItem !== position._id,
+          (selectItem) => selectItem !== position._id
         );
         setSelectedItems(removedSelectedItems);
         return;
@@ -159,11 +160,11 @@ const MainList = (props: Props) => {
         </thead>
         <tbody>
           {generateTree(positions, null, (position, level) =>
-            renderRow(position, level),
+            renderRow(position, level)
           )}
 
           {generateTree(positions, "", (position, level) =>
-            renderRow(position, level),
+            renderRow(position, level)
           )}
 
           {/* {positions.map(p => renderRow(p, 1))} */}

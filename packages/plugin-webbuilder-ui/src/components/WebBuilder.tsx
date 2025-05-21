@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import { BarItems } from "@erxes/ui/src/layout/styles";
 import Button from "@erxes/ui/src/components/Button";
@@ -78,7 +79,9 @@ function WebBuilder(props: Props) {
             data={<List sitesCount={sitesCount} queryParams={queryParams} />}
             count={sitesCount}
             loading={loading}
-            emptyText={__("You haven't created any website. Start building your site")}
+            emptyText={__(
+              "You haven't created any website. Start building your site"
+            )}
             emptyImage="/images/actions/31.svg"
           />
         }

@@ -1,13 +1,13 @@
-import dayjs from 'dayjs';
-import React from 'react';
-import { Link } from 'react-router-dom';
+import dayjs from "dayjs";
+import React from "react";
+import { Link } from "react-router-dom";
 
-import { RowTitle } from '@erxes/ui-engage/src/styles';
-import { Capitalize } from '@erxes/ui-settings/src/permissions/styles';
-import { DateWrapper } from '@erxes/ui/src/styles/main';
-import WithPermission from '../../../common/components/WithPermission';
-import { __, getEnv } from 'coreui/utils';
-import Manage from './Manage';
+import { RowTitle } from "@erxes/ui-engage/src/styles";
+import { Capitalize } from "@erxes/ui-settings/src/permissions/styles";
+import { DateWrapper } from "@erxes/ui/src/styles/main";
+import WithPermission from "../../../common/components/WithPermission";
+import { __, getEnv } from "../../../common/utils";
+import Manage from "./Manage";
 import {
   ActionButtons,
   Button,
@@ -18,8 +18,8 @@ import {
   Tags,
   TextInfo,
   Tip,
-} from '@erxes/ui/src/components';
-import SaveTemplate from '@erxes/ui-template/src/components/SaveTemplate';
+} from "@erxes/ui/src/components";
+import SaveTemplate from "@erxes/ui-template/src/components/SaveTemplate";
 
 const Row = ({
   form,
@@ -30,13 +30,12 @@ const Row = ({
   copy,
   showCode,
 }) => {
-  
   const renderEditAction = (form) => {
     return (
       <Link to={`/forms/leads/edit/${form._id}`}>
-        <Button btnStyle='link'>
-          <Tip text={__('Manage')} placement='top'>
-            <Icon icon='edit-3' />
+        <Button btnStyle="link">
+          <Tip text={__("Manage")} placement="top">
+            <Icon icon="edit-3" />
           </Tip>
         </Button>
       </Link>
@@ -45,9 +44,9 @@ const Row = ({
 
   const renderInstall = (form) => {
     const trigger = (
-      <Button btnStyle='link'>
-        <Tip text={__('Install code')} placement='top'>
-          <Icon icon='code' />
+      <Button btnStyle="link">
+        <Tip text={__("Install code")} placement="top">
+          <Icon icon="code" />
         </Tip>
       </Button>
     );
@@ -57,7 +56,7 @@ const Row = ({
     return (
       <ModalTrigger
         title={`Install code of ${form.name}`}
-        size='lg'
+        size="lg"
         trigger={trigger}
         content={content}
         isOpen={showCode}
@@ -68,11 +67,11 @@ const Row = ({
 
   const renderArchiveAction = () => {
     const onClick = () => archive(form._id, true);
-    const tipText = form.status === 'active' ? 'Archive' : 'Activate';
-    const icon = form.status === 'active' ? 'archive-alt' : 'redo';
+    const tipText = form.status === "active" ? "Archive" : "Activate";
+    const icon = form.status === "active" ? "archive-alt" : "redo";
     return (
-      <Tip text={__(tipText)} placement='top'>
-        <Button btnStyle='link' onClick={onClick} icon={icon} />
+      <Tip text={__(tipText)} placement="top">
+        <Button btnStyle="link" onClick={onClick} icon={icon} />
       </Tip>
     );
   };
@@ -83,22 +82,22 @@ const Row = ({
     const onClick = () => {
       window.open(
         `${REACT_APP_API_URL}/file-export?type=customer&popupData=true&form=${form._id}`,
-        '_blank'
+        "_blank"
       );
     };
 
     return (
-      <Tip text={__('Download responses')} placement='top'>
-        <Button btnStyle='link' onClick={onClick} icon='down-arrow' />
+      <Tip text={__("Download responses")} placement="top">
+        <Button btnStyle="link" onClick={onClick} icon="down-arrow" />
       </Tip>
     );
   };
 
   const renderSubmissionsAction = () => (
     <Link to={`/forms/responses/${form._id}`}>
-      <Button btnStyle='link'>
-        <Tip text={__('Submissions')} placement='top'>
-          <Icon icon='list' />
+      <Button btnStyle="link">
+        <Tip text={__("Submissions")} placement="top">
+          <Icon icon="list" />
         </Tip>
       </Button>
     </Link>
@@ -112,9 +111,9 @@ const Row = ({
     }
 
     return (
-      <WithPermission action='integrationsArchive'>
-        <Tip text={__('Unarchive')} placement='top'>
-          <Button btnStyle='link' onClick={onClick} icon='redo' />
+      <WithPermission action="integrationsArchive">
+        <Tip text={__("Unarchive")} placement="top">
+          <Button btnStyle="link" onClick={onClick} icon="redo" />
         </Tip>
       </WithPermission>
     );
@@ -124,13 +123,13 @@ const Row = ({
     const onClick = () => remove(form._id);
 
     return (
-      <WithPermission action='integrationsRemove'>
-        <Tip text={__('Delete')} placement='top'>
+      <WithPermission action="integrationsRemove">
+        <Tip text={__("Delete")} placement="top">
           <Button
-            id='integrationDelete'
-            btnStyle='link'
+            id="integrationDelete"
+            btnStyle="link"
             onClick={onClick}
-            icon='times-circle'
+            icon="times-circle"
           />
         </Tip>
       </WithPermission>
@@ -138,7 +137,6 @@ const Row = ({
   };
 
   const renderTemplateModal = () => {
-
     const {
       brandId,
       brand,
@@ -152,19 +150,19 @@ const Row = ({
 
     const content = {
       content: JSON.stringify(formContent),
-      contentType: 'forms',
-      serviceName: 'core'
+      contentType: "forms",
+      serviceName: "core",
     };
 
     return <SaveTemplate as="icon" {...content} />;
-  }
+  };
 
   const renderCopyAction = () => {
     const onClick = () => copy(form._id);
 
     return (
-      <Tip text={__('Duplicate')} placement='top'>
-        <Button btnStyle='link' onClick={onClick} icon='copy-1' />
+      <Tip text={__("Duplicate")} placement="top">
+        <Button btnStyle="link" onClick={onClick} icon="copy-1" />
       </Tip>
     );
   };
@@ -172,14 +170,14 @@ const Row = ({
   const lead = form.leadData || {};
 
   const createdUser = form.createdUser || {
-    _id: '',
-    details: { fullName: '' },
+    _id: "",
+    details: { fullName: "" },
   };
   const tags = form.tags || [];
 
   const percentage = lead.conversionRate
     ? lead.conversionRate.toString()
-    : '0.00';
+    : "0.00";
 
   const onChange = (e) => {
     if (toggleBulk) {
@@ -187,15 +185,15 @@ const Row = ({
     }
   };
 
-  const labelStyle = form.status === 'active' ? 'success' : 'warning';
-  const status = form.status === 'active' ? __('Active') : __('Archived');
+  const labelStyle = form.status === "active" ? "success" : "warning";
+  const status = form.status === "active" ? __("Active") : __("Archived");
 
   return (
     <tr>
       <td>
         <FormControl
           checked={isChecked}
-          componentclass='checkbox'
+          componentclass="checkbox"
           onChange={onChange}
         />
       </td>
@@ -211,17 +209,17 @@ const Row = ({
         <TextInfo ignoreTrans={true}>{lead.viewCount || 0}</TextInfo>
       </td>
       <td>
-        <TextInfo $textStyle='primary' ignoreTrans={true}>
+        <TextInfo $textStyle="primary" ignoreTrans={true}>
           {percentage.substring(0, 4)} %
         </TextInfo>
       </td>
       <td>
-        <TextInfo $textStyle='danger' ignoreTrans={true}>
+        <TextInfo $textStyle="danger" ignoreTrans={true}>
           {lead.contactsGathered || 0}
         </TextInfo>
       </td>
       <td>
-        <strong>{form.brand ? form.brand.name : ''}</strong>
+        <strong>{form.brand ? form.brand.name : ""}</strong>
       </td>
       <td>
         <div key={createdUser._id}>
@@ -231,8 +229,8 @@ const Row = ({
         </div>
       </td>
       <td>
-        <Icon icon='calender' />{' '}
-        <DateWrapper>{dayjs(form.createdDate).format('ll')}</DateWrapper>
+        <Icon icon="calender" />{" "}
+        <DateWrapper>{dayjs(form.createdDate).format("ll")}</DateWrapper>
       </td>
 
       <td>

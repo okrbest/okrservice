@@ -10,7 +10,8 @@ import {
 import { FlexRow } from "@erxes/ui-settings/src/styles";
 
 import React, { useState } from "react";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import Form from "@erxes/ui-inbox/src/settings/responseTemplates/components/Form";
 import { FormControl } from "@erxes/ui/src/components/form";
@@ -87,7 +88,7 @@ const ResponseTemplateList: React.FC<Props> = ({
       queryParams && queryParams.brandId ? queryParams.brandId : "";
 
     return (
-      <FlexRow $alignItems='flex-end'>
+      <FlexRow $alignItems="flex-end">
         <FormControl
           placeholder={__("Type to search")}
           name="searchValue"
@@ -97,13 +98,13 @@ const ResponseTemplateList: React.FC<Props> = ({
           onKeyDown={handleKeyDown}
           autoFocus={true}
         />
-          <SelectBrands
-            label="Filter by brand"
-            initialValue={brandId}
-            onSelect={onSelect}
-            name="brandId"
-            multi={false}
-          />
+        <SelectBrands
+          label="Filter by brand"
+          initialValue={brandId}
+          onSelect={onSelect}
+          name="brandId"
+          multi={false}
+        />
       </FlexRow>
     );
   };

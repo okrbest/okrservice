@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom';
-import React from 'react';
-import dayjs from 'dayjs';
-import xss from 'xss';
+import { Link } from "react-router-dom";
+import React from "react";
+import dayjs from "dayjs";
+import xss from "xss";
 
 import {
   ActivityDate,
@@ -14,25 +14,26 @@ import {
   Count,
   FlexBody,
   FlexCenterContent,
-  Header
-} from '@erxes/ui-log/src/activityLogs/styles';
+  Header,
+} from "@erxes/ui-log/src/activityLogs/styles";
 import {
   Comment,
-  PostContainer
-} from '@erxes/ui-inbox/src/inbox/components/conversationDetail/workarea/facebook/styles';
-import { IConversation } from '@erxes/ui-inbox/src/inbox/types';
-import { __, renderFullName } from 'coreui/utils';
+  PostContainer,
+} from "@erxes/ui-inbox/src/inbox/components/conversationDetail/workarea/facebook/styles";
+import { IConversation } from "@erxes/ui-inbox/src/inbox/types";
+import { __ } from "coreui/utils";
+import { renderFullName } from "@erxes/ui/src/utils";
 import {
   formatText,
-  getIconAndColor
-} from '@erxes/ui-log/src/activityLogs/utils';
-import { IIntegration } from '@erxes/ui-inbox/src/settings/integrations/types';
-import Icon from '@erxes/ui/src/components/Icon';
-import Message from '@erxes/ui-inbox/src/inbox/components/conversationDetail/workarea/conversation/messages/Message';
-import Tip from '@erxes/ui/src/components/Tip';
-import UserName from '@erxes/ui-inbox/src/inbox/components/conversationDetail/workarea/facebook/UserName';
+  getIconAndColor,
+} from "@erxes/ui-log/src/activityLogs/utils";
+import { IIntegration } from "@erxes/ui-inbox/src/settings/integrations/types";
+import Icon from "@erxes/ui/src/components/Icon";
+import Message from "@erxes/ui-inbox/src/inbox/components/conversationDetail/workarea/conversation/messages/Message";
+import Tip from "@erxes/ui/src/components/Tip";
+import UserName from "@erxes/ui-inbox/src/inbox/components/conversationDetail/workarea/facebook/UserName";
 
-import { IConversationMessage, IFacebookComment } from '../types';
+import { IConversationMessage, IFacebookComment } from "../types";
 
 type Props = {
   activity: any;
@@ -46,7 +47,7 @@ class ActivityLogs extends React.Component<Props, { toggleMessage: boolean }> {
     super(props);
 
     this.state = {
-      toggleMessage: false
+      toggleMessage: false,
     };
   }
 
@@ -61,16 +62,17 @@ class ActivityLogs extends React.Component<Props, { toggleMessage: boolean }> {
       return null;
     }
 
-    return comments.map(comment => (
+    return comments.map((comment) => (
       <div key={comment.commentId}>
         <Comment>
           <UserName
-            username={`${comment.customer.firstName} ${comment.customer
-              .lastName || ''}`}
+            username={`${comment.customer.firstName} ${
+              comment.customer.lastName || ""
+            }`}
           />
           <p
             dangerouslySetInnerHTML={{
-              __html: xss(comment.content)
+              __html: xss(comment.content),
             }}
           />
         </Comment>
@@ -87,7 +89,7 @@ class ActivityLogs extends React.Component<Props, { toggleMessage: boolean }> {
 
     const { kind } = conversation.integration;
 
-    if (kind === 'facebook-post') {
+    if (kind === "facebook-post") {
       return (
         <>
           <PostContainer>{conversation.content}</PostContainer>
@@ -99,7 +101,7 @@ class ActivityLogs extends React.Component<Props, { toggleMessage: boolean }> {
     const rows: React.ReactNode[] = [];
     let tempId;
 
-    messages.forEach(message => {
+    messages.forEach((message) => {
       tempId = message.userId ? message.userId : message.customerId;
 
       rows.push(
@@ -120,7 +122,7 @@ class ActivityLogs extends React.Component<Props, { toggleMessage: boolean }> {
         {rows}
         <CenterText>
           <Link to={`/inbox/index?_id=${conversation._id}`}>
-            {__('See full conversation')} <Icon icon="angle-double-right" />
+            {__("See full conversation")} <Icon icon="angle-double-right" />
           </Link>
         </CenterText>
       </>
@@ -137,34 +139,34 @@ class ActivityLogs extends React.Component<Props, { toggleMessage: boolean }> {
       return null;
     }
 
-    let kind = integration ? integration.kind : 'conversation';
+    let kind = integration ? integration.kind : "conversation";
 
     const condition =
-      activity.contentType === 'comment' ? activity.contentType : kind;
+      activity.contentType === "comment" ? activity.contentType : kind;
 
-    let action = 'sent a';
-    let item = 'message';
+    let action = "sent a";
+    let item = "message";
 
     switch (condition) {
-      case 'comment':
-        action = '';
-        kind = 'commented';
+      case "comment":
+        action = "";
+        kind = "commented";
         item = `on ${renderFullName(customer)}'s facebook post`;
         break;
-      case 'facebook-post':
-        action = 'wrote a Facebook';
-        kind = 'Post';
-        item = '';
+      case "facebook-post":
+        action = "wrote a Facebook";
+        kind = "Post";
+        item = "";
         break;
-      case 'facebook-messenger':
-        kind = 'message';
-        item = 'by Facebook Messenger';
+      case "facebook-messenger":
+        kind = "message";
+        item = "by Facebook Messenger";
         break;
       default:
         break;
     }
 
-    if (condition === 'comment') {
+    if (condition === "comment") {
       customer = comments.length > 0 ? comments[0].customer : customer;
     }
 
@@ -181,7 +183,7 @@ class ActivityLogs extends React.Component<Props, { toggleMessage: boolean }> {
 
   renderDate(createdAt) {
     return (
-      <ActivityDate>{dayjs(createdAt).format('MMM D, h:mm A')}</ActivityDate>
+      <ActivityDate>{dayjs(createdAt).format("MMM D, h:mm A")}</ActivityDate>
     );
   }
 
@@ -194,9 +196,9 @@ class ActivityLogs extends React.Component<Props, { toggleMessage: boolean }> {
       return (
         <>
           <Header onClick={this.onCollapse}>
-            {integration.kind.includes('messenger') ? (
+            {integration.kind.includes("messenger") ? (
               <span>
-                {__('Conversation with')}&nbsp;
+                {__("Conversation with")}&nbsp;
                 <b>{renderFullName(customer)}</b>
               </span>
             ) : (
@@ -216,7 +218,7 @@ class ActivityLogs extends React.Component<Props, { toggleMessage: boolean }> {
         <FlexCenterContent>
           {this.renderAction()}
 
-          <Tip text={dayjs(createdAt).format('llll')}>
+          <Tip text={dayjs(createdAt).format("llll")}>
             {this.renderDate(createdAt)}
           </Tip>
         </FlexCenterContent>
@@ -237,10 +239,10 @@ class ActivityLogs extends React.Component<Props, { toggleMessage: boolean }> {
 
     const integration = conversation.integration || ({} as IIntegration);
 
-    const kind = integration.kind ? integration.kind : 'conversation';
+    const kind = integration.kind ? integration.kind : "conversation";
 
     const condition =
-      activity.contentType === 'comment' ? activity.contentType : kind;
+      activity.contentType === "comment" ? activity.contentType : kind;
 
     const iconAndColor = getIconAndColor(condition);
 

@@ -10,7 +10,7 @@ import {
   KEY_LABELS,
   LANGUAGES,
 } from "@erxes/ui-settings/src/general/constants";
-import { __, readFile, uploadHandler } from "coreui/utils";
+import { __, readFile, uploadHandler } from "modules/common/utils";
 
 import Button from "modules/common/components/Button";
 import CURRENCIES from "@erxes/ui/src/constants/currencies";
