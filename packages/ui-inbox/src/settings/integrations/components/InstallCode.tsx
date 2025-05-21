@@ -1,5 +1,6 @@
 import { TabTitle, Tabs } from '@erxes/ui/src/components/tabs';
-import { __, getEnv } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { getEnv } from '@erxes/ui/src/utils';
 
 import Button from '@erxes/ui/src/components/Button';
 import CopyToClipboard from 'react-copy-to-clipboard';

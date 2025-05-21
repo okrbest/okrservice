@@ -3,7 +3,8 @@ import {
   FlexCenterContent,
   MergedContacts
 } from '@erxes/ui-log/src/activityLogs/styles';
-import { __, renderFullName, renderUserFullName } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { renderFullName, renderUserFullName } from '@erxes/ui/src/utils';
 
 import { IActivityLogItemProps } from '@erxes/ui-log/src/activityLogs/types';
 import { Link } from 'react-router-dom';

@@ -1,4 +1,5 @@
-import { __, confirm } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { confirm } from '@erxes/ui/src/utils';
 
 import { Button } from '@erxes/ui/src/components';
 import { ContentBox } from '../styles';

@@ -7,7 +7,8 @@ import { CenterText } from '@erxes/ui-log/src/activityLogs/styles';
 import Button from '@erxes/ui/src/components/Button';
 import EmptyState from '@erxes/ui/src/components/EmptyState';
 import { IButtonMutateProps } from '@erxes/ui/src/types';
-import { __, confirm } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { confirm } from '@erxes/ui/src/utils';
 import React from 'react';
 import AddAccountForm from './AddAccountForm';
 

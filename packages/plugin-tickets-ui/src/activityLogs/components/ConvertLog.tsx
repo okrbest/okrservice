@@ -3,7 +3,8 @@ import {
   FlexBody,
   FlexCenterContent
 } from '@erxes/ui-log/src/activityLogs/styles';
-import { __, renderUserFullName } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { renderUserFullName } from '@erxes/ui/src/utils';
 
 import { IActivityLogItemProps } from '@erxes/ui-log/src/activityLogs/types';
 import { Link } from 'react-router-dom';

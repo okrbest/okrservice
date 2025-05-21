@@ -1,6 +1,7 @@
 import { FilterItem, FlexRow, FlexRowEven, ToggleButton } from '../../styles';
 import React, { useState } from 'react';
-import { __, loadDynamicComponent, router } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { loadDynamicComponent, router } from '@erxes/ui/src/utils';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import Button from '@erxes/ui/src/components/Button';

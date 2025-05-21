@@ -24,7 +24,8 @@ import client from '@erxes/ui/src/apolloClient';
 import { DateContainer } from '@erxes/ui/src/styles/main';
 import SelectTeamMembers from '@erxes/ui/src/team/containers/SelectTeamMembers';
 import { IButtonMutateProps, IFormProps } from '@erxes/ui/src/types';
-import { __, Alert } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { Alert } from '@erxes/ui/src/utils';
 import { isEnabled } from '@erxes/ui/src/utils/core';
 import React, { useEffect, useReducer } from 'react';
 import {

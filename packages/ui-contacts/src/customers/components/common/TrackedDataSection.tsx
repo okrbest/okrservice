@@ -3,7 +3,8 @@ import {
   SidebarCounter,
   SidebarList,
 } from "@erxes/ui/src/layout/styles";
-import { __, isValidDate } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { isValidDate } from "@erxes/ui/src/utils";
 
 import Box from "@erxes/ui/src/components/Box";
 import EmptyState from "@erxes/ui/src/components/EmptyState";

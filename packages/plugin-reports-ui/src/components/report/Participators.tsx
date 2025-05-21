@@ -1,4 +1,5 @@
-import { __, getUserAvatar } from 'coreui/utils';
+import { __ } from "coreui/utils";
+import { getUserAvatar } from "@erxes/ui/src/utils";
 
 import { IUser } from '@erxes/ui/src/auth/types';
 import React, { useState } from 'react';

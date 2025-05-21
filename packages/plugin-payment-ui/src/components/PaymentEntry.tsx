@@ -2,7 +2,8 @@ import { ButtonMutate } from '@erxes/ui/src/components';
 import Icon from '@erxes/ui/src/components/Icon';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import { IButtonMutateProps } from '@erxes/ui/src/types';
-import { __, getEnv } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { getEnv } from '@erxes/ui/src/utils';
 import React from 'react';
 
 import { getGqlString, getRefetchQueries } from '../containers/utils';

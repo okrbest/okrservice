@@ -1,7 +1,8 @@
 import React, { useState, useRef } from "react";
 import Row from "./YearPlanRow";
 import Sidebar from "./YearPlanSidebar";
-import { __, Alert, confirm, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert, confirm, router } from "@erxes/ui/src/utils";
 import { BarItems, Wrapper } from "@erxes/ui/src/layout";
 import {
   Button,

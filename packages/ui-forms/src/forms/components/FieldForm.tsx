@@ -1,4 +1,5 @@
-import { Alert, __, loadDynamicComponent } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { Alert, loadDynamicComponent } from '@erxes/ui/src/utils';
 import { Dialog, Transition } from '@headlessui/react';
 import {
   DialogContent,

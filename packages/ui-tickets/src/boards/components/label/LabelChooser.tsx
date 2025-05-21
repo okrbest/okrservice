@@ -1,6 +1,7 @@
 import { ColorButton } from "../../styles/common";
 import Icon from "@erxes/ui/src/components/Icon";
-import { __, Alert } from "coreui/utils";
+import { __ } from 'coreui/utils';
+import { Alert } from '@erxes/ui/src/utils';
 import React, { useState, useEffect } from "react";
 import Popover from "@erxes/ui/src/components/Popover";
 import { ChooseLabelWrapper } from "../../styles/label";

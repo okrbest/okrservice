@@ -1,7 +1,8 @@
 import { IFormProps } from '../../types';
 import React from 'react';
 import validator from 'validator';
-import { __, generateRandomString, isValidUsername } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { generateRandomString, isValidUsername } from '../../utils/core';
 import { Error } from './styles';
 
 type Props = {

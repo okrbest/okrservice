@@ -1,4 +1,5 @@
-import { __, getEnv } from "coreui/utils";
+import { __ } from 'coreui/utils';
+import { getEnv } from '@erxes/ui/src/utils';
 
 import Dropdown from "@erxes/ui/src/components/Dropdown";
 import DropdownToggle from "@erxes/ui/src/components/DropdownToggle";

@@ -4,7 +4,8 @@ import Pagination from "@erxes/ui/src/components/pagination/Pagination";
 import React, { useState, useRef } from "react";
 import Row from "./DayPlanRow";
 import Sidebar from "./DayPlanSidebar";
-import { __, Alert, confirm, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert, confirm, router } from "@erxes/ui/src/utils";
 import { BarItems, Wrapper } from "@erxes/ui/src/layout";
 import {
   Button,

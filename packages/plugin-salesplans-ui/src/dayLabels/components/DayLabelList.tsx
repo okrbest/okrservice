@@ -3,7 +3,8 @@ import Pagination from "@erxes/ui/src/components/pagination/Pagination";
 import React from "react";
 import Row from "./DayLabelRow";
 import Sidebar from "./DayLabelSidebar";
-import { __, Alert, confirm } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert, confirm } from "@erxes/ui/src/utils";
 import { BarItems, Wrapper } from "@erxes/ui/src/layout";
 import {
   Button,

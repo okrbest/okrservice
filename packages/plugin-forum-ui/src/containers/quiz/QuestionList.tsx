@@ -4,7 +4,8 @@ import { useQuery } from '@apollo/client';
 import { queries } from '../../graphql';
 import List from '../../components/quiz/QuestionList';
 import Spinner from '@erxes/ui/src/components/Spinner';
-import { __, Alert } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { Alert } from '@erxes/ui/src/utils';
 
 type Props = {
   _id?: string;

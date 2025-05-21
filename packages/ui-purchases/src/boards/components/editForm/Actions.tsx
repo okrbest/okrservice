@@ -16,7 +16,8 @@ import TaggerPopover from "@erxes/ui-tags/src/components/TaggerPopover";
 import Tags from "@erxes/ui/src/components/Tags";
 import Watch from "../../containers/editForm/Watch";
 import Comment from "../../../comment/containers/Comment";
-import { loadDynamicComponent, __ } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { loadDynamicComponent } from "@erxes/ui/src/utils";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 
 type Props = {

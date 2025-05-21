@@ -8,7 +8,8 @@ import ControlLabel from "@erxes/ui/src/components/form/Label";
 
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
-import { __, generateRandomColorCode } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { generateRandomColorCode } from "@erxes/ui/src/utils";
 import { FlexContent, FlexItem } from "@erxes/ui/src/layout/styles";
 import Popover from "@erxes/ui/src/components/Popover";
 import TwitterPicker from "react-color/lib/Twitter";

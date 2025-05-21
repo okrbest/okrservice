@@ -5,7 +5,8 @@ import {
   FileInfo,
   FileName,
 } from "./style";
-import { __, getEnv } from "coreui/utils";
+import { __ } from 'coreui/utils';
+import { getEnv } from '@erxes/ui/src/utils';
 
 import { IMailAttachment } from "../../../../types";
 import Icon from "@erxes/ui/src/components/Icon";
