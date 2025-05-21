@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled, { css } from "styled-components";
+import { __ } from "coreui/utils";
 
 import { Disclosure } from "@headlessui/react";
 import Icon from "./Icon";
@@ -168,8 +169,8 @@ function CollapseContent({
         <Left>
           {beforeTitle}
           <div>
-            <h4>{title}</h4>
-            <span className="description">{description}</span>
+            <h4>{__(title)}</h4>
+            <span className="description">{__(description)}</span>
           </div>
         </Left>
         {hasImage ? (
