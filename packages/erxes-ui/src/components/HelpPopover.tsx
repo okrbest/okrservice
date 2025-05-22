@@ -5,6 +5,14 @@ import styled from "styled-components";
 import { colors, dimensions } from "../styles";
 
 const PopoverContent = styled.div`
+  max-width: 300px !important;
+  min-width: 200px !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  text-align: left !important;
+  writing-mode: initial !important;
+  display: block !important;
+
   padding: ${dimensions.coreSpacing}px;
   line-height: 24px;
 
