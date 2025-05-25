@@ -136,3 +136,7 @@ For general help using erxes, please refer to the erxes documentation. For addit
 ## License
 See the <a href="https://github.com/okrbest/okrservice/blob/master/LICENSE.md" >**LICENSE**</a> file for licensing information.
 
+## css Minify
+npx sass widgets/client/messenger/sass/style.css \
+       widgets/client/messenger/sass/style.min.css \
+       --style=compressed --no-source-map

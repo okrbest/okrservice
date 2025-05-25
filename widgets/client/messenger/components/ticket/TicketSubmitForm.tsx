@@ -81,9 +81,9 @@ const TicketSubmitForm: React.FC<Props> = ({
                 {__("Ticket type")} <span className="required">*</span>
               </label>
               <select id="ticketType" onChange={handleChange} required>
-                <option value="">Choose type...</option>
-                <option value="request">Request</option>
-                <option value="complaint">Complaint</option>
+                <option value="">{__("Choose type...")}</option>
+                <option value="request">{__("Request")}</option>
+                <option value="complaint">{__("Complaint")}</option>
               </select>
             </div>
           </div>

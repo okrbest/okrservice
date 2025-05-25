@@ -54,7 +54,7 @@ const TicketSubmitContainer = (props: Props) => {
         ...prev,
         firstName,
         lastName,
-        phone: Number(phones?.[0].replace(/\D/g, "")) || 0,
+        phone: phones?.[0]?.replace(/\D/g, "") || "",
         email: emails?.[0] || "",
       }));
     }

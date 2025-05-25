@@ -80,6 +80,10 @@ widgetConnect({
     // save connection info
     connection.data = messengerData;
 
+    console.log("messengerData", messengerData);
+
+    console.log("connection.setting", connection.setting);
+
     // Improve language code setting logic
     const languageCode =
       connection.setting.language || messengerData.languageCode || "ko";
