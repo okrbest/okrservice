@@ -50,11 +50,11 @@
 
 .erxes-messenger-shown {
   position: fixed;
-  height: min(660px, 100% - 100px);
+  height: min(704px, 100% - 104px);
   min-height: 80px;
   /* 400px width of messenger + scrollbar width */
   width: 408px;
-  max-height: 660px;
+  max-height: 704px;
   border-radius: 1rem;
   right: 16px;
   bottom: 92px;
@@ -80,8 +80,8 @@
   max-height: 310px;
 }
 
-.erxes-messenger-shown > iframe,
-.erxes-notifier-shown > iframe {
+.erxes-messenger-shown>iframe,
+.erxes-notifier-shown>iframe {
   height: 100% !important;
   max-width: none;
 }

@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { m } from 'framer-motion';
-import { IconProps } from './Icons';
-import useHover from '../../hooks/useHover';
+import * as React from "react";
+import { m } from "framer-motion";
+import { IconProps } from "./Icons";
+import useHover from "../../hooks/useHover";
 import { __ } from "../../../utils";
 
 type Props = {
@@ -26,7 +26,7 @@ const Item: React.FC<Props> = ({
   };
 
   const renderLabel = () => {
-    if (!label || (!isActive && !isHovered)) return null;
+    if (!label) return null;
 
     return <span className="nav-label">{__(label)}</span>;
   };
