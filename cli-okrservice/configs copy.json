@@ -25,7 +25,15 @@
     },
     {
       "ui": "local",
+      "name": "tasks"
+    },
+    {
+      "ui": "local",
       "name": "tickets"
+    },
+    {
+      "ui": "local",
+      "name": "sales"
     },
     {
       "ui": "local",
@@ -37,7 +45,7 @@
     },
     {
       "ui": "local",
-      "name": "knowledgebase"
+      "name": "engages"
     },
     {
       "ui": "local",
@@ -49,7 +57,19 @@
     },
     {
       "ui": "local",
+      "name": "knowledgebase"
+    },
+    {
+      "ui": "local",
       "name": "imap"
+    },
+    {
+      "ui": "local",
+      "name": "documents"
+    },
+    {
+      "ui": "local",
+      "name": "cms"
     },
     {
       "name": "integrations"
