@@ -7,7 +7,7 @@ import {
   IconQuestionMark,
   IconTicket,
 } from "./Icons";
-import { getCallData, getTicketData } from "../../utils/util";
+import { getCallData, getTicketData, getMessengerData } from "../../utils/util";
 
 import Item from "./Item";
 import { useRouter } from "../../context/Router";
@@ -33,6 +33,7 @@ function BottomNavBar() {
   const { setActiveRoute, activeRoute } = useRouter();
   const callData = getCallData();
   const ticketData = getTicketData();
+  const messengerData = getMessengerData();
 
   const handleItemClick = (route: string) => (e: React.MouseEvent) => {
     setActiveRoute(route);
@@ -59,6 +60,10 @@ function BottomNavBar() {
         }
 
         if (route === "ticket" && ticketData && !ticketData.ticketStageId) {
+          return null;
+        }
+
+        if (route === "allConversations" && messengerData.showChat === false) {
           return null;
         }
 

@@ -80,9 +80,9 @@ widgetConnect({
     // save connection info
     connection.data = messengerData;
 
-    console.log("messengerData", messengerData);
+    console.log("messengerData init", messengerData);
 
-    console.log("connection.setting", connection.setting);
+    console.log("connection.setting init", connection.setting);
 
     // Improve language code setting logic
     const languageCode =

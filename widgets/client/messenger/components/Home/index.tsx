@@ -52,6 +52,8 @@ const Home: React.FC<Props> = ({
 
   const { logo } = getUiOptions() || {};
 
+  console.log("messengerData", messengerData);
+
   const messages =
     messengerData.messages || ({} as IIntegrationMessengerDataMessagesItem);
 
@@ -134,11 +136,13 @@ const Home: React.FC<Props> = ({
                 💬 {__(messengerData.responseRate || "")}
               </span>
             </div>
-            <div>
-              <Button icon={<IconEnvelope />} onClick={createConversation}>
-                <span className="font-semibold">{__("Send us a message")}</span>
-              </Button>
-            </div>
+            {messengerData.showChat !== false && (
+              <div>
+                <Button icon={<IconEnvelope />} onClick={createConversation}>
+                  <span className="font-semibold">{__("Send us a message")}</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </Card>
