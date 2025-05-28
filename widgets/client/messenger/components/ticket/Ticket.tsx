@@ -52,9 +52,11 @@ const Ticket: React.FC<Props> = ({
       withBottomNavBar={true}
       title={__("Ticket")}
       persistentFooter={
-        <Button full onClick={handleButtonClick}>
-          <span className="font-semibold">{continueText}</span>
-        </Button>
+        <div style={{ display: "none" }}>
+          <Button full onClick={handleButtonClick}>
+            <span className="font-semibold">{continueText}</span>
+          </Button>
+        </div>
       }
     >
       <div className="ticket-container">

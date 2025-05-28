@@ -3631,6 +3631,7 @@ select.form-control:focus,
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 90%;
 }
 
 .ticket-container form .form-container {
@@ -3659,6 +3660,7 @@ select.form-control:focus,
 
 .ticket-container .type-choose-container .ticket-box {
   border: 1px solid rgba(0, 0, 0, 0.1);
+  border-color: #6335ff;
   border-radius: 12px;
   padding: 10px;
   text-align: center;
@@ -3666,9 +3668,9 @@ select.form-control:focus,
   flex-direction: column;
   align-items: center;
   font-size: 15px;
-  width: 50%;
+  width: 120px;
   height: 120px;
-  gap: 10px;
+  gap: 20px;
   cursor: pointer;
   transition: all ease 0.3s;
 }
@@ -3678,7 +3680,7 @@ select.form-control:focus,
 }
 
 .ticket-container .type-choose-container .ticket-box:hover:not(.active) {
-  border-color: rgba(0, 0, 0, 0.3);
+  border-color: #6335ff;
 }
 
 .ticket-container .type-choose-container .ticket-box svg {

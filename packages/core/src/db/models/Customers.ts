@@ -653,17 +653,18 @@ export const loadCustomerClass = (models: IModels, subdomain: string) => {
 
       const defaultFilter = { status: { $ne: 'deleted' } };
 
-      if (cachedCustomerId) {
-        customer = await models.Customers.findOne({
-          ...defaultFilter,
-          _id: cachedCustomerId,
-        }).lean();
-      }
 
-      if (!customer && email) {
+      if (email) {
         customer = await models.Customers.findOne({
           ...defaultFilter,
           $or: [{ emails: { $in: [email] } }, { primaryEmail: email }],
+        }).lean();
+      }
+
+      if (!customer && cachedCustomerId && !email) {
+        customer = await models.Customers.findOne({
+          ...defaultFilter,
+          _id: cachedCustomerId,
         }).lean();
       }
 
