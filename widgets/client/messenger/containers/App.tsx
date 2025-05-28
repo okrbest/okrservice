@@ -26,7 +26,7 @@ dayjs.extend(relativeTime);
 const App = () => {
   const { showLauncher } = getMessengerData();
 
-  console.log("showLauncher", showLauncher);
+  console.log("showLauncher 2 ", showLauncher);
 
   return (
     <ApolloProvider client={client}>

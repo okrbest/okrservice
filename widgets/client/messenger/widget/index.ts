@@ -7,6 +7,7 @@ import {
   listenForCommonRequests,
   setErxesProperty,
 } from "../../widgetUtils";
+import { getMessengerData } from "../utils/util";
 declare const window: any;
 
 /*
@@ -158,7 +159,8 @@ const handleLauncherIframeLoad = async () => {
     launcherBtn.addEventListener("click", handleLauncherEvent);
     launcherBtn.addEventListener("keyup", handleLauncherEvent);
 
-    const showLauncher = window.erxesSettings?.messenger?.showLauncher;
+    //const showLauncher = window.erxesSettings?.messenger?.showLauncher;
+    const { showLauncher } = getMessengerData();
 
     console.log("showLauncher 1 ", showLauncher);
     if (showLauncher === false) {
