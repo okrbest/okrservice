@@ -1,5 +1,6 @@
 import { IUser, IUserDetails } from "@erxes/ui/src/auth/types";
-import { __, loadDynamicComponent } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { loadDynamicComponent } from "@erxes/ui/src/utils";
 
 import { Actions } from "@erxes/ui/src/styles/main";
 import Button from "@erxes/ui/src/components/Button";

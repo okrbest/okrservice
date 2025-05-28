@@ -6,6 +6,7 @@ import Select, { components } from "react-select";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import React from "react";
 import { selectOptions } from "../utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   boards: IBoard[];
@@ -24,7 +25,7 @@ type Props = {
 };
 
 class BoardSelect extends React.Component<Props> {
-  renderOptions = option => {
+  renderOptions = (option) => {
     return (
       <div className="simple-option">
         <span>{option.label}</span>
@@ -33,7 +34,7 @@ class BoardSelect extends React.Component<Props> {
   };
 
   renderSelect(placeholder, value, onChange, options) {
-    const Option = props => {
+    const Option = (props) => {
       return (
         <components.Option {...props}>
           {this.renderOptions(props.data)}
@@ -45,7 +46,7 @@ class BoardSelect extends React.Component<Props> {
       <Select
         required={!this.props.isRequired ? this.props.isRequired : true}
         placeholder={placeholder}
-        value={options.find(o => value === o.value)}
+        value={options.find((o) => value === o.value)}
         onChange={onChange}
         components={{ Option }}
         options={options}
@@ -66,9 +67,10 @@ class BoardSelect extends React.Component<Props> {
       onChangePipeline,
       onChangeStage,
       callback,
-      isOptional
+      isOptional,
     } = this.props;
 
+    /*
     const __ = (key: string, options?: any) => {
       const { translator } = this.props;
       if (!translator) {
@@ -76,35 +78,42 @@ class BoardSelect extends React.Component<Props> {
       }
       return translator(key, options);
     };
+    */
 
     return (
       <>
         <FormGroup>
-          <ControlLabel>Board {isOptional && "(optional)"}</ControlLabel>
+          <ControlLabel>
+            {__("Board")} {isOptional && "(optional)"}
+          </ControlLabel>
           {this.renderSelect(
             __("Choose a board"),
             boardId,
-            board => onChangeBoard(board.value),
+            (board) => onChangeBoard(board.value),
             selectOptions(boards)
           )}
         </FormGroup>
 
         <FormGroup>
-          <ControlLabel>Pipeline {isOptional && "(optional)"}</ControlLabel>
+          <ControlLabel>
+            {__("Pipeline")} {isOptional && "(optional)"}
+          </ControlLabel>
           {this.renderSelect(
             __("Choose a pipeline"),
             pipelineId,
-            pipeline => onChangePipeline(pipeline.value),
+            (pipeline) => onChangePipeline(pipeline.value),
             selectOptions(pipelines)
           )}
         </FormGroup>
 
         <FormGroup>
-          <ControlLabel>Stage {isOptional && "(optional)"}</ControlLabel>
+          <ControlLabel>
+            {__("Stage")} {isOptional && "(optional)"}
+          </ControlLabel>
           {this.renderSelect(
             __("Choose a stage"),
             stageId,
-            stage => onChangeStage(stage.value, callback),
+            (stage) => onChangeStage(stage.value, callback),
             selectOptions(stages)
           )}
         </FormGroup>

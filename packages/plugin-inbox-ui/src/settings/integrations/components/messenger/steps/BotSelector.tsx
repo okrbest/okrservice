@@ -82,8 +82,10 @@ const BotSelector: React.FC<Props> = (props) => {
           <FlexRow $alignItems="center">
             {__("Persistent Menu")}
             <HelpPopover title="">
-              "A Persistent Menu is a quick-access toolbar in your chat.
-              Customize it below for easy navigation to key bot features."
+              {__("A Persistent Menu is a quick-access toolbar in your chat.")}
+              {__(
+                "Customize it below for easy navigation to key bot features."
+              )}
             </HelpPopover>
           </FlexRow>
         </ControlLabel>

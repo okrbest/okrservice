@@ -12,7 +12,8 @@ import {
   Header,
 } from "@erxes/ui-log/src/activityLogs/styles";
 import { IConversation, IMessage } from "@erxes/ui-inbox/src/inbox/types";
-import { __, renderFullName } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { renderFullName } from "@erxes/ui/src/utils";
 import {
   formatText,
   getIconAndColor,

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { BarItems } from "@erxes/ui/src/layout/styles";
@@ -39,7 +40,7 @@ function List(props: Props) {
 
   // let timer: NodeJS.Timer;
 
-  const search = e => {
+  const search = (e) => {
     if (timer) {
       clearTimeout(timer);
       setTimer(undefined);
@@ -56,7 +57,7 @@ function List(props: Props) {
     );
   };
 
-  const moveCursorAtTheEnd = e => {
+  const moveCursorAtTheEnd = (e) => {
     const tmpValue = e.target.value;
     e.target.value = "";
     e.target.value = tmpValue;
@@ -90,13 +91,13 @@ function List(props: Props) {
     if (isChecked) {
       setChosenReportIds([...chosenReportIds, reportId]);
     } else {
-      setChosenReportIds(chosenReportIds.filter(id => id !== reportId));
+      setChosenReportIds(chosenReportIds.filter((id) => id !== reportId));
     }
   };
 
   const updatedProps = {
     ...props,
-    toggleReport
+    toggleReport,
   };
   const content = (
     <Table>
@@ -114,7 +115,7 @@ function List(props: Props) {
         </tr>
       </thead>
       <tbody>
-        {reports.map(report => {
+        {reports.map((report) => {
           return (
             <Row
               navigate={navigate}
@@ -135,7 +136,7 @@ function List(props: Props) {
 
   const breadcrumb = [
     { title: __("Settings"), link: "/settings" },
-    { title: __("Reports"), link: "/reports" }
+    { title: __("Reports"), link: "/reports" },
   ];
 
   let actionBarLeft: React.ReactNode;
@@ -163,7 +164,7 @@ function List(props: Props) {
         <TaggerPopover
           type={TAG_TYPES.REPORT}
           successCallback={afterTag}
-          targets={reports.filter(r => chosenReportIds.includes(r._id))}
+          targets={reports.filter((r) => chosenReportIds.includes(r._id))}
           trigger={tagButton}
           refetchQueries={["reportsCountByTags"]}
         />

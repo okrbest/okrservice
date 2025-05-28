@@ -4,7 +4,7 @@ import {
   NotWrappable,
 } from "@erxes/ui-settings/src/permissions/styles";
 import { IActions, IModule, IPermissionDocument } from "../types";
-import { __, router } from "coreui/utils";
+import { __, router } from "modules/common/utils";
 import {
   correctValue,
   filterActions,

@@ -2,11 +2,17 @@ import client from "@erxes/ui/src/apolloClient";
 import { gql } from "@apollo/client";
 import React from "react";
 import { queries } from "../../graphql";
-import { getEnv, __ } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { getEnv } from "@erxes/ui/src/utils";
 import { Button, Alert } from "@erxes/ui/src";
 import { IStage } from "../../types";
 import FormControl from "@erxes/ui/src/components/form/Control";
-import { ControlLabel, FormGroup, Spinner, Table } from "@erxes/ui/src/components";
+import {
+  ControlLabel,
+  FormGroup,
+  Spinner,
+  Table,
+} from "@erxes/ui/src/components";
 import { FormColumn, FormWrapper } from "@erxes/ui/src/styles/main";
 import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
 import SelectBrands from "@erxes/ui/src/brands/containers/SelectBrands";
@@ -54,8 +60,9 @@ export default class StageModal extends React.Component<Props, State> {
       ),
       brandId: localStorage.getItem("erxes_stages_documents_brandIds") || "",
       branchId: localStorage.getItem("erxes_stages_documents_branchIds") || "",
-      departmentId: localStorage.getItem("erxes_stages_documents_departmentIds") || "",
-      toggleModal: () => { }
+      departmentId:
+        localStorage.getItem("erxes_stages_documents_departmentIds") || "",
+      toggleModal: () => {},
     };
   }
 
@@ -64,13 +71,13 @@ export default class StageModal extends React.Component<Props, State> {
     client
       .query({
         query: gql(queries.documents),
-        variables: { contentType: "sales", subType: "stage" }
+        variables: { contentType: "sales", subType: "stage" },
       })
       .then(({ data }) => {
         this.setState({
           documents: data.documents,
           loading: false,
-          selectedDocumentId: (data.documents || [])[0]?._id
+          selectedDocumentId: (data.documents || [])[0]?._id,
         });
       })
       .catch(() => {
@@ -79,7 +86,9 @@ export default class StageModal extends React.Component<Props, State> {
   }
 
   onChangeCheckbox = (id: string, isChecked: boolean) => {
-    const excludeCheckedIds = this.state.checkedItemIds.filter(chId => chId !== id)
+    const excludeCheckedIds = this.state.checkedItemIds.filter(
+      (chId) => chId !== id
+    );
 
     if (isChecked) {
       excludeCheckedIds.push(id);
@@ -91,12 +100,12 @@ export default class StageModal extends React.Component<Props, State> {
     let all: string[] = [];
 
     if (isChecked) {
-      all = this.props.items.map(i => i._id)
+      all = this.props.items.map((i) => i._id);
     }
     this.setState({ checkedItemIds: all });
   };
 
-  onChange = e => {
+  onChange = (e) => {
     const name = e.target.name;
     const value = e.target.value;
     this.setState({ [name]: value } as any, () => {
@@ -116,12 +125,15 @@ export default class StageModal extends React.Component<Props, State> {
     });
   };
 
-
   print = () => {
     const {
-      checkedItemIds, selectedDocumentId,
-      copies, width,
-      brandId, branchId, departmentId
+      checkedItemIds,
+      selectedDocumentId,
+      copies,
+      width,
+      brandId,
+      branchId,
+      departmentId,
     } = this.state;
 
     const apiUrl = getEnv().REACT_APP_API_URL; // Replace this with your API URL
@@ -141,9 +153,10 @@ export default class StageModal extends React.Component<Props, State> {
   };
 
   render() {
-    const { selectedDocumentId, documents, loading, checkedItemIds } = this.state;
+    const { selectedDocumentId, documents, loading, checkedItemIds } =
+      this.state;
     if (loading) {
-      return <Spinner />
+      return <Spinner />;
     }
     const { items, toggleModal } = this.props;
 
@@ -181,9 +194,9 @@ export default class StageModal extends React.Component<Props, State> {
                 name="brandId"
                 customOption={{
                   label: "No Brand (noBrand)",
-                  value: "noBrand"
+                  value: "noBrand",
                 }}
-                onSelect={brandId => this.onChangeCombo('brandId', brandId)}
+                onSelect={(brandId) => this.onChangeCombo("brandId", brandId)}
                 multi={false}
               />
             </FormGroup>
@@ -197,9 +210,11 @@ export default class StageModal extends React.Component<Props, State> {
                 name="branchId"
                 customOption={{
                   label: "No branch",
-                  value: "noBranch"
+                  value: "noBranch",
                 }}
-                onSelect={branchId => this.onChangeCombo('branchId', branchId)}
+                onSelect={(branchId) =>
+                  this.onChangeCombo("branchId", branchId)
+                }
                 multi={false}
               />
             </FormGroup>
@@ -211,9 +226,11 @@ export default class StageModal extends React.Component<Props, State> {
                 name="departmentId"
                 customOption={{
                   label: "No department",
-                  value: "noDepartment"
+                  value: "noDepartment",
                 }}
-                onSelect={departmentId => this.onChangeCombo('departmentId', departmentId)}
+                onSelect={(departmentId) =>
+                  this.onChangeCombo("departmentId", departmentId)
+                }
                 multi={false}
               />
             </FormGroup>
@@ -225,9 +242,11 @@ export default class StageModal extends React.Component<Props, State> {
                 required={true}
                 autoFocus={true}
                 value={selectedDocumentId}
-                options={documents.map(doc => ({ value: doc.id, label: doc.name }))}
+                options={documents.map((doc) => ({
+                  value: doc.id,
+                  label: doc.name,
+                }))}
                 onChange={this.onchangeDocument}
-
               />
             </FormGroup>
           </FormColumn>
@@ -236,16 +255,18 @@ export default class StageModal extends React.Component<Props, State> {
           <tr>
             <th>{__("Number")}</th>
             <th>{__("Name")}</th>
-            <th><input
-              type="checkbox"
-              checked={checkedItemIds.length === items.length}
-              onChange={event =>
-                this.onChangeCheckboxAll(event.target.checked)
-              }
-            /></th>
+            <th>
+              <input
+                type="checkbox"
+                checked={checkedItemIds.length === items.length}
+                onChange={(event) =>
+                  this.onChangeCheckboxAll(event.target.checked)
+                }
+              />
+            </th>
           </tr>
           <tbody>
-            {items.map(item => (
+            {items.map((item) => (
               <tr key={item._id}>
                 <td>{item.number}</td>
                 <td>{item.name}</td>
@@ -253,7 +274,7 @@ export default class StageModal extends React.Component<Props, State> {
                   <input
                     type="checkbox"
                     checked={checkedItemIds.includes(item._id)}
-                    onChange={event =>
+                    onChange={(event) =>
                       this.onChangeCheckbox(item._id, event.target.checked)
                     }
                   />

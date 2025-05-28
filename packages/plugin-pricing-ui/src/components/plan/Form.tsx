@@ -1,23 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 // erxes
-import Button from '@erxes/ui/src/components/Button';
-import Step from '@erxes/ui/src/components/step/Step';
-import Steps from '@erxes/ui/src/components/step/Steps';
-import { Alert, __ } from 'coreui/utils';
+import Button from "@erxes/ui/src/components/Button";
+import Step from "@erxes/ui/src/components/step/Step";
+import Steps from "@erxes/ui/src/components/step/Steps";
+import { __ } from "coreui/utils";
+import { Alert } from "@erxes/ui/src/utils";
 import {
   StepWrapper,
   ControlWrapper,
-  Indicator
-} from '@erxes/ui/src/components/step/styles';
+  Indicator,
+} from "@erxes/ui/src/components/step/styles";
 // local
-import GeneralStep from './step/General';
-import OptionsStep from './step/Options';
-import PriceStep from './step/Price';
-import QuantityStep from './step/Quantity';
-import RepeatStep from './step/Repeat';
-import ExpiryStep from './step/Expiry';
-import { PricingPlan } from '../../types';
+import GeneralStep from "./step/General";
+import OptionsStep from "./step/Options";
+import PriceStep from "./step/Price";
+import QuantityStep from "./step/Quantity";
+import RepeatStep from "./step/Repeat";
+import ExpiryStep from "./step/Expiry";
+import { PricingPlan } from "../../types";
 
 type Props = {
   submit: (data: any) => void;
@@ -30,16 +31,16 @@ export default function Form(props: Props) {
   // Hooks
   const [formValues, setFormValues] = useState<PricingPlan>({
     // General
-    name: data.name || '',
-    status: data.status || 'active', // "active", "archive", "draft", "completed"
-    type: data.type || 'fixed', // "fixed", "subtraction", "percentage", "bonus"
+    name: data.name || "",
+    status: data.status || "active", // "active", "archive", "draft", "completed"
+    type: data.type || "fixed", // "fixed", "subtraction", "percentage", "bonus"
     value: data.value || 0,
-    priceAdjustType: data.priceAdjustType || 'none',
+    priceAdjustType: data.priceAdjustType || "none",
     priceAdjustFactor: data.priceAdjustFactor || 0,
     bonusProduct: data.bonusProduct || null,
     isPriority: data.isPriority || false,
 
-    applyType: data.applyType || 'category', // "product", "category", "bundle", 'segment', 'vendors'
+    applyType: data.applyType || "category", // "product", "category", "bundle", 'segment', 'vendors'
     products: data.products || [],
     productsExcluded: data.productsExcluded || [],
     productsBundle: data.productsBundle || [[]],
@@ -73,7 +74,7 @@ export default function Form(props: Props) {
     expiryRules: data.expiryRules || [],
 
     isRepeatEnabled: data.isRepeatEnabled || false,
-    repeatRules: data.repeatRules || []
+    repeatRules: data.repeatRules || [],
   });
 
   useEffect(() => data.name && setFormValues(data), [data]);
@@ -89,7 +90,7 @@ export default function Form(props: Props) {
   const handleSubmit = () => {
     const document: any = { ...formValues };
 
-    if (!document.name) return Alert.error(__('Enter plan name'));
+    if (!document.name) return Alert.error(__("Enter plan name"));
 
     if (!document.priceRules?.length) document.isPriceEnabled = false;
 
@@ -102,30 +103,43 @@ export default function Form(props: Props) {
     document.__typename = undefined;
 
     if (document.priceRules?.length)
-      document.priceRules = document.priceRules.map(item => ({ ...item, __typename: undefined }));
-
-    if (document.quantityRules?.length)
-      document.quantityRules = document.quantityRules.map(item => ({ ...item, __typename: undefined }));
-
-    if (document.expiryRules?.length)
-      document.expiryRules = document.expiryRules.map(item => ({ ...item, __typename: undefined }));
-
-    if (document.repeatRules?.length)
-      document.repeatRules = document.repeatRules.map(item => ({
+      document.priceRules = document.priceRules.map((item) => ({
         ...item,
         __typename: undefined,
-        weekValue: item.weekValue && item.weekValue.map(sub => ({
-          ...sub,
-          __typename: undefined
-        })),
-        monthValue: item.monthValue && item.monthValue.map(sub => ({
-          ...sub,
-          __typename: undefined
-        })),
       }));
 
-    if (document.applyType === 'bundle')
-      document.productsBundle = document.productsBundle.filter(b => b.length);
+    if (document.quantityRules?.length)
+      document.quantityRules = document.quantityRules.map((item) => ({
+        ...item,
+        __typename: undefined,
+      }));
+
+    if (document.expiryRules?.length)
+      document.expiryRules = document.expiryRules.map((item) => ({
+        ...item,
+        __typename: undefined,
+      }));
+
+    if (document.repeatRules?.length)
+      document.repeatRules = document.repeatRules.map((item) => ({
+        ...item,
+        __typename: undefined,
+        weekValue:
+          item.weekValue &&
+          item.weekValue.map((sub) => ({
+            ...sub,
+            __typename: undefined,
+          })),
+        monthValue:
+          item.monthValue &&
+          item.monthValue.map((sub) => ({
+            ...sub,
+            __typename: undefined,
+          })),
+      }));
+
+    if (document.applyType === "bundle")
+      document.productsBundle = document.productsBundle.filter((b) => b.length);
 
     submit(document);
   };
@@ -173,8 +187,8 @@ export default function Form(props: Props) {
       </Steps>
       <ControlWrapper>
         <Indicator>
-          {__('You are ') + (data._id ? __('editing') : __('creating'))}{' '}
-          <strong>{__('Plan')}</strong>
+          {__("You are ") + (data._id ? __("editing") : __("creating"))}{" "}
+          <strong>{__("Plan")}</strong>
         </Indicator>
         {renderButtons()}
       </ControlWrapper>

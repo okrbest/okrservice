@@ -1,5 +1,5 @@
 import "@nateradebaugh/react-datetime/scss/styles.scss";
-import "../sass/style.min.css";
+// import "../sass/style.min.css";
 
 import * as React from "react";
 import * as dayjs from "dayjs";
@@ -18,13 +18,15 @@ import { TicketProvider } from "../context/Ticket";
 import client from "../../apollo-client";
 import { getMessengerData } from "../utils/util";
 
-// import '../sass/style.css';
+import "../sass/style.css";
 
 dayjs.extend(localizedFormat);
 dayjs.extend(relativeTime);
 
 const App = () => {
   const { showLauncher } = getMessengerData();
+
+  console.log("showLauncher 2 ", showLauncher);
 
   return (
     <ApolloProvider client={client}>

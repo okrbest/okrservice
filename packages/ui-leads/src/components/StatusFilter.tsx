@@ -2,15 +2,16 @@ import {
   FieldStyle,
   SidebarCounter,
   SidebarList,
-} from '@erxes/ui/src/layout/styles';
-import { __, router } from 'coreui/utils';
-import { useLocation, useNavigate } from 'react-router-dom';
+} from "@erxes/ui/src/layout/styles";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import Box from '@erxes/ui/src/components/Box';
-import { Counts } from '@erxes/ui/src/types';
-import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
-import React from 'react';
-import { statusFilters } from '../constants';
+import Box from "@erxes/ui/src/components/Box";
+import { Counts } from "@erxes/ui/src/types";
+import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";
+import React from "react";
+import { statusFilters } from "../constants";
 
 interface IProps {
   counts: Counts;
@@ -35,9 +36,9 @@ function StatusFilter({ counts, emptyText }: IProps) {
               href="#filter"
               tabIndex={0}
               className={
-                router.getParam(location, 'status') === status.key
-                  ? 'active'
-                  : ''
+                router.getParam(location, "status") === status.key
+                  ? "active"
+                  : ""
               }
               onClick={onClick}
             >
@@ -52,7 +53,7 @@ function StatusFilter({ counts, emptyText }: IProps) {
 
   return (
     <Box
-      title={__('Filter by status')}
+      title={__("Filter by status")}
       collapsible={statusFilters.length > 5}
       name="showFilterByStatus"
     >
@@ -60,7 +61,7 @@ function StatusFilter({ counts, emptyText }: IProps) {
         data={data}
         loading={false}
         count={statusFilters.length}
-        emptyText={emptyText ? emptyText : 'Loading'}
+        emptyText={emptyText ? emptyText : "Loading"}
         emptyIcon="leaf"
         size="small"
         objective={true}

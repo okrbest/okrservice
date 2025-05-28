@@ -1,15 +1,15 @@
-import { Alert, __, confirm } from 'coreui/utils';
-import { gql, useMutation } from '@apollo/client';
+import { Alert, __, confirm } from "modules/common/utils";
+import { gql, useMutation } from "@apollo/client";
 
-import BlockList from '../../components/common/BlockList';
-import Box from '@erxes/ui/src/components/Box';
-import ErrorMsg from '@erxes/ui/src/components/ErrorMsg';
-import { MenuFooter } from 'modules/settings/styles';
-import React from 'react';
-import Spinner from '@erxes/ui/src/components/Spinner';
-import { mutations } from '@erxes/ui/src/team/graphql';
+import BlockList from "../../components/common/BlockList";
+import Box from "@erxes/ui/src/components/Box";
+import ErrorMsg from "@erxes/ui/src/components/ErrorMsg";
+import { MenuFooter } from "modules/settings/styles";
+import React from "react";
+import Spinner from "@erxes/ui/src/components/Spinner";
+import { mutations } from "@erxes/ui/src/team/graphql";
 // import { queries } from '@erxes/ui/src/team/graphql';
-import { useQuery } from '@apollo/client';
+import { useQuery } from "@apollo/client";
 
 type Props = {
   queryParams: Record<string, string>;
@@ -21,15 +21,15 @@ export default function BlockListContainer(props: Props) {
   const { queryType, title, queryParams } = props;
 
   const [params, paramsDef, additionalField] = [
-    'branches',
-    'departments',
+    "branches",
+    "departments",
   ].includes(queryType)
     ? [
-        '($withoutUserFilter:Boolean)',
-        '(withoutUserFilter:$withoutUserFilter)',
-        'parentId',
+        "($withoutUserFilter:Boolean)",
+        "(withoutUserFilter:$withoutUserFilter)",
+        "parentId",
       ]
-    : ['', '', ''];
+    : ["", "", ""];
 
   const query = `
     query ${queryType}${params}{
@@ -40,10 +40,10 @@ export default function BlockListContainer(props: Props) {
   `;
 
   const listQuery = useQuery(gql(query), {
-    variables: queryType === 'units' ? undefined : { withoutUserFilter: true },
+    variables: queryType === "units" ? undefined : { withoutUserFilter: true },
   });
 
-  const [deleteMutation] = useMutation(gql(mutations[queryType + 'Remove']));
+  const [deleteMutation] = useMutation(gql(mutations[queryType + "Remove"]));
 
   const removeItem = (_id: string) => {
     confirm().then(() => {
@@ -51,7 +51,7 @@ export default function BlockListContainer(props: Props) {
         .then(() => {
           listQuery.refetch();
 
-          Alert.success('Successfully deleted');
+          Alert.success("Successfully deleted");
         })
         .catch((e) => {
           Alert.error(e.message);

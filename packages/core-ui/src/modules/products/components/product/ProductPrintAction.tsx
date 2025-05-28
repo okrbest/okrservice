@@ -5,7 +5,8 @@ import {
   ModalFooter,
 } from "@erxes/ui/src/styles/main";
 import React, { useState } from "react";
-import { __, getEnv } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { getEnv } from "@erxes/ui/src/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import ControlLabel from "@erxes/ui/src/components/form/Label";

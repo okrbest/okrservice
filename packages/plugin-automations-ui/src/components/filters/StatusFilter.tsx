@@ -3,7 +3,8 @@ import {
   SidebarCounter,
   SidebarList,
 } from "@erxes/ui/src/layout/styles";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Box from "@erxes/ui/src/components/Box";

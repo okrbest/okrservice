@@ -1,5 +1,9 @@
 import { FormControl, FormGroup } from "@erxes/ui/src/components/form";
-import { IButtonMutateProps, IFormProps, IAttachment } from "@erxes/ui/src/types";
+import {
+  IButtonMutateProps,
+  IFormProps,
+  IAttachment,
+} from "@erxes/ui/src/types";
 import React, { useState } from "react";
 
 import Button from "@erxes/ui/src/components/Button";
@@ -10,7 +14,7 @@ import { IBranch } from "@erxes/ui/src/team/types";
 import { ModalFooter } from "@erxes/ui/src/styles/main";
 import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
 import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
-import { __, extractAttachment } from "coreui/utils";
+import { __, extractAttachment } from "modules/common/utils";
 
 type Props = {
   renderButton: (props: IButtonMutateProps) => JSX.Element;
@@ -23,11 +27,13 @@ export default function BranchForm(props: Props) {
   const object = item || ({} as IBranch);
 
   const [userIds, setUserIds] = useState(
-    (object.users || []).map((user) => user._id),
+    (object.users || []).map((user) => user._id)
   );
   const [parentId, setParentId] = useState(object?.parentId);
   const [links, setLinks] = useState(object.links || {});
-  const [image, setImage] = useState<IAttachment | null>(object.image && extractAttachment([object.image])[0] || null);
+  const [image, setImage] = useState<IAttachment | null>(
+    (object.image && extractAttachment([object.image])[0]) || null
+  );
   const [supervisorId, setSupervisorId] = useState(object.supervisorId);
 
   const coordinateObj = object.coordinate || {};

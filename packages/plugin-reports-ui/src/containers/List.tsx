@@ -1,6 +1,7 @@
 import * as compose from 'lodash.flowright';
 
-import { Alert, __, confirm, withProps } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { Alert, confirm, withProps } from '@erxes/ui/src/utils';
 import { ReportsListQueryResponse, ReportsMutationResponse } from '../types';
 import { mutations, queries } from '../graphql';
 

@@ -23,7 +23,8 @@ import {
 } from "@erxes/ui/src/types";
 import { IDonateCampaign, IDonateCampaignAward } from "../types";
 import Select from "react-select";
-import { extractAttachment, __ } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { extractAttachment } from "@erxes/ui/src/utils";
 import { IVoucherCampaign } from "../../voucherCampaign/types";
 
 type Props = {

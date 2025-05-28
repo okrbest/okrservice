@@ -3,7 +3,8 @@ import {
   IDepartment,
 } from "@erxes/ui/src/team/types";
 import { LeftActionBar, Title } from "@erxes/ui-settings/src/styles";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import ActionButtons from "@erxes/ui/src/components/ActionButtons";
 import { BarItems } from "modules/layout/styles";
@@ -40,7 +41,7 @@ const MainList = (props: Props) => {
   const location = useLocation();
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState(
-    props.queryParams.searchValue || "",
+    props.queryParams.searchValue || ""
   );
 
   const refetchQueries = () => [
@@ -125,7 +126,7 @@ const MainList = (props: Props) => {
     const handleSelect = () => {
       if (selectedItems.includes(department._id)) {
         const removedSelectedItems = selectedItems.filter(
-          (selectItem) => selectItem !== department._id,
+          (selectItem) => selectItem !== department._id
         );
         return setSelectedItems(removedSelectedItems);
       }

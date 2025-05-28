@@ -1,5 +1,6 @@
 import { FilterContainer, FlexRow, Title } from "@erxes/ui-settings/src/styles";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";

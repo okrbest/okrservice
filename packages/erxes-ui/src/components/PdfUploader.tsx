@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 import Attachment from '@erxes/ui/src/components/Attachment';
 import Spinner from '@erxes/ui/src/components/Spinner';
-import { __, getEnv } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { getEnv } from '@erxes/ui/src/utils';
 import Alert from '@erxes/ui/src/utils/Alert';
 
 import { IPdfAttachment } from '@erxes/ui/src/types';

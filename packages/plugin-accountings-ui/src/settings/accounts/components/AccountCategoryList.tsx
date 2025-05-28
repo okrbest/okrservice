@@ -1,5 +1,6 @@
 import { AccountCategoriesQueryResponse, IAccountCategory } from "../types";
-import { Alert, __, confirm, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert, confirm, router } from "@erxes/ui/src/utils";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { useLocation, useNavigate } from "react-router-dom";
 

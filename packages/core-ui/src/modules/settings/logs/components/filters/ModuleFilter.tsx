@@ -3,9 +3,10 @@ import {
   SidebarList,
   Box,
   FormControl,
-  DataWithLoader
+  DataWithLoader,
 } from "@erxes/ui/src";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import React from "react";
 import { CustomPadding } from "@erxes/ui-contacts/src/customers/styles";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -37,7 +38,7 @@ const moduleOptions = [
   { value: "growthhacks:growthHackPipelineLabel", label: "Pipeline labels" },
   {
     value: "growthhacks:growthHackipelineTemplate",
-    label: "Pipeline templates"
+    label: "Pipeline templates",
   },
   { value: "growthhacks:growthHack", label: "Growth hacks" },
   { value: "sales:dealStages", label: "Deal stages" },
@@ -64,11 +65,11 @@ const moduleOptions = [
   { value: "knowledgebase:knowledgeBaseTopic", label: "Knowledgebase topics" },
   {
     value: "knowledgebase:knowledgeBaseCategory",
-    label: "Knowledgebase categories"
+    label: "Knowledgebase categories",
   },
   {
     value: "knowledgebase:knowledgeBaseArticle",
-    label: "Knowledgebase articles"
+    label: "Knowledgebase articles",
   },
   // others
   { value: "engages:engage", label: "Campaigns" },
@@ -79,7 +80,7 @@ const moduleOptions = [
   { value: "emailTemplate", label: "Email templates" },
   { value: "importHistory", label: "Import histories" },
   { value: "script", label: "Scripts" },
-  { value: "pricing:pricingPlan", label: "PricingPlan" }
+  { value: "pricing:pricingPlan", label: "PricingPlan" },
 ];
 
 function ModuleFilter({ queryParams }: Props) {
@@ -107,7 +108,7 @@ function ModuleFilter({ queryParams }: Props) {
 
   const applyModuleFilter = (value: string) => {
     setSearchValue(value);
-    const filteredModules = moduleOptions.filter(module =>
+    const filteredModules = moduleOptions.filter((module) =>
       module.label.toLowerCase().includes(value.toLowerCase())
     );
     setModules(filteredModules);
@@ -117,7 +118,7 @@ function ModuleFilter({ queryParams }: Props) {
     router.setParams(navigate, location, { type: module.value });
   };
 
-  const searchModule = e => {
+  const searchModule = (e) => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }

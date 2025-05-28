@@ -1,24 +1,25 @@
-import Button from '@erxes/ui/src/components/Button';
-import { SmallLoader } from '@erxes/ui/src/components/ButtonMutate';
-import Icon from '@erxes/ui/src/components/Icon';
-import { Column, Columns, Title } from '@erxes/ui/src/styles/chooser';
-import { ModalFooter } from '@erxes/ui/src/styles/main';
-import { __, renderFullName } from 'coreui/utils';
-import React from 'react';
-import { IUser } from '@erxes/ui/src/auth/types';
+import Button from "@erxes/ui/src/components/Button";
+import { SmallLoader } from "@erxes/ui/src/components/ButtonMutate";
+import Icon from "@erxes/ui/src/components/Icon";
+import { Column, Columns, Title } from "@erxes/ui/src/styles/chooser";
+import { ModalFooter } from "@erxes/ui/src/styles/main";
+import { __ } from "coreui/utils";
+import { renderFullName } from "@erxes/ui/src/utils";
+import React from "react";
+import { IUser } from "@erxes/ui/src/auth/types";
 import {
   CUSTOMER_BASIC_INFO,
   CUSTOMER_DATAS,
-  CUSTOMER_LINKS
-} from '../../constants';
-import { InfoAvatar, InfoDetail } from '../../styles';
-import { Info, InfoTitle } from '@erxes/ui/src/styles/main';
+  CUSTOMER_LINKS,
+} from "../../constants";
+import { InfoAvatar, InfoDetail } from "../../styles";
+import { Info, InfoTitle } from "@erxes/ui/src/styles/main";
 import {
   ICustomer,
   ICustomerDoc,
   ICustomerLinks,
-  IVisitorContact
-} from '../../types';
+  IVisitorContact,
+} from "../../types";
 
 type Props = {
   objects: ICustomer[];
@@ -40,7 +41,7 @@ class CustomersMerge extends React.Component<Props, State> {
     super(props);
 
     this.state = {
-      selectedValues: {}
+      selectedValues: {},
     };
   }
 
@@ -57,11 +58,11 @@ class CustomersMerge extends React.Component<Props, State> {
     }
 
     this.props.save({
-      ids: objects.map(customer => customer._id),
+      ids: objects.map((customer) => customer._id),
       data: { ...selectedValues },
       callback: () => {
         this.props.closeModal();
-      }
+      },
     });
   };
 
@@ -72,10 +73,10 @@ class CustomersMerge extends React.Component<Props, State> {
   ) => {
     const selectedValues = { ...this.state.selectedValues };
 
-    if (type === 'plus-1') {
+    if (type === "plus-1") {
       selectedValues[key] = value;
 
-      if (key === 'links') {
+      if (key === "links") {
         const links = Object.assign(
           { ...this.state.selectedValues.links },
           value
@@ -96,14 +97,14 @@ class CustomersMerge extends React.Component<Props, State> {
       <React.Fragment>
         <Title>{renderFullName(customer)}</Title>
         <ul>
-          {properties.map(info => {
+          {properties.map((info) => {
             const key = info.field;
 
             if (!customer[key]) {
               return null;
             }
 
-            if (info.field === 'links') {
+            if (info.field === "links") {
               return this.renderLinks(customer[key], icon);
             }
 
@@ -133,11 +134,11 @@ class CustomersMerge extends React.Component<Props, State> {
 
   renderValue(field: string, value: any) {
     switch (field) {
-      case 'visitorContactInfo':
+      case "visitorContactInfo":
         return this.renderVisitorContactInfo(value);
-      case 'owner':
+      case "owner":
         return this.renderOwner(value);
-      case 'avatar':
+      case "avatar":
         return <InfoAvatar src={value} alt="avatar" />;
 
       default:
@@ -148,9 +149,9 @@ class CustomersMerge extends React.Component<Props, State> {
   renderVisitorContactInfo(data: IVisitorContact) {
     return (
       <Info>
-        <InfoTitle>{__('E-mail')}: </InfoTitle>
+        <InfoTitle>{__("E-mail")}: </InfoTitle>
         <InfoDetail>{data.email}</InfoDetail>
-        <InfoTitle>{__('Phone')}: </InfoTitle>
+        <InfoTitle>{__("Phone")}: </InfoTitle>
         <InfoDetail>{data.phone}</InfoDetail>
       </Info>
     );
@@ -166,7 +167,7 @@ class CustomersMerge extends React.Component<Props, State> {
   }
 
   renderLinks = (data: ICustomerLinks, icon: string) => {
-    return CUSTOMER_LINKS.ALL.map(info => {
+    return CUSTOMER_LINKS.ALL.map((info) => {
       const field = info.field;
       const value = data[field];
 
@@ -178,7 +179,7 @@ class CustomersMerge extends React.Component<Props, State> {
         <li
           key={field}
           onClick={this.handleChange.bind(this, icon, `links`, {
-            [field]: value
+            [field]: value,
           })}
         >
           <InfoTitle>{info.label}:</InfoTitle>
@@ -198,15 +199,15 @@ class CustomersMerge extends React.Component<Props, State> {
       <form onSubmit={this.save}>
         <Columns>
           <Column className="multiple" width="33%">
-            {this.renderCustomer(customer1, 'plus-1')}
+            {this.renderCustomer(customer1, "plus-1")}
           </Column>
 
           <Column className="multiple" width="33%">
-            {this.renderCustomer(customer2, 'plus-1')}
+            {this.renderCustomer(customer2, "plus-1")}
           </Column>
 
           <Column width="33%">
-            {this.renderCustomer(selectedValues, 'times')}
+            {this.renderCustomer(selectedValues, "times")}
           </Column>
         </Columns>
 
@@ -217,7 +218,7 @@ class CustomersMerge extends React.Component<Props, State> {
           <Button
             type="submit"
             btnStyle="success"
-            icon={mergeCustomerLoading ? undefined : 'check-circle'}
+            icon={mergeCustomerLoading ? undefined : "check-circle"}
             disabled={mergeCustomerLoading}
             onClick={this.save}
           >

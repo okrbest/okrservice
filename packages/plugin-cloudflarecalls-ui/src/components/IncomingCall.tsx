@@ -1,17 +1,18 @@
-import { Alert, __ } from 'coreui/utils';
+import { __ } from "coreui/utils";
+import { Alert } from "@erxes/ui/src/utils";
 import React, {
   useEffect,
   useRef,
   useState,
   useCallback,
   useMemo,
-} from 'react';
-import { useNavigate } from 'react-router-dom';
-import Avatar from '@erxes/ui/src/components/nameCard/Avatar';
-import Icon from '@erxes/ui/src/components/Icon';
-import { renderFullName } from '@erxes/ui/src/utils/core';
-import { callActions } from '../utils';
-import { PullAudioTracks } from './PullAudioTracks';
+} from "react";
+import { useNavigate } from "react-router-dom";
+import Avatar from "@erxes/ui/src/components/nameCard/Avatar";
+import Icon from "@erxes/ui/src/components/Icon";
+import { renderFullName } from "@erxes/ui/src/utils/core";
+import { callActions } from "../utils";
+import { PullAudioTracks } from "./PullAudioTracks";
 import {
   Actions,
   CallAction,
@@ -24,8 +25,8 @@ import {
   InnerActions,
   NameCardContainer,
   PhoneNumber,
-} from '../styles';
-import { ICustomer } from '../types';
+} from "../styles";
+import { ICustomer } from "../types";
 
 type Props = {
   customer: ICustomer;
@@ -58,7 +59,7 @@ const getSpentTime = (seconds: number) => {
 };
 
 const formatNumber = (n: number) => {
-  return n.toLocaleString('en-US', {
+  return n.toLocaleString("en-US", {
     minimumIntegerDigits: 2,
     useGrouping: false,
   });
@@ -78,26 +79,26 @@ const IncomingCall = (props: Props) => {
     audioTrack,
   } = props;
 
-  const primaryPhone = customer?.primaryPhone || '';
+  const primaryPhone = customer?.primaryPhone || "";
   const navigate = useNavigate();
   const [timeSpent, setTimeSpent] = useState(0);
-  const [status, setStatus] = useState(phoneNumber ? 'active' : 'pending');
+  const [status, setStatus] = useState(phoneNumber ? "active" : "pending");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Derive haveIncomingCall from status and primaryPhone
   const haveIncomingCall = useMemo(() => {
-    return status === 'active';
+    return status === "active";
   }, [status, phoneNumber]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
     if (audioRef.current) {
-      audioRef.current.src = '/sound/incoming.mp3';
+      audioRef.current.src = "/sound/incoming.mp3";
       audioRef.current.play();
     }
 
-    if (status === 'accepted') {
+    if (status === "accepted") {
       timer = setInterval(() => {
         setTimeSpent((prevTimeSpent) => prevTimeSpent + 1);
       }, 1000);
@@ -106,37 +107,37 @@ const IncomingCall = (props: Props) => {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.src = '';
+        audioRef.current.src = "";
       }
       clearInterval(timer);
     };
   }, [status]);
 
   const endCall = useCallback(() => {
-    leaveCall({ roomState: 'leave' });
+    leaveCall({ roomState: "leave" });
   }, [leaveCall]);
 
   const onAcceptCall = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current.src = '';
+      audioRef.current.src = "";
     }
     if (!hasMicrophone) {
-      return Alert.error('Check your microphone');
+      return Alert.error("Check your microphone");
     }
 
-    setStatus('accepted');
+    setStatus("accepted");
     answerCall();
   }, [hasMicrophone, answerCall]);
 
   const onDeclineCall = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current.src = '';
+      audioRef.current.src = "";
     }
 
-    setStatus('declined');
-    leaveCall({ roomState: 'busy' });
+    setStatus("declined");
+    leaveCall({ roomState: "busy" });
   }, []);
 
   const gotoDetail = useCallback(() => {
@@ -151,23 +152,23 @@ const IncomingCall = (props: Props) => {
 
   const renderUserInfo = useCallback(
     (type?: string) => {
-      const inCall = type === 'incall';
+      const inCall = type === "incall";
       const hasChannel = channels?.length > 0;
-      const channelName = channels?.[0]?.name || '';
-      const fullName = renderFullName(customer || '', false);
+      const channelName = channels?.[0]?.name || "";
+      const fullName = renderFullName(customer || "", false);
 
       return (
         <NameCardContainer>
-          <h5>{__('Call')}</h5>
+          <h5>{__("Call")}</h5>
           <Avatar user={customer} size={inCall ? 72 : 30} />
-          <h4>{fullName === 'Unknown' ? phoneNumber : fullName}</h4>
+          <h4>{fullName === "Unknown" ? phoneNumber : fullName}</h4>
           <h1>{phoneNumber}</h1>
           {primaryPhone && (
             <PhoneNumber>
               {primaryPhone}
               {hasChannel && (
                 <span>
-                  {__('is calling to')} {channelName}
+                  {__("is calling to")} {channelName}
                 </span>
               )}
             </PhoneNumber>
@@ -175,7 +176,7 @@ const IncomingCall = (props: Props) => {
         </NameCardContainer>
       );
     },
-    [customer, channels, phoneNumber, primaryPhone],
+    [customer, channels, phoneNumber, primaryPhone]
   );
 
   if (haveIncomingCall) {
@@ -191,13 +192,13 @@ const IncomingCall = (props: Props) => {
                   <IncomingActionButton onClick={onAcceptCall} type="accepted">
                     <Icon icon="phone-alt" size={20} />
                   </IncomingActionButton>
-                  <b>{__('Accept')}</b>
+                  <b>{__("Accept")}</b>
                 </div>
                 <div>
                   <IncomingActionButton onClick={onDeclineCall} type="decline">
                     <Icon icon="phone-slash" size={20} />
                   </IncomingActionButton>
-                  <b>{__('Decline')}</b>
+                  <b>{__("Decline")}</b>
                 </div>
               </IncomingButtonContainer>
             </IncomingContent>
@@ -207,29 +208,29 @@ const IncomingCall = (props: Props) => {
     );
   }
 
-  if (status === 'accepted') {
+  if (status === "accepted") {
     const renderContent = () => (
       <>
-        {renderUserInfo('incall')}
+        {renderUserInfo("incall")}
         <p>
-          {__('Call duration:')} <b>{getSpentTime(timeSpent)}</b>
+          {__("Call duration:")} <b>{getSpentTime(timeSpent)}</b>
         </p>
         <InCallFooter>
           <Actions>
             <InnerActions>
               <div>
                 <CallAction onClick={gotoDetail} $disabled={false}>
-                  <Icon size={20} icon={'book-alt'} />
+                  <Icon size={20} icon={"book-alt"} />
                 </CallAction>
 
-                {__('Detail')}
+                {__("Detail")}
               </div>
             </InnerActions>
             <div>
               <CallAction onClick={endCall} $isDecline={true}>
                 <Icon size={20} icon="phone-slash" />
               </CallAction>
-              {__('End Call')}
+              {__("End Call")}
             </div>
           </Actions>
         </InCallFooter>

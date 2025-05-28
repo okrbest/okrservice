@@ -5,7 +5,8 @@ import {
 } from "@erxes/ui/src/components/form";
 import { Icon, Tip } from "@erxes/ui/src/components";
 import { Sidebar, Wrapper } from "@erxes/ui/src/layout";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import React from "react";
 import SelectCampaigns from "../../containers/SelectCampaigns";

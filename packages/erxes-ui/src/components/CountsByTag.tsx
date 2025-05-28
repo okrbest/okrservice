@@ -1,13 +1,13 @@
-import { __, router } from 'coreui/utils';
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
-import Box from './Box';
-import FilterByParams from './FilterByParams';
-import { ITag } from '@erxes/ui-tags/src/types';
-import Icon from './Icon';
-import { Link } from 'react-router-dom';
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-
+import Box from "./Box";
+import FilterByParams from "./FilterByParams";
+import { ITag } from "@erxes/ui-tags/src/types";
+import Icon from "./Icon";
+import { Link } from "react-router-dom";
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface IProps {
   tags: ITag[];
@@ -30,7 +30,7 @@ function CountsByTag({ tags, counts, manageUrl, loading }: IProps) {
         <Icon icon="cog" />
       </Link>
 
-      {router.getParam(location, 'tag') && (
+      {router.getParam(location, "tag") && (
         <a href="#cancel" tabIndex={0} onClick={onClick}>
           <Icon icon="times-circle" />
         </a>
@@ -41,7 +41,7 @@ function CountsByTag({ tags, counts, manageUrl, loading }: IProps) {
   return (
     <Box
       extraButtons={extraButtons}
-      title={__('Filter by tags')}
+      title={__("Filter by tags")}
       collapsible={tags.length > 7}
       name="showFilterByTags"
     >

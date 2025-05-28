@@ -3,7 +3,8 @@ import {
   SidebarCounter,
   SidebarList,
 } from "@erxes/ui/src/layout/styles";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import Box from "@erxes/ui/src/components/Box";
 import { ClientPortalConfig } from "../../types";
@@ -63,8 +64,6 @@ function ClientPortalUser({
   const data = (
     <SidebarList>
       {clientPortalGetConfigs.map((cp) => {
-  
-
         return (
           <li key={cp._id}>
             <a
@@ -75,7 +74,7 @@ function ClientPortalUser({
                   ? "active"
                   : ""
               }
-              onClick={()=> onClickRow(cp._id)}
+              onClick={() => onClickRow(cp._id)}
             >
               <FieldStyle>{cp.name}</FieldStyle>
               <SidebarCounter>{counts[cp._id || ""]}</SidebarCounter>

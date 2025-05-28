@@ -3,7 +3,8 @@ import {
   FilterWrapper,
 } from "@erxes/ui-settings/src/permissions/styles";
 import { ICategory, IPermission, IUserGroupDocument } from "../../types";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import { correctValue, generateModuleParams, generatedList } from "../../utils";
 
 import Button from "@erxes/ui/src/components/Button";

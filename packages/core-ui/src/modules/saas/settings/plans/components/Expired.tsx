@@ -1,17 +1,18 @@
-import dayjs from 'dayjs';
-import { IUser } from 'modules/auth/types';
-import Button from '@erxes/ui/src/components/Button';
-import EmptyState from '@erxes/ui/src/components/EmptyState';
-import WithPermission from '@erxes/ui/src/components/WithPermission';
-import { FullContent, MiddleContent } from '@erxes/ui/src/styles/main';
-import { getEnv, __ } from 'coreui/utils';
-import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-import { Layout } from 'modules/layout/styles';
-import { CenterContainer } from '@erxes/ui/src/components/step/preview/styles';
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { StatusBox, StatusTitle } from '../styles';
-import { IOrganization } from '../types';
+import dayjs from "dayjs";
+import { IUser } from "modules/auth/types";
+import Button from "@erxes/ui/src/components/Button";
+import EmptyState from "@erxes/ui/src/components/EmptyState";
+import WithPermission from "@erxes/ui/src/components/WithPermission";
+import { FullContent, MiddleContent } from "@erxes/ui/src/styles/main";
+import { __ } from "coreui/utils";
+import { getEnv } from "@erxes/ui/src/utils";
+import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
+import { Layout } from "modules/layout/styles";
+import { CenterContainer } from "@erxes/ui/src/components/step/preview/styles";
+import React from "react";
+import { Link } from "react-router-dom";
+import { StatusBox, StatusTitle } from "../styles";
+import { IOrganization } from "../types";
 
 type Props = {
   currentUser: IUser;
@@ -40,13 +41,13 @@ class Expired extends React.Component<Props> {
         <FullContent center={true}>
           <MiddleContent transparent={true}>
             <CenterContainer>
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: "center" }}>
                 <StatusBox largePadding={true}>
                   <StatusTitle>
                     Your current plan has expired
                     <br />
                     <br />
-                    <em>{dayjs(expiryDate).format('YYYY/MM/DD')}</em>
+                    <em>{dayjs(expiryDate).format("YYYY/MM/DD")}</em>
                   </StatusTitle>
                   <a
                     target="_blank"
@@ -72,7 +73,7 @@ class Expired extends React.Component<Props> {
                   </Link>
                   <br />
                   <br />
-                  <span onClick={logout}>{__('Sign out')}</span>
+                  <span onClick={logout}>{__("Sign out")}</span>
                 </StatusBox>
               </div>
             </CenterContainer>

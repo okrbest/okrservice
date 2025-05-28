@@ -1,4 +1,5 @@
-import { Alert, __ } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert } from "@erxes/ui/src/utils";
 import { DividerText, StepBody, StepHeader, StepItem } from "../../styles";
 import { correctValue, generateModuleParams } from "../../utils";
 

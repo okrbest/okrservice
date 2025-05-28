@@ -1,16 +1,17 @@
-import { __, renderFullName } from 'coreui/utils';
+import { __ } from "coreui/utils";
+import { renderFullName } from "@erxes/ui/src/utils";
 
-import Box from '@erxes/ui/src/components/Box';
-import EmptyState from '@erxes/ui/src/components/EmptyState';
-import Icon from '@erxes/ui/src/components/Icon';
-import { Link } from 'react-router-dom';
-import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
-import React from 'react';
-import { SectionBodyItem } from '@erxes/ui/src/layout/styles';
-import Spinner from '@erxes/ui/src/components/Spinner';
-import { ICustomer } from '@erxes/ui-contacts/src/customers/types';
-import ContactsForm from '../../containers/detail/ContactsForm';
-import { IContract } from '../../types';
+import Box from "@erxes/ui/src/components/Box";
+import EmptyState from "@erxes/ui/src/components/EmptyState";
+import Icon from "@erxes/ui/src/components/Icon";
+import { Link } from "react-router-dom";
+import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
+import React from "react";
+import { SectionBodyItem } from "@erxes/ui/src/layout/styles";
+import Spinner from "@erxes/ui/src/components/Spinner";
+import { ICustomer } from "@erxes/ui-contacts/src/customers/types";
+import ContactsForm from "../../containers/detail/ContactsForm";
+import { IContract } from "../../types";
 
 export type Props = {
   customers: ICustomer[];
@@ -18,7 +19,7 @@ export type Props = {
   contract: IContract;
 };
 
-function CustomerSection({ customers = [], title = '', contract }: Props) {
+function CustomerSection({ customers = [], title = "", contract }: Props) {
   const renderBody = (customersObj: ICustomer[]) => {
     if (!customersObj) {
       return <Spinner objective={true} />;
@@ -58,7 +59,7 @@ function CustomerSection({ customers = [], title = '', contract }: Props) {
 
   return (
     <Box
-      title={__(`${title || 'Customers'}`)}
+      title={__(`${title || "Customers"}`)}
       extraButtons={extraButtons}
       isOpen={true}
       name="showCustomers"

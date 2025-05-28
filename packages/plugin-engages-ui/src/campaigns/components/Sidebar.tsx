@@ -1,9 +1,10 @@
 import {
   FieldStyle,
   SidebarCounter,
-  SidebarList
+  SidebarList,
 } from "@erxes/ui/src/layout/styles";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import CountsByTag from "@erxes/ui/src/components/CountsByTag";
 import { ITag } from "@erxes/ui-tags/src/types";

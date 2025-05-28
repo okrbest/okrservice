@@ -1,13 +1,13 @@
-import { BottomMenu, FlexBox, LeftNavigation, NavImage } from '../../styles';
-import { __, readFile } from 'coreui/utils';
-import { getThemeItem, getVersion } from '@erxes/ui/src/utils/core';
+import { BottomMenu, FlexBox, LeftNavigation, NavImage } from "../../styles";
+import { __, readFile } from "modules/common/utils";
+import { getThemeItem, getVersion } from "@erxes/ui/src/utils/core";
 
-import { NavLink } from 'react-router-dom';
-import NavigationGoto from './NavigationGoto';
-import NavigationItem from './NavigationItem';
-import NavigationList from './NavigationList';
-import NavigationToggler from './NavigationToggler';
-import React from 'react';
+import { NavLink } from "react-router-dom";
+import NavigationGoto from "./NavigationGoto";
+import NavigationItem from "./NavigationItem";
+import NavigationList from "./NavigationList";
+import NavigationToggler from "./NavigationToggler";
+import React from "react";
 
 type Props = {
   navCollapse: number;
@@ -21,8 +21,8 @@ export default class Navigation extends React.Component<Props> {
 
     const generateLogoSource = (): string => {
       const logo =
-        this.props.navCollapse === 1 ? 'glyph_dark.png' : 'logo-dark.png';
-      const thLogo = getThemeItem('logo');
+        this.props.navCollapse === 1 ? "glyph_dark.png" : "logo-dark.png";
+      const thLogo = getThemeItem("logo");
 
       return thLogo ? readFile(thLogo) : `/images/${logo}`;
     };
@@ -49,12 +49,12 @@ export default class Navigation extends React.Component<Props> {
         <NavigationList navCollapse={navCollapse} />
 
         <BottomMenu>
-          {!VERSION || VERSION !== 'saas' ? (
+          {!VERSION || VERSION !== "saas" ? (
             <NavigationItem
               plugin={{
-                text: 'Marketplace',
-                url: '/marketplace',
-                icon: 'icon-store',
+                text: "Marketplace",
+                url: "/marketplace",
+                icon: "icon-store",
               }}
               navCollapse={navCollapse}
             />
@@ -62,9 +62,9 @@ export default class Navigation extends React.Component<Props> {
 
           <NavigationItem
             plugin={{
-              text: 'Settings',
-              url: '/settings',
-              icon: 'icon-settings',
+              text: "Settings",
+              url: "/settings",
+              icon: "icon-settings",
             }}
             navCollapse={navCollapse}
           />

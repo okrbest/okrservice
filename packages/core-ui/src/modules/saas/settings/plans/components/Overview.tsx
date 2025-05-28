@@ -6,7 +6,8 @@ import {
   StatusTitle,
 } from "../styles";
 import { IOrganization, chargeItemWithCountResponse } from "../types";
-import { __, getEnv } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { getEnv } from "@erxes/ui/src/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import ChargeItem from "./ChargeItem";
@@ -88,7 +89,6 @@ class PlanOverview extends React.Component<Props> {
   render() {
     const { chargeItems, currentOrganization } = this.props;
 
-
     return (
       <StatusBox largePadding={true} largeMargin={true}>
         <StatusTitle>
@@ -104,13 +104,13 @@ class PlanOverview extends React.Component<Props> {
             >
               <thead>
                 <tr>
-                  <th>{__('Name')}</th>
-                  <th>{__('Used')}</th>
-                  <th>{__('Remaining')}</th>
-                  <th>{__('Free')}</th>
+                  <th>{__("Name")}</th>
+                  <th>{__("Used")}</th>
+                  <th>{__("Remaining")}</th>
+                  <th>{__("Free")}</th>
                   {/* <th>{__("Promo Code")}</th> */}
-                  <th>{__('Purchased')}</th>
-                  <th className="odd">{__('Total')}</th>
+                  <th>{__("Purchased")}</th>
+                  <th className="odd">{__("Total")}</th>
                 </tr>
               </thead>
               <tbody>

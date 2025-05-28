@@ -1,5 +1,6 @@
 import { FieldStyle, SidebarList } from "@erxes/ui/src/layout/styles";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import Box from "@erxes/ui/src/components/Box";
@@ -43,18 +44,26 @@ const CategoryStatusFilter: React.FC<Props> = (props) => {
                   <FieldStyle>{label}</FieldStyle>
                 </a>
               </li>
-            ))}
+            )
+          )}
         </SidebarList>
       </Box>
       <Box
         title={__("FILTER PRODUCT BY STATUS")}
         name="showFilterByType"
-        isOpen={router.getParam(location, ['state']) || router.getParam(location, ['image'])}
+        isOpen={
+          router.getParam(location, ["state"]) ||
+          router.getParam(location, ["image"])
+        }
       >
         <SidebarList>
           {productsStatusChoises(__).map(
             (
-              { value, label, filter }: { value: string; label: string, filter: string },
+              {
+                value,
+                label,
+                filter,
+              }: { value: string; label: string; filter: string },
               index: number
             ) => (
               <li key={index}>
@@ -70,7 +79,8 @@ const CategoryStatusFilter: React.FC<Props> = (props) => {
                   <FieldStyle>{label}</FieldStyle>
                 </a>
               </li>
-            ))}
+            )
+          )}
         </SidebarList>
       </Box>
     </>

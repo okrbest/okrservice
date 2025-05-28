@@ -1,6 +1,7 @@
 import Button from "@erxes/ui/src/components/Button";
 import Icon from "@erxes/ui/src/components/Icon";
-import { __, readFile } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { readFile } from "@erxes/ui/src/utils/core";
 import React, { useState } from "react";
 import Popover from "@erxes/ui/src/components/Popover";
 import {

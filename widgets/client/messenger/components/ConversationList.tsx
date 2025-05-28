@@ -1,9 +1,9 @@
-import * as React from 'react';
-import { __ } from '../../utils';
-import ConversationItem from '../containers/ConversationItem';
-import { IConversation } from '../types';
-import Button from './common/Button';
-import Container from './common/Container';
+import * as React from "react";
+import { __ } from "../../utils";
+import ConversationItem from "../containers/ConversationItem";
+import { IConversation } from "../types";
+import Button from "./common/Button";
+import Container from "./common/Container";
 
 const IconMessage = () => (
   <svg
@@ -66,8 +66,8 @@ function ConversationList(props: Props) {
       return (
         <div className="conversation-list-empty-container">
           <IconMessage />
-          <h2>{__('No messages')}</h2>
-          <span>{__('Messages from the team will be shown here')}</span>
+          <h2>{__("No messages")}</h2>
+          <span>{__("Messages from the team will be shown here")}</span>
         </div>
       );
     }
@@ -87,10 +87,10 @@ function ConversationList(props: Props) {
   return (
     <Container
       withBottomNavBar={true}
-      title={__('Messages')}
+      title={__("Messages")}
       persistentFooter={
         <Button icon={<IconChevronRight />} full onClick={createConversation}>
-          <span className="font-semibold">{__('Send us a message')}</span>
+          <span className="font-semibold">{__("Send us a message")}</span>
         </Button>
       }
     >

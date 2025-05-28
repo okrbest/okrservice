@@ -60,8 +60,8 @@ function GreetingContent(props: Props) {
             </LeftSide>
             <RightSide>
               <span>{__("Start new conversation")}</span>
-              <p>Our usual response time</p>
-              <p> {responseRate || "A few minutes"}</p>
+              <p>{__("Our usual response time")}</p>
+              <p>{responseRate ? __(responseRate) : __("A few minutes")}</p>
             </RightSide>
           </li>
           <li>

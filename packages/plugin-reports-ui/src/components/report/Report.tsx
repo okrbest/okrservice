@@ -3,7 +3,8 @@ import { TabTitle, Tabs } from "@erxes/ui/src/components/tabs";
 import PageContent from "@erxes/ui/src/layout/components/PageContent";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
 import { BarItems, FlexContent } from "@erxes/ui/src/layout/styles";
-import { __, confirm, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { confirm, router } from "@erxes/ui/src/utils";
 import React, { useState, useEffect } from "react";
 import Dialog from "@erxes/ui/src/components/Dialog";
 import {

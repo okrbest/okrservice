@@ -1,26 +1,25 @@
+import { EMPTY_CONTENT_POPUPS } from "@erxes/ui-settings/src/constants";
+import { ITag } from "@erxes/ui-tags/src/types";
+import Button from "@erxes/ui/src/components/Button";
+import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";
+import EmptyContent from "@erxes/ui/src/components/empty/EmptyContent";
+import FormControl from "@erxes/ui/src/components/form/Control";
+import Pagination from "@erxes/ui/src/components/pagination/Pagination";
+import { BarItems } from "@erxes/ui/src/layout/styles";
+import { Flex } from "@erxes/ui/src/styles/main";
+import React from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import Row from "./Row";
 
-import { EMPTY_CONTENT_POPUPS } from '@erxes/ui-settings/src/constants';
-import { ITag } from '@erxes/ui-tags/src/types';
-import Button from '@erxes/ui/src/components/Button';
-import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
-import EmptyContent from '@erxes/ui/src/components/empty/EmptyContent';
-import FormControl from '@erxes/ui/src/components/form/Control';
-import Pagination from '@erxes/ui/src/components/pagination/Pagination';
-import { BarItems } from '@erxes/ui/src/layout/styles';
-import { Flex } from '@erxes/ui/src/styles/main';
-import React from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import Row from './Row';
+import TaggerPopover from "@erxes/ui-tags/src/components/TaggerPopover";
+import { TAG_TYPES } from "@erxes/ui-tags/src/constants";
+import SortHandler from "@erxes/ui/src/components/SortHandler";
+import Table from "@erxes/ui/src/components/table";
+import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
 
-import TaggerPopover from '@erxes/ui-tags/src/components/TaggerPopover';
-import { TAG_TYPES } from '@erxes/ui-tags/src/constants';
-import SortHandler from '@erxes/ui/src/components/SortHandler';
-import Table from '@erxes/ui/src/components/table';
-import Wrapper from '@erxes/ui/src/layout/components/Wrapper';
-
-import { IForm } from '@erxes/ui-forms/src/forms/types';
-import { __, router } from 'coreui/utils';
-import Sidebar from './Sidebar';
+import { IForm } from "@erxes/ui-forms/src/forms/types";
+import { __, router } from "../../../common/utils";
+import Sidebar from "./Sidebar";
 
 type Props = {
   forms: IForm[];
@@ -62,10 +61,10 @@ const List = ({
 }: Props) => {
   const [searchParams] = useSearchParams();
 
-  const showInstallCode = searchParams.get('showInstallCode');
+  const showInstallCode = searchParams.get("showInstallCode");
 
   const onChange = () => {
-    toggleAll(forms, 'forms');
+    toggleAll(forms, "forms");
   };
 
   const renderRow = () => {
@@ -91,7 +90,7 @@ const List = ({
 
   if (bulk.length > 0) {
     const tagButton = (
-      <Button btnStyle='simple' size='small' icon='tag-alt'>
+      <Button btnStyle="simple" size="small" icon="tag-alt">
         Tag
       </Button>
     );
@@ -111,15 +110,15 @@ const List = ({
   const actionBarRight = (
     <Flex>
       <FormControl
-        type='text'
-        placeholder={__('Type to search')}
+        type="text"
+        placeholder={__("Type to search")}
         onChange={searchHandler}
         value={queryParams?.searchValue}
         autoFocus={true}
       />
       &nbsp;&nbsp;
-      <Link to='/forms/leads/create'>
-        <Button btnStyle='success' size='small' icon='plus-circle'>
+      <Link to="/forms/leads/create">
+        <Button btnStyle="success" size="small" icon="plus-circle">
           Create Lead
         </Button>
       </Link>
@@ -131,43 +130,43 @@ const List = ({
   );
 
   const content = (
-    <Table $whiteSpace='nowrap' $hover={true}>
+    <Table $whiteSpace="nowrap" $hover={true}>
       <thead>
         <tr>
           <th>
             <FormControl
-              componentclass='checkbox'
+              componentclass="checkbox"
               checked={isAllSelected}
               onChange={onChange}
             />
           </th>
           <th>
-            <SortHandler sortField={'name'} label={__('Name')} />
+            <SortHandler sortField={"name"} label={__("Name")} />
           </th>
-          <th>{__('Status')}</th>
+          <th>{__("Status")}</th>
           <th>
-            <SortHandler sortField={'leadData.viewCount'} label={__('Views')} />
+            <SortHandler sortField={"leadData.viewCount"} label={__("Views")} />
           </th>
           <th>
             <SortHandler
-              sortField={'leadData.conversionRate'}
-              label={__('Conversion rate')}
+              sortField={"leadData.conversionRate"}
+              label={__("Conversion rate")}
             />
           </th>
           <th>
             <SortHandler
-              sortField={'leadData.contactsGathered'}
-              label={__('Contacts gathered')}
+              sortField={"leadData.contactsGathered"}
+              label={__("Contacts gathered")}
             />
           </th>
-          <th>{__('Brand')}</th>
-          <th>{__('Created by')}</th>
+          <th>{__("Brand")}</th>
+          <th>{__("Created by")}</th>
           <th>
-            <SortHandler sortField={'createdDate'} label={__('Created at')} />
+            <SortHandler sortField={"createdDate"} label={__("Created at")} />
           </th>
-          <th>{__('Tags')}</th>
+          <th>{__("Tags")}</th>
 
-          <th>{__('Actions')}</th>
+          <th>{__("Actions")}</th>
         </tr>
       </thead>
       <tbody>{renderRow()}</tbody>
@@ -178,10 +177,10 @@ const List = ({
     <Wrapper
       header={
         <Wrapper.Header
-          title={__('Leads')}
+          title={__("Leads")}
           breadcrumb={[
-            { title: __('Forms'), link: '/forms' },
-            { title: __('Leads') },
+            { title: __("Forms"), link: "/forms" },
+            { title: __("Leads") },
           ]}
           queryParams={queryParams}
         />
@@ -195,7 +194,7 @@ const List = ({
           loading={loading}
           count={forms.length}
           emptyContent={
-            <EmptyContent content={EMPTY_CONTENT_POPUPS} maxItemWidth='360px' />
+            <EmptyContent content={EMPTY_CONTENT_POPUPS} maxItemWidth="360px" />
           }
         />
       }

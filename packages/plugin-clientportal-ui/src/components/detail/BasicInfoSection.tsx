@@ -1,12 +1,13 @@
 import { Actions, Flex } from "@erxes/ui/src/styles/main";
-import { __, loadDynamicComponent } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { loadDynamicComponent } from "@erxes/ui/src/utils";
 
 import Alert from "@erxes/ui/src/utils/Alert";
 import Button from "@erxes/ui/src/components/Button";
 import ClientPortalUserForm from "../../containers/ClientPortalUserForm";
 import Dropdown from "@erxes/ui/src/components/Dropdown";
 import DropdownToggle from "@erxes/ui/src/components/DropdownToggle";
-import ExtendSubscription from '@erxes/ui-forum/src/containers/ExtendSubscriptionForm';
+import ExtendSubscription from "@erxes/ui-forum/src/containers/ExtendSubscriptionForm";
 import EmailWidget from "@erxes/ui-inbox/src/inbox/components/EmailWidget";
 import { IClientPortalUser } from "../../types";
 import Icon from "@erxes/ui/src/components/Icon";
@@ -114,7 +115,7 @@ const BasicInfoSection: React.FC<Props> = ({
         trigger: <a href="#edit">{__("Edit")}</a>,
         content: customerForm,
         additionalModalProps: { size: "lg" },
-      }
+      },
     ];
 
     const extendSubscription = (props) => {
@@ -129,8 +130,8 @@ const BasicInfoSection: React.FC<Props> = ({
         title: "Extend Subscription",
         trigger: <a href="#extend-subscription">{__("Extend Subscription")}</a>,
         content: extendSubscription,
-        additionalModalProps: { size: "lg" }
-      })
+        additionalModalProps: { size: "lg" },
+      });
     }
 
     return (

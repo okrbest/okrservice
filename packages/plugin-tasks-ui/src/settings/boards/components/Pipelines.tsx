@@ -1,7 +1,8 @@
 import { EMPTY_CONTENT_TACKETS_PIPELINE } from "@erxes/ui-settings/src/constants";
 import { IBoard, IPipeline } from "@erxes/ui-tasks/src/boards/types";
 import { IButtonMutateProps } from "@erxes/ui/src/types";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { BarItems } from "@erxes/ui/src/layout/styles";
@@ -98,7 +99,7 @@ function Pipelines(props: Props) {
     setIsDragDisabled(!isDragDisabled);
   };
 
-  const searchHandler = event => {
+  const searchHandler = (event) => {
     const searchValue = event.target.value.toLowerCase();
     const { pipelines } = props;
 
@@ -107,7 +108,7 @@ function Pipelines(props: Props) {
     let updatedPipelines = pipelines;
 
     if (searchValue) {
-      updatedPipelines = pipelines.filter(p =>
+      updatedPipelines = pipelines.filter((p) =>
         p.name.toLowerCase().includes(searchValue)
       );
     }
@@ -127,7 +128,7 @@ function Pipelines(props: Props) {
       sortItems(sortedPipelines, sortDirection, sortField);
     }
 
-    return sortedPipelines.map(pipeline => (
+    return sortedPipelines.map((pipeline) => (
       <PipelineRow
         key={pipeline._id}
         pipeline={pipeline}

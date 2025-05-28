@@ -1,4 +1,5 @@
-import { Alert, __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert, router } from "@erxes/ui/src/utils";
 import { CustomRangeContainer, FilterContainer } from "../../styles";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";

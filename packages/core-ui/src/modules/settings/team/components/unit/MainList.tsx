@@ -1,6 +1,7 @@
 import { LeftActionBar, Title } from "@erxes/ui-settings/src/styles";
 import { IUnit, UnitsMainQueryResponse } from "@erxes/ui/src/team/types";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import ActionButtons from "@erxes/ui/src/components/ActionButtons";
@@ -32,7 +33,7 @@ const MainList = (props: Props) => {
   const location = useLocation();
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [searchValue, setSearchValue] = useState(
-    props.queryParams.searchValue || "",
+    props.queryParams.searchValue || ""
   );
 
   const remove = (_id?: string) => {
@@ -98,7 +99,7 @@ const MainList = (props: Props) => {
     const handleSelect = () => {
       if (selectedItems.includes(unit._id)) {
         const removedSelectedItems = selectedItems.filter(
-          (selectItem) => selectItem !== unit._id,
+          (selectItem) => selectItem !== unit._id
         );
         return setSelectedItems(removedSelectedItems);
       }

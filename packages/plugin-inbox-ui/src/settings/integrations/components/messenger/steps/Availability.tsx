@@ -224,10 +224,20 @@ class Availability extends React.Component<Props> {
             </Description>
             <Select
               required={true}
-              value={RESPOND_RATES.find(
-                (o) => o.value === this.props.responseRate
-              )}
-              options={RESPOND_RATES}
+              value={
+                RESPOND_RATES
+                  .map(rate => ({
+                    value: rate.value,
+                    label: __(rate.label)
+                  }))
+                  .find(
+                    (o) => o.value === this.props.responseRate
+                  )
+              }
+              options={RESPOND_RATES.map(rate => ({
+                value: rate.value,
+                label: __(rate.label)
+              }))}
               onChange={respondTypeOnChange}
               isClearable={false}
             />

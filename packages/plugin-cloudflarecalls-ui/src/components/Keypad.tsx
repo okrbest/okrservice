@@ -1,4 +1,5 @@
-import { Alert, __ } from 'coreui/utils';
+import { __ } from "coreui/utils";
+import { Alert } from "@erxes/ui/src/utils";
 import {
   BackIcon,
   ChooseCountry,
@@ -6,13 +7,13 @@ import {
   InputBar,
   KeypadHeader,
   NumberInput,
-} from '../styles';
+} from "../styles";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
-import { FormControl } from '@erxes/ui/src/components/form';
-import { ICustomer } from '../types';
-import Icon from '@erxes/ui/src/components/Icon';
+import { FormControl } from "@erxes/ui/src/components/form";
+import { ICustomer } from "../types";
+import Icon from "@erxes/ui/src/components/Icon";
 
 type Props = {
   addCustomer: (erxesApiId: string, phoneNumber: string) => void;
@@ -22,10 +23,10 @@ type Props = {
 
 const KeyPad = (props: Props) => {
   const [showTrigger, setShowTrigger] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState("");
   const [isConnected, setConnected] = useState(
-    JSON.parse(localStorage.getItem('config:cloudflareCall') || '{}')
-      .isAvailable,
+    JSON.parse(localStorage.getItem("config:cloudflareCall") || "{}")
+      .isAvailable
   );
 
   useEffect(() => {
@@ -36,8 +37,8 @@ const KeyPad = (props: Props) => {
       .catch((error) => {
         const errorMessage = error
           ?.toString()
-          .replace('DOMException:', '')
-          .replace('NotFoundError: ', '');
+          .replace("DOMException:", "")
+          .replace("NotFoundError: ", "");
         return Alert.error(errorMessage);
       });
 
@@ -48,10 +49,10 @@ const KeyPad = (props: Props) => {
 
   const toggleConnection = () => {
     localStorage.setItem(
-      'config:cloudflareCall',
+      "config:cloudflareCall",
       JSON.stringify({
         isAvailable: !isConnected,
-      }),
+      })
     );
     setConnected(!isConnected);
   };
@@ -66,12 +67,12 @@ const KeyPad = (props: Props) => {
     return (
       <ChooseCountry>
         <BackIcon onClick={onBack}>
-          <Icon icon="angle-left" size={20} /> {__('Back')}
+          <Icon icon="angle-left" size={20} /> {__("Back")}
         </BackIcon>
         <InputBar type="country">
           <Icon icon="search-1" size={20} />
           <FormControl
-            placeholder={__('Type to search')}
+            placeholder={__("Type to search")}
             name="searchValue"
             onChange={search}
             value={searchValue}
@@ -92,17 +93,17 @@ const KeyPad = (props: Props) => {
     <NumberInput>
       <KeypadHeader>
         <HeaderItem>
-          <Icon className={isConnected ? 'on' : 'off'} icon="signal-alt-3" />
-          {isConnected ? __('Online') : __('Offline')}
+          <Icon className={isConnected ? "on" : "off"} icon="signal-alt-3" />
+          {isConnected ? __("Online") : __("Offline")}
         </HeaderItem>
 
         <HeaderItem onClick={() => toggleConnection()}>
           <Icon
-            className={isConnected ? 'on' : 'off'}
+            className={isConnected ? "on" : "off"}
             size={13}
-            icon={'power-button'}
+            icon={"power-button"}
           />
-          {isConnected ? __('Turn off') : __('Turn on')}
+          {isConnected ? __("Turn off") : __("Turn on")}
         </HeaderItem>
       </KeypadHeader>
     </NumberInput>

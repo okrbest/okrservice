@@ -1,4 +1,4 @@
-import { Header } from '@erxes/ui-settings/src/styles';
+import { Header } from "@erxes/ui-settings/src/styles";
 import {
   Button,
   DataWithLoader,
@@ -7,15 +7,16 @@ import {
   SidebarList,
   Tip,
   Wrapper,
-} from '@erxes/ui/src';
-import { __, router } from 'coreui/utils';
-import CollapsibleList from '@erxes/ui/src/components/collapsibleList/CollapsibleList';
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import SegmentFilter from '../../containers/SegmentFilter';
-import TagFilter from '../../containers/TagFilter';
-import CategoryForm from '../../containers/carCategory/CategoryForm';
-import { ICarCategory } from '../../types';
+} from "@erxes/ui/src";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
+import CollapsibleList from "@erxes/ui/src/components/collapsibleList/CollapsibleList";
+import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import SegmentFilter from "../../containers/SegmentFilter";
+import TagFilter from "../../containers/TagFilter";
+import CategoryForm from "../../containers/carCategory/CategoryForm";
+import { ICarCategory } from "../../types";
 
 type Props = {
   queryParams: any;
@@ -47,7 +48,7 @@ const CategoryList = (props: Props) => {
 
     return (
       <ModalTrigger
-        title={__('Add category')}
+        title={__("Add category")}
         trigger={trigger}
         content={content}
       />
@@ -57,7 +58,7 @@ const CategoryList = (props: Props) => {
   const renderEditAction = (category: ICarCategory) => {
     const trigger = (
       <Button btnStyle="link">
-        <Tip text={__('Edit')} placement="bottom">
+        <Tip text={__("Edit")} placement="bottom">
           <Icon icon="edit" />
         </Tip>
       </Button>
@@ -69,7 +70,7 @@ const CategoryList = (props: Props) => {
   const renderRemoveAction = (category: ICarCategory) => {
     return (
       <Button btnStyle="link" onClick={remove.bind(null, category._id)}>
-        <Tip text={__('Remove')} placement="bottom">
+        <Tip text={__("Remove")} placement="bottom">
           <Icon icon="cancel-1" />
         </Tip>
       </Button>
@@ -77,7 +78,7 @@ const CategoryList = (props: Props) => {
   };
 
   const handleClick = (categoryId) => {
-    router.removeParams(navigate, location, 'page');
+    router.removeParams(navigate, location, "page");
     router.setParams(navigate, location, { categoryId: categoryId });
   };
 
@@ -105,7 +106,7 @@ const CategoryList = (props: Props) => {
         data={renderContent()}
         loading={loading}
         count={totalCount}
-        emptyText={__('There is no car category')}
+        emptyText={__("There is no car category")}
         emptyIcon="folder-2"
         size="small"
       />
@@ -128,11 +129,11 @@ const CategoryList = (props: Props) => {
       <>
         <Header>{renderFormTrigger(trigger)}</Header>
         <Section.Title>
-          {__('Categories')}
+          {__("Categories")}
           <Section.QuickButtons>
-            {router.getParam(location, 'categoryId') && (
+            {router.getParam(location, "categoryId") && (
               <a href="#cancel" tabIndex={0} onClick={clearCategoryFilter}>
-                <Tip text={__('Clear filter')} placement="bottom">
+                <Tip text={__("Clear filter")} placement="bottom">
                   <Icon icon="times-circle" />
                 </Tip>
               </a>

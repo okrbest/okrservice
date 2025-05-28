@@ -1,6 +1,7 @@
 import Button from '@erxes/ui/src/components/Button';
 import { IConfigsMap } from '../../types';
-import { __, confirm } from 'coreui/utils';
+import { __ } from 'coreui/utils';
+import { confirm } from '@erxes/ui/src/utils';
 import React from 'react';
 import { MainStyleTitle as Title } from '@erxes/ui/src/styles/eindex';
 import { Wrapper } from '@erxes/ui/src/layout';

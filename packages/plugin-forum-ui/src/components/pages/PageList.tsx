@@ -1,4 +1,5 @@
-import { Alert, __, confirm, router as routerUtils } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { Alert, confirm, router as routerUtils } from "@erxes/ui/src/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import DataWithLoader from "@erxes/ui/src/components/DataWithLoader";

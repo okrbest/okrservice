@@ -1,16 +1,16 @@
-import apolloClient from 'apolloClient';
-import { gql } from '@apollo/client';
-import * as compose from 'lodash.flowright';
-import { graphql } from '@apollo/client/react/hoc';
-import React from 'react';
-import { IButtonMutateProps, IRouterProps } from '@erxes/ui/src/types';
+import apolloClient from "apolloClient";
+import { gql } from "@apollo/client";
+import * as compose from "lodash.flowright";
+import { graphql } from "@apollo/client/react/hoc";
+import React from "react";
+import { IButtonMutateProps, IRouterProps } from "@erxes/ui/src/types";
 
-import { Alert, __ } from 'coreui/utils';
+import { Alert, __ } from "modules/common/utils";
 
-import ButtonMutate from '../../../common/components/ButtonMutate';
-import SignInWithEmail from '../components/SignInWithEmail';
-import { mutations } from '../graphql';
-import withCurrentOrganization from '@erxes/ui-settings/src/general/saas/containers/withCurrentOrganization';
+import ButtonMutate from "../../../common/components/ButtonMutate";
+import SignInWithEmail from "../components/SignInWithEmail";
+import { mutations } from "../graphql";
+import withCurrentOrganization from "@erxes/ui-settings/src/general/saas/containers/withCurrentOrganization";
 
 type Props = {
   loginWithGoogle: () => Promise<any>;
@@ -52,7 +52,7 @@ const SignInWithEmailContainer = (props: FinalProps) => {
         successMessage="We have sent an email containing the magic link to sign in."
         style={{ background: `${currentOrganization.backgroundColor}` }}
       >
-        {__('Send magic link')}
+        {__("Send magic link")}
       </ButtonMutate>
     );
   };
@@ -68,6 +68,6 @@ const SignInWithEmailContainer = (props: FinalProps) => {
 
 export default compose(
   graphql(gql(mutations.loginWithGoogle), {
-    name: 'loginWithGoogle',
-  }),
+    name: "loginWithGoogle",
+  })
 )(withCurrentOrganization(SignInWithEmailContainer));

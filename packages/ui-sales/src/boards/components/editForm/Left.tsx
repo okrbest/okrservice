@@ -2,15 +2,16 @@ import {
   Content,
   ContentWrapper,
   LeftContainer,
-  TitleRow
+  TitleRow,
 } from "../../styles/item";
 import {
   EditorActions,
-  EditorWrapper
+  EditorWrapper,
 } from "@erxes/ui-internalnotes/src/components/Form";
 import { IItem, IItemParams, IOptions } from "../../types";
 import React, { useEffect, useState } from "react";
-import { __, extractAttachment } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { extractAttachment } from "@erxes/ui/src/utils";
 
 import Actions from "./Actions";
 import ActivityInputs from "@erxes/ui-log/src/activityLogs/components/ActivityInputs";
@@ -56,7 +57,7 @@ const Description = (props: DescProps) => {
   };
 
   const toggleEdit = () => {
-    setEdit(currentValue => !currentValue);
+    setEdit((currentValue) => !currentValue);
     setSubmit(false);
   };
 
@@ -105,7 +106,7 @@ const Description = (props: DescProps) => {
             dangerouslySetInnerHTML={{
               __html: item.description
                 ? xss(item.description)
-                : `${__("Add a more detailed description")}...`
+                : `${__("Add a more detailed description")}...`,
             }}
           />
         ) : (
@@ -125,7 +126,7 @@ const Description = (props: DescProps) => {
                 "link",
                 "unlink",
                 "|",
-                "image"
+                "image",
               ]}
               onCtrlEnter={onSend}
             />
@@ -164,7 +165,7 @@ const Left = (props: Props) => {
     sendToBoard,
     onChangeStage,
     onChangeRefresh,
-    currentUser
+    currentUser,
   } = props;
 
   const onChangeAttachment = (files: IAttachment[]) =>

@@ -471,6 +471,11 @@ export const integrationSchema = schemaHooksWrapper(
     createdAt: field({ type: 'Date', label: 'Created at' }),
 
     name: field({ type: String, label: 'Name' }),
+    languageCode: field({
+      type: String,
+      label: 'Language Code',
+      optional: true,
+    }),
     brandId: field({ type: String, label: 'Brand' }),
 
     tagIds: field({ type: [String], label: 'Tags', index: true }),

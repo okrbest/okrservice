@@ -1,11 +1,12 @@
 import Button from "@erxes/ui/src/components/Button";
 import Icon from "@erxes/ui/src/components/Icon";
-import { __, readFile } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { readFile } from "@erxes/ui/src/utils/core";
 import React, { useState } from "react";
 import Popover from "@erxes/ui/src/components/Popover";
 import {
   CardContent,
-  CardItem
+  CardItem,
 } from "@erxes/ui-inbox/src/inbox/components/conversationDetail/workarea/conversation/messages/bot/styles";
 import { Row } from "@erxes/ui-settings/src/styles";
 import { AvatarImg } from "@erxes/ui/src/components/filterableList/styles";
@@ -17,7 +18,7 @@ import {
   CarouselContent,
   EmulatorWrapper,
   QuickReplies,
-  QuickReply
+  QuickReply,
 } from "../../styles";
 
 const PopoverWrapper = (props) => {
@@ -117,9 +118,7 @@ function Preview({ messages }) {
 
       if (type === "link") {
         return (
-          <MessageLinkButton
-            target='_blank'
-            href={link}>
+          <MessageLinkButton target="_blank" href={link}>
             {text}
           </MessageLinkButton>
         );
@@ -144,14 +143,9 @@ function Preview({ messages }) {
 
     return (
       <MesageRow>
-        {!isCarousel && <AvatarImg src='/images/erxes-bot.svg' />}
+        {!isCarousel && <AvatarImg src="/images/erxes-bot.svg" />}
         <Message>
-          {image && (
-            <img
-              alt={image || ""}
-              src={readFile(image)}
-            />
-          )}
+          {image && <img alt={image || ""} src={readFile(image)} />}
           <CardContent>
             {text && <h4>{text}</h4>}
             {title && <h4>{title}</h4>}
@@ -181,16 +175,17 @@ function Preview({ messages }) {
     return (
       <CarouselContainer>
         <MesageRow>
-          <AvatarImg src='/images/erxes-bot.svg' />
+          <AvatarImg src="/images/erxes-bot.svg" />
           <CarouselButtonLeft onClick={handlePrevClick}>
-            <Icon icon='angle-left' />
+            <Icon icon="angle-left" />
           </CarouselButtonLeft>
           <CarouselContent
-            style={{ transform: `translateX(-${currentSlide * 50}%)` }}>
+            style={{ transform: `translateX(-${currentSlide * 50}%)` }}
+          >
             {cards.map((card) => renderCard(card, true))}
           </CarouselContent>
           <CarouselButtonRight onClick={handleNextClick}>
-            <Icon icon='angle-right-b' />
+            <Icon icon="angle-right-b" />
           </CarouselButtonRight>
         </MesageRow>
       </CarouselContainer>
@@ -213,11 +208,9 @@ function Preview({ messages }) {
   };
 
   return (
-    <Emulator
-      id='call-popover'
-      className='call-popover'>
-      <div className='top-bar'>
-        <div className='dynamic-island' />
+    <Emulator id="call-popover" className="call-popover">
+      <div className="top-bar">
+        <div className="dynamic-island" />
       </div>
       <EmulatorWrapper>
         {messages.map((message) => renderMessage(message))}
@@ -230,13 +223,11 @@ function PreviewWidget({ messages }) {
   return (
     <Popover
       trigger={
-        <Button
-          btnStyle='simple'
-          icon='eye'
-          block>
+        <Button btnStyle="simple" icon="eye" block>
           {__("Preview")}
         </Button>
-      }>
+      }
+    >
       <Preview messages={messages} />
     </Popover>
   );

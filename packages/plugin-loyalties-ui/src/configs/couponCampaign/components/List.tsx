@@ -1,4 +1,4 @@
-import { Title } from '@erxes/ui-settings/src/styles';
+import { Title } from "@erxes/ui-settings/src/styles";
 import {
   Alert,
   BarItems,
@@ -10,14 +10,15 @@ import {
   Pagination,
   Table,
   Wrapper,
-} from '@erxes/ui/src';
-import { __, router } from 'coreui/utils';
-import React, { useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import Sidebar from '../../general/components/Sidebar';
-import Form from '../containers/Form';
-import { ICouponCampaign } from '../types';
-import Row from './Row';
+} from "@erxes/ui/src";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
+import React, { useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import Sidebar from "../../general/components/Sidebar";
+import Form from "../containers/Form";
+import { ICouponCampaign } from "../types";
+import Row from "./Row";
 
 type Props = {
   couponCampaigns: ICouponCampaign[];
@@ -48,7 +49,7 @@ const List = (props: Props) => {
     remove,
   } = props;
 
-  const [searchValue, setSearchValue] = useState(queryParams.searchValue || '');
+  const [searchValue, setSearchValue] = useState(queryParams.searchValue || "");
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -67,7 +68,7 @@ const List = (props: Props) => {
     setSearchValue(searchValue);
 
     timerRef.current = window.setTimeout(() => {
-      router.removeParams(navigate, location, 'page');
+      router.removeParams(navigate, location, "page");
       router.setParams(navigate, location, { searchValue });
     }, 500);
   };
@@ -89,20 +90,20 @@ const List = (props: Props) => {
   };
 
   const renderActionBar = () => {
-    const left = <Title $capitalize={true}>{__('Coupon Campaign')}</Title>;
+    const left = <Title $capitalize={true}>{__("Coupon Campaign")}</Title>;
 
     const right = (
       <BarItems>
         <FormControl
           type="text"
-          placeholder={__('Type to search')}
+          placeholder={__("Type to search")}
           onChange={handleSearch}
           value={searchValue}
           autoFocus={true}
         />
         <ModalTrigger
-          size={'lg'}
-          title={__('Add coupon campaign')}
+          size={"lg"}
+          title={__("Add coupon campaign")}
           trigger={
             <Button btnStyle="success" icon="plus-circle">
               Add coupon campaign
@@ -132,17 +133,17 @@ const List = (props: Props) => {
                 checked={isAllSelected}
                 componentclass="checkbox"
                 onChange={() => {
-                  toggleAll(couponCampaigns, 'couponCampaigns');
+                  toggleAll(couponCampaigns, "couponCampaigns");
                 }}
               />
             </th>
-            <th>{__('Title')}</th>
-            <th>{__('Start Date')}</th>
-            <th>{__('End Date')}</th>
-            <th>{__('Finish Date of Use')}</th>
-            <th>{__('Type')}</th>
-            <th>{__('Status')}</th>
-            <th>{__('Actions')}</th>
+            <th>{__("Title")}</th>
+            <th>{__("Start Date")}</th>
+            <th>{__("End Date")}</th>
+            <th>{__("Finish Date of Use")}</th>
+            <th>{__("Type")}</th>
+            <th>{__("Status")}</th>
+            <th>{__("Actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -163,14 +164,14 @@ const List = (props: Props) => {
     <Wrapper
       header={
         <Wrapper.Header
-          title={__('Coupon Campaign')}
+          title={__("Coupon Campaign")}
           breadcrumb={[
-            { title: __('Settings'), link: '/settings' },
+            { title: __("Settings"), link: "/settings" },
             {
-              title: __('Loyalties Config'),
-              link: '/erxes-plugin-loyalty/settings/general',
+              title: __("Loyalties Config"),
+              link: "/erxes-plugin-loyalty/settings/general",
             },
-            { title: __('Coupon Campaign') },
+            { title: __("Coupon Campaign") },
           ]}
         />
       }

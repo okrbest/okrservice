@@ -26,7 +26,8 @@ import {
   ModalFooter,
 } from "@erxes/ui/src/styles/main";
 import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
-import { __, loadDynamicComponent } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { loadDynamicComponent } from "@erxes/ui/src/utils";
 import {
   Attributes,
   AttributeTrigger,

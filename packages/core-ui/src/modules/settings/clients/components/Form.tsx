@@ -1,18 +1,18 @@
-import Button from '@erxes/ui/src/components/Button';
-import FormControl from '@erxes/ui/src/components/form/Control';
-import Form from '@erxes/ui/src/components/form/Form';
-import FormGroup from '@erxes/ui/src/components/form/Group';
-import ControlLabel from '@erxes/ui/src/components/form/Label';
-import Icon from '@erxes/ui/src/components/Icon';
-import Info from '@erxes/ui/src/components/Info';
-import { ModalFooter } from '@erxes/ui/src/styles/main';
-import { IButtonMutateProps, IFormProps } from '@erxes/ui/src/types';
-import copy from 'copy-text-to-clipboard';
-import React, { useState } from 'react';
+import Button from "@erxes/ui/src/components/Button";
+import FormControl from "@erxes/ui/src/components/form/Control";
+import Form from "@erxes/ui/src/components/form/Form";
+import FormGroup from "@erxes/ui/src/components/form/Group";
+import ControlLabel from "@erxes/ui/src/components/form/Label";
+import Icon from "@erxes/ui/src/components/Icon";
+import Info from "@erxes/ui/src/components/Info";
+import { ModalFooter } from "@erxes/ui/src/styles/main";
+import { IButtonMutateProps, IFormProps } from "@erxes/ui/src/types";
+import copy from "copy-text-to-clipboard";
+import React, { useState } from "react";
 
-import { Alert, __ } from 'coreui/utils';
-import IpInput from '../ui/IpInput';
-import { CredentialsRow } from '../styles';
+import { Alert, __ } from "modules/common/utils";
+import IpInput from "../ui/IpInput";
+import { CredentialsRow } from "../styles";
 
 interface IAction {
   name: string;
@@ -51,7 +51,7 @@ const ClientForm = (props: Props) => {
   const { client, _id } = props;
 
   const [clientObject, setClientObject] = useState<IClient>(
-    client || { name: '', permissions: [], whiteListedIps: [] }
+    client || { name: "", permissions: [], whiteListedIps: [] }
   );
 
   const [clientCredentials, setClientCredentials] = useState<{
@@ -71,9 +71,9 @@ const ClientForm = (props: Props) => {
       permissions: finalValues.permissions.map((perm) => {
         return {
           module: perm.module,
-          actions: perm.actions
+          actions: perm.actions,
         };
-      })
+      }),
     };
   };
 
@@ -144,28 +144,28 @@ const ClientForm = (props: Props) => {
     return (
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '20px',
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "20px",
         }}
       >
         {modules.map((module) => (
           <div
             key={module.name}
             style={{
-              border: '1px solid #ddd',
-              padding: '10px',
-              borderRadius: '4px',
+              border: "1px solid #ddd",
+              padding: "10px",
+              borderRadius: "4px",
             }}
           >
             <h4>{module.description}</h4>
             {module.actions
-              .filter((a) => a.description !== 'All')
+              .filter((a) => a.description !== "All")
               .map((action) => (
                 <FormGroup key={action.name}>
                   <ControlLabel>
                     <FormControl
-                      componentclass='checkbox'
+                      componentclass="checkbox"
                       checked={isChecked(module.name, action.name)}
                       onChange={(e: any) => {
                         handleActionChange(
@@ -193,7 +193,7 @@ const ClientForm = (props: Props) => {
     return (
       <>
         <h3>
-          <Icon icon='key-skeleton-alt' /> Credentials
+          <Icon icon="key-skeleton-alt" /> Credentials
         </h3>
         <CredentialsRow>
           <p>
@@ -201,12 +201,12 @@ const ClientForm = (props: Props) => {
           </p>
 
           <Button
-            btnStyle='link'
-            size='small'
-            icon='copy'
+            btnStyle="link"
+            size="small"
+            icon="copy"
             onClick={() => {
               copy(clientCredentials.clientId);
-              Alert.success(__('Client ID has been copied to clipboard'));
+              Alert.success(__("Client ID has been copied to clipboard"));
             }}
           >
             Copy Client ID
@@ -219,18 +219,18 @@ const ClientForm = (props: Props) => {
           </p>
 
           <Button
-            btnStyle='link'
-            size='small'
-            icon='copy'
+            btnStyle="link"
+            size="small"
+            icon="copy"
             onClick={() => {
               copy(clientCredentials.clientSecret);
-              Alert.success(__('Secret has been copied to clipboard'));
+              Alert.success(__("Secret has been copied to clipboard"));
             }}
           >
             Copy Secret
           </Button>
         </CredentialsRow>
-        <Info type='warning'>
+        <Info type="warning">
           Save the following credentials in a safe place!
         </Info>
       </>
@@ -248,11 +248,11 @@ const ClientForm = (props: Props) => {
     return (
       <>
         <FormGroup>
-          <ControlLabel>{__('Application name')}</ControlLabel>
+          <ControlLabel>{__("Application name")}</ControlLabel>
           <FormControl
             {...formProps}
-            id={'name'}
-            name={'name'}
+            id={"name"}
+            name={"name"}
             required={true}
             defaultValue={clientObject?.name}
             onChange={(e: any) => {
@@ -262,7 +262,7 @@ const ClientForm = (props: Props) => {
         </FormGroup>
 
         <FormGroup>
-          <ControlLabel>{__('White Listed IPs')}</ControlLabel>
+          <ControlLabel>{__("White Listed IPs")}</ControlLabel>
           <IpInput
             initialIps={clientObject?.whiteListedIps}
             onChange={(ips: string[]) => {
@@ -274,12 +274,12 @@ const ClientForm = (props: Props) => {
         {renderModulesSelect()}
 
         <ModalFooter>
-          <Button btnStyle='simple' onClick={closeModal} icon='times-circle'>
+          <Button btnStyle="simple" onClick={closeModal} icon="times-circle">
             Close
           </Button>
 
           {renderButton({
-            name: 'clients',
+            name: "clients",
             values: generateDoc(),
             isSubmitted,
             callback: (data) => {

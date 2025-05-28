@@ -1,5 +1,6 @@
 import { AutomationsCount, IAutomation } from "../types";
-import { __, router } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { router } from "@erxes/ui/src/utils";
 
 import { BarItems } from "@erxes/ui/src/layout/styles";
 import Button from "@erxes/ui/src/components/Button";
@@ -58,7 +59,7 @@ class AutomationsList extends React.Component<IProps, State> {
     super(props);
 
     this.state = {
-      searchValue: this.props.searchValue
+      searchValue: this.props.searchValue,
     };
   }
 
@@ -68,7 +69,7 @@ class AutomationsList extends React.Component<IProps, State> {
     toggleAll(automations, "automations");
   };
 
-  search = e => {
+  search = (e) => {
     if (this.timer) {
       clearTimeout(this.timer);
     }
@@ -83,19 +84,19 @@ class AutomationsList extends React.Component<IProps, State> {
     }, 500);
   };
 
-  removeAutomations = automations => {
+  removeAutomations = (automations) => {
     const automationIds: string[] = [];
 
-    automations.forEach(automation => {
+    automations.forEach((automation) => {
       automationIds.push(automation._id);
     });
 
     this.props.removeAutomations({ automationIds }, this.props.emptyBulk);
   };
 
-  archiveAutomations = automations => {
+  archiveAutomations = (automations) => {
     const automationIds: string[] = automations.map(
-      automation => automation._id
+      (automation) => automation._id
     );
 
     const isRestore = this.props?.queryParams?.status === "archived";
@@ -106,7 +107,7 @@ class AutomationsList extends React.Component<IProps, State> {
     );
   };
 
-  moveCursorAtTheEnd = e => {
+  moveCursorAtTheEnd = (e) => {
     const tmpValue = e.target.value;
     e.target.value = "";
     e.target.value = tmpValue;
@@ -134,7 +135,7 @@ class AutomationsList extends React.Component<IProps, State> {
       counts,
       location,
       addAutomation,
-      emptyBulk
+      emptyBulk,
     } = this.props;
 
     const automations = this.props.automations || [];
@@ -164,7 +165,7 @@ class AutomationsList extends React.Component<IProps, State> {
             </tr>
           </thead>
           <tbody id="automations" className={isExpand ? "expand" : ""}>
-            {(automations || []).map(automation => (
+            {(automations || []).map((automation) => (
               <Row
                 key={automation._id}
                 automation={automation}

@@ -6,7 +6,8 @@ import {
   ILocationOption,
   IObjectListConfig,
 } from "@erxes/ui/src/types";
-import { __, loadDynamicComponent } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { loadDynamicComponent } from "@erxes/ui/src/utils/core";
 
 import Button from "@erxes/ui/src/components/Button";
 import CollapseContent from "@erxes/ui/src/components/CollapseContent";

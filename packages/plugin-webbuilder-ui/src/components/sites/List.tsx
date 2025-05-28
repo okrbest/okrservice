@@ -5,7 +5,8 @@ import {
   SiteBox,
   SitePreview,
 } from "./styles";
-import { __, readFile } from "coreui/utils";
+import { __ } from "coreui/utils";
+import { readFile } from "@erxes/ui/src/utils";
 
 import Button from "@erxes/ui/src/components/Button";
 import Dropdown from "@erxes/ui/src/components/Dropdown";
