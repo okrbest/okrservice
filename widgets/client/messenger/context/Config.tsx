@@ -8,8 +8,10 @@ import { CHANGE_CONVERSATION_OPERATOR } from '../graphql/mutations';
 interface ConfigContextType {
   selectedSkill: string | null;
   isInputDisabled: boolean;
+  isAuthFieldsVisible: boolean;
   isLoggedIn: () => boolean;
   setIsInputDisabled: (bool: boolean) => void;
+  setIsAuthFieldsVisible: (bool: boolean) => void;
   setSelectedSkill: (skill: string) => void;
   setIsAttachingFile: (bool: boolean) => void;
   onSelectSkill: (skillId: string) => void;
@@ -30,6 +32,7 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [isInputDisabled, setIsInputDisabled] = useState(false);
   const [isAttachingFile, setIsAttachingFile] = useState(false);
+  const [isAuthFieldsVisible, setIsAuthFieldsVisible] = useState(true);
 
   useEffect(() => {
     const { messengerData } = connection.data;
@@ -39,6 +42,14 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (options.length > 0) {
       setIsInputDisabled(true);
+    }
+
+    if (requireAuth === false) {
+      setIsAuthFieldsVisible(false);
+      console.log('requireAuth가 false이므로 인증 필드를 숨깁니다.');
+    } else {
+      setIsAuthFieldsVisible(true);
+      console.log('requireAuth가 true이므로 인증 필드를 표시합니다.');
     }
   }, []);
 
@@ -78,12 +89,14 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
         selectedSkill,
         isLoggedIn,
         setIsInputDisabled,
+        setIsAuthFieldsVisible,
         setSelectedSkill,
         setIsAttachingFile,
         onSelectSkill,
         changeOperatorStatus,
         isAttachingFile,
         isInputDisabled,
+        isAuthFieldsVisible,
         setHeadHeight,
         headHeight,
       }}

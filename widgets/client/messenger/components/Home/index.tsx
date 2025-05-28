@@ -52,8 +52,6 @@ const Home: React.FC<Props> = ({
 
   const { logo } = getUiOptions() || {};
 
-  console.log("messengerData", messengerData);
-
   const messages =
     messengerData.messages || ({} as IIntegrationMessengerDataMessagesItem);
 

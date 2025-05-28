@@ -51,7 +51,7 @@ widgetConnect({
     const isCallEnabled = connection.enabledServices.cloudflarecalls;
     const isTicketEnabled = connection.enabledServices.tickets;
 
-    return client.mutate({
+    const result = await client.mutate({
       mutation: gql(connect(isCallEnabled, isTicketEnabled)),
       variables: {
         brandCode: setting.brand_id,
@@ -68,6 +68,8 @@ widgetConnect({
         companyData: setting.companyData,
       },
     });
+
+    return result;
   },
 
   connectCallback: (data: { widgetsMessengerConnect: IConnectResponse }) => {
@@ -81,8 +83,7 @@ widgetConnect({
     connection.data = messengerData;
 
     console.log("messengerData init", messengerData);
-
-    console.log("connection.setting init", connection.setting);
+    console.log("connection.data init", connection.data);
 
     // Improve language code setting logic
     const languageCode =
