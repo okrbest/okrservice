@@ -32,7 +32,7 @@ const TicketSubmitContainer = (props: Props) => {
     lastName: "",
     phone: 0,
     email: "",
-    ticketType: "",
+    ticketType: "request",
     title: "",
     description: "",
   });
@@ -65,7 +65,12 @@ const TicketSubmitContainer = (props: Props) => {
 
   const [ticketAdd, { loading }] = useMutation(TICKET_ADD, {
     onCompleted(data) {
+      console.log("[디버그] ticketAdd onCompleted data:", data);
+
       const { widgetTicketCreated } = data || {};
+
+      console.log("[디버그] 티켓 생성 응답 data:", data);
+      console.log("[디버그] 발급된 ticketNumber:", widgetTicketCreated?.number);
 
       return (
         <>
@@ -87,6 +92,15 @@ const TicketSubmitContainer = (props: Props) => {
         name: file.name,
         type: "image",
       }));
+
+      console.log("[디버그] 티켓 생성 요청 직전", {
+        title: formData.title,
+        description: formData.description,
+        attachments: transformedFiles,
+        stageId: ticketData.ticketStageId,
+        type: formData.ticketType,
+        customerIds: [customerId],
+      });
 
       await ticketAdd({
         variables: {
