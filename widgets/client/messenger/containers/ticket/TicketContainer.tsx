@@ -27,6 +27,14 @@ const TicketContainer = (props: Props) => {
 
   const onSubmit = (name: string) => {
     handleActiveRoute(name);
+
+    if (name === "check") {
+      setIsCheck(true);
+    } else if (name === "create-customer") {
+      setCreateCustomer(true);
+    } else {
+      setRoute(name);
+    }
   };
 
   const onButtonClick = () => {

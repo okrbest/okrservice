@@ -26,6 +26,16 @@ export const listenForCommonRequests = async (event: any, iframe: any) => {
     }
 
     if (message === "setLocalStorageItem") {
+      const callInfo = {
+        key,
+        value,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        referrer: document.referrer,
+        stack: new Error().stack
+      };
+
       const erxesStorage = JSON.parse(localStorage.getItem("erxes") || "{}");
 
       erxesStorage[key] = value;

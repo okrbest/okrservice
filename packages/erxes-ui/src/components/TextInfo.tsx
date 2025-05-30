@@ -42,7 +42,6 @@ type Props = {
 class TextInfo extends React.PureComponent<Props> {
   render() {
     const { ignoreTrans, children, $textStyle, hugeness } = this.props;
-    console.log('TextInfo 속성:', { ignoreTrans, children, $textStyle, hugeness });
 
     let content;
 
