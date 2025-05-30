@@ -94,7 +94,7 @@ const TicketSubmitForm: React.FC<Props> = ({
               <select
                 id="ticketType"
                 onChange={handleChange}
-                defaultValue="request"
+                value={formData.ticketType}
                 required
               >
                 <option value="request">{__("Request")}</option>

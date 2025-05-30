@@ -12,6 +12,10 @@ type Props = {
 const SuccessForm: React.FC<Props> = ({ ticketNumber, isForget }) => {
   const [copied, setCopied] = React.useState(false);
 
+  React.useEffect(() => {
+    console.log("[디버그] SuccessForm 렌더링, ticketNumber:", ticketNumber);
+  }, [ticketNumber]);
+
   const onCopy = (number: string) => {
     if (number) {
       return setCopied(true);
@@ -34,7 +38,7 @@ const SuccessForm: React.FC<Props> = ({ ticketNumber, isForget }) => {
           onCopy={() => onCopy(ticketNumber)}
         >
           <button className="copy">
-            {copied ? "Copied" : "Copy or save your ticket number"}
+            {copied ? "Copied" : __("Copy or save your ticket number")}
           </button>
         </CopyToClipboard>
       </div>
