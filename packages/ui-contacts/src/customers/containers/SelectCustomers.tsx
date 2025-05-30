@@ -1,5 +1,5 @@
 import { IOption, IQueryParams } from "@erxes/ui/src/types";
-import { __ } from "coreui/utils";
+
 import { ICustomer } from "../types";
 import React from "react";
 import SelectWithSearch from "@erxes/ui/src/components/SelectWithSearch";
@@ -7,13 +7,13 @@ import { queries } from "../graphql";
 import { renderFullName } from "@erxes/ui/src/utils";
 
 function generateCustomerOptions(array: ICustomer[] = []): IOption[] {
-  return array.map((item) => {
+  return array.map(item => {
     const customer = item || ({} as ICustomer);
 
     return {
       value: customer._id,
       label: renderFullName(customer),
-      avatar: customer.avatar,
+      avatar: customer.avatar
     };
   });
 }
@@ -27,7 +27,7 @@ export default ({
   label,
   name,
   showAvatar = true,
-  filterParams,
+  filterParams
 }: {
   queryParams?: IQueryParams;
   label: string;
@@ -44,7 +44,7 @@ export default ({
   return (
     <SelectWithSearch
       showAvatar={showAvatar}
-      label={__(label)}
+      label={label}
       queryName="customers"
       name={name}
       customQuery={queries.customers}

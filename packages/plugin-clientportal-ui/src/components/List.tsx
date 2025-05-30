@@ -75,7 +75,7 @@ function ClientPortalList({
         uppercase={false}
         icon="plus-circle"
       >
-        {__("Add New {{title}}", { title })}
+        {`Add New ${title}`}
       </Button>
     );
 

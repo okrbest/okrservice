@@ -1,23 +1,23 @@
-import * as routerUtils from "@erxes/ui/src/utils/router";
+import * as routerUtils from '@erxes/ui/src/utils/router';
 
-import React, { useState } from "react";
-import { colors, dimensions } from "@erxes/ui/src/styles";
-import { mutations, queries } from "../../graphql";
-import { __ } from "coreui/utils";
-import { Alert } from "@erxes/ui/src/utils";
-import Button from "@erxes/ui/src/components/Button";
-import ControlLabel from "@erxes/ui/src/components/form/Label";
-import FormControl from "@erxes/ui/src/components/form/Control";
-import FormGroup from "@erxes/ui/src/components/form/Group";
-import { useLocation, useNavigate } from "react-router-dom";
-import { ModalFooter } from "@erxes/ui/src/styles/main";
-import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
-import SegmentsForm from "../../containers/form/SegmentsForm";
-import client from "@erxes/ui/src/apolloClient";
-import { gql } from "@apollo/client";
-import styled from "styled-components";
-import { Transition } from "@headlessui/react";
-import queryString from "query-string";
+import React, { useState } from 'react';
+import { colors, dimensions } from '@erxes/ui/src/styles';
+import { mutations, queries } from '../../graphql';
+
+import { Alert } from '@erxes/ui/src/utils';
+import Button from '@erxes/ui/src/components/Button';
+import ControlLabel from '@erxes/ui/src/components/form/Label';
+import FormControl from '@erxes/ui/src/components/form/Control';
+import FormGroup from '@erxes/ui/src/components/form/Group';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ModalFooter } from '@erxes/ui/src/styles/main';
+import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
+import SegmentsForm from '../../containers/form/SegmentsForm';
+import client from '@erxes/ui/src/apolloClient';
+import { gql } from '@apollo/client';
+import styled from 'styled-components';
+import { Transition } from '@headlessui/react';
+import queryString from 'query-string';
 
 export const RightMenuContainer = styled.div`
   position: fixed;
@@ -47,7 +47,7 @@ export const ScrolledContent = styled.div`
   flex: 1;
   overflow: auto;
 
-  input[type="text"] {
+  input[type='text'] {
     width: 100%;
   }
 `;
@@ -57,7 +57,7 @@ type Props = {
   refetchQueries?: any;
   btnSize?: string;
   afterSave?: (response: any) => void;
-  serviceConfig?: any;
+  serviceConfig?:any;
   hideSaveButton?: boolean;
 };
 
@@ -66,13 +66,13 @@ function TemporarySegment({
   btnSize,
   afterSave,
   serviceConfig,
-  hideSaveButton,
+  hideSaveButton
 }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [showDrawer, setShowDrawer] = useState(false);
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
 
   const toggleDrawer = () => {
     setShowDrawer(!showDrawer);
@@ -86,12 +86,12 @@ function TemporarySegment({
         refetchQueries: [
           {
             query: gql(queries.segments),
-            variables: { contentTypes: [contentType] },
-          },
-        ],
+            variables: { contentTypes: [contentType] }
+          }
+        ]
       })
       .then((response) => {
-        Alert.success("Successfully added a segment");
+        Alert.success('Successfully added a segment');
         afterSave?.(response);
         toggleDrawer();
         closeModal();
@@ -101,7 +101,7 @@ function TemporarySegment({
   const renderSaveContent = (doc: any) => {
     const saveTrigger = (
       <Button btnStyle="success" icon="check-circle">
-        {"Save"}
+        {'Save'}
       </Button>
     );
 
@@ -136,7 +136,7 @@ function TemporarySegment({
               onClick={() => {
                 save({
                   values: { ...doc, name },
-                  closeModal: props.closeModal,
+                  closeModal: props.closeModal
                 });
               }}
               icon="check-circle"
@@ -165,26 +165,26 @@ function TemporarySegment({
           onClick={() => {
             const data = {
               ...values,
-              conditions: values.conditionSegments[0].conditions,
+              conditions: values.conditionSegments[0].conditions
             };
 
             delete data.conditionSegments;
 
             routerUtils.setParams(navigate, location, {
-              segmentData: JSON.stringify(data),
+              segmentData: JSON.stringify(data)
             });
           }}
           icon="filter"
         >
-          {"Filter"}
+          {'Filter'}
         </Button>
 
-        {!hideSaveButton && renderSaveContent(values)}
+        {!hideSaveButton&&renderSaveContent(values)}
       </>
     );
   };
 
-  const queryParams = queryString.parse(location.search);
+    const queryParams = queryString.parse(location.search);
 
   const content = (
     <>
@@ -213,11 +213,11 @@ function TemporarySegment({
     <>
       <Button
         btnStyle="primary"
-        size={btnSize || "small"}
-        icon={showDrawer ? "times-circle" : "plus-circle"}
+        size={btnSize || 'small'}
+        icon={showDrawer ? 'times-circle' : 'plus-circle'}
         onClick={toggleDrawer}
       >
-        {showDrawer ? __("Close Filter") : __("Add filter")}
+        {showDrawer ? 'Close Filter' : `Add filter`}
       </Button>
 
       {showDrawer && content}
