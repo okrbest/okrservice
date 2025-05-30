@@ -19,9 +19,11 @@ const RelationForm = (props: Props) => {
 
   return (
     <>
-      {fields.map(field => (
+      {fields.map((field) => (
         <FormGroup key={field._id}>
-          <ControlLabel>{`Select ${field.text}`}</ControlLabel>
+          <ControlLabel>
+            {__("Select {{item}}", { item: __(field.text) })}
+          </ControlLabel>
 
           <SelectContactsRelation field={field} {...props} />
 
@@ -29,7 +31,7 @@ const RelationForm = (props: Props) => {
             "selectRelation",
             {
               ...props,
-              field
+              field,
             },
             true
           )}

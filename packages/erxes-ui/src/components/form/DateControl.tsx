@@ -1,6 +1,10 @@
-import Datetime from '@nateradebaugh/react-datetime';
-import React from 'react';
-import { Column } from '@erxes/ui/src/styles/main';
+import Datetime from "@nateradebaugh/react-datetime";
+import React from "react";
+import moment from "moment";
+import "moment/locale/ko";
+import { Column } from "@erxes/ui/src/styles/main";
+import { __ } from "coreui/utils";
+moment.locale("ko");
 
 type Props = {
   onChange?: (e: React.FormEvent<HTMLElement>) => void;
@@ -13,12 +17,12 @@ type Props = {
   required?: boolean;
   timeFormat?: boolean | string;
   registerChild?: (child: any) => void;
-  isValidDate?:(currentDate: any, selectedDate?: Date)=>boolean
+  isValidDate?: (currentDate: any, selectedDate?: Date) => boolean;
 };
 
 class DateControl extends React.Component<Props> {
   static defaultProps = {
-    dateFormat: 'MMM,DD YYYY'
+    dateFormat: "YYYY년 MM월 DD일",
   };
 
   componentDidMount() {
@@ -38,12 +42,12 @@ class DateControl extends React.Component<Props> {
       dateFormat,
       timeFormat,
       required,
-      isValidDate
+      isValidDate,
     } = this.props;
-    const errorMessage = errors && errors[name || ''];
+    const errorMessage = errors && errors[name || ""];
 
     // cancel custom browser default form validation error
-    const onChange = e => {
+    const onChange = (e) => {
       if (this.props.onChange) {
         this.props.onChange(e);
       }
@@ -51,9 +55,9 @@ class DateControl extends React.Component<Props> {
 
     const inputProps = {
       name,
-      placeholder: placeholder || '',
+      placeholder: placeholder ? __(placeholder) : "",
       required: required || false,
-      autoComplete: 'off'
+      autoComplete: "off",
     };
 
     const attributes = {
@@ -64,7 +68,7 @@ class DateControl extends React.Component<Props> {
       closeOnSelect: true,
       onChange,
       utc: true,
-      isValidDate
+      isValidDate,
     };
 
     return (
