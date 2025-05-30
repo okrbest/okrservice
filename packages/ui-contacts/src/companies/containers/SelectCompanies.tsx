@@ -1,19 +1,19 @@
-import { IOption, IQueryParams } from '@erxes/ui/src/types';
-
-import { ICompany } from '../types';
-import React from 'react';
-import SelectWithSearch from '@erxes/ui/src/components/SelectWithSearch';
-import { queries } from '../graphql';
+import { IOption, IQueryParams } from "@erxes/ui/src/types";
+import { __ } from "coreui/utils";
+import { ICompany } from "../types";
+import React from "react";
+import SelectWithSearch from "@erxes/ui/src/components/SelectWithSearch";
+import { queries } from "../graphql";
 
 // get company options for react-select
 export function generateCompanyOptions(array: ICompany[] = []): IOption[] {
-  return array.map(item => {
+  return array.map((item) => {
     const company = item || ({} as ICompany);
 
     return {
       value: company._id,
-      label: company.primaryName || '',
-      avatar: company.avatar
+      label: company.primaryName || "",
+      avatar: company.avatar,
     };
   });
 }
@@ -27,7 +27,7 @@ export default ({
   label,
   name,
   filterParams,
-  showAvatar = true
+  showAvatar = true,
 }: {
   queryParams?: IQueryParams;
   label: string;
@@ -43,7 +43,7 @@ export default ({
 
   return (
     <SelectWithSearch
-      label={label}
+      label={__(label)}
       showAvatar={showAvatar}
       queryName="companies"
       name={name}
