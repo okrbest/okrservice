@@ -9,6 +9,7 @@ import { Alert } from '@erxes/ui/src/utils';
 import Attribution from './Attribution';
 import { BoardHeader } from '@erxes/ui-tasks/src/settings/boards/styles';
 import React from 'react';
+import { __ } from 'coreui/utils';
 
 type Props = {
   onChange: (key: string, config: string) => void;
@@ -104,7 +105,7 @@ function PlaceHolderInput(props: Props) {
             <FormControl
               value={converted}
               onChange={(e: any) => onChangeConfig(e.target.value)}
-              placeholder='Choose an attribute or any number you prefer'
+              placeholder={__('Choose an attribute or any number you prefer')}
             />
           </FormGroup>
         </BoardHeader>

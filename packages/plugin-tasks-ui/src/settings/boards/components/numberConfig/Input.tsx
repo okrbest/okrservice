@@ -5,6 +5,7 @@ import {
 } from "@erxes/ui/src/components/form";
 import { FlexContent, FlexItem } from "@erxes/ui/src/layout/styles";
 
+import { __ } from 'coreui/utils';
 import { Alert } from "@erxes/ui/src/utils";
 import Attribution from "./Attribution";
 import { BoardHeader } from "@erxes/ui-tasks/src/settings/boards/styles";
@@ -115,7 +116,7 @@ function PlaceHolderInput(props: Props) {
               onKeyPress={onKeyPress}
               onKeyDown={onKeyPress}
               onChange={(e: any) => onChangeConfig(e.target.value)}
-              placeholder="Choose an attribute or any number you prefer"
+              placeholder={__('Choose an attribute or any number you prefer')}
             />
           </FormGroup>
         </BoardHeader>

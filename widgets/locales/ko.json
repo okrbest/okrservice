@@ -70,10 +70,10 @@
   "Please fill out required fields": "필수 항목을 작성해주세요",
   "add more": "더 추가하기",
   "Getting started": "시작하기",
-  "Our usually reply time": "일반적인 응답 시간",
+  "Our usually reply time": "근무시간대 응답 시간",
   "Messages": "메시지",
   "Send us a message": "메시지 보내기",
-  "A few minutes": "몇 분",
+  "A few minutes": "몇 십분",
   "A few hours": "몇 시간",
   "A few days": "몇 일",
   "A few weeks": "몇 주",
@@ -120,5 +120,6 @@
   "No messages": "메시지가 없습니다",
   "Messages from the team will be shown here": "대화 목록이 여기에 표시됩니다",
   "Your ticket has been submitted": "티켓이 제출되었습니다",
-  "Copy or save your ticket number": "티켓 번호를 복사하거나 저장하세요"
+  "Copy or save your ticket number": "티켓 번호를 복사하거나 저장하세요",
+  "Talk us on your favourite channels": "좋아하는 채널에서 우리와 대화하세요"
 }
