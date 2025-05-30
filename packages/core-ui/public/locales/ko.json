@@ -380,7 +380,7 @@
   "Offline messaging": "오프라인 메시징",
   "Away message": "부재중 메시지",
   "Thank you message": "감사 메시지",
-  "Hours & Availability": "시간 및 가용성",
+  "Hours & Availability": "운영 시간 및 근무 가능 여부",
   "Turn online/offline manually": "수동으로 온라인/오프라인 전환",
   "Set to follow your schedule": "일정에 따라 설정",
   "Which form(s) do you want to display in this messenger": "이 메신저에 표시할 양식",
@@ -2890,5 +2890,7 @@
   "type": "유형",
   "Client Portal Users": "고객 포탈 사용자",
   "Vendor Portal Users": "공급업체 포탈 사용자",
-  "Incoming Webhook": "수신 웹훅"
+  "Incoming Webhook": "수신 웹훅",
+  "Hide messenger during offline hours": "오프라인 시간에 메신저 숨기기",
+  "Forcibly hide the messenger when you're offline. This will hide the messenger from your website visitors.": "오프라인 시간에 메신저를 강제로 숨길 수 있습니다. 이렇게 하면 웹사이트 방문자에게 메신저가 숨겨집니다."
 }
