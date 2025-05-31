@@ -81,13 +81,13 @@ const PipelineForm = (props: Props) => {
   const [boardId, setBoardId] = useState(props.boardId || '');
   const [tagId, setTagId] = useState(pipeline ? pipeline.tagId : '');
   const [numberConfig, setNumberConfig] = useState(
-    (pipeline && pipeline.numberConfig) || ''
+    (pipeline && pipeline.numberConfig) || '{year}{month}{day}-'
   );
   const [numberSize, setNumberSize] = useState(
-    (pipeline && pipeline.numberSize) || ''
+    (pipeline && pipeline.numberSize) || '4'
   );
   const [nameConfig, setNameConfig] = useState(
-    (pipeline && pipeline.nameConfig) || ''
+    (pipeline && pipeline.nameConfig) || '{company.name}-{customer.firstName}-'
   );
   const [departmentIds, setDepartmentIds] = useState(
     pipeline ? pipeline.departmentIds : []

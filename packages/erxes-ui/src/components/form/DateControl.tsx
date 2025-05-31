@@ -22,7 +22,7 @@ type Props = {
 
 class DateControl extends React.Component<Props> {
   static defaultProps = {
-    dateFormat: "YYYY년 MM월 DD일",
+    dateFormat: 'MMM,DD YYYY',
   };
 
   componentDidMount() {

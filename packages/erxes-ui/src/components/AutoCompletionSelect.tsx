@@ -327,7 +327,7 @@ function AutoCompletionSelect({
           // isLoading={loading}
           isClearable={true}
           required={required}
-          placeholder={placeholder}
+          placeholder={__(placeholder)}
           value={selectedValue}
           options={[fields.added, fields.search]}
           onBlur={handleOnBlur}

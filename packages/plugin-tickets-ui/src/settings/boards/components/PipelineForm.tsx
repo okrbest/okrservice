@@ -81,13 +81,13 @@ const PipelineForm = (props: Props) => {
   const [boardId, setBoardId] = useState(props.boardId || '');
   const [tagId, setTagId] = useState(pipeline ? pipeline.tagId : '');
   const [numberConfig, setNumberConfig] = useState(
-    (pipeline && pipeline.numberConfig) || ''
+    (pipeline && pipeline.numberConfig) || '{year}{month}{day}-'
   );
   const [numberSize, setNumberSize] = useState(
-    (pipeline && pipeline.numberSize) || ''
+    (pipeline && pipeline.numberSize) || '4'
   );
   const [nameConfig, setNameConfig] = useState(
-    (pipeline && pipeline.nameConfig) || ''
+    (pipeline && pipeline.nameConfig) || '{company.name}-{customer.firstName}-'
   );
   const [departmentIds, setDepartmentIds] = useState(
     pipeline ? pipeline.departmentIds : []
@@ -462,7 +462,7 @@ const PipelineForm = (props: Props) => {
           <FlexContent>
             <FlexItem>
               <ControlLabel>
-                {__(`Show only the user's assigned(created)`)} {props.type}
+              {__(`Show only the user's assigned(created) ${props.type}`)}
               </ControlLabel>
               <span style={{ marginLeft: '10px' }}>
                 <FormControl
@@ -474,8 +474,7 @@ const PipelineForm = (props: Props) => {
             </FlexItem>
             <FlexItem>
               <ControlLabel>
-                {__(`Show only user’s assigned (created)`)} {props.type}{' '}
-                {__(`by department`)}
+                {__(`Show only the user's assigned(created) ${props.type} by department`)}
               </ControlLabel>
               <span style={{ marginLeft: '10px' }}>
                 <FormControl
@@ -529,6 +528,8 @@ const PipelineForm = (props: Props) => {
   if (!show) {
     return null;
   }
+
+  console.log('pipelineName : ', options);
 
   const pipelineName =
     options && options.pipelineName

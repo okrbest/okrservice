@@ -24,7 +24,7 @@ function PlaceHolderInput(props: Props) {
 
   const onChangeNumber = (conf: string) => {
     if (8 < parseInt(conf, 10) || parseInt(conf, 10) < 1) {
-      return Alert.error("Fractional part number must be from 1 to 8");
+      return Alert.error(__("Fractional part number must be from 1 to 8"));
     }
 
     onChange("numberSize", conf);
@@ -33,7 +33,7 @@ function PlaceHolderInput(props: Props) {
   const onChangeConfig = (conf: string) => {
     if (conf.startsWith(" ")) {
       return Alert.error(
-        `Please make sure the number configuration doesn't start with a space`
+        __("Please make sure the number configuration doesn't start with a space")
       );
     }
 
