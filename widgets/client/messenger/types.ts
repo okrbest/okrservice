@@ -198,3 +198,25 @@ export interface ITicketComment {
     phones: string[];
   }
 }
+
+export interface ITicketStage {
+  _id: string;
+  name: string;
+}
+
+export interface ITicketItem {
+  _id: string;
+  name: string;
+  number: string;
+  status: string;
+  stage: ITicketStage;
+  description: string;
+  type: string;
+  createdAt: string;
+  priority?: string;
+  attachments?: IAttachment[];
+}
+
+export interface ITicketListResponse {
+  widgetsTicketList: ITicketItem[];
+}

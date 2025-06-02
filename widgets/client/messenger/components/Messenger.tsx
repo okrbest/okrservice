@@ -13,6 +13,7 @@ import Home from "../containers/Home";
 import { IUser } from "../../types";
 import TicketContainer from "../containers/ticket/TicketContainer";
 import TicketForget from "./ticket/TicketForget";
+import TicketListContainer from "../containers/ticket/TicketListContainer";
 import TicketShowProgressContainer from "../containers/ticket/TicketShowProgress";
 import TicketSubmitContainer from "../containers/ticket/TicketSubmitForm";
 import WebsiteAppDetailContainer from "../containers/websiteApp/WebsiteAppDetail";
@@ -74,6 +75,8 @@ function Messenger({
         return <TicketForget />;
       case "ticket-progress":
         return <TicketShowProgressContainer loading={loading} />;
+      case "ticket-list":
+        return <TicketListContainer loading={loading} />;
 
       case "call":
         const callData = getCallData();

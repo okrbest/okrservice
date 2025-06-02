@@ -401,6 +401,60 @@ export const setupMessageConsumers = async () => {
       data: comment
     };
   });
+  consumeRPCQueue("tickets:widgets.ticketList.find", async ({ subdomain, data }) => {
+    const models = await generateModels(subdomain);
+    const { customerId } = data;
+
+    if (!customerId) {
+      return {
+        status: "error",
+        errorMessage: "Customer ID is required"
+      };
+    }
+
+    // Get ticket IDs associated with this customer
+    const mainTypeIds = await sendCoreMessage({
+      subdomain,
+      action: "conformities.findConformities",
+      data: {
+        mainType: "ticket",
+        relType: "customer",
+        relTypeId: [customerId]
+      },
+      isRPC: true,
+      defaultValue: []
+    });
+
+    const ticketIds = mainTypeIds.map((mainType) => mainType.mainTypeId);
+
+    if (ticketIds.length === 0) {
+      return {
+        status: "success",
+        data: []
+      };
+    }
+
+    // Find tickets with stage information
+    const tickets = await models.Tickets.find({
+      _id: { $in: ticketIds }
+    }).sort({ createdAt: -1 });
+
+    // Populate stage information
+    const ticketsWithStages = await Promise.all(
+      tickets.map(async (ticket) => {
+        const stage = await models.Stages.findOne({ _id: ticket.stageId });
+        return {
+          ...ticket.toObject(),
+          stage: stage ? { _id: stage._id, name: stage.name } : null
+        };
+      })
+    );
+
+    return {
+      status: "success",
+      data: ticketsWithStages
+    };
+  });
   consumeRPCQueue("tickets:findItem", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 

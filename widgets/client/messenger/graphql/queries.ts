@@ -111,6 +111,25 @@ const TICKET_ACTIVITY_LOGS = gql`
   }
 `;
 
+const TICKET_LIST = gql`
+  query widgetsTicketList($customerId: String!) {
+    widgetsTicketList(customerId: $customerId) {
+      _id
+      name
+      number
+      status
+      stage {
+        name
+        _id
+      }
+      description
+      type
+      createdAt
+      priority
+    }
+  }
+`;
+
 const userDetailFields = `
   avatar
   fullName
@@ -321,6 +340,7 @@ export {
   GET_CLOUDFLARE_CALL_INTEGRATION,
   TICKET_COMMENTS,
   TICKET_ACTIVITY_LOGS,
+  TICKET_LIST,
   conversationDetailQuery,
   widgetExportMessengerDataQuery,
   unreadCountQuery,

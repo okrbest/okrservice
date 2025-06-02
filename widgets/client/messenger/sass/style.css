@@ -3690,6 +3690,7 @@ select.form-control:focus,
 
 .ticket-progress-container {
   width: 100%;
+  height: 85%;
   padding: 1.25rem;
   padding-bottom: 0;
   display: flex;
@@ -3698,9 +3699,9 @@ select.form-control:focus,
 }
 
 .ticket-progress-container .ticket-progress-main-content {
-  height: 78%;
+  height: 90%;
   overflow: auto;
-  max-width: 90%;
+  max-width: 95%;
   padding-right: 20px;
 }
 
@@ -3766,7 +3767,7 @@ select.form-control:focus,
   padding-top: 10px;
   width: 90%;
   position: fixed;
-  bottom: 80px;
+  bottom: 150px;
 }
 
 .ticket-progress-logs>span {
@@ -3796,6 +3797,9 @@ select.form-control:focus,
 
 .ticket-progress-logs .ticket-progress-log .comment {
   margin-top: 5px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .ticket-progress-logs .ticket-progress-log .date {
@@ -4928,4 +4932,217 @@ select.form-control:focus,
 
 .bg-none {
   background: none !important;
+}
+
+/* Ticket List Styles */
+.ticket-list-container {
+  padding: 1.25rem;
+  width: 95%;
+  height: 90%;
+  overflow-y: auto;
+}
+
+.ticket-list-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.ticket-list-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.ticket-list-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ticket-list-item {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ticket-list-item:hover {
+  border-color: #6335ff;
+  box-shadow: 0 2px 8px rgba(99, 53, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.ticket-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.ticket-number {
+  font-weight: 600;
+  color: #6335ff;
+  font-size: 0.9rem;
+}
+
+.ticket-date {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.ticket-item-content {
+  margin-bottom: 0.75rem;
+}
+
+.ticket-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+}
+
+.ticket-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.ticket-item-footer {
+  border-top: 1px solid #f5f5f5;
+  padding-top: 0.75rem;
+}
+
+.ticket-labels {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ticket-status,
+.ticket-type,
+.ticket-priority {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.ticket-status {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.status-open {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-in-progress {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.status-resolved {
+  background: #e8f5e8;
+  color: #388e3c;
+}
+
+.status-closed {
+  background: #f5f5f5;
+  color: #757575;
+}
+
+.ticket-type {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.ticket-priority {
+  background: #fafafa;
+  color: #424242;
+}
+
+.priority-critical {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.priority-high {
+  background: #ffebee;
+  color: #F7CE53;
+}
+
+.priority-medium {
+  background: #fff8e1;
+  color: #3B85F4;
+}
+
+.priority-low {
+  background: #e8f5e8;
+  color: #AAAEB3;
+}
+
+.priority-normal {
+  background: #f5f5f5;
+  color: #757575;
+}
+
+.empty-tickets {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+}
+
+.empty-content {
+  text-align: center;
+  color: #666;
+}
+
+.empty-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.empty-content p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 480px) {
+  .ticket-list-container {
+    padding: 1rem;
+  }
+  
+  .ticket-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .ticket-labels {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .ticket-status,
+  .ticket-type,
+  .ticket-priority {
+    align-self: flex-start;
+  }
 }

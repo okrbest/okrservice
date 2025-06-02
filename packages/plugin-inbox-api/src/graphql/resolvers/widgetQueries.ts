@@ -118,6 +118,23 @@ export default {
     });
   },
 
+  async widgetsTicketList(
+    _root,
+    args: { customerId: string },
+    { subdomain }: IContext
+  ) {
+    const { customerId } = args;
+
+    const data = await sendTicketsMessage({
+      subdomain,
+      action: 'widgets.ticketList.find',
+      data: { customerId },
+      isRPC: true,
+      defaultValue: []
+    });
+    
+    return data;
+  },
 
   async widgetsGetMessengerIntegration(
     _root,

@@ -48,9 +48,11 @@ const TicketShowProgress: React.FC<Props> = ({
       <div className="ticket-progress-content">
         <div className="content-header">
           <b>{name}</b>
-          <span>{type}</span>
+          <span>{__(type)}</span>
         </div>
-        {description && <p>{description}</p>}
+        {description && (
+          <div dangerouslySetInnerHTML={{ __html: description }} />
+        )}
         {attachments && attachments.length !== 0 && (
           <div className="ticket-attachments">
             {renderAttachments(attachments)}
@@ -99,7 +101,8 @@ const TicketShowProgress: React.FC<Props> = ({
             />
           </div>
           <span>
-            <strong>{renderName}</strong> added <b>comment</b>
+            <strong>{renderName}</strong> 
+            <span dangerouslySetInnerHTML={{ __html: __("added <b>comment</b>") }} />
             <div className="comment">{content}</div>
             <div className="date">
               {dayjs(createdAt).format("YYYY-MM-DD, LT")}
@@ -128,11 +131,11 @@ const TicketShowProgress: React.FC<Props> = ({
     return (
       <>
         <div className="ticket-lbl">
-          <label>Ticket number:</label>
+          <label>{__("Ticket number")}:</label>
           <span>{number}</span>
         </div>
         <div className="ticket-lbl">
-          <label>Ticket status:</label>
+          <label>{__("Ticket status")}:</label>
           <span className="lbl">{stage?.name}</span>
         </div>
         {renderTicketIssue()}
@@ -157,8 +160,9 @@ const TicketShowProgress: React.FC<Props> = ({
         <div className="ticket-comment-form">
           <div className="ticket-form-item">
             <Input
+              textArea
               id="comment"
-              label="Add a comment"
+              label={__("Add a comment")}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             />

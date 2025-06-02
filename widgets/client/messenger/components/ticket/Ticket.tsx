@@ -37,12 +37,21 @@ const Ticket: React.FC<Props> = ({
           <span>{__("Submit a ticket")}</span>
         </div>
         <div
+          className={`${activeRoute === "list" ? "active" : ""} ticket-box`}
+          onClick={() => handleSubmit("list")}
+        >
+          <IconCheckTicket size="30px" />
+          <span>{__("Ticket List")}</span>
+        </div>
+        {/*
+        <div
           className={`${activeRoute === "check" ? "active" : ""} ticket-box`}
           onClick={() => handleSubmit("check")}
         >
           <IconCheckTicket size="30px" />
           <span>{__("Check ticket progress")}</span>
         </div>
+        */}
       </div>
     );
   };

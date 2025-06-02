@@ -32,6 +32,8 @@ const TicketContainer = (props: Props) => {
       setIsCheck(true);
     } else if (name === "create-customer") {
       setCreateCustomer(true);
+    } else if (name === "list") {
+      setRoute("ticket-list");
     } else {
       setRoute(name);
     }
