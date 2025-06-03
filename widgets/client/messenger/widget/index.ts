@@ -293,7 +293,6 @@ window.addEventListener("message", async (event: MessageEvent) => {
         launcher.style.backgroundImage = "none";
         launcher.innerHTML = CLOSE_ICON_STRING;
         if (isMobile) {
-          // 모바일: 위젯이 열릴 때는 항상 런처 숨기기
           launcherIframe.style.display = "none";
           launcher.style.display = "none";
           launcher.style.zIndex = "-1";

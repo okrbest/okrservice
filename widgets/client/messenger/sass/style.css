@@ -5148,12 +5148,10 @@ select.form-control:focus,
   }
 }
 
-/* 모바일 닫기 버튼 스타일 */
 .mobile-close-button {
-  display: none; /* 기본적으로 숨김 */
+  display: none; 
 }
 
-/* 모바일 환경에서만 표시 */
 @media only screen and (max-width: 420px) {
   .mobile-close-button {
     position: fixed;
