@@ -292,7 +292,12 @@ window.addEventListener("message", async (event: MessageEvent) => {
         messengerIframeContainer.classList.remove("erxes-messenger-hidden");
         launcher.style.backgroundImage = "none";
         launcher.innerHTML = CLOSE_ICON_STRING;
-        if (showLauncherSetting === false) {
+        if (isMobile) {
+          // 모바일: 위젯이 열릴 때는 항상 런처 숨기기
+          launcherIframe.style.display = "none";
+          launcher.style.display = "none";
+          launcher.style.zIndex = "-1";
+        } else if (showLauncherSetting === false) {
           launcher.style.display = "flex";
         }
       } else {
@@ -301,8 +306,23 @@ window.addEventListener("message", async (event: MessageEvent) => {
         launcher.style.backgroundImage = backgroundImage;
         launcher.style.backgroundSize = `${logo ? "" : "56px"};`;
         launcher.innerHTML = ``;
-        if (showLauncherSetting === false) {
-          launcher.style.display = "none";
+        if (isMobile) {
+          if (showLauncherSetting === false) {
+            launcherIframe.style.display = "none";
+            launcher.style.display = "none";
+          } else {
+            launcherIframe.style.display = "block";
+            launcher.style.display = "flex";
+            launcher.style.zIndex = "2147483649";
+          }
+        } else {
+          if (showLauncherSetting === false) {
+            launcherIframe.style.display = "none";
+            launcher.style.display = "none";
+          } else {
+            launcherIframe.style.display = "block";
+            launcher.style.display = "flex";
+          }
         }
       }
     }

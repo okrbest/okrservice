@@ -4885,6 +4885,7 @@ select.form-control:focus,
   padding: 0 1rem;
   flex-flow: row wrap;
   padding-bottom: 5rem;
+  min-width: 92%;
 }
 
 .gradient-bg {
@@ -5144,5 +5145,44 @@ select.form-control:focus,
   .ticket-type,
   .ticket-priority {
     align-self: flex-start;
+  }
+}
+
+/* 모바일 닫기 버튼 스타일 */
+.mobile-close-button {
+  display: none; /* 기본적으로 숨김 */
+}
+
+/* 모바일 환경에서만 표시 */
+@media only screen and (max-width: 420px) {
+  .mobile-close-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    outline: none;
+  }
+
+  .mobile-close-button:hover {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .mobile-close-button:focus {
+    outline: 2px solid white;
+    outline-offset: 2px;
+  }
+
+  .erxes-launcher {
+    display: none !important;
   }
 }
