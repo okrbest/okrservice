@@ -113,8 +113,6 @@ const Home: React.FC<Props> = ({
   const renderGettingStarted = () => {
     const color = getColor();
     
-    console.log("supporters : ", supporters);
-
     if (supporters.length === 0) {
       return null;
     }

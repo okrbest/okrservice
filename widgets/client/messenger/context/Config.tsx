@@ -46,10 +46,8 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (requireAuth === false) {
       setIsAuthFieldsVisible(false);
-      console.log('requireAuth가 false이므로 인증 필드를 숨깁니다.');
     } else {
       setIsAuthFieldsVisible(true);
-      console.log('requireAuth가 true이므로 인증 필드를 표시합니다.');
     }
   }, []);
 
