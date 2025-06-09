@@ -16,6 +16,7 @@ export interface IWebsiteApp {
     buttonText: string;
     description: string;
     url: string;
+    openInNewWindow?: boolean;
   };
 }
 
