@@ -1,21 +1,20 @@
-import { EMPTY_CONTENT_TACKETS_PIPELINE } from "@erxes/ui-settings/src/constants";
 import { IBoard, IPipeline } from "@erxes/ui-tasks/src/boards/types";
-import { IButtonMutateProps } from "@erxes/ui/src/types";
-import { __ } from "coreui/utils";
-import { router } from "@erxes/ui/src/utils";
+import React, { useEffect, useState } from "react";
+import { __, router } from "coreui/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { BarItems } from "@erxes/ui/src/layout/styles";
 import Button from "@erxes/ui/src/components/Button";
+import { EMPTY_CONTENT_TACKETS_PIPELINE } from "@erxes/ui-settings/src/constants";
 import EmptyContent from "@erxes/ui/src/components/empty/EmptyContent";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import FormControl from "@erxes/ui/src/components/form/Control";
+import { IButtonMutateProps } from "@erxes/ui/src/types";
 import { IOption } from "../types";
 import { Link } from "react-router-dom";
 import { PipelineCount } from "@erxes/ui-tasks/src/settings/boards/styles";
 import PipelineForm from "../containers/PipelineForm";
 import PipelineRow from "./PipelineRow";
-import React, { useState, useEffect } from "react";
 import SortHandler from "@erxes/ui/src/components/SortHandler";
 import Table from "@erxes/ui/src/components/table";
 import { Title } from "@erxes/ui-settings/src/styles";
@@ -68,11 +67,11 @@ function Pipelines(props: Props) {
   );
   const [isDragDisabled, setIsDragDisabled] = useState(false);
 
-  useEffect(() => {
-    if (props.pipelines !== pipelines) {
-      setPipelines(props.pipelines);
-    }
-  }, [props.pipelines, pipelines]);
+  // useEffect(() => {
+  //   if (props.pipelines !== pipelines) {
+  //     setPipelines(props.pipelines);
+  //   }
+  // }, [props.pipelines, pipelines]);
 
   const renderAddForm = () => {
     const { boardId, renderButton, type, options } = props;
@@ -243,7 +242,7 @@ function Pipelines(props: Props) {
         right={renderButton()}
       />
       {renderContent()}
-      {renderAddForm()}
+      {/* {renderAddForm()} */}
     </div>
   );
 }

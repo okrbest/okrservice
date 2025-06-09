@@ -21,6 +21,7 @@ import TagFilter from "../../containers/TagFilter";
 import Tip from "@erxes/ui/src/components/Tip";
 import { pluginsOfProductCategoryActions } from "coreui/pluginUtils";
 import SaveTemplate from "@erxes/ui-template/src/components/SaveTemplate";
+import ConditionFilter from "modules/products/containers/config/ConditionFilter";
 
 interface IProps {
   queryParams: any;
@@ -153,6 +154,7 @@ const List: React.FC<IProps> = (props) => {
         loading={props.brandsLoading}
       />
       <TagFilter />
+      <ConditionFilter />
     </Sidebar>
   );
 };

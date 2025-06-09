@@ -1960,7 +1960,7 @@ module.exports = {
       menus: [
         {
           text: "Loyalties",
-          url: "/vouchers",
+          url: "/score",
           icon: "icon-piggybank",
           location: "mainNavigation",
           permission: "showLoyalties",
@@ -3495,7 +3495,100 @@ module.exports = {
         scope: "productplaces",
         module: "./response",
       },
-      url: "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-productplaces-ui/remoteEntry.js",
+      ticketRightSidebarSection: "./cardSideBarSection",
+      taskRightSidebarSection: "./cardSideBarSection",
+      url: "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-grants-ui/remoteEntry.js",
+    },
+  },
+  loans: {
+    ui: {
+      srcDir: "/Users/macintosh/Documents/erxes/packages/plugin-loans-ui/src",
+      name: "loans",
+      scope: "loans",
+      exposes: {
+        "./routes": "./src/routes.tsx",
+        "./contractSection":
+          "./src/contracts/components/common/ContractSection.tsx",
+      },
+      routes: {
+        url: "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-loans-ui/remoteEntry.js",
+        scope: "loans",
+        module: "./routes",
+      },
+      menus: [
+        {
+          text: "Loan Contract",
+          url: "/erxes-plugin-loan/contract-list",
+          icon: "icon-medal",
+          location: "mainNavigation",
+          permissions: ["showContracts"],
+          permission: "showContracts",
+        },
+        {
+          text: "Loan config",
+          image: "/images/icons/erxes-16.svg",
+          to: "/erxes-plugin-loan/main-settings",
+          action: "loanConfig",
+          scope: "loans",
+          location: "settings",
+          permissions: ["manageLoanConfigs"],
+          permission: "manageLoanConfigs",
+        },
+        {
+          text: "Contract types",
+          image: "/images/icons/erxes-01.svg",
+          to: "/erxes-plugin-loan/contract-types/",
+          action: "loanConfig",
+          scope: "loans",
+          location: "settings",
+          permissions: ["showContracts"],
+          permission: "showContracts",
+        },
+        {
+          text: "Contract purpose",
+          image: "/images/icons/erxes-01.svg",
+          to: "/erxes-plugin-loan/purpose/",
+          action: "loanConfig",
+          location: "settings",
+          permissions: ["showContracts"],
+          permission: "showContracts",
+        },
+        {
+          text: "Insurance types",
+          image: "/images/icons/erxes-13.svg",
+          to: "/erxes-plugin-loan/insurance-types/",
+          action: "loanConfig",
+          scope: "loans",
+          location: "settings",
+          permissions: ["manageInsuranceTypes"],
+          permission: "manageInsuranceTypes",
+        },
+        {
+          text: "Transaction",
+          image: "/images/icons/erxes-16.svg",
+          to: "/erxes-plugin-loan/transaction-list",
+          action: "transaction",
+          scope: "loans",
+          location: "transaction-list",
+          permissions: ["showTransactions"],
+        },
+        {
+          text: "nonBalanceTransaction",
+          image: "/images/icons/erxes-16.svg",
+          to: "/erxes-plugin-loan/non-balance-transactions",
+          action: "nonBalanceTransaction",
+          scope: "loans",
+          location: "non-balance-transactions",
+          permissions: ["showNonBalanceTransactions"],
+        },
+      ],
+      customerRightSidebarSection: "./contractSection",
+      companyRightSidebarSection: "./contractSection",
+      dealRightSidebarSection: {
+        title: "Loan contract",
+        component: "./contractSection",
+      },
+      url: "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-loans-ui/remoteEntry.js",
     },
     api: {
       permissions: {
@@ -3663,6 +3756,7 @@ module.exports = {
                 "nonBalanceTransactionsRemove",
                 "showPeriodLocks",
                 "managePeriodLocks",
+                "managePurpose",
               ],
             },
             {
@@ -3677,6 +3771,16 @@ module.exports = {
                 "showContracts",
                 "manageSchedule",
                 "showCollaterals",
+              ],
+            },
+            {
+              name: "loansPurposesAll",
+              description: "Manage All Loan Purpose",
+              use: [
+                "managePurpose",
+                "purposeAdd",
+                "purposeEdit",
+                "purposesRemove",
               ],
             },
             {
@@ -3725,6 +3829,10 @@ module.exports = {
             {
               name: "manageSchedule",
               description: "Manage Schedule",
+            },
+            {
+              name: "managePurpose",
+              description: "Manage Purpose",
             },
             {
               name: "showCollaterals",
@@ -4159,6 +4267,78 @@ module.exports = {
       inboxEditorAction: "./inboxEditorAction",
       videoCall: "./videoCall",
       url: "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-dailyco-ui/remoteEntry.js",
+    },
+  },
+  zms: {
+    ui: {
+      srcDir: "/Users/macintosh/Documents/erxes/packages/plugin-zms-ui/src",
+      name: "zms",
+      scope: "zms",
+      exposes: {
+        "./routes": "./src/routes.tsx",
+      },
+      routes: {
+        url: "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-zms-ui/remoteEntry.js",
+        scope: "zms",
+        module: "./routes",
+      },
+      menus: [
+        {
+          text: "Zms",
+          url: "/plugin-zms/zms",
+          icon: "icon-star",
+          location: "mainNavigation",
+        },
+        {
+          text: "Main config",
+          image: "/images/icons/erxes-16.svg",
+          to: "/plugin-zms/settings",
+          action: "mainConfig",
+          scope: "zms",
+          location: "settings",
+        },
+      ],
+      url: "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-zms-ui/remoteEntry.js",
+    },
+  },
+  syncpolaris: {
+    ui: {
+      srcDir:
+        "/Users/macintosh/Documents/erxes/packages/plugin-syncpolaris-ui/src",
+      name: "syncpolaris",
+      scope: "syncpolaris",
+      exposes: {
+        "./routes": "./src/routes.tsx",
+        "./customerSidebar": "./src/pullPolaris/containers/CustomerSidebar.tsx",
+        "./savingsPolaris": "./src/savingPolaris/containers/Polaris.tsx",
+        "./loansPolaris": "./src/loanPolaris/containers/Polaris.tsx",
+      },
+      routes: {
+        url: "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-syncpolaris-ui/remoteEntry.js",
+        scope: "syncpolaris",
+        module: "./routes",
+      },
+      menus: [
+        {
+          text: "Sync polaris config",
+          to: "/erxes-plugin-sync-polaris/settings/general",
+          image: "/images/icons/erxes-04.svg",
+          location: "settings",
+          scope: "syncpolaris",
+          action: "syncPolarisonfig",
+          permission: "syncPolarisConfig",
+        },
+        {
+          text: "Sync Polaris",
+          url: "/sync-polaris-history",
+          icon: "icon-star",
+          location: "mainNavigation",
+        },
+      ],
+      customerRightSidebarSection: "./customerSidebar",
+      savingPolarisSection: "./savingsPolaris",
+      loanPolarisSection: "./loansPolaris",
+      url: "https://plugin-uis.s3.us-west-2.amazonaws.com/js/plugins/plugin-syncpolaris-ui/remoteEntry.js",
     },
   },
   zms: {

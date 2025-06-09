@@ -10,7 +10,14 @@ import {
   IFormProps,
   IPdfAttachment,
 } from "@erxes/ui/src/types";
-import { IProduct, IProductCategory, IUom, IVariant } from "../types";
+import {
+  IBundleCondition,
+  IBundleRule,
+  IProduct,
+  IProductCategory,
+  IUom,
+  IVariant,
+} from "../types";
 import React, { useEffect, useState } from "react";
 import { TYPES } from "../constants";
 import { __ } from "coreui/utils";
@@ -42,6 +49,7 @@ type Props = {
   product?: IProduct;
   productCategories: IProductCategory[];
   uoms?: IUom[];
+  bundleRules: IBundleRule[];
   currencies: string[];
   renderButton: (props: IButtonMutateProps) => JSX.Element;
   closeModal: () => void;
@@ -66,6 +74,7 @@ type State = {
   maskStr?: string;
   type: string;
   currency: string;
+  bundleId?: string;
 };
 
 const Form = (props: Props) => {
@@ -84,6 +93,7 @@ const Form = (props: Props) => {
     scopeBrandIds,
     code,
     categoryId,
+    bundleId,
   } = product;
 
   const paramCategoryId = router.getParam(location, "categoryId");
@@ -108,6 +118,7 @@ const Form = (props: Props) => {
     scopeBrandIds,
     code: code || "",
     categoryId: categoryId || paramCategoryId,
+    bundleId: bundleId,
     type: product.type || "",
     currency: product.currency || "",
     pdfAttachment: product.pdfAttachment || undefined,
@@ -185,6 +196,7 @@ const Form = (props: Props) => {
       code,
       categoryId,
       currency,
+      bundleId,
     } = state;
 
     if (product) {
@@ -233,6 +245,7 @@ const Form = (props: Props) => {
           ratio: Math.abs(Number(su.ratio)) || 1,
         })),
       currency,
+      bundleId,
     };
   };
 
@@ -457,7 +470,14 @@ const Form = (props: Props) => {
       currency: value,
     }));
   };
+  const onChangeBundle = (option) => {
+    const value = option?.value;
 
+    setState((prevState) => ({
+      ...prevState,
+      bundleId: value || undefined,
+    }));
+  };
   const onChangeBrand = (brandIds: string[]) => {
     setState((prevState) => ({ ...prevState, scopeBrandIds: brandIds }));
   };
@@ -583,6 +603,7 @@ const Form = (props: Props) => {
       productCategories,
       uoms,
       currencies,
+      bundleRules,
     } = props;
     const { values, isSubmitted } = formProps;
     const object = product || ({} as IProduct);
@@ -611,6 +632,7 @@ const Form = (props: Props) => {
       categoryId,
       maskStr,
       currency,
+      bundleId,
     } = state;
 
     const generateOptions = () => {
@@ -626,7 +648,14 @@ const Form = (props: Props) => {
         value: item,
       }));
     };
-
+    const generateBundleRuleOptions = () => {
+      return (
+        bundleRules?.map((item) => ({
+          label: item.name,
+          value: item._id,
+        })) || []
+      );
+    };
     return (
       <>
         <FormWrapper>
@@ -748,6 +777,19 @@ const Form = (props: Props) => {
                 options={generateCurrencyOptions()}
                 isClearable={true}
                 onChange={onChangeCurrency}
+              />
+            </FormGroup>
+            <FormGroup>
+              <ControlLabel>Bundle</ControlLabel>
+              <Select
+                {...formProps}
+                placeholder={__("Choose a bundle")}
+                value={generateBundleRuleOptions().find(
+                  (option) => option.value === bundleId
+                )}
+                options={generateBundleRuleOptions()}
+                isClearable={true}
+                onChange={onChangeBundle}
               />
             </FormGroup>
             <FormGroup>

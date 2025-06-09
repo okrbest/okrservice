@@ -1,398 +1,438 @@
 # Changelog
 
-## [2.12.3](https://github.com/okrbest/okrservice/compare/2.12.2...2.12.3) (2025-05-27)
+## [2.13.2](https://github.com/okrbest/okrservice/compare/2.13.1...2.13.2) (2025-06-06)
+
+## [2.13.1](https://github.com/okrbest/okrservice/compare/2.13.0...2.13.1) (2025-06-05)
 
 ### Bug Fixes
 
-* **tickets:**  related ticket ([20c3855](https://github.com/okrbest/okrservice/commit/20c3855277bd705b6c49fe1b8ac9d41de3f82c30))
+- CI up node version and some ubuntu version ([#6049](https://github.com/okrbest/okrservice/issues/6049)) ([548636a](https://github.com/okrbest/okrservice/commit/548636a0fbbd7d32f3761d6ddaad94034ce22525))
+- deals assigned users from check productsData assignedUser ([42482f2](https://github.com/okrbest/okrservice/commit/42482f23070d319640700526e45350ff5d98037a))
+- ebarimt sub id show ([9e9f680](https://github.com/okrbest/okrservice/commit/9e9f680d2895f58515c39c3b696872aa7ec1ee89))
 
-## [2.12.2](https://github.com/okrbest/okrservice/compare/2.12.1...2.12.2) (2025-05-27)
+## [2.13.0](https://github.com/okrbest/okrservice/compare/2.12.3...2.13.0) (2025-06-03)
 
 ### Features
 
-* **clientportal:** add toki login ([8b4c8c2](https://github.com/okrbest/okrservice/commit/8b4c8c2dce179c276d173483fc332600dfe50241))
+- clientportal and cms translations ([#6044](https://github.com/okrbest/okrservice/issues/6044)) ([8f05d90](https://github.com/okrbest/okrservice/commit/8f05d90693c065523cf79493162eb7fef52b9814))
+- **clientportal:** introduce production field to toki config ([f5c1744](https://github.com/okrbest/okrservice/commit/f5c174417a63f8af62bc906d30bb88f0d423a23a))
 
 ### Bug Fixes
 
-* **tms:** additional customers ([357efc8](https://github.com/okrbest/okrservice/commit/357efc80fab2ecabdeedf27ce79dbc8f21658815))
-* **tms:** additional info ([6f56309](https://github.com/okrbest/okrservice/commit/6f5630913b94515bb50fd09b15bf049c78755bf9))
-* **tms:** elements order check ([70f7ffc](https://github.com/okrbest/okrservice/commit/70f7ffccd1712b0c7eb78d6de5f209d37b936010))
-* **tms:** loggs ([64120a7](https://github.com/okrbest/okrservice/commit/64120a7357ebc6e4285a9c8b1a85f85ce8361cb0))
-* **tms:** notification ([967a7fa](https://github.com/okrbest/okrservice/commit/967a7fa3f9adbaccfecf2d11f348f47fd36335c3))
-* **tms:** order fields ([34811ec](https://github.com/okrbest/okrservice/commit/34811ec4fbe7c3bc4b37322a891dac7f6beea39a))
-* **tms:** payment ([d50b6f3](https://github.com/okrbest/okrservice/commit/d50b6f35d01a43a427bbfa9f890c23af19913889))
-* **tms:** tags ([0a7260a](https://github.com/okrbest/okrservice/commit/0a7260ae154b6fef2028e326fe6246e7e96f8725))
-* **tms:** user resolver ([860548c](https://github.com/okrbest/okrservice/commit/860548cee9fa47ee883ba253119d9cfbd5d69fa7))
+- **cards:** add related ticket ([f05690d](https://github.com/okrbest/okrservice/commit/f05690d5a5365a41867fb3d03af5d3902c6f70f4))
+- **cards:** related cards ([a5966f8](https://github.com/okrbest/okrservice/commit/a5966f8a4c0bfd52188a33f28668b50d414d1fa0))
+- **clientportal:** fix tokiconfig bug ([04d0538](https://github.com/okrbest/okrservice/commit/04d0538e6e442eab84cac3f5ed553293dcaf0175))
+- get cards association types ([d88d0ab](https://github.com/okrbest/okrservice/commit/d88d0ab3b9a6d6d6d48ef27b3e8df39bd4fee4e5))
+- improve syncpolaris and loans, savings ([#6047](https://github.com/okrbest/okrservice/issues/6047)) ([e2ab9db](https://github.com/okrbest/okrservice/commit/e2ab9db81935f7a284d867d4f23fa5bb107622ba))
+- **products:** filter & bugs ([04b27b9](https://github.com/okrbest/okrservice/commit/04b27b98656e7eaa73b40f25efc36899136bf633))
+- release.yaml ([ce1f20a](https://github.com/okrbest/okrservice/commit/ce1f20aac27a59d71ab1ef1807891f8010b23a28))
+- **sales:** add some attributes in document ([acbb9ab](https://github.com/okrbest/okrservice/commit/acbb9ab04eab286cc5cd9996e4acc288493e5298))
+- **tms:** advancecheck ([52ef4a6](https://github.com/okrbest/okrservice/commit/52ef4a6f248638dc9ba65e752dc69aed2b9409df))
+- **tms:** changes ([55e744c](https://github.com/okrbest/okrservice/commit/55e744c5a91afc8b3205a8f16b206d4f7fa6d79b))
+- **tms:** join percent ([9338bad](https://github.com/okrbest/okrservice/commit/9338badb44ce77cc1105b521b7a5c214e78aeca3))
+- **tms:** notification & payment ([31bedd6](https://github.com/okrbest/okrservice/commit/31bedd617310c5a23b59dfa3cd34dfd562e9ac24))
+- **tms:** status group ([1b532e3](https://github.com/okrbest/okrservice/commit/1b532e38c74a3fb6d4dea9e005e194863c0c239c))
+- **tms:** tour fields ([a2611fe](https://github.com/okrbest/okrservice/commit/a2611fe781549af3316728bceb8658d252d6579f))
+- **tms:** update notifications ([7bd4201](https://github.com/okrbest/okrservice/commit/7bd420157043b662d829bc0e5d69d2b1474b0aa7))
+- **tms:** update payment and logs ([2d27d37](https://github.com/okrbest/okrservice/commit/2d27d378712306e6d595bb5ecd2a6cf329279e4a))
+- **tms:** update tour ([569cccf](https://github.com/okrbest/okrservice/commit/569cccfbdf19d4dc60478a745741481291308add))
 
-### Performance Improvements
+## [2.13.0-rc.0](https://github.com/okrbest/okrservice/compare/2.12.3...2.13.0) (2025-05-18)
 
-* **clientportal:** Show custom fields in clientportal user detail ([072bb66](https://github.com/okrbest/okrservice/commit/072bb661d26ff05a4283b82d6a9afbeaf7393ca9))
+### Features
 
-## [2.12.1](https://github.com/okrbest/okrservice/compare/2.12.0...2.12.1) (2025-05-20)
+- **cards:** product bundle ([409458b](https://github.com/okrbest/okrservice/commit/409458bc3a7326e72b3b7f4c2b0a0b5f5a5e5a03))
+- **product:** add new bundle feature on product ([30668c2](https://github.com/okrbest/okrservice/commit/30668c27a2215c40749981835b32d72d5ca7c03a))
+- **product:** bundle ([9caba47](https://github.com/okrbest/okrservice/commit/9caba47c4d003916d9f3d3d44e19d4f40192c0d0))
+
+### Bug Fixes
+
+- accountings query with record ([ef9a54b](https://github.com/okrbest/okrservice/commit/ef9a54b3e5529980aecbf176870618ba7d1e4fdf))
+
+## [2.13.0-rc.0](https://github.com/okrbest/okrservice/compare/2.12.0...2.13.0-rc.0) (2025-05-18)
+
+### Bug Fixes
+
+- accountings query with record ([ef9a54b](https://github.com/okrbest/okrservice/commit/ef9a54b3e5529980aecbf176870618ba7d1e4fdf))
 
 ## [2.12.0](https://github.com/okrbest/okrservice/compare/2.11.3...2.12.0) (2025-05-18)
 
 ### Features
 
-* **clientportal:** implement client portal comment addition with notifications ([2825c22](https://github.com/okrbest/okrservice/commit/2825c22038ea198e8d2b13b492a7cbf7f1ba79a0))
-* **clientportal:** Send email notifications to both assigned users and the ticket creator ([70aba57](https://github.com/okrbest/okrservice/commit/70aba57559349492f46bbe59cf3f021e0a8570dd))
-* **facebook:** enhance performance of facebookGetPosts query ([dd2e245](https://github.com/okrbest/okrservice/commit/dd2e245d86b35c9ac92527491df2cf81459fb1b8))
-* **notifications:** add userId variable to notifications query ([#6027](https://github.com/okrbest/okrservice/issues/6027)) ([c91369f](https://github.com/okrbest/okrservice/commit/c91369ff4899ee1a340d322ac1c5d6226903b65f))
+- **clientportal:** implement client portal comment addition with notifications ([2825c22](https://github.com/okrbest/okrservice/commit/2825c22038ea198e8d2b13b492a7cbf7f1ba79a0))
+- **clientportal:** Send email notifications to both assigned users and the ticket creator ([70aba57](https://github.com/okrbest/okrservice/commit/70aba57559349492f46bbe59cf3f021e0a8570dd))
+- **facebook:** enhance performance of facebookGetPosts query ([dd2e245](https://github.com/okrbest/okrservice/commit/dd2e245d86b35c9ac92527491df2cf81459fb1b8))
+- **notifications:** add userId variable to notifications query ([#6027](https://github.com/okrbest/okrservice/issues/6027)) ([c91369f](https://github.com/okrbest/okrservice/commit/c91369ff4899ee1a340d322ac1c5d6226903b65f))
 
 ### Bug Fixes
 
-* clientportal ci ([88146f7](https://github.com/okrbest/okrservice/commit/88146f7e7178a4910b83e57e6ee469999cfbc582))
-* clientportal ci ([9318936](https://github.com/okrbest/okrservice/commit/931893639ab02cb21a0f9fa99555ac592f1175ac))
-* **cp:** add ability replace subdomain in getEnv ([10ec8c1](https://github.com/okrbest/okrservice/commit/10ec8c14401586acb43c0c431f1a5a9d211b1b86))
-* **cp:** apollo client uri ([a86a7b4](https://github.com/okrbest/okrservice/commit/a86a7b474eedb1f70522059dc2922607844721b3))
-* **cp:** can't generate uri apollo client propertly ([5517213](https://github.com/okrbest/okrservice/commit/55172130c5c1f92d1646b8d93f27a61d6c9b3c1e))
-* Msdynamic double send ([#6028](https://github.com/okrbest/okrservice/issues/6028)) ([795c5ae](https://github.com/okrbest/okrservice/commit/795c5ae6e0a0a981278a76c9b820303f63a3a88f))
-* **payment:** 9ix callback on manual checking invoice ([a78a205](https://github.com/okrbest/okrservice/commit/a78a20572068100615b293e087e8268db2c428a6))
-* **sales:** refetch deal detail in Main Board ([36650a0](https://github.com/okrbest/okrservice/commit/36650a0e35399fffcf1c6e587bacea29248e4293))
-* **tms:** tourgroup ([a0a616f](https://github.com/okrbest/okrservice/commit/a0a616f75012f8f5f06be82d90ee530489f7801e))
-* **tms:** tourgroup ([39b06f4](https://github.com/okrbest/okrservice/commit/39b06f4aa19f6d9a8ebdde65ba3bffea906ba234))
+- clientportal ci ([88146f7](https://github.com/okrbest/okrservice/commit/88146f7e7178a4910b83e57e6ee469999cfbc582))
+- clientportal ci ([9318936](https://github.com/okrbest/okrservice/commit/931893639ab02cb21a0f9fa99555ac592f1175ac))
+- **cp:** add ability replace subdomain in getEnv ([10ec8c1](https://github.com/okrbest/okrservice/commit/10ec8c14401586acb43c0c431f1a5a9d211b1b86))
+- **cp:** apollo client uri ([a86a7b4](https://github.com/okrbest/okrservice/commit/a86a7b474eedb1f70522059dc2922607844721b3))
+- **cp:** can't generate uri apollo client propertly ([5517213](https://github.com/okrbest/okrservice/commit/55172130c5c1f92d1646b8d93f27a61d6c9b3c1e))
+- Msdynamic double send ([#6028](https://github.com/okrbest/okrservice/issues/6028)) ([795c5ae](https://github.com/okrbest/okrservice/commit/795c5ae6e0a0a981278a76c9b820303f63a3a88f))
+- **payment:** 9ix callback on manual checking invoice ([a78a205](https://github.com/okrbest/okrservice/commit/a78a20572068100615b293e087e8268db2c428a6))
+- **sales:** refetch deal detail in Main Board ([36650a0](https://github.com/okrbest/okrservice/commit/36650a0e35399fffcf1c6e587bacea29248e4293))
+- **tms:** tourgroup ([a0a616f](https://github.com/okrbest/okrservice/commit/a0a616f75012f8f5f06be82d90ee530489f7801e))
+- **tms:** tourgroup ([39b06f4](https://github.com/okrbest/okrservice/commit/39b06f4aa19f6d9a8ebdde65ba3bffea906ba234))
+
 ## [2.12.0-rc.0](https://github.com/okrbest/okrservice/compare/2.11.3...2.12.0) (2025-05-04)
 
 ### Bug Fixes
 
-* accountings correction inventories costs ([489a727](https://github.com/okrbest/okrservice/commit/489a727fa81ed02bdbbacdb943db7f68bf8d5c3e))
-* **loans:** fix detail bug and dropdown ([44de37b](https://github.com/okrbest/okrservice/commit/44de37bf6b0b40ded4ffd97315f4dc593dbc9abf))
-* **sales:** fix some ui ([d66973a](https://github.com/okrbest/okrservice/commit/d66973aa1c9b419970d4b16f3317a71da53623bd))
+- accountings correction inventories costs ([489a727](https://github.com/okrbest/okrservice/commit/489a727fa81ed02bdbbacdb943db7f68bf8d5c3e))
+- **loans:** fix detail bug and dropdown ([44de37b](https://github.com/okrbest/okrservice/commit/44de37bf6b0b40ded4ffd97315f4dc593dbc9abf))
+- **sales:** fix some ui ([d66973a](https://github.com/okrbest/okrservice/commit/d66973aa1c9b419970d4b16f3317a71da53623bd))
 
 ### Performance Improvements
 
-* **messenger:** update ticket and call ([#6014](https://github.com/okrbest/okrservice/issues/6014)) ([a799820](https://github.com/okrbest/okrservice/commit/a799820fa403dd6e736b61192c762c5ceeaf5848))
+- **messenger:** update ticket and call ([#6014](https://github.com/okrbest/okrservice/issues/6014)) ([a799820](https://github.com/okrbest/okrservice/commit/a799820fa403dd6e736b61192c762c5ceeaf5848))
 
 ## [2.12.0-rc.0](https://github.com/okrbest/okrservice/compare/2.11.0...2.12.0-rc.0) (2025-05-04)
 
 ### Bug Fixes
 
-* accountings correction inventories costs ([489a727](https://github.com/okrbest/okrservice/commit/489a727fa81ed02bdbbacdb943db7f68bf8d5c3e))
-* **loans:** fix detail bug and dropdown ([44de37b](https://github.com/okrbest/okrservice/commit/44de37bf6b0b40ded4ffd97315f4dc593dbc9abf))
-* **sales:** fix some ui ([d66973a](https://github.com/okrbest/okrservice/commit/d66973aa1c9b419970d4b16f3317a71da53623bd))
+- accountings correction inventories costs ([489a727](https://github.com/okrbest/okrservice/commit/489a727fa81ed02bdbbacdb943db7f68bf8d5c3e))
+- **loans:** fix detail bug and dropdown ([44de37b](https://github.com/okrbest/okrservice/commit/44de37bf6b0b40ded4ffd97315f4dc593dbc9abf))
+- **sales:** fix some ui ([d66973a](https://github.com/okrbest/okrservice/commit/d66973aa1c9b419970d4b16f3317a71da53623bd))
 
 ### Performance Improvements
 
-* **messenger:** update ticket and call ([#6014](https://github.com/okrbest/okrservice/issues/6014)) ([a799820](https://github.com/okrbest/okrservice/commit/a799820fa403dd6e736b61192c762c5ceeaf5848))
+- **messenger:** update ticket and call ([#6014](https://github.com/okrbest/okrservice/issues/6014)) ([a799820](https://github.com/okrbest/okrservice/commit/a799820fa403dd6e736b61192c762c5ceeaf5848))
 
 ## [2.11.0](https://github.com/okrbest/okrservice/compare/2.11.0-rc.0...2.11.0) (2025-05-04)
 
 ### Bug Fixes
 
-* loans and savings improve ([#6015](https://github.com/okrbest/okrservice/issues/6015)) ([596f8a6](https://github.com/okrbest/okrservice/commit/596f8a6cc7c584ce9ae7592e66ad77b7f171a277))
-* **payment:** fix golomt e-commerce api authorization error handling ([c4b486d](https://github.com/okrbest/okrservice/commit/c4b486de2fd10fcdb1a8797e19cacfa4732834a2))
-* **tms:** visible name ([644d1ce](https://github.com/okrbest/okrservice/commit/644d1cea4fa58238e7ecb39a9ae19883bc70d3e1))
-* **workers:** can't run when array field value are empty ([4983f19](https://github.com/okrbest/okrservice/commit/4983f19243df700a927ecf0f5e69cfd905d49bd0))
+- loans and savings improve ([#6015](https://github.com/okrbest/okrservice/issues/6015)) ([596f8a6](https://github.com/okrbest/okrservice/commit/596f8a6cc7c584ce9ae7592e66ad77b7f171a277))
+- **payment:** fix golomt e-commerce api authorization error handling ([c4b486d](https://github.com/okrbest/okrservice/commit/c4b486de2fd10fcdb1a8797e19cacfa4732834a2))
+- **tms:** visible name ([644d1ce](https://github.com/okrbest/okrservice/commit/644d1cea4fa58238e7ecb39a9ae19883bc70d3e1))
+- **workers:** can't run when array field value are empty ([4983f19](https://github.com/okrbest/okrservice/commit/4983f19243df700a927ecf0f5e69cfd905d49bd0))
+
 ## [2.11.0-rc.0](https://github.com/okrbest/okrservice/compare/2.11.0-rc.0...2.11.0) (2025-04-17)
 
 ### Features
 
-* **clientportal:** add card type UI for SMS ([d403e70](https://github.com/okrbest/okrservice/commit/d403e707ab6816530c96e5b5865fd511f50d20d6))
+- **clientportal:** add card type UI for SMS ([d403e70](https://github.com/okrbest/okrservice/commit/d403e707ab6816530c96e5b5865fd511f50d20d6))
 
 ### Bug Fixes
 
-* **automations:** handle if string has null undefined in generateEmails ([3d0b402](https://github.com/okrbest/okrservice/commit/3d0b402a34fc60e04e31b9d8113cc7dc3e7ca3ca))
-* scorelogs with index ([cb5919f](https://github.com/okrbest/okrservice/commit/cb5919fd1275a223714ed05981ed7c2e85131eec))
-* tr fullDate ([6d751f3](https://github.com/okrbest/okrservice/commit/6d751f3da4e5e166546a6684dcc99ac3a98702b5))
+- **automations:** handle if string has null undefined in generateEmails ([3d0b402](https://github.com/okrbest/okrservice/commit/3d0b402a34fc60e04e31b9d8113cc7dc3e7ca3ca))
+- scorelogs with index ([cb5919f](https://github.com/okrbest/okrservice/commit/cb5919fd1275a223714ed05981ed7c2e85131eec))
+- tr fullDate ([6d751f3](https://github.com/okrbest/okrservice/commit/6d751f3da4e5e166546a6684dcc99ac3a98702b5))
+
 ## [2.10.2](https://github.com/okrbest/okrservice/compare/2.11.0-rc.0...2.11.0) (2025-04-25)
 
 ### Features
 
-* put another logs on msdynamic ([4fda221](https://github.com/okrbest/okrservice/commit/4fda221d18d096c11f04c98f7b17ef7293018f0e))
-* put some log on msdynamic ([bce9c69](https://github.com/okrbest/okrservice/commit/bce9c696750e67000db549536cbb1469f74fe893))
+- put another logs on msdynamic ([4fda221](https://github.com/okrbest/okrservice/commit/4fda221d18d096c11f04c98f7b17ef7293018f0e))
+- put some log on msdynamic ([bce9c69](https://github.com/okrbest/okrservice/commit/bce9c696750e67000db549536cbb1469f74fe893))
 
 ### Bug Fixes
 
-* pricing ui readOnly objects ([9d36b6e](https://github.com/okrbest/okrservice/commit/9d36b6e02178131692e5f13465e0a3d42c3428ef))
-* **sales:** update deal edit form ([743faa6](https://github.com/okrbest/okrservice/commit/743faa6f72da548208c7fe34cccbfd9f3ee425d2))
+- pricing ui readOnly objects ([9d36b6e](https://github.com/okrbest/okrservice/commit/9d36b6e02178131692e5f13465e0a3d42c3428ef))
+- **sales:** update deal edit form ([743faa6](https://github.com/okrbest/okrservice/commit/743faa6f72da548208c7fe34cccbfd9f3ee425d2))
+
 ## [2.10.1](https://github.com/okrbest/okrservice/compare/2.11.0-rc.0...2.11.0) (2025-04-22)
 
 ### Features
 
-* deal to msdynamic sync added ([#6000](https://github.com/okrbest/okrservice/issues/6000)) ([263a3c2](https://github.com/okrbest/okrservice/commit/263a3c2bc4610c8dcc3ab5e5044ae3a5d868b350))
+- deal to msdynamic sync added ([#6000](https://github.com/okrbest/okrservice/issues/6000)) ([263a3c2](https://github.com/okrbest/okrservice/commit/263a3c2bc4610c8dcc3ab5e5044ae3a5d868b350))
 
 ### Bug Fixes
 
-* **facebook:** can't send fb message when on error typing_on ([5459233](https://github.com/okrbest/okrservice/commit/545923367a2c9c0758cd9a783d25e09306c2be88))
-* **helper:** correct request handling for Instagram, Facebook, and WhatsApp integrations ([#5999](https://github.com/okrbest/okrservice/issues/5999)) ([fe90dc0](https://github.com/okrbest/okrservice/commit/fe90dc0671486958cf24cd841479ffcf956c2799))
-* **tms:** icon search ([16ac8ad](https://github.com/okrbest/okrservice/commit/16ac8ad1d237eca58ba56d62a757906d8d61a07f))
-* **tms:** visibible name ([88eddd8](https://github.com/okrbest/okrservice/commit/88eddd81b4bea02a760ad7ad49cd65567e464292))
+- **facebook:** can't send fb message when on error typing_on ([5459233](https://github.com/okrbest/okrservice/commit/545923367a2c9c0758cd9a783d25e09306c2be88))
+- **helper:** correct request handling for Instagram, Facebook, and WhatsApp integrations ([#5999](https://github.com/okrbest/okrservice/issues/5999)) ([fe90dc0](https://github.com/okrbest/okrservice/commit/fe90dc0671486958cf24cd841479ffcf956c2799))
+- **tms:** icon search ([16ac8ad](https://github.com/okrbest/okrservice/commit/16ac8ad1d237eca58ba56d62a757906d8d61a07f))
+- **tms:** visibible name ([88eddd8](https://github.com/okrbest/okrservice/commit/88eddd81b4bea02a760ad7ad49cd65567e464292))
 
 ## [2.11.0-rc.0](https://github.com/okrbest/okrservice/compare/2.10.0...2.11.0-rc.0) (2025-04-17)
 
 ### Features
 
-* **clientportal:** add card type UI for SMS ([d403e70](https://github.com/okrbest/okrservice/commit/d403e707ab6816530c96e5b5865fd511f50d20d6))
+- **clientportal:** add card type UI for SMS ([d403e70](https://github.com/okrbest/okrservice/commit/d403e707ab6816530c96e5b5865fd511f50d20d6))
 
 ### Bug Fixes
 
-* **automations:** handle if string has null undefined in generateEmails ([3d0b402](https://github.com/okrbest/okrservice/commit/3d0b402a34fc60e04e31b9d8113cc7dc3e7ca3ca))
-* scorelogs with index ([cb5919f](https://github.com/okrbest/okrservice/commit/cb5919fd1275a223714ed05981ed7c2e85131eec))
-* tr fullDate ([6d751f3](https://github.com/okrbest/okrservice/commit/6d751f3da4e5e166546a6684dcc99ac3a98702b5))
+- **automations:** handle if string has null undefined in generateEmails ([3d0b402](https://github.com/okrbest/okrservice/commit/3d0b402a34fc60e04e31b9d8113cc7dc3e7ca3ca))
+- scorelogs with index ([cb5919f](https://github.com/okrbest/okrservice/commit/cb5919fd1275a223714ed05981ed7c2e85131eec))
+- tr fullDate ([6d751f3](https://github.com/okrbest/okrservice/commit/6d751f3da4e5e166546a6684dcc99ac3a98702b5))
 
 ## [2.10.0](https://github.com/okrbest/okrservice/compare/2.9.5...2.10.0) (2025-04-17)
 
 ### Bug Fixes
 
-* **assets:** query syntax error ([a0e841a](https://github.com/okrbest/okrservice/commit/a0e841af9167c20e5f8f6e203ed7ffc72d24b5e2))
-* **cards:** vendor users filter ([5327197](https://github.com/okrbest/okrservice/commit/53271975def93841c3abe6877f509bc8cd754ccf))
-* **facebook:** little bot ui fixes ([62eb0f5](https://github.com/okrbest/okrservice/commit/62eb0f5d4e26ef00f1db48de69ea8bccc98f4efd))
-* **gateway:** ci runs-on to ubuntu-22.04 from ubuntu-20.04 ([5fe8b3a](https://github.com/okrbest/okrservice/commit/5fe8b3a0551804564959761e417831883fe31c8e))
-* **loyalties:** add target extender & fix can't generate excludeAmount on target ([8e77836](https://github.com/okrbest/okrservice/commit/8e778361d2d112a6c0dbd4e66dff81902c7601df))
-* **tms:** branch on element ([115ccfe](https://github.com/okrbest/okrservice/commit/115ccfee48e41897901e033d25b3165f30b7e964))
-* **tms:** filter branch ([e037e87](https://github.com/okrbest/okrservice/commit/e037e87b49b73935317120a424e3a8b69b7c9dba))
+- **assets:** query syntax error ([a0e841a](https://github.com/okrbest/okrservice/commit/a0e841af9167c20e5f8f6e203ed7ffc72d24b5e2))
+- **cards:** vendor users filter ([5327197](https://github.com/okrbest/okrservice/commit/53271975def93841c3abe6877f509bc8cd754ccf))
+- **facebook:** little bot ui fixes ([62eb0f5](https://github.com/okrbest/okrservice/commit/62eb0f5d4e26ef00f1db48de69ea8bccc98f4efd))
+- **gateway:** ci runs-on to ubuntu-22.04 from ubuntu-20.04 ([5fe8b3a](https://github.com/okrbest/okrservice/commit/5fe8b3a0551804564959761e417831883fe31c8e))
+- **loyalties:** add target extender & fix can't generate excludeAmount on target ([8e77836](https://github.com/okrbest/okrservice/commit/8e778361d2d112a6c0dbd4e66dff81902c7601df))
+- **tms:** branch on element ([115ccfe](https://github.com/okrbest/okrservice/commit/115ccfee48e41897901e033d25b3165f30b7e964))
+- **tms:** filter branch ([e037e87](https://github.com/okrbest/okrservice/commit/e037e87b49b73935317120a424e3a8b69b7c9dba))
+
 ## [2.10.0-rc.1](https://github.com/okrbest/okrservice/compare/2.9.5...2.10.0) (2025-04-04)
+
 ## [2.10.0-rc.0](https://github.com/okrbest/okrservice/compare/2.9.5...2.10.0) (2025-04-02)
 
 ### Bug Fixes
 
-* accountings invIncome save and t balance improve ([3ee3131](https://github.com/okrbest/okrservice/commit/3ee3131708798147cba9319a8b7cf8469c99a05a))
-* deal products form filter by barcode ([2331133](https://github.com/okrbest/okrservice/commit/23311334115c73127db4e7510d9b583cd62f9527))
+- accountings invIncome save and t balance improve ([3ee3131](https://github.com/okrbest/okrservice/commit/3ee3131708798147cba9319a8b7cf8469c99a05a))
+- deal products form filter by barcode ([2331133](https://github.com/okrbest/okrservice/commit/23311334115c73127db4e7510d9b583cd62f9527))
 
 ## [2.10.0-rc.1](https://github.com/okrbest/okrservice/compare/2.10.0-rc.0...2.10.0-rc.1) (2025-04-04)
+
 ## [2.10.0-rc.0](https://github.com/okrbest/okrservice/compare/2.10.0-rc.0...2.10.0-rc.1) (2025-04-02)
+
 ## [2.9.5](https://github.com/okrbest/okrservice/compare/2.9.4...2.9.5) (2025-04-16)
 
 ### Bug Fixes
 
-* **facebook:** safe content ([989dbc7](https://github.com/okrbest/okrservice/commit/989dbc7a41121781323aabd9b8a197a31b74d8ba))
-* product chooser search by text ([3dd135b](https://github.com/okrbest/okrservice/commit/3dd135b8ad2e3044c9b1239d47d51bfb582589b7))
-* products query doubled ([52e0b6d](https://github.com/okrbest/okrservice/commit/52e0b6dbef2955cf1af327da2053c0018518fc11))
+- **facebook:** safe content ([989dbc7](https://github.com/okrbest/okrservice/commit/989dbc7a41121781323aabd9b8a197a31b74d8ba))
+- product chooser search by text ([3dd135b](https://github.com/okrbest/okrservice/commit/3dd135b8ad2e3044c9b1239d47d51bfb582589b7))
+- products query doubled ([52e0b6d](https://github.com/okrbest/okrservice/commit/52e0b6dbef2955cf1af327da2053c0018518fc11))
 
 ## [2.9.4](https://github.com/okrbest/okrservice/compare/2.9.3...2.9.4) (2025-04-15)
 
 ### Bug Fixes
 
-* **facebook:** display permalink even when content is empty ([6937ee0](https://github.com/okrbest/okrservice/commit/6937ee076b85f34ee364ac30a01fcf40ffbc58e6))
-* **inbox:** send a trigger to automations when a company is updated ([31974a7](https://github.com/okrbest/okrservice/commit/31974a730906e28627f78a32e28eaedfae919501))
-* **inbox:** send a trigger to automations when a company is updated. ([f8f8a30](https://github.com/okrbest/okrservice/commit/f8f8a306aaf83d4d71035e5bf137a56acf411bab))
-* products data save per row on sales ([#6001](https://github.com/okrbest/okrservice/issues/6001)) ([953fc3c](https://github.com/okrbest/okrservice/commit/953fc3c359af60397096824642dbac26a284f6c3))
+- **facebook:** display permalink even when content is empty ([6937ee0](https://github.com/okrbest/okrservice/commit/6937ee076b85f34ee364ac30a01fcf40ffbc58e6))
+- **inbox:** send a trigger to automations when a company is updated ([31974a7](https://github.com/okrbest/okrservice/commit/31974a730906e28627f78a32e28eaedfae919501))
+- **inbox:** send a trigger to automations when a company is updated. ([f8f8a30](https://github.com/okrbest/okrservice/commit/f8f8a306aaf83d4d71035e5bf137a56acf411bab))
+- products data save per row on sales ([#6001](https://github.com/okrbest/okrservice/issues/6001)) ([953fc3c](https://github.com/okrbest/okrservice/commit/953fc3c359af60397096824642dbac26a284f6c3))
 
 ## [2.9.3](https://github.com/okrbest/okrservice/compare/2.9.2...2.9.3) (2025-04-10)
 
 ### Features
 
-* number to mn word utils and mnt rates download cron ([#5996](https://github.com/okrbest/okrservice/issues/5996)) ([7662543](https://github.com/okrbest/okrservice/commit/766254317848d8fbdcc8dc842a01dd90ed4bec6c))
+- number to mn word utils and mnt rates download cron ([#5996](https://github.com/okrbest/okrservice/issues/5996)) ([7662543](https://github.com/okrbest/okrservice/commit/766254317848d8fbdcc8dc842a01dd90ed4bec6c))
 
 ### Bug Fixes
 
-* accountings invIncome save and t balance improve ([3ee3131](https://github.com/okrbest/okrservice/commit/3ee3131708798147cba9319a8b7cf8469c99a05a))
-* deal products form filter by barcode ([2331133](https://github.com/okrbest/okrservice/commit/23311334115c73127db4e7510d9b583cd62f9527))
+- accountings invIncome save and t balance improve ([3ee3131](https://github.com/okrbest/okrservice/commit/3ee3131708798147cba9319a8b7cf8469c99a05a))
+- deal products form filter by barcode ([2331133](https://github.com/okrbest/okrservice/commit/23311334115c73127db4e7510d9b583cd62f9527))
+
 ## [2.9.1](https://github.com/okrbest/okrservice/compare/2.10.0-rc.0...2.10.0-rc.1) (2025-04-04)
 
 ### Bug Fixes
 
-* add permission dealsRemoveProductsData and productsData filter by barcode ([e7d859a](https://github.com/okrbest/okrservice/commit/e7d859aa7c2f96b4dcb2298b8105b03a6097ab3c))
-* syncerkhet return with records ([caa532f](https://github.com/okrbest/okrservice/commit/caa532f37119cbbad1a86820fff621067f9dc56a))
-* update pluginsMap ([24f7a54](https://github.com/okrbest/okrservice/commit/24f7a54408a64995f74c0a0be557f15ed3e7de77))
+- add permission dealsRemoveProductsData and productsData filter by barcode ([e7d859a](https://github.com/okrbest/okrservice/commit/e7d859aa7c2f96b4dcb2298b8105b03a6097ab3c))
+- syncerkhet return with records ([caa532f](https://github.com/okrbest/okrservice/commit/caa532f37119cbbad1a86820fff621067f9dc56a))
+- update pluginsMap ([24f7a54](https://github.com/okrbest/okrservice/commit/24f7a54408a64995f74c0a0be557f15ed3e7de77))
 
 ## [2.10.0-rc.0](https://github.com/okrbest/okrservice/compare/2.9.0...2.10.0-rc.0) (2025-04-02)
 
 ### Bug Fixes
 
-* accountings invIncome save and t balance improve ([3ee3131](https://github.com/okrbest/okrservice/commit/3ee3131708798147cba9319a8b7cf8469c99a05a))
-* deal products form filter by barcode ([2331133](https://github.com/okrbest/okrservice/commit/23311334115c73127db4e7510d9b583cd62f9527))
+- accountings invIncome save and t balance improve ([3ee3131](https://github.com/okrbest/okrservice/commit/3ee3131708798147cba9319a8b7cf8469c99a05a))
+- deal products form filter by barcode ([2331133](https://github.com/okrbest/okrservice/commit/23311334115c73127db4e7510d9b583cd62f9527))
+
 ## [2.9.1](https://github.com/okrbest/okrservice/compare/2.9.0...2.9.1) (2025-04-04)
 
 ### Bug Fixes
 
-* add permission dealsRemoveProductsData and productsData filter by barcode ([e7d859a](https://github.com/okrbest/okrservice/commit/e7d859aa7c2f96b4dcb2298b8105b03a6097ab3c))
-* syncerkhet return with records ([caa532f](https://github.com/okrbest/okrservice/commit/caa532f37119cbbad1a86820fff621067f9dc56a))
-* update pluginsMap ([24f7a54](https://github.com/okrbest/okrservice/commit/24f7a54408a64995f74c0a0be557f15ed3e7de77))
+- add permission dealsRemoveProductsData and productsData filter by barcode ([e7d859a](https://github.com/okrbest/okrservice/commit/e7d859aa7c2f96b4dcb2298b8105b03a6097ab3c))
+- syncerkhet return with records ([caa532f](https://github.com/okrbest/okrservice/commit/caa532f37119cbbad1a86820fff621067f9dc56a))
+- update pluginsMap ([24f7a54](https://github.com/okrbest/okrservice/commit/24f7a54408a64995f74c0a0be557f15ed3e7de77))
 
 ## [2.9.0](https://github.com/okrbest/okrservice/compare/2.8.3...2.9.0) (2025-04-02)
 
 ### Features
 
-* add phone number and email validation in Call component ([b16e93a](https://github.com/okrbest/okrservice/commit/b16e93a3d2d09074dc3407cc85e65acb3481649d))
-* **cms:** Implement custom fields group functionality for CMS categories and pages, extending the existing custom fields ([#5987](https://github.com/okrbest/okrservice/issues/5987)) ([f82d136](https://github.com/okrbest/okrservice/commit/f82d136a73e67ca610d61f6863531b5142df7627))
-* **pms:** check-in & check-out ([9d89279](https://github.com/okrbest/okrservice/commit/9d8927908175e931a63a07bf6b4433764034909f))
+- add phone number and email validation in Call component ([b16e93a](https://github.com/okrbest/okrservice/commit/b16e93a3d2d09074dc3407cc85e65acb3481649d))
+- **cms:** Implement custom fields group functionality for CMS categories and pages, extending the existing custom fields ([#5987](https://github.com/okrbest/okrservice/issues/5987)) ([f82d136](https://github.com/okrbest/okrservice/commit/f82d136a73e67ca610d61f6863531b5142df7627))
+- **pms:** check-in & check-out ([9d89279](https://github.com/okrbest/okrservice/commit/9d8927908175e931a63a07bf6b4433764034909f))
 
 ### Bug Fixes
 
-* **bm:** sort on tour,itinerary, tour group ([d0ae651](https://github.com/okrbest/okrservice/commit/d0ae6512095dafea81f676ac23971cc903bd2987))
-* **cards:** null pointer on chart view ([bfb1a8c](https://github.com/okrbest/okrservice/commit/bfb1a8c1512315b7d787a75b271b56b57866d83a))
-* **core:** can't import unitPrice is string on products ([4cbeb4b](https://github.com/okrbest/okrservice/commit/4cbeb4b2d31f4f0026d58f7321bbeb387be732f7))
-* improve 2-way audio for multiple operators ([97940c1](https://github.com/okrbest/okrservice/commit/97940c170564ac3087430906a771644014e68695))
-* **pms:** pms rooms pagination ([6cef89b](https://github.com/okrbest/okrservice/commit/6cef89bd40471c78bc506d0801b62f3cf8b612b8))
-* **tms:** tour images and order fields ([234adb1](https://github.com/okrbest/okrservice/commit/234adb1403c13e85fa27cc3d4822a253868c7948))
-* yaml files ([858aaf5](https://github.com/okrbest/okrservice/commit/858aaf54707aff14f40981dc45092e4b29809656))
+- **bm:** sort on tour,itinerary, tour group ([d0ae651](https://github.com/okrbest/okrservice/commit/d0ae6512095dafea81f676ac23971cc903bd2987))
+- **cards:** null pointer on chart view ([bfb1a8c](https://github.com/okrbest/okrservice/commit/bfb1a8c1512315b7d787a75b271b56b57866d83a))
+- **core:** can't import unitPrice is string on products ([4cbeb4b](https://github.com/okrbest/okrservice/commit/4cbeb4b2d31f4f0026d58f7321bbeb387be732f7))
+- improve 2-way audio for multiple operators ([97940c1](https://github.com/okrbest/okrservice/commit/97940c170564ac3087430906a771644014e68695))
+- **pms:** pms rooms pagination ([6cef89b](https://github.com/okrbest/okrservice/commit/6cef89bd40471c78bc506d0801b62f3cf8b612b8))
+- **tms:** tour images and order fields ([234adb1](https://github.com/okrbest/okrservice/commit/234adb1403c13e85fa27cc3d4822a253868c7948))
+- yaml files ([858aaf5](https://github.com/okrbest/okrservice/commit/858aaf54707aff14f40981dc45092e4b29809656))
+
 ## [2.9.0-rc.0](https://github.com/okrbest/okrservice/compare/2.8.3...2.9.0) (2025-03-16)
 
 ### Features
 
-* Accountings improve ([#5966](https://github.com/okrbest/okrservice/issues/5966)) ([f7ef547](https://github.com/okrbest/okrservice/commit/f7ef5470f4afbcb5aed5f2044456f8642825b9a9))
-* improve sales-ui, improve loans, add plugin loansresearch ([#5968](https://github.com/okrbest/okrservice/issues/5968)) ([19e5397](https://github.com/okrbest/okrservice/commit/19e539708a082b40d7a6fb8ce52ae982fd0c7a93)), closes [#5895](https://github.com/okrbest/okrservice/issues/5895) [#5898](https://github.com/okrbest/okrservice/issues/5898)
+- Accountings improve ([#5966](https://github.com/okrbest/okrservice/issues/5966)) ([f7ef547](https://github.com/okrbest/okrservice/commit/f7ef5470f4afbcb5aed5f2044456f8642825b9a9))
+- improve sales-ui, improve loans, add plugin loansresearch ([#5968](https://github.com/okrbest/okrservice/issues/5968)) ([19e5397](https://github.com/okrbest/okrservice/commit/19e539708a082b40d7a6fb8ce52ae982fd0c7a93)), closes [#5895](https://github.com/okrbest/okrservice/issues/5895) [#5898](https://github.com/okrbest/okrservice/issues/5898)
 
 ### Bug Fixes
 
-* **pms:** room change permission ([442c512](https://github.com/okrbest/okrservice/commit/442c51245ead4c39851ebdbbe5e7154be9392203))
-* **pms:** room change permission ([20079a9](https://github.com/okrbest/okrservice/commit/20079a911276ea10a1ea0bdd5196c27a93eb4739))
-* **tms:** extra ([77cc177](https://github.com/okrbest/okrservice/commit/77cc177515d513823aa33f1e42ff819fde2cf27d))
-* **tms:** extrafields ([8e4ecfb](https://github.com/okrbest/okrservice/commit/8e4ecfb0958a5ec06aff2db7e68301e401dcccc1))
+- **pms:** room change permission ([442c512](https://github.com/okrbest/okrservice/commit/442c51245ead4c39851ebdbbe5e7154be9392203))
+- **pms:** room change permission ([20079a9](https://github.com/okrbest/okrservice/commit/20079a911276ea10a1ea0bdd5196c27a93eb4739))
+- **tms:** extra ([77cc177](https://github.com/okrbest/okrservice/commit/77cc177515d513823aa33f1e42ff819fde2cf27d))
+- **tms:** extrafields ([8e4ecfb](https://github.com/okrbest/okrservice/commit/8e4ecfb0958a5ec06aff2db7e68301e401dcccc1))
 
 ## [2.9.0-rc.0](https://github.com/okrbest/okrservice/compare/2.8.0...2.9.0-rc.0) (2025-03-16)
+
 ## [2.8.3](https://github.com/okrbest/okrservice/compare/2.8.2...2.8.3) (2025-03-26)
 
 ### Bug Fixes
 
-* temp sales to erkhet without debit ([bb4ab11](https://github.com/okrbest/okrservice/commit/bb4ab117054965bed07694c29a30809444b56b07))
+- temp sales to erkhet without debit ([bb4ab11](https://github.com/okrbest/okrservice/commit/bb4ab117054965bed07694c29a30809444b56b07))
 
 ## [2.8.2](https://github.com/okrbest/okrservice/compare/2.8.1...2.8.2) (2025-03-24)
 
 ### Features
 
-* **cms:** Introduce custom post types and field groups ([#5982](https://github.com/okrbest/okrservice/issues/5982)) ([adfd12d](https://github.com/okrbest/okrservice/commit/adfd12dbbf1b36193ba000f59f208e8f21da5045))
+- **cms:** Introduce custom post types and field groups ([#5982](https://github.com/okrbest/okrservice/issues/5982)) ([adfd12d](https://github.com/okrbest/okrservice/commit/adfd12dbbf1b36193ba000f59f208e8f21da5045))
 
 ### Bug Fixes
 
-* **calls:** check timezone ([0ab4c38](https://github.com/okrbest/okrservice/commit/0ab4c3870fc4c2e8abdafcaa0d2150f6b8d4266b))
-* **payment:** trigger payment success callback on manual status check ([#5983](https://github.com/okrbest/okrservice/issues/5983)) ([277d493](https://github.com/okrbest/okrservice/commit/277d4939f8cfa5571ce3ded0cedff6584084881b))
-* posclient from payment settlement, when hasnt ebarimt ([16e840a](https://github.com/okrbest/okrservice/commit/16e840a1abec32f7e3b9c76a078d4e1308c95127))
-* posclient types ([04b9589](https://github.com/okrbest/okrservice/commit/04b9589b7d0f7a404ffa94835745dee324cf1ef4))
-* **tms:** tour images and order fields ([00013c6](https://github.com/okrbest/okrservice/commit/00013c69e44fc97b080c39e9bc53616aca07e342))
+- **calls:** check timezone ([0ab4c38](https://github.com/okrbest/okrservice/commit/0ab4c3870fc4c2e8abdafcaa0d2150f6b8d4266b))
+- **payment:** trigger payment success callback on manual status check ([#5983](https://github.com/okrbest/okrservice/issues/5983)) ([277d493](https://github.com/okrbest/okrservice/commit/277d4939f8cfa5571ce3ded0cedff6584084881b))
+- posclient from payment settlement, when hasnt ebarimt ([16e840a](https://github.com/okrbest/okrservice/commit/16e840a1abec32f7e3b9c76a078d4e1308c95127))
+- posclient types ([04b9589](https://github.com/okrbest/okrservice/commit/04b9589b7d0f7a404ffa94835745dee324cf1ef4))
+- **tms:** tour images and order fields ([00013c6](https://github.com/okrbest/okrservice/commit/00013c69e44fc97b080c39e9bc53616aca07e342))
 
 ## [2.8.1](https://github.com/okrbest/okrservice/compare/2.8.0...2.8.1) (2025-03-16)
 
 ### Reverts
 
-* release.yaml ([276288e](https://github.com/okrbest/okrservice/commit/276288e94d5c7d7f156b329ef59da96f5ae4247d))
+- release.yaml ([276288e](https://github.com/okrbest/okrservice/commit/276288e94d5c7d7f156b329ef59da96f5ae4247d))
 
 ## [2.8.0](https://github.com/okrbest/okrservice/compare/2.8.0-rc.0...2.8.0) (2025-03-16)
 
 ### Features
 
-* **cloudflare call:** Add cloudflare call in widget and web call ([b052383](https://github.com/okrbest/okrservice/commit/b0523830458e593c229c9f0f5098626932a1dc0b))
-* Unit_Price remove from sendSalesLine on msm ([8105816](https://github.com/okrbest/okrservice/commit/81058160f7b4e11e0888b5a6155d8a42b4a72505))
+- **cloudflare call:** Add cloudflare call in widget and web call ([b052383](https://github.com/okrbest/okrservice/commit/b0523830458e593c229c9f0f5098626932a1dc0b))
+- Unit_Price remove from sendSalesLine on msm ([8105816](https://github.com/okrbest/okrservice/commit/81058160f7b4e11e0888b5a6155d8a42b4a72505))
 
 ### Bug Fixes
 
-* can't filter by segment customers & can't display custom property group name in segment property list ([f597c94](https://github.com/okrbest/okrservice/commit/f597c9449f28eda58cfc7c68410933331fdaab40))
-* core utils add getFullDate and return getPureDate is clean timeZone ([bac9df3](https://github.com/okrbest/okrservice/commit/bac9df3a80206b745dd2a5d8754317c849f4aca1))
-* pos cover end date ([5edd6ce](https://github.com/okrbest/okrservice/commit/5edd6cebaa4f1c3dae4898efecfa5f2c18ca292a))
+- can't filter by segment customers & can't display custom property group name in segment property list ([f597c94](https://github.com/okrbest/okrservice/commit/f597c9449f28eda58cfc7c68410933331fdaab40))
+- core utils add getFullDate and return getPureDate is clean timeZone ([bac9df3](https://github.com/okrbest/okrservice/commit/bac9df3a80206b745dd2a5d8754317c849f4aca1))
+- pos cover end date ([5edd6ce](https://github.com/okrbest/okrservice/commit/5edd6cebaa4f1c3dae4898efecfa5f2c18ca292a))
 
 ### Reverts
 
-* lost code from commit id: b052383 ([9e9170b](https://github.com/okrbest/okrservice/commit/9e9170b4fbbc20010f66026c78dfedf954ef178c))
+- lost code from commit id: b052383 ([9e9170b](https://github.com/okrbest/okrservice/commit/9e9170b4fbbc20010f66026c78dfedf954ef178c))
+
 ## [2.8.0-rc.0](https://github.com/okrbest/okrservice/compare/2.8.0-rc.0...2.8.0) (2025-03-05)
 
 ### Features
 
-* **cloudflare call:** Add cloudflare call in widget and web call ([#5960](https://github.com/okrbest/okrservice/issues/5960)) ([19cbfbf](https://github.com/okrbest/okrservice/commit/19cbfbf7967527f7997a0dff04c9aa7a527a7f10))
+- **cloudflare call:** Add cloudflare call in widget and web call ([#5960](https://github.com/okrbest/okrservice/issues/5960)) ([19cbfbf](https://github.com/okrbest/okrservice/commit/19cbfbf7967527f7997a0dff04c9aa7a527a7f10))
 
 ### Bug Fixes
 
-* **inbox:** minor query adjustment for getStarted condition ([#5938](https://github.com/okrbest/okrservice/issues/5938)) ([3a2cd16](https://github.com/okrbest/okrservice/commit/3a2cd161579e738ec4f798bbbf5cca281d7a7237))
+- **inbox:** minor query adjustment for getStarted condition ([#5938](https://github.com/okrbest/okrservice/issues/5938)) ([3a2cd16](https://github.com/okrbest/okrservice/commit/3a2cd161579e738ec4f798bbbf5cca281d7a7237))
 
 ### Reverts
 
-* release.yaml to rc ([d7e04db](https://github.com/okrbest/okrservice/commit/d7e04db7f495c5e085a5fcb956b60b2da6832236))
+- release.yaml to rc ([d7e04db](https://github.com/okrbest/okrservice/commit/d7e04db7f495c5e085a5fcb956b60b2da6832236))
+
 ## [2.7.1](https://github.com/okrbest/okrservice/compare/2.8.0-rc.0...2.8.0) (2025-03-10)
 
 ### Features
 
-* core login mutation improve for activedirector ([171ba02](https://github.com/okrbest/okrservice/commit/171ba026d0b525f252aec8133509569f47564a42))
-* **khanbank:** implement IBAN ([#5963](https://github.com/okrbest/okrservice/issues/5963)) ([afa5cc7](https://github.com/okrbest/okrservice/commit/afa5cc73ccf572805bc78e9c28119062796339a6))
+- core login mutation improve for activedirector ([171ba02](https://github.com/okrbest/okrservice/commit/171ba026d0b525f252aec8133509569f47564a42))
+- **khanbank:** implement IBAN ([#5963](https://github.com/okrbest/okrservice/issues/5963)) ([afa5cc7](https://github.com/okrbest/okrservice/commit/afa5cc73ccf572805bc78e9c28119062796339a6))
 
 ### Bug Fixes
 
-* **calls:** date format ([82c5c8a](https://github.com/okrbest/okrservice/commit/82c5c8a6043acf35c695fc18e50f4d8efe9a7838))
-* msdynamic with discount soap ([6cfb71c](https://github.com/okrbest/okrservice/commit/6cfb71c20dacd5eb0a7b283387e068bc2aca9512))
+- **calls:** date format ([82c5c8a](https://github.com/okrbest/okrservice/commit/82c5c8a6043acf35c695fc18e50f4d8efe9a7838))
+- msdynamic with discount soap ([6cfb71c](https://github.com/okrbest/okrservice/commit/6cfb71c20dacd5eb0a7b283387e068bc2aca9512))
 
 ## [2.8.0-rc.0](https://github.com/okrbest/okrservice/compare/2.7.0...2.8.0-rc.0) (2025-03-05)
 
 ### Features
 
-* **cloudflare call:** Add cloudflare call in widget and web call ([#5960](https://github.com/okrbest/okrservice/issues/5960)) ([19cbfbf](https://github.com/okrbest/okrservice/commit/19cbfbf7967527f7997a0dff04c9aa7a527a7f10))
+- **cloudflare call:** Add cloudflare call in widget and web call ([#5960](https://github.com/okrbest/okrservice/issues/5960)) ([19cbfbf](https://github.com/okrbest/okrservice/commit/19cbfbf7967527f7997a0dff04c9aa7a527a7f10))
 
 ### Bug Fixes
 
-* **inbox:** minor query adjustment for getStarted condition ([#5938](https://github.com/okrbest/okrservice/issues/5938)) ([3a2cd16](https://github.com/okrbest/okrservice/commit/3a2cd161579e738ec4f798bbbf5cca281d7a7237))
+- **inbox:** minor query adjustment for getStarted condition ([#5938](https://github.com/okrbest/okrservice/issues/5938)) ([3a2cd16](https://github.com/okrbest/okrservice/commit/3a2cd161579e738ec4f798bbbf5cca281d7a7237))
 
 ### Reverts
 
-* release.yaml to rc ([d7e04db](https://github.com/okrbest/okrservice/commit/d7e04db7f495c5e085a5fcb956b60b2da6832236))
+- release.yaml to rc ([d7e04db](https://github.com/okrbest/okrservice/commit/d7e04db7f495c5e085a5fcb956b60b2da6832236))
 
 ## [2.7.0](https://github.com/okrbest/okrservice/compare/2.7.0-rc.0...2.7.0) (2025-03-05)
 
 ### Features
 
-* add cms _id in plugin pages items field ([7c693f1](https://github.com/okrbest/okrservice/commit/7c693f193100d3936505560913d58210c0201d8e))
-* **core:** introduce OAuth 2.0 client management ([#5949](https://github.com/okrbest/okrservice/issues/5949)) ([18328f0](https://github.com/okrbest/okrservice/commit/18328f002fce6918887d836d6c710d290f38bc32))
-* **payment:** add wechat and add authorization in payments ([#5958](https://github.com/okrbest/okrservice/issues/5958)) ([72ddff6](https://github.com/okrbest/okrservice/commit/72ddff6db8d17ae49ec64f1133b531ff2cca8b37))
-* **payment:** create payment transaction if paymentId is present in invoice ([6f2c238](https://github.com/okrbest/okrservice/commit/6f2c238ee3ff38b9405337c46fdee694e7364fa3))
+- add cms \_id in plugin pages items field ([7c693f1](https://github.com/okrbest/okrservice/commit/7c693f193100d3936505560913d58210c0201d8e))
+- **core:** introduce OAuth 2.0 client management ([#5949](https://github.com/okrbest/okrservice/issues/5949)) ([18328f0](https://github.com/okrbest/okrservice/commit/18328f002fce6918887d836d6c710d290f38bc32))
+- **payment:** add wechat and add authorization in payments ([#5958](https://github.com/okrbest/okrservice/issues/5958)) ([72ddff6](https://github.com/okrbest/okrservice/commit/72ddff6db8d17ae49ec64f1133b531ff2cca8b37))
+- **payment:** create payment transaction if paymentId is present in invoice ([6f2c238](https://github.com/okrbest/okrservice/commit/6f2c238ee3ff38b9405337c46fdee694e7364fa3))
 
 ### Bug Fixes
 
-* **bm:** add ability set image tag on commit id ([aab150e](https://github.com/okrbest/okrservice/commit/aab150e6345f8470ac0da24282e5d689b12f81a8))
-* **cards:** checklists subscriptions ([e5f9ef9](https://github.com/okrbest/okrservice/commit/e5f9ef92d7e12ef76af2606a77f45e3aca46e706))
-* **cards:** department supervisor permission on cards ([9e4eaa6](https://github.com/okrbest/okrservice/commit/9e4eaa63d2942ab77fc73f5babbf83165bc9abd0))
-* **pms:** room change permission ([09288a8](https://github.com/okrbest/okrservice/commit/09288a80e2d8a830393a78d1be55fafad3d5853c))
-* **pms:** room change permission ([c21d3a0](https://github.com/okrbest/okrservice/commit/c21d3a0808ca3db79b0d8f32e6f4f6c7c2b6f7f2))
-* **pms:** ui numbers ([e9bcd69](https://github.com/okrbest/okrservice/commit/e9bcd69f3bf2dfec6b9f874ce1b5c3eff62bf62a))
-* pos order history on detail payments ([5866405](https://github.com/okrbest/okrservice/commit/586640523a64e44867d49df8159c6459161a7445))
-* posclient product sync allow null taxRule ([f510674](https://github.com/okrbest/okrservice/commit/f510674084e0c9ca1a40f4c5633e4a6fc5433a74))
-* poscProducts totalCount query ([946830c](https://github.com/okrbest/okrservice/commit/946830cf4a952d3a3ec903150407d89ecc5f8d2b))
-* similiraties products sort ([fd3e80a](https://github.com/okrbest/okrservice/commit/fd3e80ae534a67d4406c94afec601043c3571cbe))
-* **tms,pms:** saas configs ([c732eac](https://github.com/okrbest/okrservice/commit/c732eac67fcb5257e66180a34cbff1936a3e7166))
-* **tms:** config & fields channged ([d4a8367](https://github.com/okrbest/okrservice/commit/d4a8367b9333bf6e0d8eb03ed468d31caa699ec1))
-* **tms:** fields ([1d1358a](https://github.com/okrbest/okrservice/commit/1d1358ad30100cee58bc9a5bebd2e1e2f1be71c2))
+- **bm:** add ability set image tag on commit id ([aab150e](https://github.com/okrbest/okrservice/commit/aab150e6345f8470ac0da24282e5d689b12f81a8))
+- **cards:** checklists subscriptions ([e5f9ef9](https://github.com/okrbest/okrservice/commit/e5f9ef92d7e12ef76af2606a77f45e3aca46e706))
+- **cards:** department supervisor permission on cards ([9e4eaa6](https://github.com/okrbest/okrservice/commit/9e4eaa63d2942ab77fc73f5babbf83165bc9abd0))
+- **pms:** room change permission ([09288a8](https://github.com/okrbest/okrservice/commit/09288a80e2d8a830393a78d1be55fafad3d5853c))
+- **pms:** room change permission ([c21d3a0](https://github.com/okrbest/okrservice/commit/c21d3a0808ca3db79b0d8f32e6f4f6c7c2b6f7f2))
+- **pms:** ui numbers ([e9bcd69](https://github.com/okrbest/okrservice/commit/e9bcd69f3bf2dfec6b9f874ce1b5c3eff62bf62a))
+- pos order history on detail payments ([5866405](https://github.com/okrbest/okrservice/commit/586640523a64e44867d49df8159c6459161a7445))
+- posclient product sync allow null taxRule ([f510674](https://github.com/okrbest/okrservice/commit/f510674084e0c9ca1a40f4c5633e4a6fc5433a74))
+- poscProducts totalCount query ([946830c](https://github.com/okrbest/okrservice/commit/946830cf4a952d3a3ec903150407d89ecc5f8d2b))
+- similiraties products sort ([fd3e80a](https://github.com/okrbest/okrservice/commit/fd3e80ae534a67d4406c94afec601043c3571cbe))
+- **tms,pms:** saas configs ([c732eac](https://github.com/okrbest/okrservice/commit/c732eac67fcb5257e66180a34cbff1936a3e7166))
+- **tms:** config & fields channged ([d4a8367](https://github.com/okrbest/okrservice/commit/d4a8367b9333bf6e0d8eb03ed468d31caa699ec1))
+- **tms:** fields ([1d1358a](https://github.com/okrbest/okrservice/commit/1d1358ad30100cee58bc9a5bebd2e1e2f1be71c2))
 
 ## [2.7.0-rc.0](https://github.com/okrbest/okrservice/compare/2.6.0...2.7.0-rc.0) (2025-02-16)
 
 ### Features
 
-* add TimePicker component and combineDateTime utility for improved time handling ([#5903](https://github.com/okrbest/okrservice/issues/5903)) ([f2b1449](https://github.com/okrbest/okrservice/commit/f2b1449546ce48fb95a6197030666a45ee450f58))
-* added orderNotf on pos ([#5919](https://github.com/okrbest/okrservice/issues/5919)) ([807781f](https://github.com/okrbest/okrservice/commit/807781ffc0efbd9aa994d61b5de672a72e35083b))
-* Exchange rates ([#5932](https://github.com/okrbest/okrservice/issues/5932)) ([c6ffbb9](https://github.com/okrbest/okrservice/commit/c6ffbb9b1a91e50f499309350c5e611811ed7c30))
+- add TimePicker component and combineDateTime utility for improved time handling ([#5903](https://github.com/okrbest/okrservice/issues/5903)) ([f2b1449](https://github.com/okrbest/okrservice/commit/f2b1449546ce48fb95a6197030666a45ee450f58))
+- added orderNotf on pos ([#5919](https://github.com/okrbest/okrservice/issues/5919)) ([807781f](https://github.com/okrbest/okrservice/commit/807781ffc0efbd9aa994d61b5de672a72e35083b))
+- Exchange rates ([#5932](https://github.com/okrbest/okrservice/issues/5932)) ([c6ffbb9](https://github.com/okrbest/okrservice/commit/c6ffbb9b1a91e50f499309350c5e611811ed7c30))
 
 ### Bug Fixes
 
-* improvement for pos ([#5909](https://github.com/okrbest/okrservice/issues/5909)) ([d5d082f](https://github.com/okrbest/okrservice/commit/d5d082ff279592a2507d72641f49fdec1d511575))
-* **messenger:** add get-started ([8bdeb07](https://github.com/okrbest/okrservice/commit/8bdeb077df264dc8a561b04b97027de1d6cbb8dd))
-* **messenger:** add persistent menu in bot ([b5e7c5e](https://github.com/okrbest/okrservice/commit/b5e7c5e3d6ea037874c0fc84dd92e4c5b4495a10))
+- improvement for pos ([#5909](https://github.com/okrbest/okrservice/issues/5909)) ([d5d082f](https://github.com/okrbest/okrservice/commit/d5d082ff279592a2507d72641f49fdec1d511575))
+- **messenger:** add get-started ([8bdeb07](https://github.com/okrbest/okrservice/commit/8bdeb077df264dc8a561b04b97027de1d6cbb8dd))
+- **messenger:** add persistent menu in bot ([b5e7c5e](https://github.com/okrbest/okrservice/commit/b5e7c5e3d6ea037874c0fc84dd92e4c5b4495a10))
 
 ### Performance Improvements
 
-* **messenger:** hide menu when clicked on persistent ([9a66ca3](https://github.com/okrbest/okrservice/commit/9a66ca3daca65ea41d1fedb11ab2c4c325b6fb32))
-* **messenger:** move getStarted and persistent menu in message sender ([3ca0ae6](https://github.com/okrbest/okrservice/commit/3ca0ae6ecd06d5cd005ba116500e66dd0368090f))
-* **messenger:** update messenger bot ([d80cbd7](https://github.com/okrbest/okrservice/commit/d80cbd7140a2cd39413849956d00b98ad40e3f1d))
+- **messenger:** hide menu when clicked on persistent ([9a66ca3](https://github.com/okrbest/okrservice/commit/9a66ca3daca65ea41d1fedb11ab2c4c325b6fb32))
+- **messenger:** move getStarted and persistent menu in message sender ([3ca0ae6](https://github.com/okrbest/okrservice/commit/3ca0ae6ecd06d5cd005ba116500e66dd0368090f))
+- **messenger:** update messenger bot ([d80cbd7](https://github.com/okrbest/okrservice/commit/d80cbd7140a2cd39413849956d00b98ad40e3f1d))
 
 ## [2.6.0](https://github.com/okrbest/okrservice/compare/2.5.1...2.6.0) (2025-02-16)
 
 ### Features
 
-* add customers & labels to cards import ([d5cc4f7](https://github.com/okrbest/okrservice/commit/d5cc4f74e2d7a8b07ca86103d876b2dcd748d2a7))
-* msdynamic ([eb8ee2f](https://github.com/okrbest/okrservice/commit/eb8ee2f782de5bfcb861515181648530660d1940))
-* **pms:** insight ([116d5f0](https://github.com/okrbest/okrservice/commit/116d5f075a911d221f7a818238c4d6dbf8c1c2b0))
+- add customers & labels to cards import ([d5cc4f7](https://github.com/okrbest/okrservice/commit/d5cc4f74e2d7a8b07ca86103d876b2dcd748d2a7))
+- msdynamic ([eb8ee2f](https://github.com/okrbest/okrservice/commit/eb8ee2f782de5bfcb861515181648530660d1940))
+- **pms:** insight ([116d5f0](https://github.com/okrbest/okrservice/commit/116d5f075a911d221f7a818238c4d6dbf8c1c2b0))
 
 ### Bug Fixes
 
-* **cards:** activityLog refetch in stages moving ([0037bc3](https://github.com/okrbest/okrservice/commit/0037bc3b2c78bb91d2286675e57d63e985453868))
-* **cards:** deal loading cause of null tag ([c246b02](https://github.com/okrbest/okrservice/commit/c246b026950af4e216f76f74812f5ff4600dd604))
-* **cards:** the same data between list and detail views ([9f94c0f](https://github.com/okrbest/okrservice/commit/9f94c0f1b3ce5a71d8959c37f51429091c2b5dc7))
-* **logs:** can't display changes in ui ([1d95866](https://github.com/okrbest/okrservice/commit/1d958668fe35707b7bd3bd768b1ed128dd60a351))
-* **pms:** clear codes ([c537d0a](https://github.com/okrbest/okrservice/commit/c537d0a08cf391000ebdfa879eb087605f5acf50))
-* **pms:** logo in admin ([fa5140a](https://github.com/okrbest/okrservice/commit/fa5140a68a7d292f4bb635ade5e476f2e010123c))
-* **pms:** names ([333a882](https://github.com/okrbest/okrservice/commit/333a882060b73799ea55308cd30bd4a1cd20d7ab))
-* **pms:** names ([88b265e](https://github.com/okrbest/okrservice/commit/88b265ea642650002a7847f65d45f82f223a51e8))
-* **pms:** room category ([dfc5303](https://github.com/okrbest/okrservice/commit/dfc5303ab56ea9bfa7be1791d54a89d708c7da0d))
-* **tms,pms:** discount & some fields ([b9d3437](https://github.com/okrbest/okrservice/commit/b9d34374908b99987fb7db37d394fb241f90b943))
-* **tms,pms:** report & config ([bb475c4](https://github.com/okrbest/okrservice/commit/bb475c40f904662a49a0c97407a65066e23825d5))
-* **tms:** code quality ([21693b6](https://github.com/okrbest/okrservice/commit/21693b6077567370ef6069c9d723675db5a21a2a))
-* **tms:** filter ([9b990b9](https://github.com/okrbest/okrservice/commit/9b990b92dcc9d3871d086cf4d4550fe5583a58f9))
-* **tms:** logo in admin ([a43c378](https://github.com/okrbest/okrservice/commit/a43c378052397c4ad153867165d72a0fad176a9d))
+- **cards:** activityLog refetch in stages moving ([0037bc3](https://github.com/okrbest/okrservice/commit/0037bc3b2c78bb91d2286675e57d63e985453868))
+- **cards:** deal loading cause of null tag ([c246b02](https://github.com/okrbest/okrservice/commit/c246b026950af4e216f76f74812f5ff4600dd604))
+- **cards:** the same data between list and detail views ([9f94c0f](https://github.com/okrbest/okrservice/commit/9f94c0f1b3ce5a71d8959c37f51429091c2b5dc7))
+- **logs:** can't display changes in ui ([1d95866](https://github.com/okrbest/okrservice/commit/1d958668fe35707b7bd3bd768b1ed128dd60a351))
+- **pms:** clear codes ([c537d0a](https://github.com/okrbest/okrservice/commit/c537d0a08cf391000ebdfa879eb087605f5acf50))
+- **pms:** logo in admin ([fa5140a](https://github.com/okrbest/okrservice/commit/fa5140a68a7d292f4bb635ade5e476f2e010123c))
+- **pms:** names ([333a882](https://github.com/okrbest/okrservice/commit/333a882060b73799ea55308cd30bd4a1cd20d7ab))
+- **pms:** names ([88b265e](https://github.com/okrbest/okrservice/commit/88b265ea642650002a7847f65d45f82f223a51e8))
+- **pms:** room category ([dfc5303](https://github.com/okrbest/okrservice/commit/dfc5303ab56ea9bfa7be1791d54a89d708c7da0d))
+- **tms,pms:** discount & some fields ([b9d3437](https://github.com/okrbest/okrservice/commit/b9d34374908b99987fb7db37d394fb241f90b943))
+- **tms,pms:** report & config ([bb475c4](https://github.com/okrbest/okrservice/commit/bb475c40f904662a49a0c97407a65066e23825d5))
+- **tms:** code quality ([21693b6](https://github.com/okrbest/okrservice/commit/21693b6077567370ef6069c9d723675db5a21a2a))
+- **tms:** filter ([9b990b9](https://github.com/okrbest/okrservice/commit/9b990b92dcc9d3871d086cf4d4550fe5583a58f9))
+- **tms:** logo in admin ([a43c378](https://github.com/okrbest/okrservice/commit/a43c378052397c4ad153867165d72a0fad176a9d))
+
 ## [2.6.0-rc.0](https://github.com/okrbest/okrservice/compare/2.5.1...2.6.0) (2025-02-04)
 
 ### Features
 
-* **messenger:** add bot functionality to Erxes Messenger widget ([71b9b92](https://github.com/okrbest/okrservice/commit/71b9b92abaee4cd23456eb93c5b25137d6409776))
+- **messenger:** add bot functionality to Erxes Messenger widget ([71b9b92](https://github.com/okrbest/okrservice/commit/71b9b92abaee4cd23456eb93c5b25137d6409776))
 
 ### Bug Fixes
 
-* **cards:** make customerName visible in documents ([d0e5b9e](https://github.com/okrbest/okrservice/commit/d0e5b9ebc0af24a9a70399b660356e9b49c03508))
-* **pms:** cleaning default ([076d1bb](https://github.com/okrbest/okrservice/commit/076d1bb65ddcd82c7237718028674d9815a7947c))
-* **pms:** product category settings ([9b9c343](https://github.com/okrbest/okrservice/commit/9b9c3432abf0fb38ffb4d55f3ea81120784e9f6a))
+- **cards:** make customerName visible in documents ([d0e5b9e](https://github.com/okrbest/okrservice/commit/d0e5b9ebc0af24a9a70399b660356e9b49c03508))
+- **pms:** cleaning default ([076d1bb](https://github.com/okrbest/okrservice/commit/076d1bb65ddcd82c7237718028674d9815a7947c))
+- **pms:** product category settings ([9b9c343](https://github.com/okrbest/okrservice/commit/9b9c3432abf0fb38ffb4d55f3ea81120784e9f6a))
 
 ## [2.6.0-rc.0](https://github.com/okrbest/okrservice/compare/2.5.0...2.6.0-rc.0) (2025-02-04)
 

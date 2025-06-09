@@ -1,5 +1,5 @@
 import { __ } from "coreui/utils";
-import { router } from "@erxes/ui/src/utils";
+import { router } from "../utils/core";
 
 import Box from "./Box";
 import FilterByParams from "./FilterByParams";
@@ -10,7 +10,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface IProps {
-  tags: ITag[];
+  tags: any[];
   counts: any;
   manageUrl: string;
   loading: boolean;

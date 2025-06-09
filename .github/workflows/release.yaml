@@ -2,7 +2,7 @@ name: Publish Release
 on:
   push:
     tags:
-      - '*'
+      - "*"
 jobs:
   release:
     runs-on: ubuntu-22.04
@@ -609,7 +609,8 @@ jobs:
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-inbox-ui
           s3://okrservice-release-plugins/uis/plugin-inbox-ui/${GITHUB_REF#refs/tags/}/
       - name: automations ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-automations-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-automations-ui
           s3://okrservice-release-plugins/uis/plugin-automations-ui/${GITHUB_REF#refs/tags/}/
       - name: calendar ui
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-calendar-ui
@@ -635,7 +636,8 @@ jobs:
           s3://okrservice-release-plugins/uis/plugin-purchases-ui/${GITHUB_REF#refs/tags/}/
 
       - name: clientportal ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-clientportal-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-clientportal-ui
           s3://okrservice-release-plugins/uis/plugin-clientportal-ui/${GITHUB_REF#refs/tags/}/
       - name: contacts ui
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-contacts-ui
@@ -644,7 +646,8 @@ jobs:
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-dashboard-ui
           s3://okrservice-release-plugins/uis/plugin-dashboard-ui/${GITHUB_REF#refs/tags/}/
       - name: emailtemplates ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-emailtemplates-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-emailtemplates-ui
           s3://okrservice-release-plugins/uis/plugin-emailtemplates-ui/${GITHUB_REF#refs/tags/}/
       - name: engages ui
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-engages-ui
@@ -653,7 +656,8 @@ jobs:
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-forms-ui
           s3://okrservice-release-plugins/uis/plugin-forms-ui/${GITHUB_REF#refs/tags/}/
       - name: knowledgebase ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-knowledgebase-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-knowledgebase-ui
           s3://okrservice-release-plugins/uis/plugin-knowledgebase-ui/${GITHUB_REF#refs/tags/}/
       - name: logs ui
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-logs-ui
@@ -662,7 +666,8 @@ jobs:
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-loyalties-ui
           s3://okrservice-release-plugins/uis/plugin-loyalties-ui/${GITHUB_REF#refs/tags/}/
       - name: notifications ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-notifications-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-notifications-ui
           s3://okrservice-release-plugins/uis/plugin-notifications-ui/${GITHUB_REF#refs/tags/}/
       - name: webhooks ui
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-webhooks-ui
@@ -701,7 +706,8 @@ jobs:
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-processes-ui
           s3://okrservice-release-plugins/uis/plugin-processes-ui/${GITHUB_REF#refs/tags/}/
       - name: inventories ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-inventories-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-inventories-ui
           s3://okrservice-release-plugins/uis/plugin-inventories-ui/${GITHUB_REF#refs/tags/}/
       - name: imap ui
         run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-imap-ui
@@ -748,7 +754,8 @@ jobs:
           s3://okrservice-release-plugins/uis/plugin-savings-ui/${GITHUB_REF#refs/tags/}/
 
       - name: productplaces ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-productplaces-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-productplaces-ui
           s3://okrservice-release-plugins/uis/plugin-productplaces-ui/${GITHUB_REF#refs/tags/}/
 
       - name: meetings ui
@@ -768,7 +775,8 @@ jobs:
           s3://okrservice-release-plugins/uis/plugin-zalo-ui/${GITHUB_REF#refs/tags/}/
 
       - name: riskassessment ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-riskassessment-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-riskassessment-ui
           s3://okrservice-release-plugins/uis/plugin-riskassessment-ui/${GITHUB_REF#refs/tags/}/
 
       - name: assets ui
@@ -796,11 +804,13 @@ jobs:
           s3://okrservice-release-plugins/uis/plugin-calls-ui/${GITHUB_REF#refs/tags/}/
 
       - name: syncpolaris ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-syncpolaris-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-syncpolaris-ui
           s3://okrservice-release-plugins/uis/plugin-syncpolaris-ui/${GITHUB_REF#refs/tags/}/
 
       - name: multierkhet ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-multierkhet-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-multierkhet-ui
           s3://okrservice-release-plugins/uis/plugin-multierkhet-ui/${GITHUB_REF#refs/tags/}/
 
       - name: insight ui
@@ -812,13 +822,16 @@ jobs:
           s3://okrservice-release-plugins/uis/plugin-khanbank-ui/${GITHUB_REF#refs/tags/}/
 
       - name: burenscoring ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-burenscoring-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-burenscoring-ui
           s3://okrservice-release-plugins/uis/plugin-burenscoring-ui/${GITHUB_REF#refs/tags/}/
 
       - name: activedirectory ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-activedirectory-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-activedirectory-ui
           s3://okrservice-release-plugins/uis/plugin-activedirectory-ui/${GITHUB_REF#refs/tags/}/
 
       - name: cloudflarecalls ui
-        run: aws s3 sync s3://okrservice-master-plugins/uis/plugin-cloudflarecalls-ui
+        run:
+          aws s3 sync s3://okrservice-master-plugins/uis/plugin-cloudflarecalls-ui
           s3://okrservice-release-plugins/uis/plugin-cloudflarecalls-ui/${GITHUB_REF#refs/tags/}/

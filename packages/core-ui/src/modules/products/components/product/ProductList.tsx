@@ -24,6 +24,7 @@ import TemporarySegment from "@erxes/ui-segments/src/components/filter/Temporary
 import { Title } from "@erxes/ui/src/styles/main";
 import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
 import { isEnabled } from "@erxes/ui/src/utils/core";
+import ConditionPopover from "../config/condition/ConditionPopover";
 
 interface IProps {
   queryParams: any;
@@ -161,6 +162,7 @@ const List: React.FC<IProps> = (props) => {
               <th>{__("Category")}</th>
               <th>{__("Unit Price")}</th>
               <th>{__("Tags")}</th>
+              <th>{__("Bundle")}</th>
               <th>{__("Actions")}</th>
             </tr>
           </thead>
@@ -270,6 +272,17 @@ const List: React.FC<IProps> = (props) => {
             targets={bulk}
             trigger={tagButton}
             perPage={1000}
+            refetchQueries={["productCountByTags"]}
+          />
+          <ConditionPopover
+            successCallback={emptyBulk}
+            trigger={
+              <Button btnStyle="success" icon="tag-alt">
+                Bundle
+              </Button>
+            }
+            singleSelect={true}
+            targets={bulk}
             refetchQueries={["productCountByTags"]}
           />
 
