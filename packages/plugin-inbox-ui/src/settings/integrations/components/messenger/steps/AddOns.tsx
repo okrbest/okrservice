@@ -81,6 +81,7 @@ class AddOns extends React.Component<Props, State> {
       url: item.credentials.url,
       buttonText: item.credentials.buttonText,
       description: item.credentials.description,
+      openInNewWindow: item.credentials.openInNewWindow,
     }));
     const initialLeads = leadMessengerApps.map(
       (item) => item.credentials.formCode
@@ -93,7 +94,7 @@ class AddOns extends React.Component<Props, State> {
       knowledgeBase: initialKb || "",
       popups: initialLeads || [],
       websites: initialWebsites || [
-        { url: "", buttonText: "", description: "" },
+        { url: "", buttonText: "", description: "", openInNewWindow: true },
       ],
     };
   }
@@ -146,10 +147,11 @@ class AddOns extends React.Component<Props, State> {
 
   onChangeInput = (
     i: number,
-    type: "url" | "description" | "buttonText",
+    type: "url" | "description" | "buttonText" | "openInNewWindow",
     e: React.FormEvent
   ) => {
-    const { value } = e.target as HTMLInputElement;
+    const target = e.target as HTMLInputElement;
+    const value = type === "openInNewWindow" ? target.checked : target.value;
 
     const entries = [...this.state.websites];
 
@@ -179,7 +181,7 @@ class AddOns extends React.Component<Props, State> {
     this.setState({
       websites: [
         ...this.state.websites,
-        { url: "", buttonText: "", description: "" },
+        { url: "", buttonText: "", description: "", openInNewWindow: true },
       ],
     });
   };
@@ -235,7 +237,7 @@ class AddOns extends React.Component<Props, State> {
           <FormGroup>
             <ControlLabel>Websites</ControlLabel>
             <p>
-              {__("Which website(s) do you want to display in this messenger")}?
+              {__("Which website(s) do you want to display in this messenger?")}
             </p>
           </FormGroup>
           {websites.map((website, index) => (
@@ -274,6 +276,18 @@ class AddOns extends React.Component<Props, State> {
                     value={website.buttonText}
                     name="buttonText"
                     required={true}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <ControlLabel>Open in new window</ControlLabel>
+                  <input
+                    type="checkbox"
+                    checked={website.openInNewWindow ?? true}
+                    onChange={this.onChangeInput.bind(
+                      null,
+                      index,
+                      "openInNewWindow"
+                    )}
                   />
                 </FormGroup>
               </WebsiteItem>
