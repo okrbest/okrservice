@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import T from "i18n-react";
 import styled from "styled-components";
-
+import { __ } from "coreui/utils";
 const AlertsWrapper = styled.div.attrs({
   id: "alerts-wrapper",
 })`
@@ -85,7 +85,7 @@ const createAlert = (type: string, text: string, time?: number) => {
 };
 
 const success = (text: string, time?: number) =>
-  createAlert("success", text, time);
+  createAlert("success", __(text), time);
 
 const error = (text: string, time?: number) => {
   if (text) {
@@ -94,9 +94,10 @@ const error = (text: string, time?: number) => {
 };
 
 const warning = (text: string, time?: number) =>
-  createAlert("warning", text, time);
+  createAlert("warning", __(text), time);
 
-const info = (text: string, time?: number) => createAlert("info", text, time);
+const info = (text: string, time?: number) =>
+  createAlert("info", __(text), time);
 
 const Alert = {
   success,

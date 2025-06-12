@@ -6,7 +6,7 @@ import Button from "./Button";
 import React from "react";
 import Tip from "./Tip";
 import styledTS from "styled-components-ts";
-
+import { __ } from "coreui/utils";
 const Container = styledTS<{ $isComplete: boolean }>(styled.div)`
   padding: 15px 20px 20px 20px;
   color: #243B53;
@@ -91,15 +91,15 @@ function getSpentTime(seconds: number): React.ReactNode {
     <Time>
       {days !== 0 && (
         <>
-          {formatNumber(days)} <span>d</span>
+          {formatNumber(days)} <span>{__("d")}</span>
         </>
       )}
       {formatNumber(hours)}
-      <span>h</span>
+      <span>{__("h")}</span>
       {formatNumber(minutes)}
-      <span>m</span>
+      <span>{__("m")}</span>
       {formatNumber(seconds)}
-      <span>s</span>
+      <span>{__("s")}</span>
     </Time>
   );
 }
@@ -282,7 +282,8 @@ class TaskTimer extends React.Component<Props, State> {
     return (
       <TimeWrapper>
         <label>
-          Time spent on this task <span>({status})</span>
+          {__("Time spent on this task")}{" "}
+          <span>({__(`statusTypes.${status}`)})</span>
         </label>
         {getSpentTime(timeSpent)}
       </TimeWrapper>

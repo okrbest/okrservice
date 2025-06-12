@@ -1,16 +1,16 @@
 import {
   ActivityDate,
   FlexBody,
-  FlexCenterContent
-} from '@erxes/ui-log/src/activityLogs/styles';
+  FlexCenterContent,
+} from "@erxes/ui-log/src/activityLogs/styles";
 
-import { IActivityLogItemProps } from '@erxes/ui-log/src/activityLogs/types';
-import { Link } from 'react-router-dom';
-import React from 'react';
-import Tip from '@erxes/ui/src/components/Tip';
-import dayjs from 'dayjs';
-import { renderUserFullName } from '@erxes/ui/src/utils';
-
+import { IActivityLogItemProps } from "@erxes/ui-log/src/activityLogs/types";
+import { Link } from "react-router-dom";
+import React from "react";
+import Tip from "@erxes/ui/src/components/Tip";
+import dayjs from "dayjs";
+import { renderUserFullName } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 type Props = { contentDetail: any } & IActivityLogItemProps;
 
 class AssigneeLog extends React.Component<Props> {
@@ -18,9 +18,9 @@ class AssigneeLog extends React.Component<Props> {
     const { activity, contentDetail } = this.props;
     const { createdByDetail } = activity;
 
-    let userName = 'Unknown';
+    let userName = "Unknown";
 
-    if (createdByDetail && createdByDetail.type === 'user') {
+    if (createdByDetail && createdByDetail.type === "user") {
       const { content } = createdByDetail;
 
       if (content && content.details) {
@@ -30,7 +30,7 @@ class AssigneeLog extends React.Component<Props> {
 
     const { addedUsers = [], removedUsers = [] } = contentDetail;
 
-    const addedUserNames = addedUsers.map(user => {
+    const addedUserNames = addedUsers.map((user) => {
       return (
         <Link
           to={`/settings/team/details/${user._id}`}
@@ -42,7 +42,7 @@ class AssigneeLog extends React.Component<Props> {
       );
     });
 
-    const removedUserNames = removedUsers.map(user => {
+    const removedUserNames = removedUsers.map((user) => {
       return (
         <Link
           to={`/settings/team/details/${user._id}`}
@@ -57,7 +57,7 @@ class AssigneeLog extends React.Component<Props> {
     if (addedUserNames.length > 0 && removedUserNames.length === 0) {
       return (
         <span>
-          {userName} assigned
+          {userName} {__("assignedMessage")}
           {addedUserNames}
         </span>
       );
@@ -66,7 +66,7 @@ class AssigneeLog extends React.Component<Props> {
     if (removedUserNames && !addedUserNames) {
       return (
         <span>
-          {userName} removed assignee of
+          {userName} {__("removed assignee of")}
           {removedUserNames}
         </span>
       );
@@ -74,7 +74,7 @@ class AssigneeLog extends React.Component<Props> {
 
     return (
       <span>
-        {userName} removed assignee of
+        {userName} {__("removed assignee of")}
         {removedUserNames}
       </span>
     );
@@ -86,9 +86,9 @@ class AssigneeLog extends React.Component<Props> {
     return (
       <FlexCenterContent>
         <FlexBody>{this.renderContent()}</FlexBody>
-        <Tip text={dayjs(createdAt).format('llll')}>
+        <Tip text={dayjs(createdAt).format("llll")}>
           <ActivityDate>
-            {dayjs(createdAt).format('MMM D, h:mm A')}
+            {dayjs(createdAt).format("MMM D, h:mm A")}
           </ActivityDate>
         </Tip>
       </FlexCenterContent>

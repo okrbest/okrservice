@@ -1,17 +1,17 @@
 import {
   ActivityDate,
   FlexBody,
-  FlexCenterContent
-} from '@erxes/ui-log/src/activityLogs/styles';
+  FlexCenterContent,
+} from "@erxes/ui-log/src/activityLogs/styles";
 
-import { getCPUserName } from '@erxes/ui-log/src/activityLogs/utils';
-import Icon from '@erxes/ui/src/components/Icon';
-import Tip from '@erxes/ui/src/components/Tip';
-import { renderUserFullName } from '@erxes/ui/src/utils';
-import dayjs from 'dayjs';
-import React from 'react';
-import { Link } from 'react-router-dom';
-
+import { getCPUserName } from "@erxes/ui-log/src/activityLogs/utils";
+import Icon from "@erxes/ui/src/components/Icon";
+import Tip from "@erxes/ui/src/components/Tip";
+import { renderUserFullName } from "@erxes/ui/src/utils";
+import dayjs from "dayjs";
+import React from "react";
+import { Link } from "react-router-dom";
+import { __ } from "coreui/utils";
 type Props = {
   activity: any;
   contentDetail: any;
@@ -22,7 +22,7 @@ class BoardItemCreatedLog extends React.Component<Props> {
     const { activity, contentDetail } = this.props;
     const { contentType, createdByDetail } = activity;
 
-    let userName = 'Unknown';
+    let userName = "Unknown";
 
     const body = (
       <Link
@@ -33,7 +33,7 @@ class BoardItemCreatedLog extends React.Component<Props> {
       </Link>
     );
 
-    if (createdByDetail && createdByDetail.type === 'user') {
+    if (createdByDetail && createdByDetail.type === "user") {
       const { content } = createdByDetail;
 
       if (content && content.details) {
@@ -41,14 +41,14 @@ class BoardItemCreatedLog extends React.Component<Props> {
       }
     }
 
-    if (createdByDetail && createdByDetail.type === 'clientPortalUser') {
+    if (createdByDetail && createdByDetail.type === "clientPortalUser") {
       userName = getCPUserName(createdByDetail.content);
-      const cpUrl = createdByDetail.content.clientPortal.url || '';
+      const cpUrl = createdByDetail.content.clientPortal.url || "";
       return (
         <span>
-          <strong>{userName}</strong> created {body} {contentType} from{' '}
+          <strong>{userName}</strong> created {body} {contentType} from{" "}
           <a href={cpUrl} target="_blank">
-            {createdByDetail.content.clientPortal.name || 'client portal'}
+            {createdByDetail.content.clientPortal.name || "client portal"}
           </a>
         </span>
       );
@@ -56,7 +56,7 @@ class BoardItemCreatedLog extends React.Component<Props> {
 
     return (
       <span>
-        <strong>{userName}</strong> created {body} {contentType}
+        <strong>{userName}</strong> {__("createdLog")} {body} {contentType}
       </span>
     );
   };
@@ -68,9 +68,9 @@ class BoardItemCreatedLog extends React.Component<Props> {
     return (
       <FlexCenterContent>
         <FlexBody>{this.renderContent()}</FlexBody>
-        <Tip text={dayjs(createdAt).format('llll')}>
+        <Tip text={dayjs(createdAt).format("llll")}>
           <ActivityDate>
-            {dayjs(createdAt).format('MMM D, h:mm A')}
+            {dayjs(createdAt).format("MMM D, h:mm A")}
           </ActivityDate>
         </Tip>
       </FlexCenterContent>

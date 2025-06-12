@@ -7,7 +7,7 @@ import {
   Select,
   SelectWrapper,
 } from "./styles";
-
+import { __ } from "coreui/utils";
 import { Column } from "@erxes/ui/src/styles/main";
 import NumberInput from "./NumberInput";
 import ProgressBar from "../ProgressBar";
@@ -88,6 +88,7 @@ class FormControl extends React.Component<Props> {
     const childnode = props.children;
     const elementType = props.componentclass;
     const errorMessage = props.errors && props.errors[props.name || ""];
+    const placeholder = props.placeholder ? __(props.placeholder) : undefined;
 
     // cancel custom browser default form validation error
     const onChange = (e) => {
@@ -106,7 +107,7 @@ class FormControl extends React.Component<Props> {
       defaultValue: props.defaultValue,
       [props.defaultChecked ? "defaultChecked" : "checked"]:
         props.defaultChecked ? props.defaultChecked : props.checked,
-      placeholder: props.placeholder,
+      placeholder,
       $hasError: errorMessage ? true : false,
       type: props.type,
       name: props.name,

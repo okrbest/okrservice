@@ -215,8 +215,7 @@ class CommonChooser extends React.Component<Props, State> {
           </Column>
           <Column $lastChild={true}>
             <Title>
-              {data.name}
-              &apos;s {title}
+              {__(data.name)} {__("'s")} {__(title)}
               <span>({selectedDatas.length})</span>
             </Title>
             {this.renderSelected(selectedDatas)}

@@ -1,9 +1,9 @@
-import { SectionContainer, SidebarCollapse } from '@erxes/ui/src/layout/styles';
-import { getConfig, setConfig } from '../utils/core';
-
-import Icon from './Icon';
-import React from 'react';
-import Sidebar from '../layout/components/Sidebar';
+import { SectionContainer, SidebarCollapse } from "@erxes/ui/src/layout/styles";
+import { getConfig, setConfig } from "../utils/core";
+import { __ } from "coreui/utils";
+import Icon from "./Icon";
+import React from "react";
+import Sidebar from "../layout/components/Sidebar";
 
 type BoxProps = {
   title: string;
@@ -56,7 +56,7 @@ export default class Box extends React.Component<BoxProps, BoxState> {
 
   renderDropBtn() {
     const { isOpen } = this.state;
-    const icon = isOpen ? 'angle-down' : 'angle-right';
+    const icon = isOpen ? "angle-down" : "angle-right";
     const { QuickButtons } = Sidebar.Section;
     const { extraButtons } = this.props;
 
@@ -81,7 +81,7 @@ export default class Box extends React.Component<BoxProps, BoxState> {
 
     return (
       <SectionContainer $hasShadow={true}>
-        <Title onClick={this.toggle}>{title}</Title>
+        <Title onClick={this.toggle}>{__(title)}</Title>
         {this.renderDropBtn()}
         {isOpen ? (
           <Section noPadding={noPadding} $collapsible={collapsible}>
