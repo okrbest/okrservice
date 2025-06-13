@@ -1,7 +1,7 @@
 import React from "react";
 import Select from "react-select";
 import styled from "styled-components";
-
+import { __ } from "coreui/utils";
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -113,7 +113,7 @@ class CardSelect extends React.Component<Props, State> {
             ref={(ref) => {
               this.ref = ref;
             }}
-            placeholder={placeholder}
+            placeholder={__(placeholder)}
             options={options}
             value={selectedValue}
             // onSelectResetsInput={true}
