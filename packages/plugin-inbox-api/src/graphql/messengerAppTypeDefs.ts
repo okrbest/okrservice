@@ -12,6 +12,7 @@ export const types = `
     description: String
     buttonText: String
     url: String
+    openInNewWindow: Boolean
   }
 
   type KnowledgebaseApp {
@@ -32,6 +33,7 @@ export const types = `
     description: String
     buttonText: String
     url: String
+    openInNewWindow: Boolean
   }
 
   input KnowledgeBaseMessengerAppInput {

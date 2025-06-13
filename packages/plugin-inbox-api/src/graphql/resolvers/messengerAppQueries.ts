@@ -4,6 +4,7 @@ interface IWebsite {
   description?: string;
   buttonText?: string;
   url?: string;
+  openInNewWindow?: boolean;
 }
 
 interface ILead {
@@ -18,9 +19,13 @@ const messengerAppsQueries = {
   /**
    * MessengerApps list
    */
-  async messengerApps(_root, { integrationId }: { integrationId: string }, { models }: IContext) {
+  async messengerApps(
+    _root,
+    { integrationId }: { integrationId: string },
+    { models }: IContext
+  ) {
     const apps = await models.MessengerApps.find({
-      'credentials.integrationId': integrationId
+      "credentials.integrationId": integrationId,
     });
 
     const websites: IWebsite[] = [];
@@ -30,25 +35,26 @@ const messengerAppsQueries = {
     for (const app of apps) {
       const credentials: any = app.credentials;
 
-      if (app.kind === 'website') {
+      if (app.kind === "website") {
         websites.push({
-          description: credentials.description || '',
-          buttonText: credentials.buttonText || '',
-          url: credentials.url || ''
+          description: credentials.description || "",
+          buttonText: credentials.buttonText || "",
+          url: credentials.url || "",
+          openInNewWindow: credentials.openInNewWindow,
         });
       }
 
-      if (app.kind === 'knowledgebase') {
+      if (app.kind === "knowledgebase") {
         knowledgebases.push({ topicId: credentials.topicId });
       }
 
-      if (app.kind === 'lead') {
+      if (app.kind === "lead") {
         leads.push({ formCode: credentials.formCode });
       }
     }
 
     return { websites, knowledgebases, leads };
-  }
+  },
 };
 
 export default messengerAppsQueries;
