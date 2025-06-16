@@ -331,3 +331,37 @@ window.addEventListener("message", async (event: MessageEvent) => {
     // document.body.classList.toggle('messenger-widget-shown', isVisible);
   }
 });
+
+window.addEventListener("message", (event: MessageEvent) => {
+  const data = event.data;
+
+  // 보안상 origin 체크 권장 (운영 환경에서는 반드시!)
+  // if (event.origin !== "https://your-messenger-domain.com") return;
+
+  // 메신저 iframe에서 온 확대/축소 메시지 처리
+  if (
+    data &&
+    data.message === "ERXES_MESSENGER_ZOOM" &&
+    data.source === "fromMessenger"
+  ) {
+    const frameDiv = document.querySelector(
+      ".erxes-messenger-frame"
+    ) as HTMLElement | null;
+    if (frameDiv) {
+      if (data.zoom) {
+        frameDiv.style.width = "130%";
+        frameDiv.style.height = "130%";
+        frameDiv.style.maxWidth = "130%";
+        frameDiv.style.maxHeight = "130%";
+        frameDiv.style.transition =
+          "width 0.3s, height 0.3s, max-width 0.3s, max-height 0.3s";
+      } else {
+        frameDiv.style.width = "";
+        frameDiv.style.height = "";
+        frameDiv.style.maxWidth = "";
+        frameDiv.style.maxHeight = "";
+        frameDiv.style.transition = "";
+      }
+    }
+  }
+});

@@ -1,5 +1,6 @@
 import * as React from "react";
-
+import { useState } from "react";
+import { postMessage } from "../../../../utils";
 import BottomNavBar from "../../BottomNavBar";
 import { IconChevronLeft } from "../../../../icons/Icons";
 import { getColor } from "../../../utils/util";
@@ -54,6 +55,15 @@ const Container: React.FC<Props> = ({
     setActiveRoute("home");
   };
 
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  const handleZoomToggle = () => {
+    setIsZoomed((prev) => {
+      postMessage("fromMessenger", "ERXES_MESSENGER_ZOOM", { zoom: !prev });
+      return !prev;
+    });
+  };
+
   return (
     <div className="container">
       {(withTopBar || title) && (
@@ -67,6 +77,21 @@ const Container: React.FC<Props> = ({
             ) : (
               title
             )}
+            <div
+              className="zoom-toggle-btn"
+              style={{
+                position: "absolute",
+                right: 16,
+                top: 16,
+                cursor: "pointer",
+                fontSize: 18,
+                zIndex: 2,
+              }}
+              onClick={handleZoomToggle}
+              title={isZoomed ? "축소" : "확대"}
+            >
+              {isZoomed ? "🔽" : "🔼"}
+            </div>
           </div>
           {extra && <div className="extra-content">{extra}</div>}
         </div>
