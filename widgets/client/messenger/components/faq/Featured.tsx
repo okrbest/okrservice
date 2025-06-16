@@ -82,7 +82,15 @@ const Featured: React.FC = () => {
 
     const articles = articlesData?.widgetsKnowledgeBaseArticles || [];
 
-    return <Articles articles={articles} />;
+    if (articles.length === 0) {
+      return (
+        <div className="empty-articles">{__("No recent articles")}</div>
+      );
+    }
+  
+    const recentArticles = articles.slice(0, 5);
+  
+    return <Articles articles={recentArticles} />;
   };
 
   const renderCategoryList = () => {
