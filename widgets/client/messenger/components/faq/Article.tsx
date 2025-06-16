@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { IFaqArticle } from '../../types';
+import * as React from "react";
+import { IFaqArticle } from "../../types";
 
 type Props = {
   article: IFaqArticle;
@@ -25,7 +25,6 @@ export default class Article extends React.PureComponent<Props> {
         </div>
         <div className="erxes-right-side">
           <div className="erxes-name">{article.title}</div>
-          <div className="description">{article.summary}</div>
         </div>
       </div>
     );

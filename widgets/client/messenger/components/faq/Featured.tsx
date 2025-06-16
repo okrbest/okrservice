@@ -14,6 +14,9 @@ import { connection } from "../../connection";
 import { getMessengerData } from "../../utils/util";
 import { useQuery } from "@apollo/client";
 import { useRouter } from "../../context/Router";
+import gql from "graphql-tag";
+import { faqSearchArticlesQuery } from "../../graphql/queries";
+import Articles from "./Articles";
 
 const LeadConnect = asyncComponent(
   () =>
@@ -34,6 +37,15 @@ const Featured: React.FC = () => {
     skip: !topicId,
   });
 
+  const {
+    data: articlesData,
+    loading: articlesLoading,
+    error: articlesError,
+  } = useQuery(gql(faqSearchArticlesQuery), {
+    variables: { topicId, searchString: "" },
+    skip: !topicId,
+  });
+
   const handleFeaturedCategoryClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setActiveRoute("faqCategories");
@@ -51,6 +63,26 @@ const Featured: React.FC = () => {
     return formCodes.map((formCode: string) => (
       <LeadConnect key={formCode} brandCode={brandCode} formCode={formCode} />
     ));
+  };
+
+  const renderRecentArticles = () => {
+    if (articlesLoading) {
+      return (
+        <div className="category-detail-container">
+          <div className="loader" />
+        </div>
+      );
+    }
+
+    if (articlesError) {
+      return (
+        <div className="empty-articles">{__("Error loading articles")}</div>
+      );
+    }
+
+    const articles = articlesData?.widgetsKnowledgeBaseArticles || [];
+
+    return <Articles articles={articles} />;
   };
 
   const renderCategoryList = () => {
@@ -118,7 +150,7 @@ const Featured: React.FC = () => {
             <span>{__("Search for help")}</span>
             <IconFeaturedSearch />
           </button>
-          <ul className="featured-list-container">{renderCategoryList()}</ul>
+          <ul className="featured-list-container">{renderRecentArticles()}</ul>
         </div>
       </Card>
       {renderLead()}
