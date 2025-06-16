@@ -368,14 +368,20 @@ export default {
     { subdomain }: IContext
   ) {
     const { topicId, searchString = "" } = args;
-
+    
+    const trimmedSearch = searchString.trim();
+    
     return sendKnowledgeBaseMessage({
       subdomain,
       action: "articles.find",
       data: {
         query: {
           topicId,
-          content: { $regex: `.*${searchString.trim()}.*`, $options: "i" },
+          $or: [
+            { title: { $regex: `.*${trimmedSearch}.*`, $options: "i" } },
+            { summary: { $regex: `.*${trimmedSearch}.*`, $options: "i" } },
+            { content: { $regex: `.*${trimmedSearch}.*`, $options: "i" } }
+          ],
           status: "publish"
         }
       },
