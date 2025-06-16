@@ -60,9 +60,6 @@ const TicketSubmitContainer = (props: Props) => {
     }
   }, [customer]);
 
-  console.log("customer formData", formData);
-  console.log("customer : ", customer);
-
   const [ticketAdd, { loading }] = useMutation(TICKET_ADD, {
     onCompleted(data) {
       console.log("[디버그] ticketAdd onCompleted data:", data);

@@ -35,11 +35,7 @@ const TicketSubmitForm: React.FC<Props> = ({
   const continueText = __("Continue");
   const { email, firstName, lastName, phone } = formData;
 
-  console.log("formData", formData);
-
   const { isAuthFieldsVisible } = useConfig();
-
-  console.log("isAuthFieldsVisible:", isAuthFieldsVisible);
 
   const renderForm = () => {
     return (

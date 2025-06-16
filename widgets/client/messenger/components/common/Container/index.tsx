@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import { postMessage } from "../../../../utils";
 import BottomNavBar from "../../BottomNavBar";
-import { IconChevronLeft } from "../../../../icons/Icons";
+import { IconChevronLeft, IconZoomIn, IconZoomOut } from "../../../../icons/Icons";
 import { getColor } from "../../../utils/util";
 import { useRouter } from "../../../context/Router";
 
@@ -77,20 +77,8 @@ const Container: React.FC<Props> = ({
             ) : (
               title
             )}
-            <div
-              className="zoom-toggle-btn"
-              style={{
-                position: "absolute",
-                right: 16,
-                top: 16,
-                cursor: "pointer",
-                fontSize: 18,
-                zIndex: 2,
-              }}
-              onClick={handleZoomToggle}
-              title={isZoomed ? "축소" : "확대"}
-            >
-              {isZoomed ? "🔽" : "🔼"}
+            <div className="icon" onClick={handleZoomToggle} style={{ marginLeft: 'auto' }}>
+              {isZoomed ? <IconZoomOut /> : <IconZoomIn />}
             </div>
           </div>
           {extra && <div className="extra-content">{extra}</div>}

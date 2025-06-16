@@ -345,21 +345,21 @@ window.addEventListener("message", (event: MessageEvent) => {
     data.source === "fromMessenger"
   ) {
     const frameDiv = document.querySelector(
-      ".erxes-messenger-frame"
+      ".erxes-messenger-shown"
     ) as HTMLElement | null;
     if (frameDiv) {
       if (data.zoom) {
-        frameDiv.style.width = "130%";
-        frameDiv.style.height = "130%";
-        frameDiv.style.maxWidth = "130%";
-        frameDiv.style.maxHeight = "130%";
+        frameDiv.style.width = "688px";
+        frameDiv.style.height = "calc(100% - 104px)";
+        frameDiv.style.maxWidth = "100%";
+        frameDiv.style.maxHeight = "calc(100% - 104px)";
         frameDiv.style.transition =
           "width 0.3s, height 0.3s, max-width 0.3s, max-height 0.3s";
       } else {
-        frameDiv.style.width = "";
-        frameDiv.style.height = "";
-        frameDiv.style.maxWidth = "";
-        frameDiv.style.maxHeight = "";
+        frameDiv.style.width = "408px";
+        frameDiv.style.height = "min(704px, 100% - 104px)";
+        frameDiv.style.maxWidth = "408px";
+        frameDiv.style.maxHeight = "704px";
         frameDiv.style.transition = "";
       }
     }
