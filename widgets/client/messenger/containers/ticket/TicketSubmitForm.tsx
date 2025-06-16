@@ -141,7 +141,7 @@ const TicketSubmitContainer = (props: Props) => {
   };
 
   const onButtonClick = () => {
-    setRoute("home");
+    setRoute("ticket-list");
   };
   return (
     <TicketSubmitForm

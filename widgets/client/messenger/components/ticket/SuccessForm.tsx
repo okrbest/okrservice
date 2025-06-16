@@ -33,14 +33,6 @@ const SuccessForm: React.FC<Props> = ({ ticketNumber, isForget }) => {
             <b>{ticketNumber}</b>
           </p>
         )}
-        <CopyToClipboard
-          text={ticketNumber}
-          onCopy={() => onCopy(ticketNumber)}
-        >
-          <button className="copy">
-            {copied ? "Copied" : __("Copy or save your ticket number")}
-          </button>
-        </CopyToClipboard>
       </div>
     </div>
   );
