@@ -292,6 +292,7 @@ window.addEventListener("message", async (event: MessageEvent) => {
         messengerIframeContainer.classList.remove("erxes-messenger-hidden");
         launcher.style.backgroundImage = "none";
         launcher.innerHTML = CLOSE_ICON_STRING;
+        launcherIframe.style.display = "block";
         if (isMobile) {
           launcherIframe.style.display = "none";
           launcher.style.display = "none";
