@@ -1,25 +1,26 @@
-import React, { useState, ChangeEvent, FormEvent } from 'react';
-import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
-import { useRichTextEditorContext } from '../RichTextEditor.context';
+import React, { useState, ChangeEvent, FormEvent } from "react";
+import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
+import { useRichTextEditorContext } from "../RichTextEditor.context";
 import {
   IRichTextEditorControlBaseProps,
   RichTextEditorControlBase,
-} from './RichTextEditorControl';
+} from "./RichTextEditorControl";
 import {
   FileInputAction,
   FormItemWrapper,
   ImageHandlingForm,
   ImageInputWrapper,
   Input,
-} from './styles';
-import Icon from '../../Icon';
-import { readFile } from '../../../utils/core';
-import { ModalFooter } from '../../../styles/main';
-import Button from '../../Button';
-import Uploader from '../../Uploader';
-import { IAttachment } from '../../../types';
+} from "./styles";
+import Icon from "../../Icon";
+import { readFile } from "../../../utils/core";
+import { ModalFooter } from "../../../styles/main";
+import Button from "../../Button";
+import Uploader from "../../Uploader";
+import { IAttachment } from "../../../types";
+import { __ } from "coreui/utils";
 
-const LinkIcon: IRichTextEditorControlBaseProps['icon'] = () => (
+const LinkIcon: IRichTextEditorControlBaseProps["icon"] = () => (
   <Icon icon="image" />
 );
 
@@ -29,9 +30,9 @@ export type RichTextEditorLinkControlProps = {
 };
 
 const INITIAL_FORM_STATE = {
-  link: '',
-  alt: '',
-  title: '',
+  link: "",
+  alt: "",
+  title: "",
 };
 
 export const RichTextEditorImageControl = (
@@ -51,7 +52,7 @@ export const RichTextEditorImageControl = (
       editor
         .chain()
         .focus()
-        .extendMarkRange('link')
+        .extendMarkRange("link")
         .setImage({
           src: inputs.link,
           ...(inputs.alt && { alt: inputs.alt }),
@@ -76,17 +77,17 @@ export const RichTextEditorImageControl = (
     }));
   };
 
-  const getFormItem = (name: string, label: string = '') => {
-    if (name === 'link') {
+  const getFormItem = (name: string, label: string = "") => {
+    if (name === "link") {
       return (
         <>
-          <label htmlFor="link-input">Source</label>
+          <label htmlFor="link-input">{__("Source")}</label>
           <ImageInputWrapper>
             <Input
               id="link-input"
               name="link"
               autoFocus={true}
-              placeholder={labels.imageUrlControlLabel}
+              placeholder={__(labels.imageUrlControlLabel)}
               aria-label={labels.imageUrlControlLabel}
               value={inputs.link}
               onChange={handleChange}
@@ -118,7 +119,7 @@ export const RichTextEditorImageControl = (
   };
 
   const renderFormItem = (name: string, label?: string) => {
-    const formItem = getFormItem(name, label);
+    const formItem = getFormItem(name, __(label));
     return <FormItemWrapper>{formItem}</FormItemWrapper>;
   };
 
@@ -146,9 +147,9 @@ export const RichTextEditorImageControl = (
   const renderContent = ({ closeModal }) => {
     return (
       <ImageHandlingForm onSubmit={(e) => handleSubmit(e, closeModal)}>
-        {renderFormItem('link')}
-        {renderFormItem('alt', 'Alternative description')}
-        {renderFormItem('title', 'Image title')}
+        {renderFormItem("link")}
+        {renderFormItem("alt", "Alternative description")}
+        {renderFormItem("title", "Image title")}
         {renderFooter(closeModal)}
       </ImageHandlingForm>
     );
@@ -164,7 +165,7 @@ export const RichTextEditorImageControl = (
           icon={icon || LinkIcon}
           aria-label={labels.imageControlLabel}
           title={labels.imageControlLabel}
-          active={editor?.isActive('image')}
+          active={editor?.isActive("image")}
         />
       }
       content={renderContent}

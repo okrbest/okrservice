@@ -1,27 +1,28 @@
-import React, { Fragment } from 'react';
+import React, { Fragment } from "react";
 import Select, {
   type DropdownIndicatorProps,
   components,
   MenuProps,
-} from 'react-select';
-import { useRichTextEditorContext } from '../RichTextEditor.context';
-import Icon from '../../Icon';
-import { getReactSelectStyle } from './styles';
+} from "react-select";
+import { useRichTextEditorContext } from "../RichTextEditor.context";
+import Icon from "../../Icon";
+import { getReactSelectStyle } from "./styles";
+import { __ } from "coreui/utils";
 
 const transformToGroupedOptions = (data: any) => {
   const groups = {};
 
   data?.forEach((item: { value?: string; name: string }) => {
-    const groupKey = item?.value?.includes('.')
-      ? item.value.split('.')[0]
-      : 'General';
+    const groupKey = item?.value?.includes(".")
+      ? item.value.split(".")[0]
+      : "General";
     if (!groups[groupKey]) {
       groups[groupKey] = {
-        label: groupKey.charAt(0).toUpperCase() + groupKey.slice(1),
+        label: __(groupKey.charAt(0).toUpperCase() + groupKey.slice(1)),
         options: [],
       };
     }
-    groups[groupKey].options.push({ label: item.name, value: item.value });
+    groups[groupKey].options.push({ label: __(item.name), value: item.value });
   });
 
   return Object.values(groups);
@@ -56,7 +57,7 @@ export const RichTextEditorPlaceholderControl = ({ placeholderProp }) => {
   return (
     <Select
       value={placeholderProp?.title}
-      placeholder="Attributes"
+      placeholder={__("Attributes")}
       isMulti={false}
       isSearchable={false}
       menuPlacement="auto"
