@@ -137,18 +137,18 @@ class Comment extends React.Component<Props, State> {
         >
           <Tabs full={true}>
             <TabTitle
+              className={this.state.currentTab === "widget" ? "active" : ""}
+              onClick={this.tabOnClick.bind(this, "widget")}
+            >
+              {__("Widgets")}
+            </TabTitle>
+            <TabTitle
               className={
                 this.state.currentTab === "clientPortal" ? "active" : ""
               }
               onClick={this.tabOnClick.bind(this, "clientPortal")}
             >
               {__("Client Portal")}
-            </TabTitle>
-            <TabTitle
-              className={this.state.currentTab === "widget" ? "active" : ""}
-              onClick={this.tabOnClick.bind(this, "widget")}
-            >
-              {__("Widgets")}
             </TabTitle>
           </Tabs>
           <SpaceFormsWrapper>

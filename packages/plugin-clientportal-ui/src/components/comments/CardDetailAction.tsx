@@ -63,7 +63,7 @@ const Container: React.FC<Props> = ({
   handleWidgetSubmit,
 }: Props) => {
   const [content, setContent] = useState("");
-  const [currentTab, setCurrentTab] = useState("cp");
+  const [currentTab, setCurrentTab] = useState("widget");
 
   const handleChange = (e) => {
     setContent(e.target.value);
@@ -144,21 +144,22 @@ const Container: React.FC<Props> = ({
       <>
         <Tabs full={true}>
           <TabTitle
-            className={isCp ? "active" : ""}
-            onClick={() => setCurrentTab("cp")}
-          >
-            {__("Client Portal")}
-          </TabTitle>
-          <TabTitle
             className={currentTab === "widget" ? "active" : ""}
             onClick={() => setCurrentTab("widget")}
           >
             {__("Widgets")}
           </TabTitle>
+          <TabTitle
+            className={isCp ? "active" : ""}
+            onClick={() => setCurrentTab("cp")}
+          >
+            {__("Client Portal")}
+          </TabTitle>
         </Tabs>
         <TicketLabel>
           <Icon icon="comment-1" size={14} />
-          &nbsp; {isCp ? "Write clientportal comment" : "Write widget comment"}
+          &nbsp;{" "}
+          {isCp ? __("Write clientportal comment") : __("Write widget comment")}
         </TicketLabel>
         <TicketContent>
           <FormControl
