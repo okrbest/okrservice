@@ -2533,7 +2533,7 @@ select.form-control:focus,
 .category-detail-container {
   display: flex;
   flex-direction: column;
-  padding-bottom: 5rem;
+  padding-bottom: 1rem;
 }
 
 .erxes-content .erxes-article-content {
@@ -5129,18 +5129,18 @@ select.form-control:focus,
   .ticket-list-container {
     padding: 1rem;
   }
-  
+
   .ticket-item-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
   }
-  
+
   .ticket-labels {
     flex-direction: column;
     gap: 0.25rem;
   }
-  
+
   .ticket-status,
   .ticket-type,
   .ticket-priority {
@@ -5149,7 +5149,7 @@ select.form-control:focus,
 }
 
 .mobile-close-button {
-  display: none; 
+  display: none;
 }
 
 @media only screen and (max-width: 420px) {
