@@ -52,7 +52,7 @@ class Actions extends React.Component<Props> {
       removeItem,
       sendToBoard,
       onChangeStage,
-      onChangeRefresh
+      onChangeRefresh,
     } = this.props;
 
     const onLabelChange = (labels) => saveItem({ labels });
@@ -81,7 +81,7 @@ class Actions extends React.Component<Props> {
           </>
         ) : (
           <ColorButton>
-            <Icon icon="tag-alt" /> No tags
+            <Icon icon="tag-alt" /> {__("No tags")}
           </ColorButton>
         )}
       </PopoverButton>
@@ -133,7 +133,7 @@ class Actions extends React.Component<Props> {
             item,
             contentType: "tickets",
             subType: item.stage?.type,
-            path: `stageId=${item.stageId}`
+            path: `stageId=${item.stageId}`,
           },
           true
         )}

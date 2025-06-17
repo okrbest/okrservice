@@ -3093,5 +3093,21 @@
   "'s": "의",
   "Create a new Task": "새 업무 만들기",
   "New Task": "새 업무",
-  "Add a new task or select one": "새 작업을 추가하거나 하나를 선택하세요"
+  "Add a new task or select one": "새 업무를 추가하거나 기존의 업무를 선택하세요",
+  "Add a new ticket or select one": "새 티켓을 추가하거나 기존의 티켓을 선택하세요",
+  "Organization": "조직",
+  "BrandName": "브랜드명",
+  "Domain": "도메인",
+  "Attributes": "속성",
+  "Insert/ Edit Image": "이미지 삽입/편집",
+  "Alternative description": "대체 설명",
+  "Image title": "이미지 제목",
+  "Insert image link": "이미지 주소를 입력해주세요",
+  "Labels": "라벨",
+  "Write clientportal comment": "클라이언트 포털에 답변작성",
+  "Write widget comment": "위젯에 답변작성",
+  "Comments": "답변하기",
+  "Widgets": "위젯",
+  "added <b>comment</b>": "님이 추가한 댓글",
+  "Comment": "답변이력"
 }
