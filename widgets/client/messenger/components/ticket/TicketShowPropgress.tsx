@@ -47,7 +47,7 @@ const TicketShowProgress: React.FC<Props> = ({
     return (
       <div className="ticket-progress-content">
         <div className="content-header">
-          <b>{name}</b>
+          <b>{name} </b>
           <span>{__(type)}</span>
         </div>
         {description && (
@@ -101,8 +101,10 @@ const TicketShowProgress: React.FC<Props> = ({
             />
           </div>
           <span>
-            <strong>{renderName}</strong> 
-            <span dangerouslySetInnerHTML={{ __html: __("added <b>comment</b>") }} />
+            <strong>{renderName}</strong>
+            <span
+              dangerouslySetInnerHTML={{ __html: __("added <b>comment</b>") }}
+            />
             <div className="comment">{content}</div>
             <div className="date">
               {dayjs(createdAt).format("YYYY-MM-DD, LT")}
