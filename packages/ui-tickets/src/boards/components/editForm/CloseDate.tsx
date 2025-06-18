@@ -4,10 +4,10 @@ import {
   CheckBoxWrapper,
   CloseDateContent,
   CloseDateWrapper,
-  DateGrid
+  DateGrid,
 } from "../../styles/popup";
 import { generateButtonClass, selectOptions } from "../../utils";
-
+import { __ } from "coreui/utils";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import Datetime from "@nateradebaugh/react-datetime";
 import FormControl from "@erxes/ui/src/components/form/Control";
@@ -43,7 +43,7 @@ class CloseDate extends React.Component<Props, State> {
     this.ref = React.createRef();
 
     this.state = {
-      dueDate: props.closeDate || dayjs()
+      dueDate: props.closeDate || dayjs(),
     };
   }
 
@@ -161,10 +161,10 @@ class CloseDate extends React.Component<Props, State> {
 
         <DateGrid>
           <Button colorname="red" onClick={() => this.remove(close)}>
-            Remove
+            {__("Remove")}
           </Button>
           <Button colorname="green" onClick={() => this.onSave(close)}>
-            Save
+            {__("Save")}
           </Button>
         </DateGrid>
       </CloseDateContent>
@@ -181,7 +181,7 @@ class CloseDate extends React.Component<Props, State> {
       <Button colorname={generateButtonClass(closeDate, isComplete)}>
         {closeDate
           ? `${dayjs(closeDate).format("MMM DD")} at ${time}`
-          : "Close date"}
+          : __("Close date")}
       </Button>
     );
 

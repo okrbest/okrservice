@@ -3119,5 +3119,14 @@
   "Medium": "보통",
   "There is no comments yet. Be the first one to comment.": "아직 작성된 댓글이 없습니다. 가장 먼저 댓글을 남겨보세요.",
   "Reported": "작성시간",
-  "No comments available": "등록된 답변이 없습니다."
+  "No comments available": "등록된 답변이 없습니다.",
+  "Set reminder": "리마인더 설정",
+  "At Time of Due Date": "마감일에",
+  "5 Minutes Before": "5분 전",
+  "10 Minutes Before": "10분 전",
+  "15 Minutes Before": "15분 전",
+  "1 Hour Before": "1시간 전",
+  "2 Hour Before": "2시간 전",
+  "1 Day Before": "하루 전",
+  "2 Day Before": "이틀 전"
 }

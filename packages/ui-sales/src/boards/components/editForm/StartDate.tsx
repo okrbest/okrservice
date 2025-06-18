@@ -5,6 +5,7 @@ import {
   CloseDateWrapper,
   DateGrid,
 } from "../../styles/popup";
+import { __ } from "coreui/utils";
 
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import Datetime from "@nateradebaugh/react-datetime";
@@ -122,10 +123,10 @@ class StartDate extends React.Component<Props, State> {
         </CalenderWrapper>
         <DateGrid>
           <Button colorname="red" onClick={() => this.remove(close)}>
-            Remove
+            {__("Remove")}
           </Button>
           <Button colorname="green" onClick={() => this.onSave(close)}>
-            Save
+            {__("Save")}
           </Button>
         </DateGrid>
       </CloseDateContent>
@@ -140,7 +141,7 @@ class StartDate extends React.Component<Props, State> {
       <Button colorname={generateButtonStart(startDate)}>
         {startDate
           ? `${dayjs(startDate).format("MMM DD")} at ${time}`
-          : "Start date"}
+          : __("Start date")}
       </Button>
     );
 

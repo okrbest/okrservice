@@ -12,6 +12,7 @@ import Popover from "@erxes/ui/src/components/Popover";
 import React from "react";
 import dayjs from "dayjs";
 import { generateButtonStart } from "../../utils";
+import { __ } from "coreui/utils";
 
 type Props = {
   startDate: Date;
@@ -122,10 +123,10 @@ class StartDate extends React.Component<Props, State> {
         </CalenderWrapper>
         <DateGrid>
           <Button colorname="red" onClick={() => this.remove(close)}>
-            Remove
+            {__("Remove")}
           </Button>
           <Button colorname="green" onClick={() => this.onSave(close)}>
-            Save
+            {__("Save")}
           </Button>
         </DateGrid>
       </CloseDateContent>
@@ -140,7 +141,7 @@ class StartDate extends React.Component<Props, State> {
       <Button colorname={generateButtonStart(startDate)}>
         {startDate
           ? `${dayjs(startDate).format("MMM DD")} at ${time}`
-          : "Start date"}
+          : __("Start date")}
       </Button>
     );
 
