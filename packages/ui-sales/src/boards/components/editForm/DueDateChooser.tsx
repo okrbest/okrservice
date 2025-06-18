@@ -41,7 +41,7 @@ function DueDateChooser(props: Props) {
       ) : (
         <Icon icon="sort-amount-up" />
       )}
-      {item.priority ? item.priority : __("Priority")}
+      {item.priority ? __(item.priority) : __("Priority")}
     </ColorButton>
   );
 

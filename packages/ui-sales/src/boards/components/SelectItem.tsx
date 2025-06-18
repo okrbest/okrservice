@@ -5,7 +5,7 @@ import colors from "@erxes/ui/src/styles/colors";
 import * as React from "react";
 import Dropdown from "@erxes/ui/src/components/Dropdown";
 import styled from "styled-components";
-
+import { __ } from "coreui/utils";
 export const ActionItem = styled.button`
   width: 100%;
   text-align: left;
@@ -46,11 +46,15 @@ class SelectItem extends React.Component<IProps> {
     const onChangeItem = (value: string) => onChange(value);
 
     return (
-      <Dropdown as={DropdownToggle} toggleComponent={trigger} isMenuWidthFit={true}>
+      <Dropdown
+        as={DropdownToggle}
+        toggleComponent={trigger}
+        isMenuWidthFit={true}
+      >
         {items.map((item) => (
           <li key={item}>
             <ActionItem onClick={onChangeItem.bind(this, item)}>
-              <PriorityIndicator value={item} /> {item}
+              <PriorityIndicator value={item} /> {__(item)}
               {this.isChecked(item) && <Icon icon="check-1" />}
             </ActionItem>
           </li>

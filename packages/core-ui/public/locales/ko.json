@@ -667,7 +667,7 @@
   "Add a task": "업무 추가",
   "Add a ticket": "티켓 추가",
   "Priority": "우선순위",
-  "Critical": "심각",
+  "Critical": "제일 높음",
   "High": "높음",
   "Normal": "보통",
   "Low": "낮음",
@@ -3109,5 +3109,12 @@
   "Comments": "답변하기",
   "Widgets": "위젯",
   "added <b>comment</b>": "님이 추가한 댓글",
-  "Comment": "답변이력"
+  "Comment": "답변이력",
+  "Collections": "자료집",
+  "vendors": "업체",
+  "Client Portal User": "클라이언트 포털 사용자",
+  "Type to search...": "검색하려면 입력하세요...",
+  "clients": "고객",
+  "No data": "데이터 없음",
+  "Medium": "보통"
 }
