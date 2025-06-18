@@ -26,6 +26,57 @@ const LeadConnect = asyncComponent(
 );
 
 const Featured: React.FC = () => {
+  const renderHardcodedArticles = () => {
+    const hardcodedArticles = [
+      {
+        title: (
+          <>
+            총무관리 9편: 🎉 사내 문화, 이제는 자동화로!
+            <br />
+            ‘동호회설립신청서’
+          </>
+        ),
+        summary:
+          "신청서 기반 자동화를 통해 설립·운영을 효율적으로 관리하고 구성원의 참여 기회를 확대합니다",
+        link: "https://blog.naver.com/5240hr/223901057791",
+      },
+    ];
+
+    return (
+      <ul className="featured-list-container">
+        {hardcodedArticles.map((article, index) => (
+          <li key={index} style={{ listStyle: "none", marginBottom: "1rem" }}>
+            <a
+              href={article.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                display: "block",
+                padding: "0.3rem",
+                borderRadius: "8px",
+                transition: "background 0.2s",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "1.1rem",
+                  fontWeight: "bold",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                {article.title}
+              </div>
+              <div style={{ color: "#888", fontSize: "0.95rem" }}>
+                {article.summary}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    );
+  };
   const { knowledgeBaseTopicId, formCodes } = getMessengerData();
   const topicId = knowledgeBaseTopicId;
   const brandCode = connection.setting.brand_id;
@@ -158,6 +209,9 @@ const Featured: React.FC = () => {
           </button>
           <ul className="featured-list-container">{renderRecentArticles()}</ul>
         </div>
+      </Card>
+      <Card p="0.5rem">
+        <div className="featured-container">{renderHardcodedArticles()}</div>
       </Card>
       {renderLead()}
     </>
