@@ -3116,5 +3116,8 @@
   "Type to search...": "검색하려면 입력하세요...",
   "clients": "고객",
   "No data": "데이터 없음",
-  "Medium": "보통"
+  "Medium": "보통",
+  "There is no comments yet. Be the first one to comment.": "아직 작성된 댓글이 없습니다. 가장 먼저 댓글을 남겨보세요.",
+  "Reported": "작성시간",
+  "No comments available": "등록된 답변이 없습니다."
 }

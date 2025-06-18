@@ -122,12 +122,14 @@ const Container: React.FC<Props> = ({
                     />
                   </CommentContent>
                   <span>
-                    Reported{" "}
+                    {__("Reported")}{" "}
                     {dayjs(comment.createdAt).format("YYYY-MM-DD HH:mm")}
                   </span>
                 </div>
                 <div className="actions">
-                  <span onClick={() => deleteComment(comment._id)}>Delete</span>
+                  <span onClick={() => deleteComment(comment._id)}>
+                    {__("Delete")}
+                  </span>
                 </div>
               </CreatedUser>
             </TicketComment>

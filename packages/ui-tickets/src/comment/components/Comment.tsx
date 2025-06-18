@@ -77,7 +77,8 @@ class Comment extends React.Component<Props, State> {
                 />
               </CommentContent>
               <span>
-                Created at {dayjs(comment.createdAt).format("YYYY-MM-DD HH:mm")}
+                {__("Created at")}{" "}
+                {dayjs(comment.createdAt).format("YYYY-MM-DD HH:mm")}
               </span>
             </div>
             {isCurrentUser && currentTab === "clientPortal" && (
@@ -87,7 +88,7 @@ class Comment extends React.Component<Props, State> {
                   onClick={() => remove(comment._id)}
                   aria-label="Delete comment"
                 >
-                  Delete
+                  {__("Delete")}
                 </button>
               </div>
             )}
@@ -98,7 +99,7 @@ class Comment extends React.Component<Props, State> {
                   onClick={() => removeTicketComment(comment._id)}
                   aria-label="Delete comment"
                 >
-                  Delete
+                  {__("Delete")}
                 </button>
               </div>
             )}
