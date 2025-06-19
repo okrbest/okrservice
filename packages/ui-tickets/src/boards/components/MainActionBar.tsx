@@ -4,7 +4,7 @@ import {
   HeaderButton,
   HeaderLabel,
   HeaderLink,
-  PageHeader
+  PageHeader,
 } from "../styles/header";
 import { IBoard, IOptions, IPipeline } from "../types";
 import { __ } from "coreui/utils";
@@ -14,7 +14,7 @@ import {
   groupByGantt,
   groupByList,
   showByTime,
-  stackByChart
+  stackByChart,
 } from "../constants";
 
 import Button from "@erxes/ui/src/components/Button";
@@ -60,7 +60,7 @@ class MainActionBar extends React.Component<Props, State> {
   static defaultProps = {
     viewType: "board",
     boardText: "Board",
-    pipelineText: "Pipeline"
+    pipelineText: "Pipeline",
   };
 
   constructor(props: Props) {
@@ -68,7 +68,7 @@ class MainActionBar extends React.Component<Props, State> {
 
     this.state = {
       showDetail:
-        localStorage.getItem("showSalesDetail") === "true" ? true : false
+        localStorage.getItem("showSalesDetail") === "true" ? true : false,
     };
   }
 
@@ -81,7 +81,7 @@ class MainActionBar extends React.Component<Props, State> {
       );
     }
 
-    return boards.map(board => {
+    return boards.map((board) => {
       let link = `${this.props.link}?id=${board._id}`;
 
       const { pipelines = [] } = board;
@@ -123,7 +123,7 @@ class MainActionBar extends React.Component<Props, State> {
       return null;
     }
 
-    return pipelines.map(pipeline => {
+    return pipelines.map((pipeline) => {
       return (
         <Listbox.Option key={pipeline._id} value={pipeline.name}>
           <Link
@@ -148,7 +148,7 @@ class MainActionBar extends React.Component<Props, State> {
       link,
       extraFilter,
       options,
-      clearFilter
+      clearFilter,
     } = this.props;
 
     const rightMenuProps = {
@@ -159,7 +159,7 @@ class MainActionBar extends React.Component<Props, State> {
       extraFilter,
       options,
       isFiltered,
-      clearFilter
+      clearFilter,
     };
 
     return <RightMenu {...rightMenuProps} />;
@@ -284,7 +284,7 @@ class MainActionBar extends React.Component<Props, State> {
           <div className="relative">
             <Listbox.Button>
               <Button btnStyle="primary" icon="list-ui-alt">
-                {viewType.charAt(0).toUpperCase() + viewType.slice(1)}
+                {__(viewType.charAt(0).toUpperCase() + viewType.slice(1))}
                 <Icon icon="angle-down" />
               </Button>
             </Listbox.Button>
@@ -322,7 +322,7 @@ class MainActionBar extends React.Component<Props, State> {
                     </Link>
                   </li>
                 )}
-                <li key="activity"> 
+                <li key="activity">
                   <Link
                     to={onFilterClick("activity")}
                     className={viewType === "activity" ? "active" : ""}
@@ -374,7 +374,7 @@ class MainActionBar extends React.Component<Props, State> {
   onDetailShowHandler = () => {
     this.setState(
       {
-        showDetail: !this.state.showDetail
+        showDetail: !this.state.showDetail,
       },
       () => {
         localStorage.setItem("showSalesDetail", `${this.state.showDetail}`);
@@ -393,7 +393,7 @@ class MainActionBar extends React.Component<Props, State> {
       rightContent,
       boardText,
       pipelineText,
-      queryParams
+      queryParams,
     } = this.props;
 
     const type = options.type;
@@ -481,7 +481,7 @@ class MainActionBar extends React.Component<Props, State> {
           contentType={`tickets:${type}`}
           serviceConfig={{
             boardId: currentBoard?._id,
-            pipelineId: currentPipeline?._id
+            pipelineId: currentPipeline?._id,
           }}
           hideSaveButton
         />
