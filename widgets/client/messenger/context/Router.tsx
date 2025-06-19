@@ -1,21 +1,21 @@
-import * as React from 'react';
-import { createContext, useContext, useState, useEffect } from 'react';
-import { getLocalStorageItem } from '../../common';
-import { connection } from '../connection';
-import { IFaqArticle, IFaqCategory } from '../types';
-import { useConfig } from './Config';
+import * as React from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { getLocalStorageItem } from "../../common";
+import { connection } from "../connection";
+import { IFaqArticle, IFaqCategory } from "../types";
+import { useConfig } from "./Config";
 
 const RouterContext = createContext<any>(null);
 
 export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
-  const [activeRoute, setActiveRoute] = useState('home');
+  const [activeRoute, setActiveRoute] = useState("home");
   const [isSmallContainer, setIsSmallContainer] = useState(false);
   const [activeFaqArticle, setActiveFaqArticle] = useState<IFaqArticle | null>(
     null
   );
   const [activeFaqCategory, setActiveFaqCategory] =
     useState<IFaqCategory | null>(null);
-  const [currentWebsiteApp, setCurrentWebsiteApp] = useState('');
+  const [currentWebsiteApp, setCurrentWebsiteApp] = useState("");
 
   const { setIsInputDisabled, setSelectedSkill, isLoggedIn } = useConfig();
 
@@ -28,7 +28,7 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (activeRoute === 'accquireInformation') {
+    if (activeRoute === "accquireInformation") {
       setIsSmallContainer(true);
     } else {
       setIsSmallContainer(false);
@@ -38,21 +38,21 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   const handleAuthentication = (requireAuth: boolean) => {
     if (!isLoggedIn() && requireAuth) {
       // setActiveRoute('acquireInformation');
-      setActiveRoute('home');
+      setActiveRoute("home");
     }
   };
 
   const handleChatVisibility = (requireAuth: boolean, showChat: boolean) => {
-    if ((!requireAuth && !getLocalStorageItem('hasNotified')) || !showChat) {
-      setActiveRoute('home');
+    if ((!requireAuth && !getLocalStorageItem("hasNotified")) || !showChat) {
+      setActiveRoute("home");
     }
   };
 
   const setRoute = (routePath: string) => {
     if (routePath) {
       if (shouldAcquireInformation(routePath)) {
-        setActiveRoute('acquireInformation');
-        setSelectedSkill('');
+        setActiveRoute("acquireInformation");
+        setSelectedSkill("");
         return;
       }
 
@@ -62,7 +62,7 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
 
   const shouldAcquireInformation = (routePath: string) => {
     return (
-      activeRoute === 'conversationDetail' &&
+      activeRoute === "conversationDetail" &&
       !isLoggedIn() &&
       connection.data.messengerData.requireAuth
     );
@@ -73,12 +73,12 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
     const { options = [] } = skillData;
 
     setActiveRoute(routePath);
-    setSelectedSkill('');
+    setSelectedSkill("");
     setIsInputDisabled(options.length > 0);
   };
 
   const goToFaqArticle = (article: IFaqArticle) => {
-    setRoute('faqArticle');
+    setRoute("faqArticle");
     setActiveFaqArticle(article);
   };
 
@@ -86,18 +86,16 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
     if (category) {
       setActiveFaqCategory(category);
     }
-    setRoute(
-      activeFaqCategory || category ? 'faqCategory' : 'conversationList'
-    );
+    setRoute(activeFaqCategory || category ? "faqCategory" : "home");
   };
 
   const goToHome = () => {
-    setActiveRoute('home');
+    setActiveRoute("home");
   };
 
   const goToWebsiteApp = (id: string) => {
     setCurrentWebsiteApp(id);
-    setRoute('websiteApp');
+    setRoute("websiteApp");
   };
 
   return (
