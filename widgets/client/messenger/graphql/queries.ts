@@ -16,14 +16,15 @@ const GET_CONVERSATION_DETAIL = (isDailycoEnabled: boolean) => gql`
       _id
       messages {
         ${MESSAGE_FIELDS}
-        ${isDailycoEnabled
-    ? `
+        ${
+          isDailycoEnabled
+            ? `
         videoCallData {
           url
           status
         }`
-    : ""
-  }
+            : ""
+        }
       }
 
       operatorStatus
@@ -74,33 +75,36 @@ const GET_CLOUDFLARE_CALL_INTEGRATION = gql`
       name
     }
   }
-`
+`;
 
 const TICKET_COMMENTS = gql`
-query widgetsTicketComments($typeId: String!, $type: String!) {
-  widgetsTicketComments(typeId: $typeId, type: $type) {
-    _id
-    content
-    createdUser {
+  query widgetsTicketComments($typeId: String!, $type: String!) {
+    widgetsTicketComments(typeId: $typeId, type: $type) {
       _id
-      email
-      emails
-      phone
-      phones
-      lastName
-      firstName
-      avatar
+      content
+      createdUser {
+        _id
+        email
+        emails
+        phone
+        phones
+        lastName
+        firstName
+        avatar
+      }
+      type
+      userType
+      createdAt
     }
-    type
-    userType
-    createdAt
   }
-}
 `;
 
 const TICKET_ACTIVITY_LOGS = gql`
   query widgetsTicketActivityLogs($contentType: String!, $contentId: String) {
-    widgetsTicketActivityLogs(contentType: $contentType, contentId: $contentId) {
+    widgetsTicketActivityLogs(
+      contentType: $contentType
+      contentId: $contentId
+    ) {
       _id
       action
       contentType
@@ -154,14 +158,15 @@ const conversationDetailQuery = (isDailycoEnabled: boolean) => `
       _id
       messages {
         ${messageFields}
-        ${isDailycoEnabled
-    ? `
+        ${
+          isDailycoEnabled
+            ? `
         videoCallData {
           url
           status
         }`
-    : ''
-  }
+            : ""
+        }
       }
 
       operatorStatus
@@ -202,8 +207,6 @@ const widgetExportMessengerDataQuery = `
   }
 `;
 
-
-
 const unreadCountQuery = `
   query widgetsUnreadCount($conversationId: String) {
     widgetsUnreadCount(conversationId: $conversationId)
@@ -226,8 +229,6 @@ const totalUnreadCountQuery = `
     widgetsTotalUnreadCount(${connection.queryParams})
   }
 `;
-
-
 
 const allConversations = `
   query widgetsConversations(${connection.queryVariables}) {
@@ -271,7 +272,6 @@ const customerDetail = `
   }
 `;
 
-
 // faq
 
 const faqFields = `
@@ -280,6 +280,7 @@ const faqFields = `
   summary
   content
   createdDate
+  isPrivate
 `;
 
 const categoryFields = `

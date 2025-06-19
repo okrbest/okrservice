@@ -4,7 +4,7 @@ import {
   IconFeaturedChevronRight,
   IconFeaturedSearch,
 } from "../../../icons/Icons";
-
+import { IArticle } from "@erxes/ui-knowledgebase/src/types";
 import Card from "../Card.tsx";
 import { GET_FAQ_TOPIC } from "../../graphql/queries";
 import { IFaqCategory } from "../../types";
@@ -127,7 +127,11 @@ const Featured: React.FC = () => {
       );
     }
 
-    const articles = articlesData?.widgetsKnowledgeBaseArticles || [];
+    const articles = (articlesData?.widgetsKnowledgeBaseArticles ||
+      []) as IArticle[];
+
+    const privateArticles = articles.filter((article) => article.isPrivate);
+    const recentPrivateArticles = privateArticles.slice(0, 3);
 
     if (articles.length === 0) {
       return <div className="empty-articles">{__("No recent articles")}</div>;
@@ -135,7 +139,7 @@ const Featured: React.FC = () => {
 
     const recentArticles = articles.slice(0, 3);
 
-    return <Articles articles={recentArticles} />;
+    return <Articles articles={recentPrivateArticles} />;
   };
 
   const renderCategoryList = () => {
