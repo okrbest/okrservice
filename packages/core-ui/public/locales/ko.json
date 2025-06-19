@@ -3128,5 +3128,12 @@
   "1 Hour Before": "1시간 전",
   "2 Hour Before": "2시간 전",
   "1 Day Before": "하루 전",
-  "2 Day Before": "이틀 전"
+  "2 Day Before": "이틀 전",
+  "List": "리스트",
+  "Gantt": "간트",
+  "calendar": "캘린더",
+  "activity": "활동",
+  "gantt": "간트",
+  "chart": "차트",
+  "time": "시간"
 }
