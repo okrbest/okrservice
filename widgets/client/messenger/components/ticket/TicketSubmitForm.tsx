@@ -95,6 +95,7 @@ const TicketSubmitForm: React.FC<Props> = ({
               >
                 <option value="request">{__("Request")}</option>
                 <option value="complaint">{__("Complaint")}</option>
+                <option value="usage">{__("usage")}</option>
               </select>
             </div>
           </div>
