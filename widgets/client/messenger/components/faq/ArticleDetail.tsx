@@ -1,6 +1,6 @@
 import * as dayjs from "dayjs";
 import * as React from "react";
-import { __, makeClickableLink } from "../../../utils";
+import { __, makeClickableLink, readFile } from "../../../utils";
 import { IFaqArticle, IFaqCategory } from "../../types";
 import Container from "../common/Container";
 
@@ -50,11 +50,10 @@ const ArticleDetail: React.FC<Props> = (props) => {
             {attachments && attachments.length > 0 && (
               <div className="attachments">
                 {attachments.map((file, index) => {
-                  const downloadUrl = `https://5240help.okrbiz.com/gateway/read-file?key=${encodeURIComponent(file.url)}`;
                   return (
                     <div key={index} style={{ marginBottom: "8px" }}>
                       <a
-                        href={downloadUrl}
+                        href={readFile(file.url)}
                         rel="noopener noreferrer"
                         download={file.name}
                         style={{
