@@ -25,6 +25,14 @@ export default class Article extends React.PureComponent<Props> {
         </div>
         <div className="erxes-right-side">
           <div className="erxes-name">{article.title}</div>
+          <div
+            className="erxes-summary"
+            style={{ fontSize: "12px", color: "#888", marginTop: "11px" }}
+          >
+            {article.summary.length > 30
+              ? article.summary.substring(0, 30) + "..."
+              : article.summary}
+          </div>
         </div>
       </div>
     );
