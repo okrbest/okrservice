@@ -3,7 +3,7 @@ import {
   IIntegrationMessengerData,
   IIntegrationUiOptions,
   IParticipator,
-  IUser
+  IUser,
 } from "../types";
 
 import { ICarouselItem } from "./components/bot/Carousel";
@@ -105,6 +105,7 @@ export interface IFaqArticle extends ICommonFields {
   content: string;
   status: string;
   createdDate: Date;
+  attachments?: IAttachment[];
 }
 
 export interface IFaqCategory extends ICommonFields {
@@ -155,7 +156,7 @@ export interface IBotData {
       title: string;
       payload: string;
       type: string;
-    }
+    },
   ];
   wrapped?: {
     type: string;
@@ -178,7 +179,7 @@ export interface ITicketActivityLog {
   createdByDetail: {
     type: string;
     content: any;
-  }
+  };
 }
 
 export interface ITicketComment {
@@ -197,7 +198,7 @@ export interface ITicketComment {
     lastName: string;
     phone: string;
     phones: string[];
-  }
+  };
 }
 
 export interface ITicketStage {

@@ -281,6 +281,13 @@ const faqFields = `
   content
   createdDate
   isPrivate
+  attachments {
+    name
+    url
+    type
+    size
+    duration
+  }
 `;
 
 const categoryFields = `

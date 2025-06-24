@@ -1,8 +1,8 @@
-import * as dayjs from 'dayjs';
-import * as React from 'react';
-import { __, makeClickableLink } from '../../../utils';
-import { IFaqArticle, IFaqCategory } from '../../types';
-import Container from '../common/Container';
+import * as dayjs from "dayjs";
+import * as React from "react";
+import { __, makeClickableLink } from "../../../utils";
+import { IFaqArticle, IFaqCategory } from "../../types";
+import Container from "../common/Container";
 
 type Props = {
   article: IFaqArticle | null;
@@ -12,7 +12,7 @@ type Props = {
 
 const ArticleDetail: React.FC<Props> = (props) => {
   React.useEffect(() => {
-    makeClickableLink('.erxes-article-content a');
+    makeClickableLink(".erxes-article-content a");
   }, []);
 
   const renderHead = (title: string) => {
@@ -30,7 +30,7 @@ const ArticleDetail: React.FC<Props> = (props) => {
     return <div className="loader bigger" />;
   }
 
-  const { createdDate, title, summary, content } = article;
+  const { createdDate, title, summary, content, attachments } = article;
 
   const onClick = () => {
     goToCategory();
@@ -43,10 +43,33 @@ const ArticleDetail: React.FC<Props> = (props) => {
           <div className="erxes-article-content">
             <h2>{title}</h2>
             <div className="date">
-              {__('Created ')}: <span>{dayjs(createdDate).format('lll')}</span>
+              {__("Created ")}: <span>{dayjs(createdDate).format("lll")}</span>
             </div>
             <p>{summary}</p>
             <p dangerouslySetInnerHTML={{ __html: content }} />
+            {attachments && attachments.length > 0 && (
+              <div className="attachments">
+                {attachments.map((file, index) => {
+                  const downloadUrl = `https://5240help.okrbiz.com/gateway/read-file?key=${encodeURIComponent(file.url)}`;
+                  return (
+                    <div key={index} style={{ marginBottom: "8px" }}>
+                      <a
+                        href={downloadUrl}
+                        rel="noopener noreferrer"
+                        download={file.name}
+                        style={{
+                          textDecoration: "none",
+                          color: "inherit",
+                          cursor: "pointer",
+                        }}
+                      >
+                        📎 {file.name}
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
