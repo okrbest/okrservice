@@ -205,7 +205,6 @@
 }
 
 @keyframes shake {
-
   10%,
   90% {
     transform: translate3d(-1px, 0, 0);
@@ -653,7 +652,8 @@ select.form-control,
 select.form-control:focus,
 .select.form-control,
 .select.form-control:focus {
-  background: url(http://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/br_down.png) no-repeat right;
+  background: url(http://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/br_down.png)
+    no-repeat right;
   background-size: 8px;
   background-position-x: calc(100% - 10px);
 }
@@ -748,7 +748,7 @@ select.form-control:focus,
   max-width: 100%;
 }
 
-.form-group .control-label>.required {
+.form-group .control-label > .required {
   margin-left: 2px;
   color: #ff0000;
 }
@@ -990,7 +990,7 @@ select.form-control:focus,
   width: 40px;
 }
 
-.erxes-staff-profile>div {
+.erxes-staff-profile > div {
   margin-left: 50px;
 }
 
@@ -1015,7 +1015,7 @@ select.form-control:focus,
   color: white;
 }
 
-.erxes-topbar-title>div span {
+.erxes-topbar-title > div span {
   display: inline;
   opacity: 0.8;
 }
@@ -1282,7 +1282,8 @@ select.form-control:focus,
 }
 
 .head-wrapper::before {
-  background: url("https://s3.amazonaws.com/erxes/radial.png") left top no-repeat;
+  background: url("https://s3.amazonaws.com/erxes/radial.png") left top
+    no-repeat;
   background-size: cover;
   bottom: 0;
   content: "";
@@ -1405,8 +1406,8 @@ select.form-control:focus,
   max-width: 260px;
 }
 
-.erxes-topbar .erxes-topbar-title.limited>div,
-.erxes-topbar .erxes-topbar-title.limited>span {
+.erxes-topbar .erxes-topbar-title.limited > div,
+.erxes-topbar .erxes-topbar-title.limited > span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1705,7 +1706,7 @@ select.form-control:focus,
   left: 0;
 }
 
-.erxes-tab>span {
+.erxes-tab > span {
   align-items: center;
   background: #fff;
   display: flex;
@@ -1717,7 +1718,7 @@ select.form-control:focus,
   transition: all 0.3s ease;
 }
 
-.erxes-tab>span:last-of-type {
+.erxes-tab > span:last-of-type {
   border-left: 1px solid #ddd;
 }
 
@@ -1949,7 +1950,7 @@ select.form-control:focus,
   left: 42px;
 }
 
-.erxes-last-section>.erxes-create-btn {
+.erxes-last-section > .erxes-create-btn {
   background: rgb(101, 105, 223);
   cursor: pointer;
   display: grid;
@@ -1960,7 +1961,7 @@ select.form-control:focus,
   border-radius: 5px;
 }
 
-.erxes-last-section>.erxes-create-btn>.erxes-start-text {
+.erxes-last-section > .erxes-create-btn > .erxes-start-text {
   padding-bottom: 5px;
 }
 
@@ -1990,7 +1991,7 @@ select.form-control:focus,
   width: 40px;
 }
 
-.erxes-list-item .erxes-left-side>span {
+.erxes-list-item .erxes-left-side > span {
   align-items: center;
   background: rgba(0, 0, 0, 0.04);
   border: 1px solid #ddd;
@@ -2026,11 +2027,11 @@ select.form-control:focus,
   font-weight: 400;
 }
 
-.erxes-list-item .erxes-name>span {
+.erxes-list-item .erxes-name > span {
   color: #888;
 }
 
-.erxes-list-item .erxes-name>input {
+.erxes-list-item .erxes-name > input {
   padding: 10px 10px;
   line-height: 1.4;
   border-radius: 5px;
@@ -2156,7 +2157,7 @@ select.form-control:focus,
   padding: 0;
 }
 
-.erxes-spacial-message~.erxes-spacial-message {
+.erxes-spacial-message ~ .erxes-spacial-message {
   margin-top: 15px;
 }
 
@@ -2179,10 +2180,12 @@ select.form-control:focus,
 }
 
 .erxes-message.from-customer {
-  background: linear-gradient(119deg,
-      #8d94ff 2.96%,
-      #6335ff 51.52%,
-      #8b73bd 100.08%);
+  background: linear-gradient(
+    119deg,
+    #8d94ff 2.96%,
+    #6335ff 51.52%,
+    #8b73bd 100.08%
+  );
   color: #fff;
   margin: 0 0 5px 20px;
   text-align: right;
@@ -2211,7 +2214,7 @@ select.form-control:focus,
   border: 0;
 }
 
-.erxes-message.attachment>span {
+.erxes-message.attachment > span {
   display: none;
 }
 
@@ -2435,7 +2438,7 @@ select.form-control:focus,
   margin: 20px 0 0;
 }
 
-.app-message-box .user-info h2>span {
+.app-message-box .user-info h2 > span {
   font-size: 24px;
 }
 
@@ -2482,7 +2485,7 @@ select.form-control:focus,
 }
 
 .app-message-box .call-button button,
-.app-message-box .call-button>a {
+.app-message-box .call-button > a {
   background: #3b85f4;
   border: 1px solid transparent;
   border-color: #3b85f4;
@@ -2498,16 +2501,16 @@ select.form-control:focus,
 }
 
 .app-message-box .call-button button:hover,
-.app-message-box .call-button>a:hover {
+.app-message-box .call-button > a:hover {
   box-shadow: 0 2px 10px 0 #3b85f4;
 }
 
 .app-message-box .call-button button:focus,
-.app-message-box .call-button>a:focus {
+.app-message-box .call-button > a:focus {
   outline: 0;
 }
 
-.app-message-box .call-button>a {
+.app-message-box .call-button > a {
   text-decoration: none;
   display: block;
   width: auto;
@@ -2621,6 +2624,11 @@ select.form-control:focus,
   min-height: 20px;
 }
 
+.description {
+  font-size: 12px;
+  margin-top: 11px;
+}
+
 .back-category-button {
   display: flex;
   align-items: center;
@@ -2639,7 +2647,7 @@ select.form-control:focus,
   opacity: 0.8;
 }
 
-.back-category-button>svg {
+.back-category-button > svg {
   margin-right: 10px;
 }
 
@@ -2731,7 +2739,7 @@ select.form-control:focus,
   position: relative;
 }
 
-.erxes-faq-searchbar>input {
+.erxes-faq-searchbar > input {
   height: 100%;
   width: 100%;
   background: #fff;
@@ -2743,8 +2751,9 @@ select.form-control:focus,
     color: #737376;
   }
 
-  font-feature-settings: "clig" off,
-  "liga" off;
+  font-feature-settings:
+    "clig" off,
+    "liga" off;
   font-size: 0.9375rem;
   font-style: normal;
   font-weight: 400;
@@ -2752,7 +2761,7 @@ select.form-control:focus,
   /* 1.26563rem */
 }
 
-.erxes-faq-searchbar>svg {
+.erxes-faq-searchbar > svg {
   position: absolute;
   right: 1rem;
   top: 0.85rem;
@@ -2778,7 +2787,7 @@ select.form-control:focus,
   overflow: hidden;
 }
 
-.erxes-form>h4 {
+.erxes-form > h4 {
   margin: 0;
   padding: 1.25rem 1.125rem;
 }
@@ -3008,7 +3017,7 @@ select.form-control:focus,
 .emoji-picker-wrapper {
   position: relative;
 
-  >div {
+  > div {
     display: inline-block;
   }
 
@@ -3087,7 +3096,7 @@ select.form-control:focus,
   z-index: 9998;
 }
 
-.erxes-notification>button {
+.erxes-notification > button {
   position: absolute;
   right: 0;
 }
@@ -3770,7 +3779,7 @@ select.form-control:focus,
   bottom: 150px;
 }
 
-.ticket-progress-logs>span {
+.ticket-progress-logs > span {
   color: #888;
   font-weight: 700;
   margin-bottom: 10px;
@@ -3808,7 +3817,7 @@ select.form-control:focus,
   margin-top: 5px;
 }
 
-.ticket-progress-logs .ticket-progress-log>span {
+.ticket-progress-logs .ticket-progress-log > span {
   background: #eee;
   margin-left: 10px;
   padding: 10px;
@@ -3818,13 +3827,13 @@ select.form-control:focus,
   width: 100%;
 }
 
-.ticket-progress-logs .ticket-progress-log.team>span {
+.ticket-progress-logs .ticket-progress-log.team > span {
   margin-left: 0;
   margin-right: 10px;
   background: #e5e0f7;
 }
 
-.ticket-progress-logs .ticket-progress-log>span strong {
+.ticket-progress-logs .ticket-progress-log > span strong {
   margin-right: 5px;
 }
 
@@ -4030,7 +4039,7 @@ select.form-control:focus,
   height: 100%;
 }
 
-.call-container .outgoing-call>div {
+.call-container .outgoing-call > div {
   text-align: center;
 }
 
@@ -4335,7 +4344,7 @@ select.form-control:focus,
   padding: 0;
 }
 
-.menu>li {
+.menu > li {
   margin: 0;
   position: relative;
   color: #000;
@@ -4347,11 +4356,11 @@ select.form-control:focus,
   background-color: white;
 }
 
-.menu>li:hover {
+.menu > li:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.menu>li>button {
+.menu > li > button {
   width: 100%;
   height: 100%;
   text-align: left;
@@ -4478,15 +4487,17 @@ select.form-control:focus,
   opacity: 1;
 }
 
-.hover-control-item>button {
+.hover-control-item > button {
   outline: none;
   border-radius: 100px;
   border: none;
-  background: linear-gradient(170deg,
-      rgba(141, 148, 255, 1) 0%,
-      rgba(79, 51, 175, 1) 36%,
-      rgba(102, 60, 248, 1) 63%,
-      rgba(139, 115, 189, 1) 100%);
+  background: linear-gradient(
+    170deg,
+    rgba(141, 148, 255, 1) 0%,
+    rgba(79, 51, 175, 1) 36%,
+    rgba(102, 60, 248, 1) 63%,
+    rgba(139, 115, 189, 1) 100%
+  );
   cursor: pointer;
   padding: 0.56rem;
 
@@ -4662,10 +4673,12 @@ select.form-control:focus,
   outline: none;
   border-radius: 100px;
   border: none;
-  background: linear-gradient(119deg,
-      #8d94ff 2.96%,
-      #6335ff 51.52%,
-      #8b73bd 100.08%);
+  background: linear-gradient(
+    119deg,
+    #8d94ff 2.96%,
+    #6335ff 51.52%,
+    #8b73bd 100.08%
+  );
   padding: 0.75rem 1.5rem;
   font-size: 0.875rem;
   color: white;
@@ -4731,10 +4744,12 @@ select.form-control:focus,
   align-self: stretch;
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
-  background: linear-gradient(119deg,
-      #8d94ff 2.96%,
-      #6335ff 51.52%,
-      #8b73bd 100.08%);
+  background: linear-gradient(
+    119deg,
+    #8d94ff 2.96%,
+    #6335ff 51.52%,
+    #8b73bd 100.08%
+  );
 }
 
 .top-nav {
@@ -4845,7 +4860,7 @@ select.form-control:focus,
   flex-direction: column;
   gap: 0.625rem;
 
-  >span {
+  > span {
     font-size: 0.875rem;
     font-weight: 500;
     letter-spacing: -0.00875rem;
@@ -4894,10 +4909,12 @@ select.form-control:focus,
   z-index: 0;
   height: 400px;
   width: 100%;
-  background: linear-gradient(115deg,
-      #512fc5 12.5%,
-      #8349ff 52.08%,
-      #caf4f7 100%);
+  background: linear-gradient(
+    115deg,
+    #512fc5 12.5%,
+    #8349ff 52.08%,
+    #caf4f7 100%
+  );
 
   .absorbed {
     position: absolute;
@@ -5081,17 +5098,17 @@ select.form-control:focus,
 
 .priority-high {
   background: #ffebee;
-  color: #F7CE53;
+  color: #f7ce53;
 }
 
 .priority-medium {
   background: #fff8e1;
-  color: #3B85F4;
+  color: #3b85f4;
 }
 
 .priority-low {
   background: #e8f5e8;
-  color: #AAAEB3;
+  color: #aaaeb3;
 }
 
 .priority-normal {
