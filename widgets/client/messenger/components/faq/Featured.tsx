@@ -130,7 +130,12 @@ const Featured: React.FC = () => {
     const articles = (articlesData?.widgetsKnowledgeBaseArticles ||
       []) as IArticle[];
 
-    const privateArticles = articles.filter((article) => article.isPrivate);
+    const privateArticles = articles
+      .filter((article) => article.isPrivate)
+      .sort(
+        (a, b) =>
+          new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+      );
     const recentPrivateArticles = privateArticles.slice(0, 3);
 
     if (articles.length === 0) {
