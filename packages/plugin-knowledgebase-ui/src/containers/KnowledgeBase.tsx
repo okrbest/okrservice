@@ -5,6 +5,7 @@ import {
   CategoryDetailQueryResponse,
   ICategory,
   LastCategoryQueryResponse,
+  AllArticlesQueryResponse,
 } from "@erxes/ui-knowledgebase/src/types";
 import { router as routerUtils, withProps } from "@erxes/ui/src/utils";
 
@@ -19,11 +20,13 @@ import queryString from "query-string";
 type Props = {
   queryParams: any;
   currentCategoryId: string;
+  allArticles?: any[]; // ✅ Added
 };
 
 type FinalProps = {
   articlesCountQuery?: ArticlesTotalCountQueryResponse;
   categoryDetailQuery?: CategoryDetailQueryResponse;
+  allArticlesQuery?: AllArticlesQueryResponse;
 } & Props &
   IRouterProps;
 
@@ -36,10 +39,13 @@ const KnowledgeBase = (props: FinalProps) => {
   const currentCategory =
     categoryDetailQuery && categoryDetailQuery.knowledgeBaseCategoryDetail;
 
+  const allArticles = props.allArticlesQuery?.knowledgeBaseArticles || [];
+
   const updatedProps = {
     ...props,
     articlesCount: articlesCount || 0,
     currentCategory: currentCategory || ({} as ICategory),
+    allArticles, // ✅ Added
   };
 
   return <KnowledgeBaseComponent {...updatedProps} />;
@@ -66,6 +72,15 @@ const KnowledgeBaseContainer = withProps<Props>(
           variables: { categoryIds: [currentCategoryId] },
         }),
         skip: ({ currentCategoryId }) => !currentCategoryId,
+      }
+    ),
+    graphql<Props, AllArticlesQueryResponse>(
+      gql(queries.allKnowledgeBaseArticles),
+      {
+        name: "allArticlesQuery",
+        options: () => ({
+          fetchPolicy: "network-only",
+        }),
       }
     )
   )(KnowledgeBase)
