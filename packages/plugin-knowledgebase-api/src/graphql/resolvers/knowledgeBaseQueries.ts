@@ -2,6 +2,18 @@ import { checkPermission, paginate, requireLogin } from '@erxes/api-utils/src';
 
 import { IContext } from '../../connectionResolver';
 
+// Helper function for common query selector
+const getCommonQuerySelector = (context: IContext) => {
+  const disableBrandFiltering = process.env.DISABLE_KB_BRAND_FILTERING === 'true';
+  
+  if (disableBrandFiltering) {
+    return {};
+  }
+
+  const { commonQuerySelector } = context;
+  return commonQuerySelector || {};
+};
+
 const findDetail = async (model, _id) => {
   return await model.findOne({ $or: [{ _id }, { code: _id }] });
 };
@@ -52,8 +64,8 @@ const knowledgeBaseQueries = {
   async knowledgeBaseArticles(
     _root,
     args: {
-      page: number;
-      perPage: number;
+      page?: number;
+      perPage?: number;
       searchValue?: string;
       categoryIds: string[];
       articleIds: string[];
@@ -63,15 +75,18 @@ const knowledgeBaseQueries = {
       sortDirection?: number;
       status?: string;
     },
-    { models }: IContext
+    context: IContext
   ) {
     const selector: any = buildQuery(args);
     let sort: any = { createdDate: -1 };
 
-    const pageArgs = { page: args.page, perPage: args.perPage };
+    // 기본값 설정
+    const page = args.page || 1;
+    const perPage = args.perPage || 20;
+    const pageArgs = { page, perPage };
 
     if (args.topicIds && args.topicIds.length > 0) {
-      const categoryIds = await models.KnowledgeBaseCategories.find({
+      const categoryIds = await context.models.KnowledgeBaseCategories.find({
         topicId: { $in: args.topicIds },
       }).distinct('_id');
 
@@ -84,9 +99,50 @@ const knowledgeBaseQueries = {
       sort = { [args.sortField]: args.sortDirection };
     }
 
-    const articles = models.KnowledgeBaseArticles.find(selector).sort(sort);
+    // Use getCommonQuerySelector for conditional brand filtering
+    const finalSelector = {
+      ...selector,
+      ...getCommonQuerySelector(context),
+    };
+    
+    console.log('Final query selector:', finalSelector);
 
-    return paginate(articles, pageArgs);
+    const articles = context.models.KnowledgeBaseArticles.find(finalSelector).sort(sort);
+    
+    const result = await paginate(articles, pageArgs);
+    console.log('Query result count:', result.length);
+    console.log('Query result:', result);
+
+    // 백엔드 진단 정보 추가
+    console.log('=== 백엔드 쿼리 진단 ===');
+    console.log('1. 쿼리 파라미터 분석:');
+    console.log('   page:', page);
+    console.log('   perPage:', perPage);
+    console.log('   categoryIds:', args.categoryIds);
+    console.log('   articleIds:', args.articleIds);
+    console.log('   topicIds:', args.topicIds);
+    console.log('   status:', args.status);
+    
+    console.log('2. 필터링 분석:');
+    console.log('   기본 selector:', selector);
+    console.log('   commonQuerySelector:', context.commonQuerySelector);
+    console.log('   최종 selector:', finalSelector);
+    
+    console.log('3. 결과 분석:');
+    console.log('   결과 개수:', result.length);
+    console.log('   결과가 비어있음:', result.length === 0);
+    
+    if (result.length === 0) {
+      console.log('❌ 문제 발견: 아티클이 없음');
+      console.log('   가능한 원인:');
+      console.log('   - commonQuerySelector가 너무 제한적');
+      console.log('   - categoryIds가 잘못됨');
+      console.log('   - 데이터베이스에 아티클이 없음');
+    } else {
+      console.log('✅ 정상: 아티클을 가져옴');
+    }
+
+    return result;
   },
 
   /**

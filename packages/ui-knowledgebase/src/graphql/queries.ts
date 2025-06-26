@@ -211,8 +211,8 @@ const knowledgeBaseArticlesTotalCount = `
 `;
 
 const allKnowledgeBaseArticles = `
-  query allKnowledgeBaseArticles {
-    knowledgeBaseArticles {
+  query allKnowledgeBaseArticles($page: Int, $perPage: Int) {
+    knowledgeBaseArticles(page: $page, perPage: $perPage) {
       _id
       code
       title
