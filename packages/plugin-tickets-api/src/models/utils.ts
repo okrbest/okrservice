@@ -612,9 +612,12 @@ export const updateName = async (
     const item = await collection.findOne({ _id: itemId }).lean();
     const stage = await models.Stages.findOne({ _id: item.stageId });
     const pipeline = await models.Pipelines.findOne({ _id: stage?.pipelineId });
-    let replacedName = pipeline?.nameConfig;
 
+    console.log('item: ', item);
     if (pipeline?.nameConfig) {
+      const originalTitle = item.name || '';
+      let replacedName = pipeline.nameConfig;
+      
       const regex = /\{(\b\w+\.\b\w+)}/g;
       const matches = pipeline?.nameConfig?.match(regex) || [];
 
@@ -713,6 +716,19 @@ export const updateName = async (
                 );
               }
             }
+            
+            if (serviceName === 'ticket' || serviceName === 'item') {
+              switch (pattern[1]) {
+                case 'title':
+                case 'name':
+                  replacedName = replacedName?.replace(match, originalTitle);
+                  break;
+                default:
+                  replacedName = replacedName?.replace(match, '');
+                  break;
+              }
+            }
+            
             if (enabledServices.includes(serviceName)) {
               try {
                 const result = await sendCommonMessage({
@@ -735,6 +751,14 @@ export const updateName = async (
             }
           }
         }
+      }
+
+      if (originalTitle && 
+          !pipeline.nameConfig.includes('{ticket.title}') && 
+          !pipeline.nameConfig.includes('{item.')) {
+        
+        const separator = replacedName && !replacedName.endsWith('-') && !replacedName.endsWith(' ') ? '-' : '';
+        replacedName = replacedName + separator + originalTitle;
       }
 
       await collection.updateOne(
