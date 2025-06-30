@@ -18,6 +18,21 @@ import gql from "graphql-tag";
 import { faqSearchArticlesQuery } from "../../graphql/queries";
 import Articles from "./Articles";
 
+const getTodaySeed = () => {
+  const today = new Date();
+  return (
+    today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()
+  );
+};
+
+const stableArticleScore = (article: IArticle, todaySeed: number): number => {
+  let hash = todaySeed;
+  for (let i = 0; i < article._id.length; i++) {
+    hash = (hash * 31 + article._id.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+};
+
 const LeadConnect = asyncComponent(
   () =>
     import(
@@ -131,15 +146,21 @@ const Featured: React.FC = () => {
       []) as IArticle[];
 
     const privateArticles = articles.filter((article) => article.isPrivate);
-    const recentPrivateArticles = privateArticles.slice(0, 3);
+
+    const todaySeed = getTodaySeed();
+    const stableSorted = [...privateArticles].sort((a, b) => {
+      const scoreA = stableArticleScore(a, todaySeed);
+      const scoreB = stableArticleScore(b, todaySeed);
+      return scoreA - scoreB;
+    });
+
+    const dailyPrivateArticles = stableSorted.slice(0, 3);
 
     if (articles.length === 0) {
       return <div className="empty-articles">{__("No recent articles")}</div>;
     }
 
-    const recentArticles = articles.slice(0, 3);
-
-    return <Articles articles={recentPrivateArticles} />;
+    return <Articles articles={dailyPrivateArticles} />;
   };
 
   const renderCategoryList = () => {

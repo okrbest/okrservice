@@ -1,7 +1,11 @@
-import { IAttachment, IPdfAttachment, QueryResponse } from '@erxes/ui/src/types';
+import {
+  IAttachment,
+  IPdfAttachment,
+  QueryResponse,
+} from "@erxes/ui/src/types";
 
-import { IBrand } from '@erxes/ui/src/brands/types';
-import { IUser } from '@erxes/ui/src/auth/types';
+import { IBrand } from "@erxes/ui/src/brands/types";
+import { IUser } from "@erxes/ui/src/auth/types";
 
 export interface IArticle {
   _id: string;
@@ -60,6 +64,7 @@ export interface ICategory {
   firstTopic: ITopic;
   parentCategoryId?: string;
   code?: string;
+  numArticles?: number;
 }
 
 export interface IErxesForm {
@@ -104,8 +109,6 @@ export type CategoryVariables = {
   topicIds: string[];
 };
 
-
-
 export type AddCategoriesMutationResponse = {
   addCategoriesMutation: (params: {
     variables: CategoryVariables;
@@ -147,6 +150,10 @@ export type RemoveTopicsMutation = {
 
 // query types
 export type ArticlesQueryResponse = {
+  knowledgeBaseArticles: IArticle[];
+} & QueryResponse;
+
+export type AllArticlesQueryResponse = {
   knowledgeBaseArticles: IArticle[];
 } & QueryResponse;
 
