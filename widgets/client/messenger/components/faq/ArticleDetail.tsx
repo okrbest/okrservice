@@ -41,10 +41,10 @@ const ArticleDetail: React.FC<Props> = (props) => {
       <div className="erxes-content">
         <div className="erxes-content slide-in">
           <div className="erxes-article-content">
-            <h2>{title}</h2>
+            {/* <h2>{title}</h2>
             <div className="date">
               {__("Created ")}: <span>{dayjs(createdDate).format("lll")}</span>
-            </div>
+            </div> */}
             <p>{summary}</p>
             <p dangerouslySetInnerHTML={{ __html: content }} />
             {attachments && attachments.length > 0 && (
