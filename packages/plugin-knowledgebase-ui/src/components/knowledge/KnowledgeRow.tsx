@@ -21,7 +21,7 @@ import SaveTemplate from "@erxes/ui-template/src/components/SaveTemplate";
 type Props = {
   queryParams: any;
   currentCategoryId: string;
-  topic: ITopic & { articles?: any[] };
+  topic: ITopic;
   articlesCount: number;
   remove: (knowledgeBaseId: string) => void;
   refetchTopics: () => void;
@@ -85,12 +85,12 @@ class KnowledgeRow extends React.Component<Props, State> {
       modifiedDate,
       parentCategories,
       ...topicContent
-    } = topic;
+    } = topic
 
     const content = {
       content: JSON.stringify(topicContent),
-      contentType: "topic",
-      serviceName: "knowledgebase",
+      contentType: 'topic',
+      serviceName: 'knowledgebase'
     };
 
     return <SaveTemplate as="menuItem" {...content} />;
@@ -166,7 +166,7 @@ class KnowledgeRow extends React.Component<Props, State> {
           <CategoryList
             currentCategoryId={currentCategoryId}
             topicId={topic._id}
-            queryParams={{ ...queryParams, articles: topic.articles }}
+            queryParams={queryParams}
           />
         )}
       </KnowledgeBaseRow>

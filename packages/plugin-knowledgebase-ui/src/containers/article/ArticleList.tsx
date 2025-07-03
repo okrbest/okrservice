@@ -1,20 +1,18 @@
-import { gql, useQuery, useMutation } from "@apollo/client";
-import { Alert, confirm, withProps } from "@erxes/ui/src/utils";
-import { generatePaginationParams } from "@erxes/ui/src/utils/router";
-import React from "react";
-import ArticleList from "../../components/article/ArticleList";
-import { mutations, queries } from "@erxes/ui-knowledgebase/src/graphql";
+import { gql, useQuery, useMutation } from '@apollo/client';
+import { Alert, confirm, withProps } from '@erxes/ui/src/utils';
+import { generatePaginationParams } from '@erxes/ui/src/utils/router';
+import React from 'react';
+import ArticleList from '../../components/article/ArticleList';
+import { mutations, queries } from '@erxes/ui-knowledgebase/src/graphql';
 import {
   ArticlesQueryResponse,
   RemoveArticlesMutationResponse,
-} from "@erxes/ui-knowledgebase/src/types";
+} from '@erxes/ui-knowledgebase/src/types';
 
 type Props = {
   queryParams: any;
   currentCategoryId: string;
   topicId: string;
-  articles: any[]; // Added
-  loading: boolean;
 };
 
 const ArticleContainer = (props: Props) => {
@@ -27,17 +25,15 @@ const ArticleContainer = (props: Props) => {
         ...generatePaginationParams(queryParams),
         categoryIds: [currentCategoryId],
       },
-      fetchPolicy: "network-only",
-    }
+      fetchPolicy: 'network-only',
+    },
   );
-
-  const articles = props.articles;
 
   const [removeArticlesMutation] = useMutation<RemoveArticlesMutationResponse>(
     gql(mutations.knowledgeBaseArticlesRemove),
     {
       refetchQueries: refetchQueries(currentCategoryId, topicId),
-    }
+    },
   );
 
   // remove action
@@ -49,7 +45,7 @@ const ArticleContainer = (props: Props) => {
         .then(() => {
           articlesQuery.refetch();
 
-          Alert.success("You successfully deleted an article");
+          Alert.success('You successfully deleted an article');
         })
         .catch((error) => {
           Alert.error(error.message);
@@ -63,7 +59,8 @@ const ArticleContainer = (props: Props) => {
     currentCategoryId,
     topicId,
     queryParams,
-    articles,
+    articles: articlesQuery?.data?.knowledgeBaseArticles || [],
+    loading: articlesQuery.loading,
   };
 
   return <ArticleList {...extendedProps} />;
