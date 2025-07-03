@@ -57,25 +57,14 @@ class CategoryRow extends React.Component<Props> {
   };
 
   render() {
-    const { category, isActive, isChild, isParent, topicId } = this.props;
-
-    // Only render main-category when topicId === "main-articles-topic"
-    // Skip rendering main-category for all other topicIds
-    if (
-      (topicId === "main-articles-topic" && category._id !== "main-category") ||
-      (topicId !== "main-articles-topic" && category._id === "main-category")
-    ) {
-      return null;
-    }
+    const { category, isActive, isChild, isParent } = this.props;
 
     return (
       <CategoryItem key={category._id} $isActive={isActive} $isChild={isChild}>
         <Link to={`?id=${category._id}`}>
           <div>
             {category.title}
-            <span>
-              ({category.articles?.length ?? category.numArticles ?? 0})
-            </span>
+            <span>({category.articles.length})</span>
           </div>
           {isParent && <Icon icon="angle-down" />}
         </Link>

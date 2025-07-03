@@ -210,79 +210,6 @@ const knowledgeBaseArticlesTotalCount = `
   }
 `;
 
-const allKnowledgeBaseArticles = `
-  query allKnowledgeBaseArticles {
-    knowledgeBaseArticles {
-      _id
-      code
-      title
-      summary
-      content
-      status
-      isPrivate
-      reactionChoices
-      reactionCounts
-      createdBy
-      topicId
-      categoryId
-      createdUser {
-        _id
-        username
-        email
-        details {
-          avatar
-          fullName
-        }
-      }
-      attachments {
-        name
-        url
-        type
-        size
-        duration
-      }
-      pdfAttachment {
-        pdf {
-          name
-          url
-          type
-          size
-        }
-        pages {
-          name
-          url
-          type
-          size
-        }
-      }
-      image {
-        name
-        url
-        type
-        size
-      }
-      createdDate
-      modifiedBy
-      modifiedDate
-      scheduledDate
-      forms {
-        brandId
-        formId
-      }
-      publishedUserId
-      publishedUser {
-        _id
-        username
-        email
-        details {
-          avatar
-          fullName
-        }
-      }
-    }
-  }
-`;
-
 export default {
   getBrandList,
   getSegmentList,
@@ -295,5 +222,4 @@ export default {
   knowledgeBaseCategoriesTotalCount,
   knowledgeBaseArticles,
   knowledgeBaseArticlesTotalCount,
-  allKnowledgeBaseArticles,
 };
