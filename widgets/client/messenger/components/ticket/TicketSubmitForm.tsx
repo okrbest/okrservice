@@ -7,6 +7,7 @@ import Input from "../common/Input";
 import SuccessForm from "./SuccessForm";
 import { __ } from "../../../utils";
 import { useConfig } from "../../context/Config";
+import TicketListContainer from "../../containers/ticket/TicketListContainer";
 
 type Props = {
   loading: boolean;
@@ -126,6 +127,13 @@ const TicketSubmitForm: React.FC<Props> = ({
     );
   };
 
+  // Trigger route change to "ticket-list" when isSubmitted becomes true
+  React.useEffect(() => {
+    if (isSubmitted) {
+      handleButtonClick();
+    }
+  }, [isSubmitted, handleButtonClick]);
+
   return (
     <Container
       withBottomNavBar={true}
@@ -140,21 +148,11 @@ const TicketSubmitForm: React.FC<Props> = ({
               <span className="font-semibold">{submitText}</span>
             )}
           </Button>
-        ) : (
-          <Button full onClick={handleButtonClick}>
-            <span className="font-semibold">{continueText}</span>
-          </Button>
-        )
+        ) : null
       }
     >
       <div className="ticket-container">
-        {loading || customerLoading ? (
-          <div className="loader" />
-        ) : isSubmitted ? (
-          <SuccessForm ticketNumber={ticketNumber} />
-        ) : (
-          renderForm()
-        )}
+        {loading || customerLoading ? <div className="loader" /> : renderForm()}
       </div>
     </Container>
   );

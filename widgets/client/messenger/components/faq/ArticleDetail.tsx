@@ -15,13 +15,9 @@ const ArticleDetail: React.FC<Props> = (props) => {
     makeClickableLink(".erxes-article-content a");
   }, []);
 
-  const renderHead = (title: string) => {
+  const renderHead = () => {
     if (props.loading) return <div className="loader" />;
-    return (
-      <div className="erxes-topbar-title limited">
-        <div>{title}</div>
-      </div>
-    );
+    return <div className="erxes-topbar-title limited"></div>;
   };
 
   const { article, goToCategory } = props;
@@ -37,14 +33,14 @@ const ArticleDetail: React.FC<Props> = (props) => {
   };
 
   return (
-    <Container title={renderHead(title)} onBackButton={onClick}>
+    <Container title={renderHead()} onBackButton={onClick}>
       <div className="erxes-content">
         <div className="erxes-content slide-in">
           <div className="erxes-article-content">
-            {/* <h2>{title}</h2>
+            <h2>{title}</h2>
             <div className="date">
               {__("Created ")}: <span>{dayjs(createdDate).format("lll")}</span>
-            </div> */}
+            </div>
             <p>{summary}</p>
             <p dangerouslySetInnerHTML={{ __html: content }} />
             {attachments && attachments.length > 0 && (
