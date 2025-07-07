@@ -132,7 +132,7 @@ const TicketSubmitForm: React.FC<Props> = ({
     if (isSubmitted) {
       handleButtonClick();
     }
-  }, [isSubmitted, handleButtonClick]);
+  }, [isSubmitted, ticketNumber, handleButtonClick]);
 
   return (
     <Container
