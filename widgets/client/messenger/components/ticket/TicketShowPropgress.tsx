@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as dayjs from "dayjs";
+import xss from "xss";
 
 import { IAttachment, ITicketActivityLog, ITicketComment } from "../../types";
 import { __, readFile } from "../../../utils";
@@ -51,7 +52,11 @@ const TicketShowProgress: React.FC<Props> = ({
           <span>{__(type)}</span>
         </div>
         {description && (
-          <div dangerouslySetInnerHTML={{ __html: description }} />
+          <div
+            dangerouslySetInnerHTML={{
+              __html: xss(description.replace(/\n/g, "<br />")),
+            }}
+          />
         )}
         {attachments && attachments.length !== 0 && (
           <div className="ticket-attachments">
@@ -105,7 +110,12 @@ const TicketShowProgress: React.FC<Props> = ({
             <span
               dangerouslySetInnerHTML={{ __html: __("added <b>comment</b>") }}
             />
-            <div className="comment">{content}</div>
+            <div
+              className="comment"
+              dangerouslySetInnerHTML={{
+                __html: xss(content.replace(/\n/g, "<br />")),
+              }}
+            />
             <div className="date">
               {dayjs(createdAt).format("YYYY-MM-DD, LT")}
             </div>

@@ -5,7 +5,7 @@ import { DropdownControlType, getToolbar } from "./utils/getToolbarControl";
 import { Editor, useEditor } from "@tiptap/react";
 import {
   IRichTextEditorContentProps,
-  RichTextEditorContent
+  RichTextEditorContent,
 } from "./RichTextEditorContent/RichTextEditorContent";
 import {
   MoreButtonControl,
@@ -16,8 +16,17 @@ import {
   RichTextEditorLinkControl,
   RichTextEditorPlaceholderControl,
   RichTextEditorSourceControl,
-  TableControl
+  TableControl,
 } from "./RichTextEditorControl";
+import { RichTextEditorControlBase } from "./RichTextEditorControl/RichTextEditorControl";
+
+import { Popover } from "@headlessui/react";
+import { CompactPicker } from "react-color";
+import {
+  MenuItem,
+  ColorPickerWrapper,
+  PickerAction,
+} from "./RichTextEditorControl/styles";
 import React, {
   forwardRef,
   useCallback,
@@ -25,17 +34,16 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState
+  useState,
 } from "react";
 import {
   replaceMentionsWithText,
-  replaceSpanWithMention
+  replaceSpanWithMention,
 } from "./utils/replaceMentionNode";
 import useExtensions, {
   generateHTML,
-  useGenerateJSON
+  useGenerateJSON,
 } from "./hooks/useExtensions";
-
 import { MentionSuggestionParams } from "./utils/getMentionSuggestions";
 import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import { RichTextEditorControl } from "./RichTextEditorControl/RichTextEditorControl";
@@ -80,6 +88,8 @@ export interface IRichTextEditorProps extends IRichTextEditorContentProps {
   additionalToolbarContent?: (props: {
     onClick: (placeholder: string) => void;
   }) => React.ReactNode;
+  /** Optional initial color for custom block background */
+  initialBlockColor?: string;
 }
 
 const RichTextEditor = forwardRef(function RichTextEditor(
@@ -106,13 +116,14 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     toolbar,
     autoFocus,
     onCtrlEnter,
-    additionalToolbarContent
+    additionalToolbarContent,
   } = props;
+  const formattedContent = content.replace(/\n/g, "<br />");
   const editorContentProps = {
     height,
     autoGrow,
     autoGrowMaxHeight,
-    autoGrowMinHeight
+    autoGrowMinHeight,
   };
   const editorRef: React.MutableRefObject<Editor | null> = useRef(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -122,7 +133,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
   const extensions = useExtensions({
     placeholder,
     mentionSuggestion,
-    limit
+    limit,
   });
 
   const editor = useEditor({
@@ -130,7 +141,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     parseOptions: { preserveWhitespace: true },
     autofocus: autoFocus,
     immediatelyRender: true,
-    shouldRerenderOnTransaction: false
+    shouldRerenderOnTransaction: false,
   });
 
   useEffect(() => {
@@ -162,7 +173,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
         const regeneratedContent = replaceSpanWithMention(currentContent);
         // Set the regenerated content to the editor
         editor.commands.setContent(regeneratedContent, false, {
-          preserveWhitespace: true
+          preserveWhitespace: true,
         });
 
         // If onChange function is provided, generate HTML from the content and call onChange
@@ -176,16 +187,16 @@ const RichTextEditor = forwardRef(function RichTextEditor(
       const editorHTML = editor.getHTML();
       const { from, to } = editor.state.selection;
 
-      if (editorHTML !== content) {
+      if (editorHTML !== formattedContent) {
         editor
           .chain()
-          .setContent(content, false, {
-            preserveWhitespace: true
+          .setContent(formattedContent, false, {
+            preserveWhitespace: true,
           })
           .setTextSelection({ from, to })
           .run();
       }
-      onChange && onChange(content);
+      onChange && onChange(formattedContent);
     }
   }, [editor, content]);
 
@@ -205,7 +216,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
 
       // Set the regenerated content to the editor
       editor.commands.setContent(regeneratedContent, false, {
-        preserveWhitespace: true
+        preserveWhitespace: true,
       });
 
       // If onChange function is provided, generate HTML from the content and call onChange
@@ -224,7 +235,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     () => ({
       getEditor: () => editorRef.current,
       getIsFocused: () => editorRef.current?.isFocused,
-      focus: position => editorRef.current?.commands.focus(position)
+      focus: (position) => editorRef.current?.commands.focus(position),
     }),
     []
   );
@@ -249,6 +260,14 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     [labels]
   );
 
+  // State for custom block background color
+  // Use initialBlockColor only for initial value, then manage via setSelectedColor
+  const [selectedColor, setSelectedColor] = useState<string>(() => {
+    return props.initialBlockColor ?? "";
+  });
+  // Ref to keep track of the last inserted custom block
+  const lastInsertedBlockRef = useRef<HTMLDivElement | null>(null);
+
   const editorParts = useMemo(
     () => [
       <RichTextEditorComponent.Toolbar key="rich-text-editor-toolbar-key">
@@ -260,12 +279,12 @@ const RichTextEditor = forwardRef(function RichTextEditor(
             <RichTextEditorComponent.Separator />
             {additionalToolbarContent
               ? additionalToolbarContent({
-                  onClick: placeHolder =>
+                  onClick: (placeHolder) =>
                     editor
                       ?.chain()
                       .focus()
                       .insertContent(`{{ ${placeHolder} }}`)
-                      .run()
+                      .run(),
                 })
               : ""}
             <RichTextEditorComponent.Separator />
@@ -309,7 +328,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
                 { textAlign: "left" },
                 { textAlign: "center" },
                 { textAlign: "right" },
-                { textAlign: "justify" }
+                { textAlign: "justify" },
               ]}
               toolbarPlacement={toolbarLocation}
             >
@@ -344,6 +363,81 @@ const RichTextEditor = forwardRef(function RichTextEditor(
                 )}
                 <RichTextEditorComponent.ImageControl />
                 <RichTextEditorComponent.TableControl />
+                {/* Custom Block Button */}
+                {/*
+                  CustomBlockIcon is declared below and used here as the icon for the control.
+                */}
+                <RichTextEditorComponent.ControlsGroup>
+                  <RichTextEditorComponent.Control
+                    icon={CustomBlockIcon}
+                    onClick={() => {
+                      // Use a fallback neutral color if selectedColor is empty
+                      const newColor = selectedColor || "#f0f0f0";
+                      const newBlockHTML = `<div style="background-color:${newColor}; padding:12px; border-radius:6px;" data-custom-block="true"><span style="color:inherit;">사용자 정의 블록 내용</span></div><p></p>`;
+                      editor?.chain().focus().insertContent(newBlockHTML).run();
+                      // After insertion, update the last inserted block and apply color
+                      const blocks = wrapperRef.current?.querySelectorAll(
+                        '[data-custom-block="true"]'
+                      );
+                      if (blocks && blocks.length > 0) {
+                        lastInsertedBlockRef.current = blocks[
+                          blocks.length - 1
+                        ] as HTMLDivElement;
+                        lastInsertedBlockRef.current.setAttribute(
+                          "style",
+                          `background-color:${newColor}; padding:12px; border-radius:6px;`
+                        );
+                      }
+                    }}
+                    data-tooltip="Custom Block"
+                  />
+                  {/* Color picker for custom block background */}
+                  <Popover id="custom-block-color-picker">
+                    {({ close }) => (
+                      <>
+                        <Popover.Button as="span">
+                          <RichTextEditorControlBase
+                            icon={CustomBlockIcon}
+                            title="Block background"
+                            active={false}
+                          />
+                        </Popover.Button>
+                        <Popover.Panel>
+                          <ColorPickerWrapper>
+                            <CompactPicker
+                              color={selectedColor}
+                              onChange={(colorResult) => {
+                                const newColor = colorResult.hex;
+                                setSelectedColor(newColor);
+                              }}
+                              onChangeComplete={(colorResult) => {
+                                const newColor = colorResult.hex;
+                                setSelectedColor(newColor);
+                                // Use a fallback neutral color if newColor is empty
+                                const finalColor = newColor || "#f0f0f0";
+                                const newBlockHTML = `<div style="background-color:${finalColor}; padding:12px; border-radius:6px;" data-custom-block="true"><span style="color:inherit;">사용자 정의 블록 내용</span></div><p></p>`;
+                                editor
+                                  ?.chain()
+                                  .focus()
+                                  .insertContent(newBlockHTML)
+                                  .run();
+
+                                const editorContent = editor?.getHTML();
+                                onChange && onChange(editorContent);
+
+                                close(); // Close the popover after color selection
+                              }}
+                            />
+                            {/* <MenuItem onClick={() => setIsPickerVisible(true)}>
+                              <Icon icon="paintpalette" />
+                              Color picker
+                            </MenuItem> */}
+                          </ColorPickerWrapper>
+                        </Popover.Panel>
+                      </>
+                    )}
+                  </Popover>
+                </RichTextEditorComponent.ControlsGroup>
               </RichTextEditorComponent.MoreControl>
             </RichTextEditorComponent.ControlsGroup>
           </>
@@ -352,9 +446,9 @@ const RichTextEditor = forwardRef(function RichTextEditor(
       <RichTextEditorContent
         {...editorContentProps}
         key="erxes-rte-content-key"
-      />
+      />,
     ],
-    []
+    [selectedColor]
   );
 
   const renderEditor = useCallback(() => {
@@ -396,7 +490,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
         toggleSourceView,
         codeMirrorRef,
         showMention,
-        onChange
+        onChange,
       }}
     >
       <RichTextEditorWrapper ref={wrapperRef} $position={toolbarLocation}>
@@ -484,3 +578,19 @@ RichTextEditorComponent.TableControl = TableControl;
 RichTextEditorComponent.MoreControl = MoreButtonControl;
 
 export { RichTextEditorComponent as RichTextEditor, RichTextEditorType };
+
+// Custom block SVG icon component
+const CustomBlockIcon: React.FC<{ style: React.CSSProperties }> = ({
+  style,
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 16 16"
+    width="1em"
+    height="1em"
+    fill="currentColor"
+    style={style}
+  >
+    <path d="M5.313 3.136h-1.23V9.54c0 2.105 1.47 3.623 3.917 3.623s3.917-1.518 3.917-3.623V3.136h-1.23v6.323c0 1.49-.978 2.57-2.687 2.57-1.709 0-2.687-1.08-2.687-2.57V3.136zM12.5 15h-9v-1h9v1z" />
+  </svg>
+);
