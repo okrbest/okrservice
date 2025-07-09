@@ -5,17 +5,14 @@ import { sendToWebhook } from "@erxes/api-utils/src";
 import { debugError } from "@erxes/api-utils/src/debuggers";
 import { CAMPAIGN_KINDS } from "../../constants";
 import { checkCampaignDoc, send } from "../../engageUtils";
-import {
-  sendCoreMessage,
-  sendImapMessage
-} from "../../messageBroker";
+import { sendCoreMessage, sendImapMessage } from "../../messageBroker";
 import { IEngageMessage } from "../../models/definitions/engages";
 import { sendEmail } from "../../sender";
 import { awsRequests } from "../../trackers/engageTracker";
 import {
   createTransporter,
   getEditorAttributeUtil,
-  updateConfigs
+  updateConfigs,
 } from "../../utils";
 
 interface IEngageMessageEdit extends IEngageMessage {
@@ -37,7 +34,7 @@ interface ITestEmailParams {
  */
 const emptyCustomers = {
   customerIds: [],
-  messengerReceivedCustomerIds: []
+  messengerReceivedCustomerIds: [],
 };
 
 const engageMutations = {
@@ -65,8 +62,8 @@ const engageMutations = {
       data: {
         action: "create",
         type: "engages:engageMessages",
-        params: engageMessage
-      }
+        params: engageMessage,
+      },
     });
 
     await send(models, subdomain, engageMessage, doc.forceCreateConversation);
@@ -75,12 +72,12 @@ const engageMutations = {
       type: MODULE_ENGAGE,
       newData: {
         ...doc,
-        ...emptyCustomers
+        ...emptyCustomers,
       },
       object: {
         ...engageMessage.toObject(),
-        ...emptyCustomers
-      }
+        ...emptyCustomers,
+      },
     };
 
     await putCreateLog(subdomain, logDoc, user);
@@ -114,7 +111,7 @@ const engageMutations = {
       type: MODULE_ENGAGE,
       object: { ...engageMessage.toObject(), ...emptyCustomers },
       newData: { ...updated.toObject(), ...emptyCustomers },
-      updatedDocument: updated
+      updatedDocument: updated,
     };
 
     await putUpdateLog(subdomain, logDoc, user);
@@ -136,7 +133,7 @@ const engageMutations = {
 
     const logDoc = {
       type: MODULE_ENGAGE,
-      object: { ...engageMessage.toObject(), ...emptyCustomers }
+      object: { ...engageMessage.toObject(), ...emptyCustomers },
     };
 
     await putDeleteLog(subdomain, logDoc, user);
@@ -165,8 +162,8 @@ const engageMutations = {
       action: "registerOnboardHistory",
       data: {
         type: "setCampaignLive",
-        user
-      }
+        user,
+      },
     });
 
     return models.EngageMessages.engageMessageSetLive(_id);
@@ -205,14 +202,14 @@ const engageMutations = {
         type: MODULE_ENGAGE,
         newData: {
           isLive: true,
-          isDraft: false
+          isDraft: false,
         },
         object: {
           _id,
           isLive: draftCampaign.isLive,
-          isDraft: draftCampaign.isDraft
+          isDraft: draftCampaign.isDraft,
         },
-        description: `Broadcast "${draftCampaign.title}" has been set live`
+        description: `Broadcast "${draftCampaign.title}" has been set live`,
       },
       user
     );
@@ -276,7 +273,7 @@ const engageMutations = {
       action: "users.findOne",
       subdomain,
       isRPC: true,
-      defaultValue: null
+      defaultValue: null,
     });
 
     const fromUser = await sendCoreMessage({
@@ -284,7 +281,7 @@ const engageMutations = {
       action: "users.findOne",
       subdomain,
       isRPC: true,
-      defaultValue: null
+      defaultValue: null,
     });
 
     if (!targetUser && !fromUser) {
@@ -295,7 +292,7 @@ const engageMutations = {
 
     replacedContent = await attributeUtil.replaceAttributes({
       content,
-      user: targetUser
+      user: targetUser,
     });
 
     try {
@@ -305,7 +302,7 @@ const engageMutations = {
         to,
         subject: title,
         html: content,
-        content: replacedContent
+        content: replacedContent,
       });
       return JSON.stringify(response);
     } catch (e) {
@@ -332,7 +329,7 @@ const engageMutations = {
       isLive: false,
       runCount: 0,
       totalCustomersCount: 0,
-      validCustomersCount: 0
+      validCustomersCount: 0,
     });
 
     delete doc._id;
@@ -350,13 +347,13 @@ const engageMutations = {
         type: MODULE_ENGAGE,
         newData: {
           ...doc,
-          ...emptyCustomers
+          ...emptyCustomers,
         },
         object: {
           ...copy.toObject(),
-          ...emptyCustomers
+          ...emptyCustomers,
         },
-        description: `Campaign "${sourceCampaign.title}" has been copied`
+        description: `Campaign "${sourceCampaign.title}" has been copied`,
       },
       user
     );
@@ -381,26 +378,26 @@ const engageMutations = {
       subdomain,
       action: "customers.findOne",
       data: customerQuery,
-      isRPC: true
+      isRPC: true,
     });
 
     doc.body = body || "";
 
     try {
       await sendEmail(subdomain, models, {
-        fromEmail: doc.from || '',
+        fromEmail: doc.from || "",
         email: {
           content: doc.body,
           subject: doc.subject,
           attachments: doc.attachments,
           sender: doc.from || "",
           cc: doc.cc || [],
-          bcc: doc.bcc || []
+          bcc: doc.bcc || [],
         },
         customers: [customer],
         customer,
         createdBy: user._id,
-        title: doc.subject
+        title: doc.subject,
       });
     } catch (e) {
       debugError(e);
@@ -411,9 +408,9 @@ const engageMutations = {
       subdomain,
       action: "customers.getCustomerIds",
       data: {
-        primaryEmail: { $in: doc.to }
+        primaryEmail: { $in: doc.to },
       },
-      isRPC: true
+      isRPC: true,
     });
 
     doc.userId = user._id;
@@ -426,9 +423,9 @@ const engageMutations = {
           ...doc,
           customerId: cusId,
           kind: "transaction",
-          status: "pending"
+          status: "pending",
         },
-        isRPC: true
+        isRPC: true,
       });
     }
 
@@ -438,17 +435,19 @@ const engageMutations = {
           subdomain,
           action: "imapMessage.create",
           data: {
-            ...doc
+            ...doc,
           },
-          isRPC: true
+          isRPC: true,
         });
-        return imapSendMail;
+        return { status: "imap-sent", result: imapSendMail };
       } catch (e) {
         throw e;
       }
     }
-    return;
-  }
+
+    // Return generic success response
+    return { status: "sent" };
+  },
 };
 
 checkPermission(engageMutations, "engageMessageAdd", "engageMessageAdd");
