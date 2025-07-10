@@ -12,11 +12,13 @@ import {
   topicSchema
 } from './definitions/knowledgebase';
 import { PUBLISH_STATUSES } from './definitions/constants';
+import { stringRandomId } from '@erxes/api-utils/src/mongoose-types';
 
 export interface IArticleCreate extends IArticle {
   userId?: string;
   icon?: string;
   modifiedBy?: string;
+  code?: string;
 }
 
 export interface IArticleModel extends Model<IArticleDocument> {
@@ -51,11 +53,61 @@ export const loadArticleClass = (models: IModels) => {
     }
 
     /**
+     * Generate unique code for article
+     */
+    private static async generateUniqueCode(): Promise<string> {
+      const maxAttempts = 10;
+      let attempts = 0;
+      
+      // Get the latest article to understand the numbering pattern
+      const latestArticle = await models.KnowledgeBaseArticles
+        .findOne({ code: { $exists: true, $ne: null } })
+        .sort({ createdDate: -1 });
+      
+      let baseNumber = 1;
+      if (latestArticle && latestArticle.code) {
+        // Try to extract number from existing code pattern
+        const match = latestArticle.code.match(/ART-(\d+)/);
+        if (match) {
+          baseNumber = parseInt(match[1]) + 1;
+        }
+      }
+      
+      while (attempts < maxAttempts) {
+        // Try sequential numbering first
+        const sequentialCode = `ART-${baseNumber.toString().padStart(4, '0')}`;
+        let existingArticle = await models.KnowledgeBaseArticles.findOne({ code: sequentialCode });
+        
+        if (!existingArticle) {
+          return sequentialCode;
+        }
+        
+        // If sequential fails, try random
+        const randomCode = `ART-${stringRandomId.default()}`;
+        existingArticle = await models.KnowledgeBaseArticles.findOne({ code: randomCode });
+        
+        if (!existingArticle) {
+          return randomCode;
+        }
+        
+        baseNumber++;
+        attempts++;
+      }
+      
+      throw new Error('Failed to generate unique code after maximum attempts');
+    }
+
+    /**
      * Create KnowledgeBaseArticle document
      */
     public static async createDoc(docFields: IArticleCreate, userId?: string) {
       if (!userId) {
         throw new Error('userId must be supplied');
+      }
+
+      // Generate code if not provided
+      if (!docFields.code) {
+        docFields.code = await this.generateUniqueCode();
       }
 
       const doc = {
