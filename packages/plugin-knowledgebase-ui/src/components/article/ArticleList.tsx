@@ -20,24 +20,6 @@ const ArticleList = (props: Props) => {
   const { articles, loading, queryParams, currentCategoryId, topicId, remove } =
     props;
 
-  // 실제 렌더링되는 아티클들 로그
-  console.log('=== ArticleList 렌더링 정보 ===');
-  console.log('받은 articles 수:', articles.length);
-  console.log('articles:', articles);
-  console.log('currentCategoryId:', currentCategoryId);
-  console.log('loading:', loading);
-  
-  // 각 아티클의 상세 정보
-  articles.forEach((article, index) => {
-    console.log(`렌더링될 아티클 ${index + 1}:`, {
-      id: article._id,
-      title: article.title,
-      categoryId: article.categoryId,
-      isPrivate: article.isPrivate,
-      status: article.status
-    });
-  });
-
   const renderLoading = () => {
     return (
       <RowArticle style={{ height: '115px' }}>
