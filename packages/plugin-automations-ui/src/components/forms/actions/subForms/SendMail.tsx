@@ -296,9 +296,6 @@ const RecipientsForm = ({
               initialValue={config[name] || ""}
               label={label}
               onSelect={onSelect}
-              filterParams={{
-                status: "Verified"
-              }}
             />
           </FormGroup>
         );
@@ -325,8 +322,7 @@ const RecipientsForm = ({
               label={label}
               onSelect={onSelect}
               filterParams={{
-                type,
-                emailValidationStatus: "valid"
+                type
               }}
             />
           </FormGroup>
@@ -431,9 +427,6 @@ const ConfigForm = ({
                 initialValue={doc?.fromUserId || config?.fromUserId}
                 label={__("Select sender user")}
                 onSelect={(value, name) => onChange({ ...doc, [name]: value })}
-                filterParams={{
-                  status: "Verified"
-                }}
                 multi={false}
               />
             </FormGroup>
