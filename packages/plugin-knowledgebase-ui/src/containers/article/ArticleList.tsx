@@ -15,23 +15,40 @@ type Props = {
   topicId: string;
   articles: any[]; // Added
   loading: boolean;
+  isMainCategory: boolean;
 };
 
 const ArticleContainer = (props: Props) => {
-  const { queryParams, currentCategoryId, topicId } = props;
+  const { queryParams, currentCategoryId, topicId, loading, isMainCategory } = props;
+
+  // page, perPage를 queryParams에서 추출하고 Number로 변환
+  const page = Number(queryParams.page) > 0 ? Number(queryParams.page) : 1;
+  const perPage = isMainCategory ? 1000 : (Number(queryParams.perPage) > 0 ? Number(queryParams.perPage) : 20);
 
   const articlesQuery = useQuery<ArticlesQueryResponse>(
     gql(queries.knowledgeBaseArticles),
     {
       variables: {
-        ...generatePaginationParams(queryParams),
-        categoryIds: [currentCategoryId],
+        page,
+        perPage,
+        ...(isMainCategory ? { isPrivate: true } : { categoryIds: [currentCategoryId] }),
       },
       fetchPolicy: "network-only",
     }
   );
 
-  const articles = props.articles;
+  const backendArticles = articlesQuery.data?.knowledgeBaseArticles || [];
+  const articles = isMainCategory 
+    ? backendArticles.filter(article => article.isPrivate)
+    : backendArticles;
+  
+  // 디버깅 로그 추가
+  console.log('=== ArticleList 백엔드 쿼리 결과 ===');
+  console.log('articlesQuery.data:', articlesQuery.data);
+  console.log('articlesQuery.loading:', articlesQuery.loading);
+  console.log('백엔드에서 받은 articles 수:', articlesQuery.data?.knowledgeBaseArticles?.length || 0);
+  console.log('props.articles 수:', props.articles?.length || 0);
+  console.log('최종 사용할 articles 수:', articles?.length || 0);
 
   const [removeArticlesMutation] = useMutation<RemoveArticlesMutationResponse>(
     gql(mutations.knowledgeBaseArticlesRemove),
@@ -64,6 +81,8 @@ const ArticleContainer = (props: Props) => {
     topicId,
     queryParams,
     articles,
+    loading,
+    isMainCategory,
   };
 
   return <ArticleList {...extendedProps} />;

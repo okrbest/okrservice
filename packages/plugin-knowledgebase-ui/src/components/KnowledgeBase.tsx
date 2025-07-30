@@ -203,21 +203,21 @@ const KnowledgeBase = (props: Props) => {
       }
       actionBar={renderActionBar()}
       footer={
-        <Pagination
-          count={
-            queryParams.id === "main-category"
-              ? allArticles.filter((a) => a.isPrivate).length
-              : articlesCount
-          }
+        !isMainCategory && (
+                  <Pagination
+          count={articlesCount}
+          perPage={isMainCategory ? 1000 : (Number(queryParams.perPage) > 0 ? Number(queryParams.perPage) : 20)}
         />
+        )
       }
       transparent={true}
       content={
         <ArticleList
           queryParams={{ ...queryParams, articles: allArticles }}
-          currentCategoryId={currentCategory._id}
+          currentCategoryId={isMainCategory ? "main-category" : currentCategory._id}
           topicId={currentCategory.firstTopic && currentCategory.firstTopic._id}
           loading={false}
+          isMainCategory={isMainCategory}
           articles={
             queryParams?.id === "main-category"
               ? allArticles.filter((a) => a.isPrivate)
