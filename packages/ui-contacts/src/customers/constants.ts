@@ -1,5 +1,6 @@
 import { getConstantFromStore } from "@erxes/ui/src/utils";
 import { __ } from "coreui/utils";
+
 export const LEAD_CHOICES = [
   { label: "New", value: "new" },
   { label: "Contacted", value: "attemptedToContact" },
@@ -13,6 +14,7 @@ export const CUSTOMER_BASIC_INFO = {
   firstName: "First Name",
   lastName: "Last Name",
   middleName: "middleName",
+  registrationNumber: "Registration Number",
   primaryEmail: "Primary E-mail",
   primaryPhone: "Primary Phone",
   position: "Position",
@@ -29,6 +31,7 @@ export const CUSTOMER_BASIC_INFO = {
     { field: "avatar", label: "Avatar" },
     { field: "firstName", label: "First Name" },
     { field: "middleName", label: "Middle Name" },
+    { field: "registrationNumber", label: "Registration Number" },
     { field: "lastName", label: "Last Name" },
     { field: "primaryEmail", label: "Primary E-mail" },
     { field: "primaryPhone", label: "Primary Phone" },
