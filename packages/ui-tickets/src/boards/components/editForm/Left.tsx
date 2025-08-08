@@ -104,7 +104,10 @@ const Description = (props: DescProps) => {
             onClick={toggleEdit}
             dangerouslySetInnerHTML={{
               __html: item.description
-                ? xss(item.description.replace(/\n/g, "<br />"))
+                ? item.description
+                    .replace(/<p><\/p>/g, "<div style='height:16px;'></div>")
+                    .replace(/<p><br><\/p>/g, "<div style='height:16px;'></div>")
+                    .replace(/<p><br \/><\/p>/g, "<div style='height:16px;'></div>")
                 : `${__("Add a more detailed description")}...`,
             }}
           />

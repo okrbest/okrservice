@@ -204,7 +204,7 @@ export default class Button extends React.Component<ButtonProps> {
   static Group = Group;
 
   static defaultProps = {
-    btnStyle: "default",
+    btnStyle: "default" as ButtonType,
     size: "medium",
     block: false,
     type: "button",

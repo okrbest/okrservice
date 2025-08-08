@@ -118,7 +118,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     onCtrlEnter,
     additionalToolbarContent,
   } = props;
-  const formattedContent = content.replace(/\n/g, "<br />");
+  const formattedContent = content ? content.replace(/\n/g, "<br />") : "";
   const editorContentProps = {
     height,
     autoGrow,
