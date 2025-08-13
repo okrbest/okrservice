@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Select, { components } from "react-select";
 import { __ } from "coreui/utils";
 import { loadDynamicComponent } from "@erxes/ui/src/utils";
+import { useQuery, useMutation } from "@apollo/client";
+import { gql } from "@apollo/client";
 
 import { Capitalize } from "@erxes/ui-settings/src/permissions/styles";
 import ChildrenSection from "../../boards/containers/editForm/ChildrenSection";
@@ -42,13 +44,113 @@ type Props = {
     callback?: () => void
   ) => void;
   currentUser: IUser;
+  synchSingleCard?: (itemId: string) => void;
 };
+
+// WidgetComments 쿼리 추가
+const WIDGET_COMMENTS_QUERY = gql`
+  query widgetsTicketComments($typeId: String!, $type: String!) {
+    widgetsTicketComments(typeId: $typeId, type: $type) {
+      _id
+      content
+      createdUser {
+        _id
+        email
+        lastName
+        firstName
+        avatar
+      }
+      type
+      userType
+      createdAt
+    }
+  }
+`;
+
+// WidgetComments 추가 뮤테이션
+const WIDGET_COMMENTS_ADD_MUTATION = gql`
+  mutation widgetsTicketCommentAdd(
+    $type: String!
+    $typeId: String!
+    $content: String!
+    $userType: String!
+    $customerId: String
+  ) {
+    widgetsTicketCommentAdd(
+      type: $type
+      typeId: $typeId
+      content: $content
+      userType: $userType
+      customerId: $customerId
+    ) {
+      _id
+      type
+      createdAt
+    }
+  }
+`;
 
 export default function TicketEditForm(props: Props) {
   const item = props.item;
 
   const [source, setSource] = useState(item.source);
   const [refresh, setRefresh] = useState(false);
+
+  // CardDetailAction.tsx와 동일한 방식으로 type 설정
+  const type = item.stage?.type || "ticket";
+
+  // type이 "ticket"이 아닐 때는 댓글 기능 비활성화
+  const isTicketType = type === "ticket";
+
+  // WidgetComments 쿼리 실행 (ticket 타입일 때만)
+  const { data: widgetCommentsData, refetch: refetchWidgetComments } = useQuery(WIDGET_COMMENTS_QUERY, {
+    variables: { 
+      typeId: item._id, 
+      type: type
+    },
+    skip: !item._id || !isTicketType,
+  });
+
+  // WidgetComments 추가 뮤테이션 (ticket 타입일 때만)
+  const [addWidgetComment] = useMutation(WIDGET_COMMENTS_ADD_MUTATION, {
+    onCompleted: (data) => {
+      console.log("Comment added successfully:", data);
+      refetchWidgetComments();
+    },
+    onError: (error) => {
+      console.error("Failed to add comment:", error);
+      alert(`댓글 추가 실패: ${error.message}`);
+    },
+  });
+
+  const widgetComments = widgetCommentsData?.widgetsTicketComments || [];
+
+  // 댓글 추가 핸들러 (ticket 타입일 때만)
+  const handleAddComment = async (content: string) => {
+    if (!isTicketType) {
+      console.log("Comments are only available for ticket type");
+      return;
+    }
+
+    console.log("Attempting to add comment:", { content, itemId: item._id, currentUser: props.currentUser?._id, type });
+    
+    try {
+      const result = await addWidgetComment({
+        variables: {
+          type: type,
+          typeId: item._id,
+          content,
+          userType: "team",
+          customerId: props.currentUser?._id || "",
+        },
+      });
+      console.log("Mutation result:", result);
+      return result;
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     setSource(item.source);
@@ -194,6 +296,8 @@ export default function TicketEditForm(props: Props) {
             sendToBoard={sendToBoard}
             onChangeStage={onChangeStage}
             onChangeRefresh={() => setRefresh(!refresh)}
+            widgetComments={isTicketType ? widgetComments : []}
+            onAddComment={isTicketType ? handleAddComment : undefined}
           />
 
           <Sidebar
@@ -216,6 +320,11 @@ export default function TicketEditForm(props: Props) {
     formContent: renderFormContent,
     extraFields: { source },
     refresh,
+    synchSingleCard: (itemId: string) => {
+      if (props.synchSingleCard) {
+        props.synchSingleCard(itemId);
+      }
+    },
   };
 
   return <EditForm {...extendedProps} />;
