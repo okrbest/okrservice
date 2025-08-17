@@ -319,7 +319,43 @@ export const NOTIFICATION_MODULES = [
       {
         name: 'ticketDelete',
         text: 'Ticket card deleted'
+      },
+      {
+        name: 'ticketComment',
+        text: 'New comment added to ticket'
       }
     ]
   }
 ];
+
+export const NOTIFICATION_TYPES = {
+  DEAL_ADD: "dealAdd",
+  DEAL_REMOVE_ASSIGN: "dealRemoveAssign",
+  DEAL_EDIT: "dealEdit",
+  DEAL_CHANGE: "dealChange",
+  DEAL_DUE_DATE: "dealDueDate",
+  DEAL_DELETE: "dealDelete",
+  TICKET_ADD: "ticketAdd",
+  TICKET_REMOVE_ASSIGN: "ticketRemoveAssign",
+  TICKET_EDIT: "ticketEdit",
+  TICKET_CHANGE: "ticketChange",
+  TICKET_DUE_DATE: "ticketDueDate",
+  TICKET_DELETE: "ticketDelete",
+  TICKET_COMMENT: "ticketComment",
+
+  ALL: [
+    "dealAdd",
+    "dealRemoveAssign",
+    "dealEdit",
+    "dealChange",
+    "dealDueDate",
+    "dealDelete",
+    "ticketAdd",
+    "ticketRemoveAssign",
+    "ticketEdit",
+    "ticketChange",
+    "ticketDueDate",
+    "ticketDelete",
+    "ticketComment"
+  ]
+};
