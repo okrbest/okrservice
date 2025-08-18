@@ -27,6 +27,7 @@ export const NOTIFICATION_TYPES = {
   TICKET_CHANGE: 'ticketChange',
   TICKET_DUE_DATE: 'ticketDueDate',
   TICKET_DELETE: 'ticketDelete',
+  TICKET_COMMENT: 'ticketComment',
   TASK_ADD: 'taskAdd',
   TASK_REMOVE_ASSIGN: 'taskRemoveAssign',
   TASK_EDIT: 'taskEdit',
@@ -67,6 +68,7 @@ export const NOTIFICATION_TYPES = {
     'ticketChange',
     'ticketDueDate',
     'ticketDelete',
+    'ticketComment',
     'taskAdd',
     'taskRemoveAssign',
     'taskEdit',
@@ -75,7 +77,6 @@ export const NOTIFICATION_TYPES = {
     'taskDelete',
     'customerMention',
     'companyMention',
-    'plugin',
     'importDone',
     'chatMention',
     'chatReceive'

@@ -14,10 +14,11 @@ type Props = {
   topicId: string;
   remove: (articleId: string) => void;
   loading: boolean;
+  isMainCategory?: boolean;
 };
 
 const ArticleList = (props: Props) => {
-  const { articles, loading, queryParams, currentCategoryId, topicId, remove } =
+  const { articles, loading, queryParams, currentCategoryId, topicId, remove, isMainCategory } =
     props;
 
   // 실제 렌더링되는 아티클들 로그
@@ -72,6 +73,8 @@ const ArticleList = (props: Props) => {
       loadingContent={renderLoading()}
       data={renderArticles()}
     />
+    // 페이지네이션/perPage UI가 있다면 아래처럼 조건부 렌더링
+    // {!isMainCategory && <PaginationOrPerPageComponent ... />}
   );
 };
 

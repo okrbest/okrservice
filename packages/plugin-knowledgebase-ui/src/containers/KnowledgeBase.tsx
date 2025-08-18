@@ -134,6 +134,10 @@ const KnowledgeBaseContainer = withProps<Props>(
       {
         name: "allArticlesQuery",
         options: () => ({
+          variables: {
+            page: 1,
+            perPage: 1000,
+          },
           fetchPolicy: "network-only",
         }),
       }

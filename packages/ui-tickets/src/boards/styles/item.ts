@@ -14,11 +14,20 @@ const buttonColor = "#0a1e3c";
 export const Content = styled.div`
   padding: 12px 22px;
   word-break: break-word;
+  white-space: pre-wrap;
   background: rgba(10, 30, 65, 0.05);
   margin-top: 10px;
   transition: background 0.3s ease;
   border-radius: 3px;
   min-height: 50px;
+
+  hr {
+    border: none;
+    height: 2px;
+    background: ${colors.colorCoreGray};
+    margin: 12px 0;
+  }
+
   p {
     color: ${colors.textPrimary};
     font-size: 13px;

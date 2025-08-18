@@ -21,6 +21,7 @@ import { RichTextEditor } from "@erxes/ui/src/components/richTextEditor/TEditor"
 import Checklists from "../../../checklists/containers/Checklists";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import FormGroup from "@erxes/ui/src/components/form/Group";
+import FormControl from "@erxes/ui/src/components/form/Control";
 import { IAttachment } from "@erxes/ui/src/types";
 import Icon from "@erxes/ui/src/components/Icon";
 import Labels from "../label/Labels";
@@ -32,6 +33,107 @@ type DescProps = {
   item: IItem;
   saveItem: (doc: { [key: string]: any }, callback?: (item) => void) => void;
   contentType: string;
+};
+
+// WidgetComments 컴포넌트 수정
+type WidgetCommentsProps = {
+  widgetComments?: any[];
+  onAddComment?: (content: string) => void;
+};
+
+const WidgetComments = (props: WidgetCommentsProps) => {
+  const { widgetComments = [], onAddComment } = props;
+  const [content, setContent] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e: React.FormEvent<HTMLElement>) => {
+    const target = e.target as HTMLTextAreaElement;
+    setContent(target.value);
+  };
+
+  const handleSubmit = async () => {
+    if (!content.trim() || !onAddComment) {
+      console.log("Cannot submit comment:", { content: content.trim(), onAddComment: !!onAddComment });
+      return;
+    }
+    
+    console.log("Submitting comment:", content);
+    setIsSubmitting(true);
+    try {
+      await onAddComment(content);
+      console.log("Comment submitted successfully");
+      setContent("");
+    } catch (error) {
+      console.error("Failed to submit comment:", error);
+      alert(`댓글 저장 실패: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && e.ctrlKey) {
+      handleSubmit();
+    }
+  };
+
+  return (
+    <FormGroup>
+      <TitleRow>
+        <ControlLabel>
+          <Icon icon="comment-1" />
+          {__("Widget Comments")}
+        </ControlLabel>
+      </TitleRow>
+      
+      {/* 댓글 목록 */}
+      {!widgetComments.length ? (
+        <Content>
+          {__("No widget comments yet")}
+        </Content>
+      ) : (
+        <Content>
+          {widgetComments.map((comment) => (
+            <div key={comment._id} style={{ marginBottom: '10px', padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                {comment.createdUser ? `${comment.createdUser.firstName} ${comment.createdUser.lastName}` : 'Unknown User'}
+              </div>
+              <div dangerouslySetInnerHTML={{ __html: comment.content }} />
+              <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                {new Date(comment.createdAt).toLocaleString()}
+              </div>
+            </div>
+          ))}
+        </Content>
+      )}
+
+      {/* 댓글 입력 폼 */}
+      <div style={{ marginTop: '15px' }}>
+        <FormControl
+          componentclass="textarea"
+          value={content}
+          onChange={handleChange}
+          onKeyPress={handleKeyPress}
+          placeholder={__("Write a comment...")}
+        />
+        <div style={{ marginTop: '10px' }}>
+          {content.length > 0 && (
+            <div style={{ textAlign: 'right' }}>
+              <Button
+                btnStyle="success"
+                size="small"
+                icon="message"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? __("Saving...") : __("Save")}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </FormGroup>
+  );
 };
 
 const Description = (props: DescProps) => {
@@ -104,7 +206,10 @@ const Description = (props: DescProps) => {
             onClick={toggleEdit}
             dangerouslySetInnerHTML={{
               __html: item.description
-                ? xss(item.description.replace(/\n/g, "<br />"))
+                ? item.description
+                    .replace(/<p><\/p>/g, "<div style='height:16px;'></div>")
+                    .replace(/<p><br><\/p>/g, "<div style='height:16px;'></div>")
+                    .replace(/<p><br \/><\/p>/g, "<div style='height:16px;'></div>")
                 : `${__("Add a more detailed description")}...`,
             }}
           />
@@ -149,6 +254,8 @@ type Props = {
   sendToBoard?: (item: any) => void;
   onChangeStage?: (stageId: string) => void;
   onChangeRefresh: () => void;
+  widgetComments?: any[];
+  onAddComment?: (content: string) => void;
 };
 
 const Left = (props: Props) => {
@@ -163,7 +270,15 @@ const Left = (props: Props) => {
     sendToBoard,
     onChangeStage,
     onChangeRefresh,
+    widgetComments,
+    onAddComment,
   } = props;
+
+  console.log("Left component props:", { 
+    itemId: item._id, 
+    widgetComments: widgetComments?.length, 
+    onAddComment: !!onAddComment 
+  });
 
   const onChangeAttachment = (files: IAttachment[]) =>
     saveItem({ attachments: files });
@@ -210,6 +325,8 @@ const Left = (props: Props) => {
       </FormGroup>
 
       <Description item={item} saveItem={saveItem} contentType={options.type} />
+
+      <WidgetComments widgetComments={widgetComments} onAddComment={onAddComment} />
 
       <Checklists
         contentType={options.type}

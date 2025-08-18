@@ -378,7 +378,66 @@ export const setupMessageConsumers = async () => {
   consumeRPCQueue("tickets:widgets.commentAdd", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
     const { type, typeId, content, userType, customerId } = data;
-    const comment = await models.Tickets.createTicketComment(type, typeId, content, userType, customerId)
+    
+    // 댓글 생성
+    const comment = await models.Tickets.createTicketComment(type, typeId, content, userType, customerId);
+    
+    // 티켓 정보 가져오기
+    const ticket = await models.Tickets.findOne({ _id: typeId });
+    if (ticket) {
+      // 고객 정보 가져오기
+      let customerName = "고객";
+      if (customerId) {
+        const customer = await sendCoreMessage({
+          subdomain,
+          action: "customers.findOne",
+          data: { _id: customerId },
+          isRPC: true,
+          defaultValue: null
+        });
+        if (customer) {
+          customerName = customer.firstName || customer.lastName || customer.primaryEmail || "고객";
+        }
+      }
+      
+      // 티켓 담당자들에게 알림 보내기 (고객이 댓글을 남긴 경우에만)
+      const assignedUserIds = ticket.assignedUserIds || [];
+      
+      // userType이 "client"인 경우에만 알림 보내기 (담당자 댓글은 제외)
+      if (assignedUserIds.length > 0 && userType === "client") {
+        // stage와 pipeline 정보 가져오기
+        const stage = await models.Stages.findOne({ _id: ticket.stageId });
+        let boardId = "";
+        let pipelineId = "";
+        
+        if (stage) {
+          pipelineId = stage.pipelineId;
+          const pipeline = await models.Pipelines.findOne({ _id: stage.pipelineId });
+          if (pipeline) {
+            boardId = pipeline.boardId;
+          }
+        }
+        
+        // notifications 서비스에 알림 요청
+        await sendMessage({
+          subdomain,
+          serviceName: "notifications",
+          action: "send",
+          data: {
+            notifType: "ticketComment",
+            title: "새로운 댓글이 추가되었습니다",
+            content: `${customerName}님이 티켓 '${ticket.name}'에 댓글을 달았습니다: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`,
+            action: "새로운 댓글",
+            link: `tickets/board?id=${boardId}&pipelineId=${pipelineId}&itemId=${ticket._id}`,
+            createdUser: { _id: customerId, details: { fullName: customerName } },
+            contentType: "ticket",
+            contentTypeId: ticket._id,
+            receivers: assignedUserIds
+          }
+        });
+      }
+    }
+    
     return {
       status: "success",
       data: comment
