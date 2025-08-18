@@ -1,8 +1,8 @@
-import { Categories } from './styles';
-import CategoryRow from './CategoryRow';
-import { ICategory } from '@erxes/ui-knowledgebase/src/types';
-import React from 'react';
-
+import { Categories } from "./styles";
+import CategoryRow from "./CategoryRow";
+import { ICategory } from "@erxes/ui-knowledgebase/src/types";
+import React from "react";
+import { __ } from "coreui/utils";
 type Props = {
   currentCategoryId: string;
   topicId: string;
@@ -12,7 +12,7 @@ type Props = {
 };
 
 const getParents = (array: any[]) => {
-  const key = 'parentCategoryId';
+  const key = "parentCategoryId";
 
   return array.reduce((rv, x) => {
     (rv[x[key]] = rv[x[key]] || []).push(x);
@@ -28,13 +28,20 @@ const CategoryList = (props: Props) => {
   const parents = categories.filter((f) => !f.parentCategoryId);
   const groupByParent = getParents(subFields);
 
+  const privateArticles =
+    queryParams?.articles?.filter((article) => article.isPrivate) || [];
+  const privateArticlesCount = privateArticles.length;
+
   const renderRow = (category, isChild, isParent?) => {
+    const articles =
+      category._id === "main-category" ? privateArticles : category.articles;
+
     return (
       <CategoryRow
         key={category._id}
         isActive={currentCategoryId === category._id}
         topicId={topicId}
-        category={category}
+        category={{ ...category, articles }}
         queryParams={queryParams}
         remove={remove}
         isChild={isChild}
@@ -55,6 +62,47 @@ const CategoryList = (props: Props) => {
           </React.Fragment>
         );
       })}
+
+      {renderRow(
+        {
+          _id: "main-category",
+          title: __("Main Articles"),
+          description: "",
+          articles: privateArticles,
+          numArticles: privateArticlesCount,
+          icon: "",
+          createdBy: "",
+          createdDate: new Date(),
+          modifiedBy: "",
+          modifiedDate: new Date(),
+          firstTopic: {
+            _id: "",
+            title: "",
+            description: "",
+            categories: [],
+            brand: {
+              _id: "",
+              name: "",
+              code: "",
+              createdAt: "",
+              emailConfig: { type: "", template: "" },
+            },
+            color: "",
+            backgroundImage: "",
+            languageCode: "",
+            createdBy: "",
+            createdDate: new Date(),
+            modifiedBy: "",
+            modifiedDate: new Date(),
+            parentCategories: [],
+            notificationSegmentId: "",
+            code: "",
+          },
+          parentCategoryId: "",
+          code: "",
+        },
+        false
+      )}
     </Categories>
   );
 };

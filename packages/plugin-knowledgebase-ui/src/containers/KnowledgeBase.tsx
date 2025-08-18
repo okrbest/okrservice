@@ -5,6 +5,7 @@ import {
   CategoryDetailQueryResponse,
   ICategory,
   LastCategoryQueryResponse,
+  AllArticlesQueryResponse,
 } from "@erxes/ui-knowledgebase/src/types";
 import { router as routerUtils, withProps } from "@erxes/ui/src/utils";
 
@@ -19,16 +20,32 @@ import queryString from "query-string";
 type Props = {
   queryParams: any;
   currentCategoryId: string;
+  allArticles?: any[]; // ✅ Added
 };
 
 type FinalProps = {
   articlesCountQuery?: ArticlesTotalCountQueryResponse;
   categoryDetailQuery?: CategoryDetailQueryResponse;
+  allArticlesQuery?: AllArticlesQueryResponse;
 } & Props &
   IRouterProps;
 
 const KnowledgeBase = (props: FinalProps) => {
-  const { categoryDetailQuery, articlesCountQuery } = props;
+  const { categoryDetailQuery, articlesCountQuery, allArticlesQuery } = props;
+
+  // GraphQL 쿼리 결과 디버깅
+  console.log('=== GraphQL Query Debug Info ===');
+  console.log('categoryDetailQuery:', categoryDetailQuery);
+  console.log('articlesCountQuery:', articlesCountQuery);
+  console.log('allArticlesQuery:', allArticlesQuery);
+  
+  if (allArticlesQuery?.loading) {
+    console.log('allArticlesQuery is loading...');
+  }
+  
+  if (allArticlesQuery?.error) {
+    console.error('allArticlesQuery error:', allArticlesQuery.error);
+  }
 
   const articlesCount =
     articlesCountQuery && articlesCountQuery.knowledgeBaseArticlesTotalCount;
@@ -36,10 +53,54 @@ const KnowledgeBase = (props: FinalProps) => {
   const currentCategory =
     categoryDetailQuery && categoryDetailQuery.knowledgeBaseCategoryDetail;
 
+  const allArticles = props.allArticlesQuery?.knowledgeBaseArticles || [];
+
+  console.log('Processed data:');
+  console.log('articlesCount:', articlesCount);
+  console.log('currentCategory:', currentCategory);
+  console.log('allArticles count:', allArticles.length);
+
+  // GraphQL 쿼리 진단 정보 추가
+  console.log('=== GraphQL 쿼리 진단 ===');
+  console.log('1. categoryDetailQuery 상태:');
+  console.log('   로딩 중:', categoryDetailQuery?.loading);
+  console.log('   에러:', categoryDetailQuery?.error);
+  console.log('   데이터:', categoryDetailQuery?.knowledgeBaseCategoryDetail ? '있음' : '없음');
+  
+  console.log('2. articlesCountQuery 상태:');
+  console.log('   로딩 중:', articlesCountQuery?.loading);
+  console.log('   에러:', articlesCountQuery?.error);
+  console.log('   카운트:', articlesCount);
+  
+  console.log('3. allArticlesQuery 상태:');
+  console.log('   로딩 중:', allArticlesQuery?.loading);
+  console.log('   에러:', allArticlesQuery?.error);
+  console.log('   아티클 수:', allArticles.length);
+  
+  // 문제 진단
+  if (allArticlesQuery?.error) {
+    console.log('❌ allArticlesQuery 에러 발견:', allArticlesQuery.error);
+  }
+  
+  if (allArticles.length === 0 && !allArticlesQuery?.loading) {
+    console.log('❌ 아티클이 없음 - 백엔드 쿼리 문제 가능성');
+  }
+  
+  if (currentCategory && allArticles.length > 0) {
+    const categoryArticles = allArticles.filter(article => 
+      article.categoryId === currentCategory._id
+    );
+    console.log('4. 현재 카테고리 아티클 분석:');
+    console.log('   전체 아티클 수:', allArticles.length);
+    console.log('   현재 카테고리 아티클 수:', categoryArticles.length);
+    console.log('   다른 카테고리 아티클 수:', allArticles.length - categoryArticles.length);
+  }
+
   const updatedProps = {
     ...props,
     articlesCount: articlesCount || 0,
     currentCategory: currentCategory || ({} as ICategory),
+    allArticles, // ✅ Added
   };
 
   return <KnowledgeBaseComponent {...updatedProps} />;
@@ -66,6 +127,15 @@ const KnowledgeBaseContainer = withProps<Props>(
           variables: { categoryIds: [currentCategoryId] },
         }),
         skip: ({ currentCategoryId }) => !currentCategoryId,
+      }
+    ),
+    graphql<Props, AllArticlesQueryResponse>(
+      gql(queries.allKnowledgeBaseArticles),
+      {
+        name: "allArticlesQuery",
+        options: () => ({
+          fetchPolicy: "network-only",
+        }),
       }
     )
   )(KnowledgeBase)
