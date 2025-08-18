@@ -1,6 +1,6 @@
-import { Document, Schema } from 'mongoose';
+import { Document, Schema } from "mongoose";
 
-import { IDetail, IDetailDocument } from './definitions/users';
+import { IDetail, IDetailDocument } from "./definitions/users";
 
 export interface IEmailSignature {
   brandId?: string;
@@ -12,8 +12,6 @@ export interface IEmailSignatureDocument extends IEmailSignature, Document {}
 export interface ILink {
   [key: string]: string;
 }
-
-
 
 export interface IUser {
   createdAt?: Date;
@@ -64,7 +62,7 @@ export interface IContext {
     IntegrationsAPI: any;
     HelpersApi: any;
   };
-  dataLoaders: any; 
+  dataLoaders: any;
 }
 
 export interface IColumnLabel {
@@ -87,15 +85,15 @@ export const ruleSchema = new Schema(
     _id: { type: String },
 
     // browserLanguage, currentUrl, etc ...
-    kind: { type: String, label: 'Kind' },
+    kind: { type: String, label: "Kind" },
 
     // Browser language, Current url etc ...
-    text: { type: String, label: 'Text' },
+    text: { type: String, label: "Text" },
 
     // is, isNot, startsWith
-    condition: { type: String, label: 'Condition' },
+    condition: { type: String, label: "Condition" },
 
-    value: { type: String, label: 'Value', optional: true }
+    value: { type: String, label: "Value", optional: true },
   },
   { _id: false }
 );
@@ -110,19 +108,19 @@ export const customFieldSchema = new Schema(
     locationValue: {
       type: {
         type: String,
-        enum: ['Point'],
-        optional: true
+        enum: ["Point"],
+        optional: true,
       },
       coordinates: {
         type: [Number],
-        optional: true
-      }
-    }
+        optional: true,
+      },
+    },
   },
   { _id: false }
 );
 
-customFieldSchema.index({ locationValue: '2dsphere' });
+customFieldSchema.index({ locationValue: "2dsphere" });
 
 export interface ICustomField {
   field: string;
@@ -139,7 +137,7 @@ export const attachmentSchema = new Schema(
     url: { type: String },
     type: { type: String },
     size: { type: Number, optional: true },
-    duration: { type: Number, optional: true }
+    duration: { type: Number, optional: true },
   },
   { _id: false }
 );
@@ -168,3 +166,5 @@ export interface IPdfAttachment {
   pdf?: IAttachment;
   pages: IAttachment[];
 }
+
+// workflow 실행
