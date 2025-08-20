@@ -295,12 +295,19 @@ export const setupMessageConsumers = async () => {
       isRPC: true,
       defaultValue: null
     });
+
+    // Widget에서 선택한 ticketType을 requestType 필드에도 저장
+    const modifiedDoc = {
+      ...doc,
+      requestType: doc.type
+    };
+
     return {
       status: "success",
       data: await itemsAdd(
         models,
         subdomain,
-        doc,
+        modifiedDoc,
         "ticket",
         models.Tickets.createTicket,
         customer

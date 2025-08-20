@@ -3143,6 +3143,9 @@
   "Widget Comments": "고객 댓글",
   "Write a comment...": "댓글을 입력하세요...",
   "inquiry": "단순문의",
+  "usage": "단순문의",
   "improvement": "개선요청",
-  "error": "오류처리"
+  "request": "개선요청",
+  "error": "오류처리",
+  "complaint": "오류처리"
 }

@@ -32,7 +32,7 @@ const TicketSubmitContainer = (props: Props) => {
     lastName: "",
     phone: 0,
     email: "",
-    ticketType: "request",
+    ticketType: "inquiry",
     title: "",
     description: "",
   });

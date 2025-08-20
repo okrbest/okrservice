@@ -31,9 +31,12 @@ type Props = {
 class TicketItem extends React.PureComponent<Props> {
   getRequestTypeColor = (requestType: string) => {
     const colorMap: { [key: string]: { bg: string; text: string } } = {
-      'inquiry': { bg: '#fff3e0', text: '#f57c00' },      
-      'improvement': { bg: '#e8f5e8', text: '#388e3c' },   
-      'error': { bg: '#ffebee', text: '#d32f2f' }          
+      'inquiry': { bg: '#fff3e0', text: '#f57c00' },
+      'usage': { bg: '#fff3e0', text: '#f57c00' },
+      'improvement': { bg: '#e8f5e8', text: '#388e3c' },
+      'request': { bg: '#e8f5e8', text: '#388e3c' }, 
+      'error': { bg: '#ffebee', text: '#d32f2f' },
+      'complaint': { bg: '#ffebee', text: '#d32f2f' } 
     };
 
     return colorMap[requestType] || { bg: '#f5f5f5', text: '#616161' };
