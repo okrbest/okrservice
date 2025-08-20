@@ -92,18 +92,61 @@ const WidgetComments = (props: WidgetCommentsProps) => {
           {__("No widget comments yet")}
         </Content>
       ) : (
-        <Content>
-          {widgetComments.map((comment) => (
-            <div key={comment._id} style={{ marginBottom: '10px', padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-                {comment.createdUser ? `${comment.createdUser.firstName} ${comment.createdUser.lastName}` : 'Unknown User'}
-              </div>
-              <div dangerouslySetInnerHTML={{ __html: comment.content }} />
-              <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                {new Date(comment.createdAt).toLocaleString()}
-              </div>
-            </div>
-          ))}
+        <Content style={{ padding: '12px 12px' }}>
+          {widgetComments.map((comment) => {
+            // 담당자(팀)인지 고객인지 구분
+            const isTeam = comment.userType === 'team';
+            
+                         return (
+               <div key={comment._id} style={{ 
+                 marginBottom: '15px', 
+                 display: 'flex', 
+                 alignItems: 'flex-start',
+                 gap: '10px',
+                 marginLeft: isTeam ? '25px' : '-5px'
+               }}>
+                 {/* 사용자 이름 */}
+                 <div style={{ 
+                   minWidth: '80px',
+                   textAlign: 'right',
+                   fontWeight: 'bold',
+                   fontSize: '12px',
+                   color: '#333',
+                   paddingTop: '5px'
+                 }}>
+                   {comment.createdUser ? 
+                     (comment.createdUser.firstName && comment.createdUser.lastName ? 
+                       `${comment.createdUser.firstName} ${comment.createdUser.lastName}` : 
+                       (comment.createdUser.firstName || comment.createdUser.lastName || ' ')
+                     ) : ' '}
+                 </div>
+                 
+                 {/* 말풍선 형태의 댓글 내용 */}
+                 <div style={{
+                   position: 'relative',
+                   backgroundColor: isTeam ? '#f0ecf9' : '#ffffff', // 담당자는 노란색, 고객은 흰색
+                   padding: '10px 15px',
+                   borderRadius: '18px',
+                   maxWidth: isTeam ? 'none' : 'none', // 담당자는 제한 없음, 고객도 제한 없음
+                   minWidth: isTeam ? '200px' : '200px', // 담당자는 더 넓게, 고객은 기본
+                   width: isTeam ? 'auto' : 'auto', // 담당자는 고정 너비, 고객은 자동
+                   wordWrap: 'break-word',
+                   boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                   border: isTeam ? '1px solid #f0ecf9' : '1px solid #e1e5e9'
+                 }}>
+                   <div dangerouslySetInnerHTML={{ __html: comment.content }} />
+                   <div style={{ 
+                     fontSize: '11px', 
+                     color: isTeam ? '#333' : '#666',
+                     marginTop: '8px',
+                     textAlign: 'right'
+                   }}>
+                     {new Date(comment.createdAt).toLocaleString()}
+                   </div>
+                 </div>
+               </div>
+             );
+          })}
         </Content>
       )}
 
