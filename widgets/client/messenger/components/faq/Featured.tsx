@@ -44,12 +44,10 @@ const Featured: React.FC = () => {
   const renderHardcodedArticles = () => {
     const hardcodedArticles = [
       {
-        title: (
-          <>총무관리 9편: 🎉 사내 문화, 이제는 자동화로! 동호회설립신청서</>
-        ),
+        title: "포괄임금제, 법에는 없지만 현실에선 왜 여전히 쓰일까?",
         summary:
-          "신청서 기반 자동화를 통해 설립·운영을 효율적으로 관리하고 구성원의 참여 기회를 확대합니다",
-        link: "https://blog.naver.com/5240hr/223901057791",
+          "포괄임금제는 말 그대로 기본급 외의 수당(연장근로, 야간, 휴일수당 등)을 미리 포함해 지급하는 임금 방식이에요.",
+        link: "https://5240.cloud/포괄임금제-의미-현실-폐지-대안/",
       },
     ];
 
