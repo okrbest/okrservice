@@ -399,6 +399,16 @@ class GeneralSettings extends React.Component<Props, State> {
             {this.renderItemInput("MESSAGE_PRO_PHONE_NUMBER")}
           </FlexRow>
         </CollapseContent>
+
+        <CollapseContent
+          transparent={true}
+          title="Google Map"
+          beforeTitle={<Icon icon="comment-alt-verify" />}
+        >
+          <FlexRow $alignItems="flex-start" $justifyContent="space-between">
+            {this.renderItemInput("GOOGLE_MAP_API_KEY")}
+          </FlexRow>
+        </CollapseContent>
       </ContentBox>
     );
 

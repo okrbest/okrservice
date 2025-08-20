@@ -1,5 +1,5 @@
 import { __ } from "coreui/utils";
-import { Alert } from "@erxes/ui/src";
+import { Alert, Icon } from "@erxes/ui/src";
 import { FormControl, FormGroup } from "@erxes/ui/src/components/form";
 
 import Button from "@erxes/ui/src/components/Button";
@@ -18,6 +18,9 @@ import client from "@erxes/ui/src/apolloClient";
 import { excludedNames } from "../../../../containers/forms/actions/subForms/SetProperty";
 import { queries as formQueries } from "@erxes/ui-forms/src/forms/graphql";
 import { gql } from "@apollo/client";
+import Picker from "@emoji-mart/react";
+import emojiPickerData from "@emoji-mart/data";
+import Popover from "@erxes/ui/src/components/Popover";
 
 type Props = {
   closeModal: () => void;
@@ -188,6 +191,41 @@ class SetProperty extends React.Component<Props, State> {
         value: f.value,
       }));
 
+      const additionalContent = () => {
+        return (
+          <Popover
+            trigger={
+              <span>
+                {__("Emojis")} <Icon icon="angle-down" />
+              </span>
+            }
+            placement="bottom"
+            closeAfterSelect={true}
+          >
+            {(close) => (
+              <Picker
+                theme="light"
+                data={emojiPickerData}
+                onEmojiSelect={(emoji) => {
+                  this.onChangeField(
+                    "rules",
+                    config.rules.map((r) =>
+                      r.id === rule.id
+                        ? {
+                            ...rule,
+                            value: `${rule?.value || ""}${emoji.native}`,
+                          }
+                        : r
+                    )
+                  );
+                  close();
+                }}
+              />
+            )}
+          </Popover>
+        );
+      };
+
       return (
         <GroupWrapper key={rule.id}>
           <FormGroup>
@@ -231,6 +269,7 @@ class SetProperty extends React.Component<Props, State> {
             triggerConfig={triggerConfig}
             selectConfig={chosenField?.selectionConfig}
             attrWithSegmentConfig={true}
+            additionalContent={additionalContent()}
           />
 
           <FormGroup>

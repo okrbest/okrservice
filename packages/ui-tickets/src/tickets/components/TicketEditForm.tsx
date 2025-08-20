@@ -24,6 +24,7 @@ import Sidebar from "../../boards/components/editForm/Sidebar";
 import Top from "../../boards/components/editForm/Top";
 import queryString from "query-string";
 import { isEnabled } from "@erxes/ui/src/utils/core";
+import FormControl from "@erxes/ui/src/components/form/Control";
 
 type Props = {
   options: IOptions;
@@ -92,10 +93,12 @@ const WIDGET_COMMENTS_ADD_MUTATION = gql`
 
 export default function TicketEditForm(props: Props) {
   const item = props.item;
-
   const [source, setSource] = useState(item.source);
-  const [refresh, setRefresh] = useState(false);
+  const [isCheckUserTicket, setIsCheckUserTicket] = useState(
+    item.isCheckUserTicket
+  );
 
+  const [refresh, setRefresh] = useState(false);
   // CardDetailAction.tsx와 동일한 방식으로 type 설정
   const type = item.stage?.type || "ticket";
 
@@ -155,7 +158,6 @@ export default function TicketEditForm(props: Props) {
   useEffect(() => {
     setSource(item.source);
   }, [item.source]);
-
   function renderSidebarFields(saveItem) {
     const sourceValues = INTEGRATION_KINDS.ALL.map((kind) => ({
       label: __(kind.text),
@@ -166,6 +168,11 @@ export default function TicketEditForm(props: Props) {
       label: __("Other"),
       value: "other",
     });
+
+    const onToggleChange = (value: boolean) => {
+      setIsCheckUserTicket(value);
+      if (saveItem) saveItem({ isCheckUserTicket: value });
+    };
 
     const sourceValueRenderer = (option: ISelectedOption): React.ReactNode => (
       <Capitalize>{option.label}</Capitalize>
@@ -198,17 +205,34 @@ export default function TicketEditForm(props: Props) {
     };
 
     return (
-      <FormGroup>
-        <ControlLabel>Source</ControlLabel>
-        <Select
-          placeholder={__("Select a source")}
-          value={sourceValues.find((s) => s.value === source)}
-          options={sourceValues}
-          onChange={onSourceChange}
-          isClearable={true}
-          components={{ Option, SingleValue }}
-        />
-      </FormGroup>
+      <>
+        <FormGroup>
+          <ControlLabel>Source</ControlLabel>
+          <Select
+            placeholder={__("Select a source")}
+            value={sourceValues.find((s) => s.value === source)}
+            options={sourceValues}
+            onChange={onSourceChange}
+            isClearable={true}
+            components={{ Option, SingleValue }}
+          />
+        </FormGroup>
+        {isCheckUserTicket !== null && (
+          <FormGroup controlId="isCheckUserTicket">
+            <ControlLabel>
+              Show only the user's assigned(created) ticket
+            </ControlLabel>
+            <FormControl
+              type="checkbox"
+              componentclass="checkbox"
+              checked={isCheckUserTicket}
+              onChange={(e) =>
+                onToggleChange((e.target as HTMLInputElement).checked)
+              }
+            />
+          </FormGroup>
+        )}
+      </>
     );
   }
 
