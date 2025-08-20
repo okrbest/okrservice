@@ -1,6 +1,6 @@
 import { colors } from "@erxes/ui/src/styles";
 import React from "react";
-
+import { __ } from "coreui/utils";
 import Assignees from "../../boards/components/Assignees";
 import Details from "../../boards/components/Details";
 import DueDateLabel from "../../boards/components/DueDateLabel";
@@ -29,6 +29,16 @@ type Props = {
 };
 
 class TicketItem extends React.PureComponent<Props> {
+  getRequestTypeColor = (requestType: string) => {
+    const colorMap: { [key: string]: { bg: string; text: string } } = {
+      'inquiry': { bg: '#fff3e0', text: '#f57c00' },      
+      'improvement': { bg: '#e8f5e8', text: '#388e3c' },   
+      'error': { bg: '#ffebee', text: '#d32f2f' }          
+    };
+
+    return colorMap[requestType] || { bg: '#f5f5f5', text: '#616161' };
+  };
+
   renderForm = () => {
     const { item, isFormVisible, stageId } = this.props;
 
@@ -57,13 +67,33 @@ class TicketItem extends React.PureComponent<Props> {
       isComplete,
       customProperties,
       tags,
+      requestType,
     } = item;
+
+    const requestTypeColors = requestType ? this.getRequestTypeColor(requestType) : { bg: '#f5f5f5', text: '#616161' };
+
     return (
       <>
         <h5>
           {renderPriority(item.priority)}
           {item.name}
         </h5>
+
+        {requestType && (
+          <div style={{ marginBottom: '8px' }}>
+            <span style={{ 
+              fontSize: '12px', 
+              color: requestTypeColors.text, 
+              backgroundColor: requestTypeColors.bg, 
+              padding: '2px 8px', 
+              borderRadius: '12px',
+              display: 'inline-block',
+              fontWeight: '500'
+            }}>
+              {__(requestType)}
+            </span>
+          </div>
+        )}
 
         <Details color="#F7CE53" items={customers || []} />
         <Details color="#EA475D" items={companies || []} />

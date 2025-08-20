@@ -3140,6 +3140,9 @@
   "is private": " 메인에 등록",
   "Main Articles": "메인",
   "Main FAQ": "메인 FAQ",
-  "Widget Comments":"고객 댓글",
-  "Write a comment...":"댓글을 입력하세요..."
+  "Widget Comments": "고객 댓글",
+  "Write a comment...": "댓글을 입력하세요...",
+  "inquiry": "단순문의",
+  "improvement": "개선요청",
+  "error": "오류처리"
 }

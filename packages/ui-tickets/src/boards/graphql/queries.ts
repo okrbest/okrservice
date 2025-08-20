@@ -359,6 +359,7 @@ const cardFields = `
   startDate
   closeDate
   tagIds
+  requestType
 `;
 
 const boardItemQueryParamsDef = `

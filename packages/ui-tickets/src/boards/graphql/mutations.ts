@@ -84,6 +84,7 @@ export const commonListFields = `
   tagIds
   customProperties
   status
+  requestType
   tags {
     _id
     name
@@ -189,6 +190,7 @@ export const commonFields = `
   customProperties
   branchIds
   departmentIds
+  requestType
 `;
 
 const pipelinesWatch = `
