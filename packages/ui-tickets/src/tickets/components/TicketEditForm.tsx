@@ -97,8 +97,9 @@ export default function TicketEditForm(props: Props) {
   const [isCheckUserTicket, setIsCheckUserTicket] = useState(
     item.isCheckUserTicket
   );
-
+  const [requestType, setRequestType] = useState(item.requestType);
   const [refresh, setRefresh] = useState(false);
+
   // CardDetailAction.tsx와 동일한 방식으로 type 설정
   const type = item.stage?.type || "ticket";
 
@@ -156,56 +157,118 @@ export default function TicketEditForm(props: Props) {
   };
 
   useEffect(() => {
+    console.log("useEffect triggered - item.requestType:", item.requestType);
     setSource(item.source);
-  }, [item.source]);
-  function renderSidebarFields(saveItem) {
-    const sourceValues = INTEGRATION_KINDS.ALL.map((kind) => ({
-      label: __(kind.text),
-      value: kind.value,
-    }));
+    setRequestType(item.requestType);
+  }, [item.source, item.requestType]);
 
-    sourceValues.push({
-      label: __("Other"),
-      value: "other",
-    });
+  function renderSidebarFields(saveItem) {
+    console.log("renderSidebarFields called with saveItem:", saveItem);
+    console.log("Current requestType state:", requestType);
+    console.log("Current item.requestType:", item.requestType);
+    
+    // Source 필드 주석처리
+    // const sourceValues = INTEGRATION_KINDS.ALL.map((kind) => ({
+    //   label: __(kind.text),
+    //   value: kind.value,
+    // }));
+
+    // sourceValues.push({
+    //   label: __("Other"),
+    //   value: "other",
+    // });
 
     const onToggleChange = (value: boolean) => {
       setIsCheckUserTicket(value);
       if (saveItem) saveItem({ isCheckUserTicket: value });
     };
 
-    const sourceValueRenderer = (option: ISelectedOption): React.ReactNode => (
+    // const sourceValueRenderer = (option: ISelectedOption): React.ReactNode => (
+    //   <Capitalize>{option.label}</Capitalize>
+    // );
+
+    // const onSourceChange = (option) => {
+    //   const value = option ? option.value : "";
+
+    //   console.log("=== SOURCE CHANGE START ===");
+    //   console.log("Source changed to:", value);
+    //   console.log("Calling saveItem with:", { source: value });
+
+    //   setSource(value);
+
+    //   if (saveItem) {
+    //     saveItem({ source: value });
+    //     console.log("saveItem called for source");
+    //   } else {
+    //     console.log("saveItem not available for source");
+    //   }
+    //   console.log("=== SOURCE CHANGE END ===");
+    // };
+
+    // const Option = (props) => {
+    //   return (
+    //     <components.Option {...props}>
+    //       {sourceValueRenderer(props.data)}
+    //     </components.Option>
+    //   );
+    // };
+
+    // const SingleValue = (props) => {
+    //   return (
+    //     <components.SingleValue {...props}>
+    //       {sourceValueRenderer(props.data)}
+    //     </components.SingleValue>
+    //   );
+    // };
+
+    // 고객요청구분 필드
+    const requestTypeValues = [
+      { label: "단순문의", value: "inquiry" },
+      { label: "개선요청", value: "improvement" },
+      { label: "오류처리", value: "error" }
+    ];
+
+    const requestTypeValueRenderer = (option: ISelectedOption): React.ReactNode => (
       <Capitalize>{option.label}</Capitalize>
     );
 
-    const onSourceChange = (option) => {
+    const onRequestTypeChange = (option) => {
       const value = option ? option.value : "";
 
-      setSource(value);
+      console.log("=== REQUEST TYPE CHANGE START ===");
+      console.log("RequestType changed to:", value);
+      console.log("Calling saveItem with:", { requestType: value });
+
+      setRequestType(value);
 
       if (saveItem) {
-        saveItem({ source: value });
+        saveItem({ requestType: value });
+        console.log("saveItem called for requestType");
+      } else {
+        console.log("saveItem not available for requestType");
       }
+      console.log("=== REQUEST TYPE CHANGE END ===");
     };
 
-    const Option = (props) => {
+    const RequestTypeOption = (props) => {
       return (
         <components.Option {...props}>
-          {sourceValueRenderer(props.data)}
+          {requestTypeValueRenderer(props.data)}
         </components.Option>
       );
     };
 
-    const SingleValue = (props) => {
+    const RequestTypeSingleValue = (props) => {
       return (
         <components.SingleValue {...props}>
-          {sourceValueRenderer(props.data)}
+          {requestTypeValueRenderer(props.data)}
         </components.SingleValue>
       );
     };
 
     return (
       <>
+        {/* Source 필드 주석처리
         <FormGroup>
           <ControlLabel>Source</ControlLabel>
           <Select
@@ -217,6 +280,8 @@ export default function TicketEditForm(props: Props) {
             components={{ Option, SingleValue }}
           />
         </FormGroup>
+        */}
+
         {isCheckUserTicket !== null && (
           <FormGroup controlId="isCheckUserTicket">
             <ControlLabel>
@@ -232,6 +297,18 @@ export default function TicketEditForm(props: Props) {
             />
           </FormGroup>
         )}
+
+        <FormGroup>
+          <ControlLabel>고객요청구분</ControlLabel>
+          <Select
+            placeholder="요청구분을 선택하세요"
+            value={requestTypeValues.find((r) => r.value === requestType)}
+            options={requestTypeValues}
+            onChange={onRequestTypeChange}
+            isClearable={true}
+            components={{ Option: RequestTypeOption, SingleValue: RequestTypeSingleValue }}
+          />
+        </FormGroup>
       </>
     );
   }

@@ -10,6 +10,7 @@ import {
 export const types = ({ contacts, clientPortal }) => `
   type TicketListItem {
     customPropertiesData: JSON,
+    requestType: String,
     ${commonListTypes}
   }
 
@@ -19,6 +20,9 @@ export const types = ({ contacts, clientPortal }) => `
     ${
       contacts
         ? `
+    requestType: String
+    ${contacts
+    ? `
       companies: [Company]
       customers: [Customer]
       `
@@ -29,6 +33,9 @@ export const types = ({ contacts, clientPortal }) => `
     ${clientPortal ? `vendorCustomers: [ClientPortalUser]` : ""}
 
     ${commonTypes}
+    `
+        : ""
+    }
   }
 `;
 
@@ -52,6 +59,7 @@ const listQueryParams = `
   closeDateType: String
   priority: [String]
   source: [String]
+  requestType: [String]
   labelIds: [String]
   sortField: String
   sortDirection: Int
@@ -115,6 +123,7 @@ const ticketMutationParams = `
   source: String,
   type: String,
   isCheckUserTicket: Boolean
+  requestType: String,
 `;
 
 export const mutations = `

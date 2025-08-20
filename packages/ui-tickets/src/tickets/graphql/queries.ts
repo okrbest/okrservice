@@ -12,6 +12,7 @@ const commonParams = `
   $closeDateType: String,
   $priority: [String],
   $source: [String],
+  $requestType: [String],
   $labelIds: [String],
   $sortField: String,
   $sortDirection: Int,
@@ -43,6 +44,7 @@ const commonParamDefs = `
   closeDateType: $closeDateType,
   priority: $priority,
   source: $source,
+  requestType: $requestType,
   labelIds: $labelIds,
   sortField: $sortField,
   sortDirection: $sortDirection,
@@ -68,6 +70,7 @@ const commonParamDefs = `
 
 export const ticketFields = `
   source
+  requestType
 `;
 
 const tickets = `

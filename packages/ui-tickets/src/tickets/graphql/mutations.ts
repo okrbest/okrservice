@@ -9,10 +9,12 @@ import { ticketFields } from "./queries";
 
 const ticketMutationVariables = `
   $source: String,
+  $requestType: String,
 `;
 
 const ticketMutationParams = `
   source: $source,
+  requestType: $requestType,
 `;
 
 const copyVariables = `$customerIds: [String], $companyIds: [String], $labelIds: [String]`;
