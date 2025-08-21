@@ -46,6 +46,7 @@ export const commonTypes = `
   order: Float
   createdAt: Date
   hasNotified: Boolean
+  widgetAlarm: Boolean
   assignedUserIds: [String]
   branchIds: [String]
   departmentIds:[String]
@@ -131,6 +132,7 @@ export const commonListTypes = `
   modifiedAt: Date
   priority: String
   hasNotified: Boolean
+  widgetAlarm: Boolean
   score: Float
   number: String
   stageChangedDate: Date

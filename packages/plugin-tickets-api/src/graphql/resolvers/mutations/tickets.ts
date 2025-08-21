@@ -120,6 +120,32 @@ const ticketMutations = {
   ) {
     return itemsArchive(models, subdomain, stageId, "ticket", proccessId, user);
   },
+
+  /**
+   * Update widget alarm
+   */
+  async updateWidgetAlarm(
+    _root,
+    { ticketId }: { ticketId: string },
+    { models }: IContext
+  ) {
+    try {
+      await models.Tickets.updateOne(
+        { _id: ticketId },
+        { $set: { widgetAlarm: true } }
+      );
+      
+      return {
+        success: true,
+        message: "Widget alarm updated successfully"
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message
+      };
+    }
+  }
 };
 
 checkPermission(ticketMutations, "ticketsAdd", "ticketsAdd");
@@ -127,5 +153,6 @@ checkPermission(ticketMutations, "ticketsEdit", "ticketsEdit");
 checkPermission(ticketMutations, "ticketsRemove", "ticketsRemove");
 checkPermission(ticketMutations, "ticketsWatch", "ticketsWatch");
 checkPermission(ticketMutations, "ticketsArchive", "ticketsArchive");
+checkPermission(ticketMutations, "updateWidgetAlarm", "updateWidgetAlarm");
 
 export default ticketMutations;

@@ -130,6 +130,7 @@ const TICKET_LIST = gql`
       type
       createdAt
       priority
+      widgetAlarm
     }
   }
 `;

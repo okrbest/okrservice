@@ -46,6 +46,7 @@ export const setupMessageConsumers = async () => {
   });
 
   consumeRPCQueue("tickets:editItem", async ({ subdomain, data }) => {
+    console.log('🔔 tickets:editItem called with:', { subdomain, data });
     const models = await generateModels(subdomain);
 
     const objModels = {
@@ -65,6 +66,39 @@ export const setupMessageConsumers = async () => {
     const oldItem = await collection.findOne({ _id: itemId });
     const typeUpperCase = type.charAt(0).toUpperCase() + type.slice(1);
 
+    console.log('🔔 Processing editItem:', { type, itemId, oldDescription: oldItem?.description, newDescription: doc.description });
+
+    // 티켓의 description이 수정된 경우 widgetAlarm을 false로 설정
+    if (type === "ticket" && doc.description && doc.description !== oldItem.description) {
+      console.log('🔔 Description modified for ticket:', itemId, 'setting widgetAlarm to false');
+      
+      // description 수정 후 widgetAlarm을 false로 설정
+      const updatedItem = await itemsEdit(
+        models,
+        subdomain,
+        itemId,
+        type,
+        oldItem,
+        doc,
+        processId,
+        user,
+        collection[`update${typeUpperCase}`]
+      );
+      
+      // widgetAlarm을 false로 업데이트
+      await models.Tickets.updateOne(
+        { _id: itemId },
+        { $set: { widgetAlarm: false } }
+      );
+      
+      console.log('🔔 Widget alarm set to false for ticket:', itemId, 'due to description modification');
+      
+      return {
+        status: "success",
+        data: updatedItem
+      };
+    }
+
     return {
       status: "success",
       data: await itemsEdit(
@@ -78,6 +112,88 @@ export const setupMessageConsumers = async () => {
         user,
         collection[`update${typeUpperCase}`]
       )
+    };
+  });
+
+  // tickets:edit action 추가 (티켓 수정 시 widgetAlarm 처리)
+  consumeRPCQueue("tickets:edit", async ({ subdomain, data }) => {
+    console.log('🔔 tickets:edit called with:', { subdomain, data });
+    const models = await generateModels(subdomain);
+
+    const { _id, ...doc } = data;
+
+    if (!_id) {
+      return {
+        status: "error",
+        errorMessage: "Ticket ID is required"
+      };
+    }
+
+    // 기존 티켓 정보 가져오기
+    const oldTicket = await models.Tickets.findOne({ _id });
+    
+    if (!oldTicket) {
+      return {
+        status: "error",
+        errorMessage: "Ticket not found"
+      };
+    }
+
+    console.log('🔔 Processing ticket edit:', { _id, oldDescription: oldTicket.description, newDescription: doc.description });
+
+    // description이 수정된 경우 widgetAlarm을 false로 설정
+    if (doc.description && doc.description !== oldTicket.description) {
+      console.log('🔔 Description modified for ticket:', _id, 'setting widgetAlarm to false');
+      
+      // description 수정 후 widgetAlarm을 false로 설정
+      const updatedTicket = await models.Tickets.updateOne(
+        { _id },
+        { $set: { ...doc, widgetAlarm: false } }
+      );
+      
+      console.log('🔔 Widget alarm set to false for ticket:', _id, 'due to description modification');
+      
+      return {
+        status: "success",
+        data: updatedTicket
+      };
+    }
+
+    // description이 수정되지 않은 경우 일반 업데이트
+    const updatedTicket = await models.Tickets.updateOne(
+      { _id },
+      { $set: doc }
+    );
+
+    return {
+      status: "success",
+      data: updatedTicket
+    };
+  });
+
+  // tickets:updateName action에도 widgetAlarm 처리 추가
+  consumeRPCQueue("tickets:updateName", async ({ subdomain, data }) => {
+    console.log('🔔 tickets:updateName called with:', { subdomain, data });
+    
+    // 기존 updateName 로직 실행
+    await updateName(subdomain, data.mainType, data.itemId);
+    
+    // 티켓인 경우 widgetAlarm을 false로 설정
+    if (data.mainType === 'ticket') {
+      console.log('🔔 tickets:updateName - Ticket updated, setting widgetAlarm to false');
+      
+      const models = await generateModels(subdomain);
+      await models.Tickets.updateOne(
+        { _id: data.itemId },
+        { $set: { widgetAlarm: false } }
+      );
+      
+      console.log('🔔 Widget alarm set to false for ticket:', data.itemId, 'due to updateName');
+    }
+    
+    return {
+      status: "success",
+      data: {}
     };
   });
 
@@ -272,13 +388,7 @@ export const setupMessageConsumers = async () => {
       data: await models.Tickets.findOne(data).lean()
     };
   });
-  consumeRPCQueue("tickets:updateName", async ({ subdomain, data }) => {
-    await updateName(subdomain, data.mainType, data.itemId);
-    return {
-      status: "success",
-      data: {}
-    };
-  });
+
 
 
   consumeRPCQueue("tickets:widgets.createTicket", async ({ subdomain, data }) => {
@@ -410,6 +520,22 @@ export const setupMessageConsumers = async () => {
       // 티켓 담당자들에게 알림 보내기 (고객이 댓글을 남긴 경우에만)
       const assignedUserIds = ticket.assignedUserIds || [];
       
+                   // userType이 "client"가 아닌 경우 (담당자 등이 댓글을 단 경우)
+             // 해당 티켓의 widgetAlarm을 false로 설정하여 고객에게 알림 표시
+             if (userType !== "client") {
+               console.log('🔔 Setting widgetAlarm to false for ticket:', typeId, 'userType:', userType);
+               await models.Tickets.updateOne(
+                 { _id: typeId },
+                 { $set: { widgetAlarm: false } }
+               );
+               
+               // 업데이트 확인
+               const updatedTicket = await models.Tickets.findOne({ _id: typeId });
+               console.log('🔔 Updated ticket widgetAlarm:', (updatedTicket as any).widgetAlarm);
+             } else {
+               console.log('🔔 userType is "client", not setting widgetAlarm');
+             }
+      
       // userType이 "client"인 경우에만 알림 보내기 (담당자 댓글은 제외)
       if (assignedUserIds.length > 0 && userType === "client") {
         // stage와 pipeline 정보 가져오기
@@ -510,8 +636,16 @@ export const setupMessageConsumers = async () => {
       tickets.map(async (ticket) => {
         const stage = await models.Stages.findOne({ _id: ticket.stageId });
         return {
-          ...ticket.toObject(),
-          stage: stage ? { _id: stage._id, name: stage.name } : null
+          _id: ticket._id,
+          name: ticket.name,
+          number: ticket.number,
+          status: ticket.status,
+          stage: stage ? { _id: stage._id, name: stage.name } : null,
+          description: ticket.description,
+          type: ticket.type,
+          createdAt: ticket.createdAt,
+          priority: ticket.priority,
+          hasNotified: (ticket as any).hasNotified !== undefined ? (ticket as any).hasNotified : true
         };
       })
     );
@@ -521,6 +655,113 @@ export const setupMessageConsumers = async () => {
       data: ticketsWithStages
     };
   });
+  
+  // widgets.ticketList.find action 추가 (sendTicketsMessage용)
+  consumeRPCQueue("widgets.ticketList.find", async ({ subdomain, data }) => {
+    console.log('🔔 widgets.ticketList.find called with:', { subdomain, data });
+    const models = await generateModels(subdomain);
+    const { customerId } = data;
+
+    if (!customerId) {
+      return {
+        status: "error",
+        errorMessage: "Customer ID is required"
+      };
+    }
+
+    // 고객이 생성한 티켓들을 가져오기
+    const tickets = await models.Tickets.find({
+      customerIds: { $in: [customerId] }
+    }).sort({ createdAt: -1 });
+    
+    console.log('🔔 Found tickets:', tickets.length, 'for customerId:', customerId);
+    console.log('🔔 Raw ticket data:', tickets.map(t => ({ _id: t._id, hasNotified: (t as any).hasNotified, type: typeof (t as any).hasNotified })));
+
+    // Populate stage information
+    const ticketsWithStages = await Promise.all(
+      tickets.map(async (ticket) => {
+        const stage = await models.Stages.findOne({ _id: ticket.stageId });
+        
+        // hasNotified 필드 확인
+        const hasNotified = (ticket as any).hasNotified !== undefined ? (ticket as any).hasNotified : true;
+        console.log('🔔 Ticket hasNotified:', ticket._id, 'hasNotified:', hasNotified, 'original:', (ticket as any).hasNotified, 'type:', typeof (ticket as any).hasNotified);
+        
+        return {
+          _id: ticket._id,
+          name: ticket.name,
+          number: ticket.number,
+          status: ticket.status,
+          stage: stage ? { _id: stage._id, name: stage.name } : null,
+          description: ticket.description,
+          type: ticket.type,
+          createdAt: ticket.createdAt,
+          priority: ticket.priority,
+          hasNotified: hasNotified
+        };
+      })
+    );
+
+    console.log('🔔 widgets.ticketList.find returning data:', ticketsWithStages.length, 'tickets');
+    
+    return {
+      status: "success",
+      data: ticketsWithStages
+    };
+  });
+  
+  // tickets:widgets.ticketList.find action 추가
+  consumeRPCQueue("tickets:widgets.ticketList.find", async ({ subdomain, data }) => {
+    console.log('🔔 widgets.ticketList.find called with:', { subdomain, data });
+    const models = await generateModels(subdomain);
+    const { customerId } = data;
+
+    if (!customerId) {
+      return {
+        status: "error",
+        errorMessage: "Customer ID is required"
+      };
+    }
+
+    // 고객이 생성한 티켓들을 가져오기
+    const tickets = await models.Tickets.find({
+      customerIds: { $in: [customerId] }
+    }).sort({ createdAt: -1 });
+    
+    console.log('🔔 Found tickets:', tickets.length, 'for customerId:', customerId);
+    console.log('🔔 Raw ticket data:', tickets.map(t => ({ _id: t._id, hasNotified: (t as any).hasNotified, type: typeof (t as any).hasNotified })));
+
+    // Populate stage information
+    const ticketsWithStages = await Promise.all(
+      tickets.map(async (ticket) => {
+        const stage = await models.Stages.findOne({ _id: ticket.stageId });
+        
+        // hasNotified 필드 확인
+        const hasNotified = (ticket as any).hasNotified !== undefined ? (ticket as any).hasNotified : true;
+        console.log('🔔 Ticket hasNotified:', ticket._id, 'hasNotified:', hasNotified, 'original:', (ticket as any).hasNotified, 'type:', typeof (ticket as any).hasNotified);
+        
+        return {
+          _id: ticket._id,
+          name: ticket.name,
+          number: ticket.number,
+          status: ticket.status,
+          stage: stage ? { _id: stage._id, name: stage.name } : null,
+          description: ticket.description,
+          type: ticket.type,
+          createdAt: ticket.createdAt,
+          priority: ticket.priority,
+          hasNotified: hasNotified
+        };
+      })
+    );
+
+    console.log('🔔 widgets.ticketList.find returning data:', ticketsWithStages.length, 'tickets');
+    
+    return {
+      status: "success",
+      data: ticketsWithStages
+    };
+  });
+  
   consumeRPCQueue("tickets:findItem", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 

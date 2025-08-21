@@ -19,12 +19,14 @@ type TicketItem = {
   type: string;
   createdAt: string;
   priority?: string;
+  widgetAlarm?: boolean;
 };
 
 type Props = {
   tickets: TicketItem[];
   loading: boolean;
   onTicketClick: (ticket: TicketItem) => void;
+  onRefresh?: () => void;
 };
 
 const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick }) => {
@@ -56,7 +58,32 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick }) => {
     }
   };
 
+  // 알림 표시를 위한 스타일
+  const notificationStyles = {
+    ticketNotification: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '4px 8px',
+      marginLeft: '1px',
+      backgroundColor: '#ff6b6b',
+      borderRadius: '12px',
+      border: '2px solid #fff',
+      whiteSpace: 'nowrap',
+      minWidth: 'fit-content'
+    },
+    notificationIcon: {
+      fontSize: '14px',
+      color: '#fff',
+      animation: 'pulse 2s infinite',
+      fontWeight: 'bold'
+    }
+  };
+
   const renderTicketItem = (ticket: TicketItem) => {
+    // 디버깅 로그 추가
+          console.log('🔔 Widget Ticket widgetAlarm:', ticket._id, 'widgetAlarm:', ticket.widgetAlarm, 'type:', typeof ticket.widgetAlarm);
+    
     return (
       <div
         key={ticket._id}
@@ -68,6 +95,12 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick }) => {
           <div className="ticket-date">
             {dayjs(ticket.createdAt).format("YYYY-MM-DD")}
           </div>
+          {/* 알림 표시 */}
+          {ticket.widgetAlarm === false && (
+            <div style={notificationStyles.ticketNotification}>
+              <span style={notificationStyles.notificationIcon}>🔔 새 답변알림</span>
+            </div>
+          )}
         </div>
         
         <div className="ticket-item-content">

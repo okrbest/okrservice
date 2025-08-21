@@ -8,6 +8,11 @@ import {
 } from "./common";
 
 export const types = ({ contacts, clientPortal }) => `
+  type UpdateWidgetAlarmResponse {
+    success: Boolean!
+    message: String!
+  }
+
   type TicketListItem {
     customPropertiesData: JSON,
     requestType: String,
@@ -134,4 +139,5 @@ export const mutations = `
   ticketsWatch(_id: String, isAdd: Boolean): Ticket
   ticketsCopy(_id: String!, proccessId: String): Ticket
   ticketsArchive(stageId: String!, proccessId: String): String
+  updateWidgetAlarm(ticketId: String!): UpdateWidgetAlarmResponse
 `;

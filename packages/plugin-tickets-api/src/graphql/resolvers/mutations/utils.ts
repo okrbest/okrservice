@@ -285,6 +285,19 @@ export const itemsEdit = async (
   }
 
   const updatedItem = await modelUpate(_id, extendedDoc);
+  
+  // 티켓의 description이 수정된 경우 widgetAlarm을 false로 설정
+  if (type === "ticket" && doc.description && doc.description !== oldItem.description) {
+    console.log('🔔 itemsEdit - Description modified for ticket:', _id, 'setting widgetAlarm to false');
+    
+    await models.Tickets.updateOne(
+      { _id },
+      { $set: { widgetAlarm: false } }
+    );
+    
+    console.log('🔔 Widget alarm set to false for ticket:', _id, 'due to description modification in itemsEdit');
+  }
+  
   // labels should be copied to newly moved pipeline
   if (doc.stageId) {
     await copyPipelineLabels(models, { item: oldItem, doc, user });
