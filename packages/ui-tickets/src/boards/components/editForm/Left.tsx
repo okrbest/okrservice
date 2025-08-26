@@ -39,12 +39,15 @@ type DescProps = {
 type WidgetCommentsProps = {
   widgetComments?: any[];
   onAddComment?: (content: string) => void;
+  onDeleteComment?: (commentId: string) => void;
+  currentUser?: any; // 현재 사용자 정보
 };
 
 const WidgetComments = (props: WidgetCommentsProps) => {
-  const { widgetComments = [], onAddComment } = props;
+  const { widgetComments = [], onAddComment, onDeleteComment, currentUser } = props;
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
 
   const handleChange = (e: React.FormEvent<HTMLElement>) => {
     const target = e.target as HTMLTextAreaElement;
@@ -77,6 +80,49 @@ const WidgetComments = (props: WidgetCommentsProps) => {
     }
   };
 
+  const handleDeleteComment = async (commentId: string) => {
+    console.log('🗑️ Delete button clicked for comment:', commentId);
+    console.log('🗑️ onDeleteComment function exists:', !!onDeleteComment);
+    
+    if (!onDeleteComment) {
+      console.error('🗑️ onDeleteComment function is not provided!');
+      alert('댓글 삭제 기능이 설정되지 않았습니다.');
+      return;
+    }
+    
+    if (window.confirm(__("Are you sure you want to delete this comment?"))) {
+      console.log('🗑️ User confirmed deletion, calling onDeleteComment...');
+      setDeletingCommentId(commentId);
+      try {
+        await onDeleteComment(commentId);
+        console.log("🗑️ Comment deleted successfully");
+      } catch (error) {
+        console.error("🗑️ Failed to delete comment:", error);
+        alert(__("Failed to delete comment"));
+      } finally {
+        setDeletingCommentId(null);
+      }
+    } else {
+      console.log('🗑️ User cancelled deletion');
+    }
+  };
+
+  // 댓글 작성자와 현재 사용자가 같은지 확인
+  const canDeleteComment = (comment: any) => {
+    console.log('🔍 Checking delete permission for comment:', {
+      commentId: comment._id,
+      commentUserType: comment.userType,
+      commentCreatedUser: comment.createdUser,
+      currentUser: currentUser,
+      canDelete: comment.userType === 'team' && 
+                 (currentUser?._id === comment.createdUser?._id || currentUser?.isOwner || currentUser?.isAdmin)
+    });
+    
+    if (!currentUser || !comment.createdUser) return false;
+    return comment.userType === 'team' && 
+           (currentUser._id === comment.createdUser._id || currentUser.isOwner || currentUser.isAdmin);
+  };
+
   return (
     <FormGroup>
       <TitleRow>
@@ -96,6 +142,15 @@ const WidgetComments = (props: WidgetCommentsProps) => {
           {widgetComments.map((comment) => {
             // 담당자(팀)인지 고객인지 구분
             const isTeam = comment.userType === 'team';
+            
+            // 디버깅: 댓글 데이터 구조 확인
+            console.log('🔍 Comment data:', {
+              commentId: comment._id,
+              userType: comment.userType,
+              isTeam: isTeam,
+              createdUser: comment.createdUser,
+              content: comment.content?.substring(0, 50) + '...'
+            });
             
                          return (
                <div key={comment._id} style={{ 
@@ -135,6 +190,8 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                    border: isTeam ? '1px solid #f0ecf9' : '1px solid #e1e5e9'
                  }}>
                    <div dangerouslySetInnerHTML={{ __html: comment.content }} />
+                   
+                   {/* 시간 표시 */}
                    <div style={{ 
                      fontSize: '11px', 
                      color: isTeam ? '#333' : '#666',
@@ -144,6 +201,35 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                      {new Date(comment.createdAt).toLocaleString()}
                    </div>
                  </div>
+                 
+                 {/* 삭제 버튼 - 말풍선 외부 오른쪽 하단에 배치 */}
+                 {isTeam && (
+                   <div style={{
+                     display: 'flex',
+                     justifyContent: 'flex-end',
+                     marginTop: '8px',
+                     marginLeft: '10px'
+                   }}>
+                     <Button
+                       btnStyle="danger"
+                       size="small"
+                       icon="trash-alt"
+                       onClick={() => handleDeleteComment(comment._id)}
+                       disabled={deletingCommentId === comment._id}
+                       style={{
+                         padding: '3px 8px',
+                         fontSize: '11px',
+                         minWidth: 'auto',
+                         height: '22px',
+                         backgroundColor: '#dc3545',
+                         borderColor: '#dc3545',
+                         color: 'white'
+                       }}
+                     >
+                       
+                     </Button>
+                   </div>
+                 )}
                </div>
              );
           })}
@@ -299,6 +385,8 @@ type Props = {
   onChangeRefresh: () => void;
   widgetComments?: any[];
   onAddComment?: (content: string) => void;
+  onDeleteComment?: (commentId: string) => void;
+  currentUser?: any;
 };
 
 const Left = (props: Props) => {
@@ -320,7 +408,9 @@ const Left = (props: Props) => {
   console.log("Left component props:", { 
     itemId: item._id, 
     widgetComments: widgetComments?.length, 
-    onAddComment: !!onAddComment 
+    onAddComment: !!onAddComment,
+    onDeleteComment: !!props.onDeleteComment,
+    currentUser: !!props.currentUser
   });
 
   const onChangeAttachment = (files: IAttachment[]) =>
@@ -369,7 +459,12 @@ const Left = (props: Props) => {
 
       <Description item={item} saveItem={saveItem} contentType={options.type} />
 
-      <WidgetComments widgetComments={widgetComments} onAddComment={onAddComment} />
+      <WidgetComments 
+        widgetComments={widgetComments} 
+        onAddComment={onAddComment}
+        onDeleteComment={props.onDeleteComment}
+        currentUser={props.currentUser}
+      />
 
       <Checklists
         contentType={options.type}

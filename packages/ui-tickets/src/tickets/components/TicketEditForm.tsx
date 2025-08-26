@@ -91,6 +91,13 @@ const WIDGET_COMMENTS_ADD_MUTATION = gql`
   }
 `;
 
+// WidgetComments 삭제 뮤테이션
+const WIDGET_COMMENTS_DELETE_MUTATION = gql`
+  mutation widgetsTicketCommentsRemove($_id: String!) {
+    widgetsTicketCommentsRemove(_id: $_id)
+  }
+`;
+
 export default function TicketEditForm(props: Props) {
   const item = props.item;
   const [source, setSource] = useState(item.source);
@@ -127,6 +134,19 @@ export default function TicketEditForm(props: Props) {
     },
   });
 
+  // WidgetComments 삭제 뮤테이션 (ticket 타입일 때만)
+  const [deleteWidgetComment] = useMutation(WIDGET_COMMENTS_DELETE_MUTATION, {
+    onCompleted: (data) => {
+      console.log("Comment deleted successfully:", data);
+      // 삭제 성공 시 댓글 목록 새로고침
+      refetchWidgetComments();
+    },
+    onError: (error) => {
+      console.error("Failed to delete comment:", error);
+      alert(`댓글 삭제 실패: ${error.message}`);
+    },
+  });
+
   const widgetComments = widgetCommentsData?.widgetsTicketComments || [];
 
   // 댓글 추가 핸들러 (ticket 타입일 때만)
@@ -152,6 +172,36 @@ export default function TicketEditForm(props: Props) {
       return result;
     } catch (error) {
       console.error("Failed to add comment:", error);
+      throw error;
+    }
+  };
+
+  // 댓글 삭제 핸들러 (ticket 타입일 때만)
+  const handleDeleteComment = async (commentId: string) => {
+    if (!isTicketType) {
+      console.log("Comments are only available for ticket type");
+      return;
+    }
+
+    console.log("Attempting to delete comment:", { commentId, itemId: item._id });
+    
+    try {
+      // 댓글 삭제 뮤테이션 실행
+      const result = await deleteWidgetComment({
+        variables: { _id: commentId }
+      });
+      
+      console.log("Comment deletion result:", result);
+      
+      // 삭제 성공 시 댓글 목록 새로고침
+      if (result.data?.widgetsTicketCommentsRemove) {
+        console.log("Comment deleted successfully, refreshing comments...");
+        refetchWidgetComments();
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Failed to delete comment:", error);
       throw error;
     }
   };
@@ -399,6 +449,8 @@ export default function TicketEditForm(props: Props) {
             onChangeRefresh={() => setRefresh(!refresh)}
             widgetComments={isTicketType ? widgetComments : []}
             onAddComment={isTicketType ? handleAddComment : undefined}
+            onDeleteComment={isTicketType ? handleDeleteComment : undefined}
+            currentUser={currentUser}
           />
 
           <Sidebar
