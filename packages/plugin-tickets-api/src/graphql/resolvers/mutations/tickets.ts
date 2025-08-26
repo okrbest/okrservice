@@ -153,6 +153,5 @@ checkPermission(ticketMutations, "ticketsEdit", "ticketsEdit");
 checkPermission(ticketMutations, "ticketsRemove", "ticketsRemove");
 checkPermission(ticketMutations, "ticketsWatch", "ticketsWatch");
 checkPermission(ticketMutations, "ticketsArchive", "ticketsArchive");
-checkPermission(ticketMutations, "updateWidgetAlarm", "updateWidgetAlarm");
 
 export default ticketMutations;
