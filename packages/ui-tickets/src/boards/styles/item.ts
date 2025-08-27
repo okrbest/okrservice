@@ -24,7 +24,7 @@ export const Content = styled.div`
   hr {
     border: none;
     height: 2px;
-    background: ${colors.colorCoreGray};
+    background: #000000;
     margin: 12px 0;
   }
 
