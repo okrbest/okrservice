@@ -64,6 +64,7 @@ const WIDGET_COMMENTS_QUERY = gql`
       type
       userType
       createdAt
+      updatedAt
     }
   }
 `;
@@ -95,6 +96,18 @@ const WIDGET_COMMENTS_ADD_MUTATION = gql`
 const WIDGET_COMMENTS_DELETE_MUTATION = gql`
   mutation widgetsTicketCommentsRemove($_id: String!) {
     widgetsTicketCommentsRemove(_id: $_id)
+  }
+`;
+
+// WidgetComments 수정 뮤테이션
+const WIDGET_COMMENTS_EDIT_MUTATION = gql`
+  mutation widgetsTicketCommentEdit($_id: String!, $content: String!) {
+    widgetsTicketCommentEdit(_id: $_id, content: $content) {
+      _id
+      content
+      createdAt
+      updatedAt
+    }
   }
 `;
 
@@ -144,6 +157,19 @@ export default function TicketEditForm(props: Props) {
     onError: (error) => {
       console.error("Failed to delete comment:", error);
       alert(`댓글 삭제 실패: ${error.message}`);
+    },
+  });
+
+  // WidgetComments 수정 뮤테이션 (ticket 타입일 때만)
+  const [editWidgetComment] = useMutation(WIDGET_COMMENTS_EDIT_MUTATION, {
+    onCompleted: (data) => {
+      console.log("Comment edited successfully:", data);
+      // 수정 성공 시 댓글 목록 새로고침
+      refetchWidgetComments();
+    },
+    onError: (error) => {
+      console.error("Failed to edit comment:", error);
+      alert(`댓글 수정 실패: ${error.message}`);
     },
   });
 
@@ -202,6 +228,39 @@ export default function TicketEditForm(props: Props) {
       return result;
     } catch (error) {
       console.error("Failed to delete comment:", error);
+      throw error;
+    }
+  };
+
+  // 댓글 수정 핸들러 (ticket 타입일 때만)
+  const handleEditComment = async (commentId: string, content: string) => {
+    if (!isTicketType) {
+      console.log("Comments are only available for ticket type");
+      return;
+    }
+
+    console.log("Attempting to edit comment:", { commentId, content, itemId: item._id });
+    
+    try {
+      // 댓글 수정 뮤테이션 실행
+      const result = await editWidgetComment({
+        variables: { 
+          _id: commentId,
+          content: content
+        }
+      });
+      
+      console.log("Comment edit result:", result);
+      
+      // 수정 성공 시 댓글 목록 새로고침
+      if (result.data?.widgetsTicketCommentEdit) {
+        console.log("Comment edited successfully, refreshing comments...");
+        refetchWidgetComments();
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Failed to edit comment:", error);
       throw error;
     }
   };
@@ -450,6 +509,7 @@ export default function TicketEditForm(props: Props) {
             widgetComments={isTicketType ? widgetComments : []}
             onAddComment={isTicketType ? handleAddComment : undefined}
             onDeleteComment={isTicketType ? handleDeleteComment : undefined}
+            onEditComment={isTicketType ? handleEditComment : undefined}
             currentUser={currentUser}
           />
 

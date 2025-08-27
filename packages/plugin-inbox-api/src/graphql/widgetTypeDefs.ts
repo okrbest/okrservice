@@ -203,6 +203,7 @@ export const mutations = ({ tickets }) => `
     userType: String!
     customerId: String
   ): TicketComment
+  widgetsTicketCommentEdit(_id: String!, content: String!): TicketComment
   widgetsTicketCommentsRemove(_id: String!): String
   widgetTicketCreated(
     name: String!

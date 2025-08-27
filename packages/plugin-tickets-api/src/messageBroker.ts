@@ -584,13 +584,58 @@ export const setupMessageConsumers = async () => {
       status: "success",
     };
   });
+
+  consumeRPCQueue("tickets:widgets.comment.edit", async ({ subdomain, data }) => {
+    const models = await generateModels(subdomain);
+    const { _id, content } = data;
+    
+    const comment = await models.Comments.findOne({ _id });
+    if (!comment) {
+      return {
+        status: "error",
+        errorMessage: "Comment not found"
+      };
+    }
+
+    // 댓글 내용 업데이트
+    console.log('🔧 Updating comment:', { _id, content, beforeUpdate: comment.toObject() });
+    
+    await models.Comments.updateComment(_id, { content } as any);
+    
+    // 업데이트된 댓글 반환
+    const updatedComment = await models.Comments.findOne({ _id });
+    console.log('🔧 Comment updated:', { _id, afterUpdate: updatedComment?.toObject() });
+    
+    return {
+      status: "success",
+      data: updatedComment
+    };
+  });
   consumeRPCQueue("tickets:widgets.comments.find", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
     const { typeId } = data;
-    const comment = await models.Comments.getComment(typeId)
+    const comments = await models.Comments.find({ typeId }).sort({ createdAt: 1 });
+    
+    // updatedAt 필드가 있는지 확인하고 반환
+    const commentsWithUpdatedAt = comments.map(comment => {
+      const commentObj = comment.toObject();
+      console.log('🔍 Comment data:', {
+        _id: commentObj._id,
+        content: commentObj.content?.substring(0, 50),
+        createdAt: commentObj.createdAt,
+        updatedAt: commentObj.updatedAt,
+        hasUpdatedAt: !!commentObj.updatedAt
+      });
+      
+      return {
+        ...commentObj,
+        updatedAt: commentObj.updatedAt || commentObj.createdAt
+      };
+    });
+    
     return {
       status: "success",
-      data: comment
+      data: commentsWithUpdatedAt
     };
   });
   consumeRPCQueue("tickets:widgets.ticketList.find", async ({ subdomain, data }) => {

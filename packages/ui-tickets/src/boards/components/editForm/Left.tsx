@@ -40,14 +40,17 @@ type WidgetCommentsProps = {
   widgetComments?: any[];
   onAddComment?: (content: string) => void;
   onDeleteComment?: (commentId: string) => void;
+  onEditComment?: (commentId: string, content: string) => void;
   currentUser?: any; // 현재 사용자 정보
 };
 
 const WidgetComments = (props: WidgetCommentsProps) => {
-  const { widgetComments = [], onAddComment, onDeleteComment, currentUser } = props;
+  const { widgetComments = [], onAddComment, onDeleteComment, onEditComment, currentUser } = props;
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState("");
 
   const handleChange = (e: React.FormEvent<HTMLElement>) => {
     const target = e.target as HTMLTextAreaElement;
@@ -123,6 +126,38 @@ const WidgetComments = (props: WidgetCommentsProps) => {
            (currentUser._id === comment.createdUser._id || currentUser.isOwner || currentUser.isAdmin);
   };
 
+  // 댓글 수정 권한 확인
+  const canEditComment = (comment: any) => {
+    if (!currentUser || !comment.createdUser) return false;
+    return comment.userType === 'team' && 
+           (currentUser._id === comment.createdUser._id || currentUser.isOwner || currentUser.isAdmin);
+  };
+
+  // 수정 모드 시작
+  const startEditing = (comment: any) => {
+    setEditingCommentId(comment._id);
+    setEditingContent(comment.content);
+  };
+
+  // 수정 취소
+  const cancelEditing = () => {
+    setEditingCommentId(null);
+    setEditingContent("");
+  };
+
+  // 수정 저장
+  const saveEditing = async () => {
+    if (!onEditComment || !editingCommentId || !editingContent.trim()) return;
+    
+    try {
+      await onEditComment(editingCommentId, editingContent);
+      setEditingCommentId(null);
+      setEditingContent("");
+    } catch (error) {
+      console.error("Failed to edit comment:", error);
+    }
+  };
+
   return (
     <FormGroup>
       <TitleRow>
@@ -149,7 +184,11 @@ const WidgetComments = (props: WidgetCommentsProps) => {
               userType: comment.userType,
               isTeam: isTeam,
               createdUser: comment.createdUser,
-              content: comment.content?.substring(0, 50) + '...'
+              content: comment.content?.substring(0, 50) + '...',
+              createdAt: comment.createdAt,
+              updatedAt: comment.updatedAt,
+              hasUpdatedAt: !!comment.updatedAt,
+              isModified: comment.updatedAt && comment.updatedAt !== comment.createdAt
             });
             
                          return (
@@ -176,40 +215,139 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                      ) : ' '}
                  </div>
                  
-                 {/* 말풍선 형태의 댓글 내용 */}
-                 <div style={{
-                   position: 'relative',
-                   backgroundColor: isTeam ? '#f0ecf9' : '#ffffff', // 담당자는 노란색, 고객은 흰색
-                   padding: '10px 15px',
-                   borderRadius: '18px',
-                   maxWidth: isTeam ? 'none' : 'none', // 담당자는 제한 없음, 고객도 제한 없음
-                   minWidth: isTeam ? '200px' : '200px', // 담당자는 더 넓게, 고객은 기본
-                   width: isTeam ? 'auto' : 'auto', // 담당자는 고정 너비, 고객은 자동
-                   wordWrap: 'break-word',
-                   boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                   border: isTeam ? '1px solid #f0ecf9' : '1px solid #e1e5e9'
-                 }}>
-                   <div dangerouslySetInnerHTML={{ __html: comment.content }} />
-                   
-                   {/* 시간 표시 */}
-                   <div style={{ 
-                     fontSize: '11px', 
-                     color: isTeam ? '#333' : '#666',
-                     marginTop: '8px',
-                     textAlign: 'right'
+                                    {/* 말풍선 형태의 댓글 내용 */}
+                   <div style={{
+                     position: 'relative',
+                     backgroundColor: isTeam ? '#f0ecf9' : '#ffffff', // 담당자는 노란색, 고객은 흰색
+                     padding: '10px 15px',
+                     borderRadius: '18px',
+                     maxWidth: isTeam ? 'none' : 'none', // 담당자는 제한 없음, 고객도 제한 없음
+                     minWidth: isTeam ? '200px' : '200px', // 담당자는 더 넓게, 고객은 기본
+                     width: isTeam ? 'auto' : 'auto', // 담당자는 고정 너비, 고객은 자동
+                     wordWrap: 'break-word',
+                     boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                     border: isTeam ? '1px solid #f0ecf9' : '1px solid #e1e5e9'
                    }}>
-                     {new Date(comment.createdAt).toLocaleString()}
+                     {/* 수정 모드일 때와 일반 모드일 때 구분 */}
+                     {editingCommentId === comment._id ? (
+                       /* 수정 모드 */
+                       <div>
+                         <textarea
+                           value={editingContent}
+                           onChange={(e: any) => setEditingContent(e.target.value)}
+                           style={{
+                             width: '100%',
+                             minHeight: '60px',
+                             border: '1px solid #ddd',
+                             borderRadius: '4px',
+                             padding: '8px',
+                             fontSize: '12px',
+                             resize: 'vertical',
+                             fontFamily: 'inherit'
+                           }}
+                         />
+                         <div style={{
+                           display: 'flex',
+                           justifyContent: 'flex-end',
+                           gap: '5px',
+                           marginTop: '8px'
+                         }}>
+                           <Button
+                             btnStyle="simple"
+                             size="small"
+                             onClick={cancelEditing}
+                             style={{
+                               padding: '3px 8px',
+                               fontSize: '11px',
+                               height: '22px'
+                             }}
+                           >
+                             취소
+                           </Button>
+                           <Button
+                             btnStyle="success"
+                             size="small"
+                             onClick={saveEditing}
+                             disabled={!editingContent.trim()}
+                             style={{
+                               padding: '3px 8px',
+                               fontSize: '11px',
+                               height: '22px'
+                             }}
+                           >
+                             저장
+                           </Button>
+                         </div>
+                       </div>
+                     ) : (
+                       /* 일반 모드 */
+                       <div>
+                         <div dangerouslySetInnerHTML={{ __html: comment.content }} />
+                         
+                         {/* 시간 표시 */}
+                         <div style={{ 
+                           fontSize: '11px', 
+                           color: isTeam ? '#333' : '#666',
+                           marginTop: '8px',
+                           textAlign: 'right'
+                         }}>
+                           {(() => {
+                             const isModified = comment.updatedAt && comment.updatedAt !== comment.createdAt;
+                             console.log('🕐 Time display logic:', {
+                               commentId: comment._id,
+                               createdAt: comment.createdAt,
+                               updatedAt: comment.updatedAt,
+                               isModified: isModified,
+                               displayTime: isModified ? comment.updatedAt : comment.createdAt
+                             });
+                             
+                             return isModified ? (
+                               <span>
+                                 {new Date(comment.updatedAt).toLocaleString()}
+                                 <span style={{ fontSize: '10px', color: '#999', marginLeft: '5px' }}>
+                                   (수정됨)
+                                 </span>
+                               </span>
+                             ) : (
+                               new Date(comment.createdAt).toLocaleString()
+                             );
+                           })()}
+                         </div>
+                       </div>
+                     )}
                    </div>
-                 </div>
                  
-                 {/* 삭제 버튼 - 말풍선 외부 오른쪽 하단에 배치 */}
+                 {/* 수정/삭제 버튼 - 말풍선 외부 오른쪽 하단에 배치 */}
                  {isTeam && (
                    <div style={{
                      display: 'flex',
                      justifyContent: 'flex-end',
+                     gap: '5px',
                      marginTop: '8px',
                      marginLeft: '10px'
                    }}>
+                     {/* 수정 버튼 */}
+                     {canEditComment(comment) && (
+                       <Button
+                         btnStyle="primary"
+                         size="small"
+                         icon="edit-3"
+                         onClick={() => startEditing(comment)}
+                         style={{
+                           padding: '3px 8px',
+                           fontSize: '11px',
+                           minWidth: 'auto',
+                           height: '22px',
+                           backgroundColor: '#007bff',
+                           borderColor: '#007bff',
+                           color: 'white'
+                         }}
+                       >
+                        
+                       </Button>
+                     )}
+                     
+                     {/* 삭제 버튼 */}
                      <Button
                        btnStyle="danger"
                        size="small"
@@ -386,6 +524,7 @@ type Props = {
   widgetComments?: any[];
   onAddComment?: (content: string) => void;
   onDeleteComment?: (commentId: string) => void;
+  onEditComment?: (commentId: string, content: string) => void;
   currentUser?: any;
 };
 
@@ -463,6 +602,7 @@ const Left = (props: Props) => {
         widgetComments={widgetComments} 
         onAddComment={onAddComment}
         onDeleteComment={props.onDeleteComment}
+        onEditComment={props.onEditComment}
         currentUser={props.currentUser}
       />
 

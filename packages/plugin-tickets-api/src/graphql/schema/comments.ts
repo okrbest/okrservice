@@ -9,5 +9,6 @@ export const types = `
     content: String,
     createdUser: CommentsUser,
     createdAt: Date
+    updatedAt: Date
   }
 `;

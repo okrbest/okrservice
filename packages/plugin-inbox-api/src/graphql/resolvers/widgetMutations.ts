@@ -347,6 +347,26 @@ const widgetMutations = {
     return 'deleted';
   },
 
+  async widgetsTicketCommentEdit(
+    _root,
+    args: {
+      _id: string;
+      content: string;
+    },
+    { subdomain, }: IContext
+  ) {
+    const { _id, content } = args
+    return await sendTicketsMessage({
+      subdomain,
+      action: 'widgets.comment.edit',
+      data: {
+        _id,
+        content
+      },
+      isRPC: true,
+    });
+  },
+
   async widgetsTicketCheckProgress(
     _root,
     args: {

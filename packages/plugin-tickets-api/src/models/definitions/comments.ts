@@ -15,6 +15,7 @@ export interface IComment {
 export interface ICommentDocument extends IComment, Document {
     _id: string;
     createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export const USER_TYPES = {
@@ -34,5 +35,6 @@ export const commentSchema = new Schema({
     userId: field({ type: String, label: 'User Id' }),
     userType: field({ type: String, enum: USER_TYPES.ALL, label: 'User Type' }),
 
-    createdAt: field({ type: Date, label: 'Created at' })
+    createdAt: field({ type: Date, label: 'Created at' }),
+    updatedAt: field({ type: Date, label: 'Updated at' })
 });

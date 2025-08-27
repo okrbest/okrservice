@@ -38,6 +38,18 @@ export const loadCommentClass = (models: IModels) => {
         public static async deleteComment(_id: string) {
             return models.Comments.deleteOne({ _id });
         }
+
+        public static async updateComment(_id: string, doc: Partial<IComment>) {
+            console.log('🔧 Comments.updateComment called:', { _id, doc });
+            
+            const result = await models.Comments.updateOne(
+                { _id },
+                { $set: { ...doc, updatedAt: new Date() } }
+            );
+            
+            console.log('🔧 Comments.updateComment result:', result);
+            return result;
+        }
     }
 
     commentSchema.loadClass(Comment);
