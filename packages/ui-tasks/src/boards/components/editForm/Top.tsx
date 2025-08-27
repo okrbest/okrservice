@@ -124,6 +124,7 @@ function Top(props: Props) {
         <CloseDate
           onChangeField={onCloseDateFieldsChange}
           closeDate={item.closeDate}
+          startDate={item.startDate}
           isCheckDate={item.pipeline.isCheckDate}
           createdDate={item.createdAt}
           reminderMinute={item.reminderMinute}

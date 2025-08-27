@@ -19,6 +19,7 @@ import dayjs from "dayjs";
 
 type Props = {
   closeDate: Date;
+  startDate: Date;
   createdDate: Date;
   isCheckDate?: boolean;
   isComplete: boolean;
@@ -61,6 +62,13 @@ class CloseDate extends React.Component<Props, State> {
 
   onSave = (close) => {
     const { dueDate } = this.state;
+    const { startDate } = this.props;
+
+    // 시작일이 비어 있으면 마감일을 설정할 수 없음
+    if (!startDate) {
+      alert(__("시작일을 먼저 설정해주세요."));
+      return;
+    }
 
     this.props.onChangeField("closeDate", dueDate);
     close();
@@ -172,13 +180,17 @@ class CloseDate extends React.Component<Props, State> {
   };
 
   render() {
-    const { isComplete, onChangeField, closeDate } = this.props;
+    const { isComplete, onChangeField, closeDate, startDate } = this.props;
     const time = dayjs(closeDate).format("HH:mm");
 
     const onChange = (e) => onChangeField("isComplete", e.target.checked);
 
     const trigger = (
-      <Button colorname={generateButtonClass(closeDate, isComplete)}>
+      <Button 
+        colorname={generateButtonClass(closeDate, isComplete)}
+        disabled={!startDate}
+        title={!startDate ? __("시작일을 먼저 설정해주세요.") : ""}
+      >
         {closeDate
           ? `${dayjs(closeDate).format("MMM DD")} at ${time}`
           : __("Close date")}

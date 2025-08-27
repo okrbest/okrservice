@@ -6,6 +6,7 @@ import { HeaderContent } from "../../styles/item";
 import Move from "../../containers/editForm/Move";
 import React from "react";
 import { __ } from "coreui/utils";
+import CloseDate from "./CloseDate";
 
 type Props = {
   item: IItem;
@@ -33,10 +34,23 @@ function Top(props: Props) {
 
   const { saveItem, amount, onUpdate, item } = props;
 
+  const onCloseDateFieldsChange = (key: string, value: any) => {
+    saveItem({ [key]: value });
+  };
+
   return (
     <React.Fragment>
       <Header item={item} saveItem={saveItem} amount={amount} />
       <HeaderContent>{renderMove()}</HeaderContent>
+      <CloseDate
+        onChangeField={onCloseDateFieldsChange}
+        closeDate={item.closeDate}
+        startDate={item.startDate}
+        isCheckDate={item.pipeline.isCheckDate}
+        createdDate={item.createdAt}
+        reminderMinute={item.reminderMinute}
+        isComplete={item.isComplete}
+      />
       <DueDateChooser item={item} saveItem={saveItem} onUpdate={onUpdate} />
     </React.Fragment>
   );
