@@ -118,6 +118,8 @@ type Props = {
     }: { _id: string; status: string; timeSpent: number; startDate?: string },
     callback?: () => void
   ) => void;
+  onStartDateChange?: (date: Date) => void;
+  onCloseDateChange?: (closeDate: Date) => void; // 마감일 변경을 위한 prop 추가
 };
 
 type State = {
@@ -201,6 +203,7 @@ class TaskTimer extends React.Component<Props, State> {
 
   renderButton() {
     const { status } = this.state;
+    const { onCloseDateChange } = this.props;
 
     const isComplete = status === STATUS_TYPES.COMPLETED;
 
@@ -208,6 +211,12 @@ class TaskTimer extends React.Component<Props, State> {
       Alert.info("Task completed!");
 
       this.stopTimer();
+
+      // 작업 완료 시 현재 시각을 마감일로 설정
+      if (onCloseDateChange) {
+        const currentDate = new Date();
+        onCloseDateChange(currentDate);
+      }
 
       return this.onChangeStatus(STATUS_TYPES.COMPLETED, () => {
         return this.onSubmit();
@@ -228,11 +237,18 @@ class TaskTimer extends React.Component<Props, State> {
 
   renderActions() {
     const { status } = this.state;
+    const { onStartDateChange } = this.props;
 
     const isComplete = status === STATUS_TYPES.COMPLETED;
 
     const handleClick = () => {
       if ([STATUS_TYPES.STOPPED, STATUS_TYPES.PAUSED].includes(status)) {
+        // 작업 시작 시 시작일 설정 (처음 시작할 때만)
+        if (status === STATUS_TYPES.STOPPED && onStartDateChange) {
+          const currentDate = new Date();
+          onStartDateChange(currentDate);
+        }
+        
         this.startTimer();
 
         return this.onChangeStatus(STATUS_TYPES.STARTED, () => {

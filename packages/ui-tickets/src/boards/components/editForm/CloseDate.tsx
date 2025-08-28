@@ -28,6 +28,7 @@ type Props = {
     name: "closeDate" | "reminderMinute" | "isComplete",
     value: any
   ) => void;
+  stage?: any;
 };
 
 type State = {
@@ -46,6 +47,41 @@ class CloseDate extends React.Component<Props, State> {
     this.state = {
       dueDate: props.closeDate || dayjs(),
     };
+  }
+
+  componentDidMount() {
+    const { stage, closeDate, isComplete, onChangeField } = this.props;
+    
+    // 마운트 시에도 마지막 단계이고 closeDate가 설정되어 있으면 자동으로 isComplete를 true로 설정
+    if (stage?.probability === 'Resolved' && closeDate && !isComplete) {
+      console.log('componentDidMount: 자동으로 isComplete를 true로 설정합니다');
+      onChangeField("isComplete", true);
+    }
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    const { stage, closeDate, isComplete, onChangeField } = this.props;
+    
+    // 디버깅 로그
+    console.log('CloseDate componentDidUpdate:', {
+      stage,
+      closeDate,
+      isComplete,
+      stageKeys: stage ? Object.keys(stage) : [],
+      stageValues: stage ? Object.values(stage) : []
+    });
+    
+    // probability가 'Resolved'인 경우 마지막 단계로 간주
+    const isLastStage = stage?.probability === 'Resolved';
+    
+    console.log('isLastStage (Resolved-based):', isLastStage);
+    
+    // 마지막 단계이고 closeDate가 설정되어 있으면 자동으로 isComplete를 true로 설정
+    // prevProps.closeDate !== closeDate 조건 제거하여 더 자주 체크
+    if (isLastStage && closeDate && !isComplete) {
+      console.log('자동으로 isComplete를 true로 설정합니다');
+      onChangeField("isComplete", true);
+    }
   }
 
   setOverlay = (overlay) => {
@@ -180,10 +216,15 @@ class CloseDate extends React.Component<Props, State> {
   };
 
   render() {
-    const { isComplete, onChangeField, closeDate, startDate } = this.props;
+    const { isComplete, onChangeField, closeDate, startDate, stage } = this.props;
     const time = dayjs(closeDate).format("HH:mm");
 
     const onChange = (e) => onChangeField("isComplete", e.target.checked);
+
+    // probability가 'Resolved'인 경우 마지막 단계로 간주
+    const isLastStage = stage?.probability === 'Resolved';
+    
+    console.log('CloseDate render - isLastStage (Resolved):', isLastStage);
 
     const trigger = (
       <Button 
@@ -212,7 +253,9 @@ class CloseDate extends React.Component<Props, State> {
               checked={isComplete}
               componentclass="checkbox"
               onChange={onChange}
+              disabled={isLastStage} // 마지막 단계일 때는 체크박스 비활성화
             />
+
           </CheckBoxWrapper>
         )}
       </CloseDateWrapper>

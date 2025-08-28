@@ -13,6 +13,7 @@ import React from "react";
 import dayjs from "dayjs";
 import { generateButtonStart } from "../../utils";
 import { __ } from "coreui/utils";
+import TicketTimer from "@erxes/ui/src/components/Timer";
 
 type Props = {
   startDate: Date;
@@ -21,6 +22,9 @@ type Props = {
     name: "startDate" | "reminderMinute" | "isComplete",
     value: any
   ) => void;
+  itemId?: string; // 티켓 ID 추가
+  timeTrack?: any; // 시간 추적 정보 추가
+  updateTimeTrack?: any; // 시간 추적 업데이트 함수 추가
 };
 
 type State = {
@@ -134,7 +138,7 @@ class StartDate extends React.Component<Props, State> {
   };
 
   render() {
-    const { startDate } = this.props;
+    const { startDate, itemId, timeTrack, updateTimeTrack } = this.props;
     const time = dayjs(startDate).format("HH:mm");
 
     const trigger = (
@@ -145,8 +149,27 @@ class StartDate extends React.Component<Props, State> {
       </Button>
     );
 
+    // Timer 컴포넌트에서 시작일 변경 시 호출되는 함수
+    const handleStartDateChange = (newStartDate: Date) => {
+      this.props.onChangeField("startDate", newStartDate);
+    };
+
     return (
       <CloseDateWrapper ref={this.ref}>
+        {/* Timer 컴포넌트 추가 */}
+        {itemId && timeTrack && updateTimeTrack && (
+          <div style={{ marginBottom: '15px' }}>
+            <TicketTimer
+              taskId={itemId}
+              status={timeTrack.status || "stopped"}
+              timeSpent={timeTrack.timeSpent || 0}
+              startDate={timeTrack.startDate}
+              update={updateTimeTrack}
+              onStartDateChange={handleStartDateChange}
+            />
+          </div>
+        )}
+        
         <Popover
           placement="bottom-end"
           trigger={trigger}

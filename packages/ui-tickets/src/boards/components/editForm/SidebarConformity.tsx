@@ -33,11 +33,21 @@ class SidebarConformity extends React.Component<Props> {
   }
 
   render() {
-    const { item, options, renderItems, updateTimeTrack } = this.props;
+    const { item, options, renderItems, updateTimeTrack, saveItem } = this.props;
 
     const timeTrack = item.timeTrack || {
       timeSpent: 0,
       status: STATUS_TYPES.STOPPED
+    };
+
+    // Timer에서 시작일 변경 시 호출되는 함수
+    const handleStartDateChange = (startDate: Date) => {
+      saveItem({ startDate });
+    };
+
+    // Timer에서 마감일 변경 시 호출되는 함수
+    const handleCloseDateChange = (closeDate: Date) => {
+      saveItem({ closeDate });
     };
 
     return (
@@ -57,6 +67,8 @@ class SidebarConformity extends React.Component<Props> {
           timeSpent={timeTrack.timeSpent}
           startDate={timeTrack.startDate}
           update={updateTimeTrack}
+          onStartDateChange={handleStartDateChange}
+          onCloseDateChange={handleCloseDateChange}
         />
 
         {renderItems()}
