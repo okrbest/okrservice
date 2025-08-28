@@ -42,10 +42,11 @@ type WidgetCommentsProps = {
   onDeleteComment?: (commentId: string) => void;
   onEditComment?: (commentId: string, content: string) => void;
   currentUser?: any; // 현재 사용자 정보
+  item?: any; // 티켓 정보 (assigned to 확인용)
 };
 
 const WidgetComments = (props: WidgetCommentsProps) => {
-  const { widgetComments = [], onAddComment, onDeleteComment, onEditComment, currentUser } = props;
+  const { widgetComments = [], onAddComment, onDeleteComment, onEditComment, currentUser, item } = props;
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
@@ -112,14 +113,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
 
   // 댓글 작성자와 현재 사용자가 같은지 확인
   const canDeleteComment = (comment: any) => {
-    console.log('🔍 Checking delete permission for comment:', {
-      commentId: comment._id,
-      commentUserType: comment.userType,
-      commentCreatedUser: comment.createdUser,
-      currentUser: currentUser,
-      canDelete: comment.userType === 'team' && 
-                 (currentUser?._id === comment.createdUser?._id || currentUser?.isOwner || currentUser?.isAdmin)
-    });
+
     
     if (!currentUser || !comment.createdUser) return false;
     return comment.userType === 'team' && 
@@ -128,9 +122,48 @@ const WidgetComments = (props: WidgetCommentsProps) => {
 
   // 댓글 수정 권한 확인
   const canEditComment = (comment: any) => {
-    if (!currentUser || !comment.createdUser) return false;
-    return comment.userType === 'team' && 
-           (currentUser._id === comment.createdUser._id || currentUser.isOwner || currentUser.isAdmin);
+
+    
+    if (!currentUser || !comment.createdUser) {
+  
+      return false;
+    }
+    
+    // 고객 댓글이 아닌 경우에만 수정 가능 (담당자, 일반 직원 등)
+    const isCustomerComment = comment.userType === 'client';
+    
+    // 담당자 여부 확인 (assigned to 포함)
+    const isCurrentUserTeam = currentUser.userType === 'team' || 
+                              currentUser.isOwner === true || 
+                              currentUser.isAdmin === true ||
+                              currentUser.role === 'admin' ||
+                              currentUser.role === 'manager' ||
+                              currentUser.role === 'team' ||
+                              // assigned to로 지정된 사용자인지 확인
+                              (item && item.assignedUserIds && 
+                               item.assignedUserIds.includes(currentUser._id)) ||
+                              // assignedUsers 배열에서도 확인
+                              (item && item.assignedUsers && 
+                               item.assignedUsers.some(user => user._id === currentUser._id));
+    
+    // 댓글 작성자 본인인지 확인
+    const isCommentAuthor = currentUser._id === comment.createdUser._id;
+    
+
+    
+    if (isCustomerComment) {
+      return false;
+    }
+    
+    // 담당자이거나 댓글 작성자 본인인 경우 수정 가능
+    const canEdit = isCurrentUserTeam || isCommentAuthor;
+    
+    if (!canEdit) {
+      return false;
+    }
+    
+
+    return canEdit;
   };
 
   // 수정 모드 시작
@@ -178,18 +211,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
             // 담당자(팀)인지 고객인지 구분
             const isTeam = comment.userType === 'team';
             
-            // 디버깅: 댓글 데이터 구조 확인
-            console.log('🔍 Comment data:', {
-              commentId: comment._id,
-              userType: comment.userType,
-              isTeam: isTeam,
-              createdUser: comment.createdUser,
-              content: comment.content?.substring(0, 50) + '...',
-              createdAt: comment.createdAt,
-              updatedAt: comment.updatedAt,
-              hasUpdatedAt: !!comment.updatedAt,
-              isModified: comment.updatedAt && comment.updatedAt !== comment.createdAt
-            });
+
             
                          return (
                <div key={comment._id} style={{ 
@@ -293,13 +315,6 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                          }}>
                            {(() => {
                              const isModified = comment.updatedAt && comment.updatedAt !== comment.createdAt;
-                             console.log('🕐 Time display logic:', {
-                               commentId: comment._id,
-                               createdAt: comment.createdAt,
-                               updatedAt: comment.updatedAt,
-                               isModified: isModified,
-                               displayTime: isModified ? comment.updatedAt : comment.createdAt
-                             });
                              
                              return isModified ? (
                                <span>
@@ -327,25 +342,33 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                      marginLeft: '10px'
                    }}>
                      {/* 수정 버튼 */}
-                     {canEditComment(comment) && (
-                       <Button
-                         btnStyle="primary"
-                         size="small"
-                         icon="edit-3"
-                         onClick={() => startEditing(comment)}
-                         style={{
-                           padding: '3px 8px',
-                           fontSize: '11px',
-                           minWidth: 'auto',
-                           height: '22px',
-                           backgroundColor: '#007bff',
-                           borderColor: '#007bff',
-                           color: 'white'
-                         }}
-                       >
-                        
-                       </Button>
-                     )}
+                     {(() => {
+                       const canEdit = canEditComment(comment);
+                       
+                       if (canEdit === true) {
+                         return (
+                           <Button
+                             btnStyle="primary"
+                             size="small"
+                             icon="edit-3"
+                             onClick={() => startEditing(comment)}
+                             style={{
+                               padding: '3px 8px',
+                               fontSize: '11px',
+                               minWidth: 'auto',
+                               height: '22px',
+                               backgroundColor: '#007bff',
+                               borderColor: '#007bff',
+                               color: 'white'
+                             }}
+                           >
+                             
+                           </Button>
+                         );
+                       } else {
+                         return null;
+                       }
+                     })()}
                      
                      {/* 삭제 버튼 */}
                      <Button
@@ -544,13 +567,7 @@ const Left = (props: Props) => {
     onAddComment,
   } = props;
 
-  console.log("Left component props:", { 
-    itemId: item._id, 
-    widgetComments: widgetComments?.length, 
-    onAddComment: !!onAddComment,
-    onDeleteComment: !!props.onDeleteComment,
-    currentUser: !!props.currentUser
-  });
+
 
   const onChangeAttachment = (files: IAttachment[]) =>
     saveItem({ attachments: files });
@@ -604,6 +621,7 @@ const Left = (props: Props) => {
         onDeleteComment={props.onDeleteComment}
         onEditComment={props.onEditComment}
         currentUser={props.currentUser}
+        item={item}
       />
 
       <Checklists
