@@ -63,6 +63,7 @@ const TicketMainActionBar = (props: Props) => {
         name="companyIds"
         queryParams={queryParams}
         onSelect={onSelect}
+        perPage={100}
       />
 
       <SelectCustomers

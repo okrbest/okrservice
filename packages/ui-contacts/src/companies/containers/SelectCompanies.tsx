@@ -28,6 +28,7 @@ export default ({
   name,
   filterParams,
   showAvatar = true,
+  perPage = 100,
 }: {
   queryParams?: IQueryParams;
   label: string;
@@ -38,6 +39,7 @@ export default ({
   name: string;
   filterParams?: any;
   showAvatar?: boolean;
+  perPage?: number;
 }) => {
   const defaultValue = queryParams ? queryParams[name] : initialValue;
 
@@ -53,7 +55,7 @@ export default ({
       customQuery={queries.companies}
       customOption={customOption}
       multi={multi}
-      filterParams={filterParams}
+      filterParams={{ ...filterParams, perPage }}
     />
   );
 };

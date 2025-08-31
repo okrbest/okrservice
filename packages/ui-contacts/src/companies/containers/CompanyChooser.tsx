@@ -143,14 +143,14 @@ export default class Wrapper extends React.Component<
   constructor(props) {
     super(props);
 
-    this.state = { perPage: 20, searchValue: "" };
+    this.state = { perPage: 100, searchValue: "" };
   }
 
   search = (value, loadmore) => {
-    let perPage = 20;
+    let perPage = 100;
 
     if (loadmore) {
-      perPage = this.state.perPage + 20;
+      perPage = this.state.perPage + 100;
     }
 
     return this.setState({ perPage, searchValue: value });
