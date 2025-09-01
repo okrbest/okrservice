@@ -64,6 +64,10 @@ const TicketMainActionBar = (props: Props) => {
         queryParams={queryParams}
         onSelect={onSelect}
         perPage={100}
+        filterParams={{
+          sortField: "primaryName",
+          sortDirection: 1
+        }}
       />
 
       <SelectCustomers
