@@ -2,7 +2,7 @@ import { IBoard } from "@erxes/ui-tickets/src/boards/types";
 import { INTEGRATION_KINDS } from "@erxes/ui/src/constants/integrations";
 import { IOption } from "@erxes/ui/src/types";
 import MainActionBar from "@erxes/ui-tickets/src/boards/components/MainActionBar";
-import React from "react";
+import React, { useState } from "react";
 import Select, { OnChangeValue } from "react-select";
 import SelectCompanies from "@erxes/ui-contacts/src/companies/containers/SelectCompanies";
 import SelectCustomers from "@erxes/ui-contacts/src/customers/containers/SelectCustomers";
@@ -26,6 +26,11 @@ type Props = {
 
 const TicketMainActionBar = (props: Props) => {
   const { queryParams, onSelect } = props;
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+
+  const handleCompanySelect = (companyId: string, customers: any[]) => {
+    setSelectedCompanyId(companyId);
+  };
 
   const viewType = getBoardViewType();
 
@@ -64,6 +69,7 @@ const TicketMainActionBar = (props: Props) => {
         queryParams={queryParams}
         onSelect={onSelect}
         perPage={100}
+        onCompanySelect={handleCompanySelect}
         filterParams={{
           sortField: "primaryName",
           sortDirection: 1
@@ -71,10 +77,16 @@ const TicketMainActionBar = (props: Props) => {
       />
 
       <SelectCustomers
+        key={selectedCompanyId || 'no-company'} // 회사가 변경될 때마다 컴포넌트 리렌더링
         label={__("Choose customers")}
         name="customerIds"
         queryParams={queryParams}
         onSelect={onSelect}
+        filterParams={selectedCompanyId ? { 
+          conformityMainType: "company", 
+          conformityMainTypeId: selectedCompanyId,
+          conformityIsSaved: true 
+        } : {}}
       />
     </>
   );
