@@ -7,7 +7,7 @@ import {
   DateGrid,
 } from "../../styles/popup";
 import { generateButtonClass, selectOptions } from "../../utils";
-import { __ } from "coreui/utils";
+import { __ } from "@erxes/ui/src/utils";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import Datetime from "@nateradebaugh/react-datetime";
 import FormControl from "@erxes/ui/src/components/form/Control";
@@ -16,6 +16,7 @@ import { REMINDER_MINUTES } from "../../constants";
 import React from "react";
 import Select from "react-select";
 import dayjs from "dayjs";
+import client from "@erxes/ui/src/apolloClient";
 
 type Props = {
   closeDate: Date;
@@ -54,33 +55,32 @@ class CloseDate extends React.Component<Props, State> {
     
     // 마운트 시에도 마지막 단계이고 closeDate가 설정되어 있으면 자동으로 isComplete를 true로 설정
     if (stage?.probability === 'Resolved' && closeDate && !isComplete) {
-      console.log('componentDidMount: 자동으로 isComplete를 true로 설정합니다');
       onChangeField("isComplete", true);
+      // Apollo Client 캐시를 실제로 무효화하고 이벤트 발생
+      this.invalidateAndRefresh();
     }
   }
 
   componentDidUpdate(prevProps: Props) {
     const { stage, closeDate, isComplete, onChangeField } = this.props;
     
-    // 디버깅 로그
-    console.log('CloseDate componentDidUpdate:', {
-      stage,
-      closeDate,
-      isComplete,
-      stageKeys: stage ? Object.keys(stage) : [],
-      stageValues: stage ? Object.values(stage) : []
-    });
     
     // probability가 'Resolved'인 경우 마지막 단계로 간주
     const isLastStage = stage?.probability === 'Resolved';
     
-    console.log('isLastStage (Resolved-based):', isLastStage);
+
     
-    // 마지막 단계이고 closeDate가 설정되어 있으면 자동으로 isComplete를 true로 설정
-    // prevProps.closeDate !== closeDate 조건 제거하여 더 자주 체크
-    if (isLastStage && closeDate && !isComplete) {
-      console.log('자동으로 isComplete를 true로 설정합니다');
+    // 마지막 단계이고 closeDate가 설정되어 있고, isComplete가 false인 경우에만 설정
+    // 이전 상태와 비교하여 실제로 변경이 발생했을 때만 처리
+    if (isLastStage && closeDate && !isComplete && prevProps.isComplete !== isComplete) {
       onChangeField("isComplete", true);
+      // Apollo Client 캐시를 실제로 무효화하고 이벤트 발생
+      this.invalidateAndRefresh();
+    }
+    
+    // isComplete가 true로 변경되었을 때도 이벤트 발생
+    if (isComplete && !prevProps.isComplete) {
+      this.invalidateAndRefresh();
     }
   }
 
@@ -113,6 +113,42 @@ class CloseDate extends React.Component<Props, State> {
   remove = (close) => {
     this.props.onChangeField("closeDate", null);
     close();
+  };
+
+  invalidateAndRefresh = () => {
+    
+    // Apollo Client를 통한 강력한 캐시 무효화 및 리프레시
+    if (client && client.cache) {
+      try {
+        
+        // 1. 모든 tickets 관련 쿼리 리프레시
+        client.refetchQueries({
+          include: 'all'  // 모든 쿼리 리프레시
+        });
+        
+        // 2. localStorage 플래그 설정
+        localStorage.setItem("cacheInvalidated", "true");
+        
+        // 3. 이벤트 발생
+        const event = new CustomEvent('ticketUpdated', { 
+          detail: { 
+            isComplete: true 
+          } 
+        });
+        window.dispatchEvent(event);
+        
+      } catch (error) {
+        
+        // 실패 시 페이지 새로고침
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      }
+    } else {
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    }
   };
 
   renderContent = (close) => {
@@ -224,7 +260,6 @@ class CloseDate extends React.Component<Props, State> {
     // probability가 'Resolved'인 경우 마지막 단계로 간주
     const isLastStage = stage?.probability === 'Resolved';
     
-    console.log('CloseDate render - isLastStage (Resolved):', isLastStage);
 
     const trigger = (
       <Button 
@@ -264,3 +299,4 @@ class CloseDate extends React.Component<Props, State> {
 }
 
 export default CloseDate;
+

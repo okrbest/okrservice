@@ -92,14 +92,69 @@ export default class Stage extends React.Component<Props, State> {
     }, 1000);
 
     window.addEventListener("storageChange", this.handleStorageChange);
+    window.addEventListener("ticketUpdated", this.handleTicketUpdate);
+    window.addEventListener("forceStageUpdate", this.handleForceStageUpdate);
+    window.addEventListener("globalTicketUpdate", this.handleGlobalUpdate);
+    
+    // 마지막 단계에서 closeDate가 설정된 아이템들의 isComplete 자동 설정
+    this.checkAndUpdateCompleteStatus();
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    const { items, stage } = this.props;
+    const { items: prevItems, stage: prevStage } = prevProps;
+    
+    // items나 stage가 변경되었을 때만 체크
+    if (JSON.stringify(items) !== JSON.stringify(prevItems) || 
+        JSON.stringify(stage) !== JSON.stringify(prevStage)) {
+      this.checkAndUpdateCompleteStatus();
+    }
   }
 
   componentWillUnmount() {
     window.removeEventListener("storageChange", this.handleStorageChange);
+    window.removeEventListener("ticketUpdated", this.handleTicketUpdate);
+    window.removeEventListener("forceStageUpdate", this.handleForceStageUpdate);
+    window.removeEventListener("globalTicketUpdate", this.handleGlobalUpdate);
   }
 
   handleStorageChange = () => {
     this.forceUpdate();
+  };
+
+  handleTicketUpdate = (event: CustomEvent) => {
+    console.log('Stage: ticketUpdated 이벤트 수신:', event.detail);
+    
+    // 스테이지의 아이템들 중 마지막 단계인 것들을 강제로 업데이트
+    this.forceUpdate();
+    
+    // 부모 컴포넌트에도 리프레시 요청
+    if (this.props.loadMore) {
+      setTimeout(() => {
+        this.props.loadMore();
+      }, 100);
+    }
+  };
+
+  handleForceStageUpdate = (event: CustomEvent) => {
+    const { stageId, itemId, isComplete } = event.detail;
+    console.log('Stage: forceStageUpdate 이벤트 수신:', { stageId, itemId, isComplete });
+    
+    // 현재 스테이지와 관련된 업데이트인 경우 강제 업데이트
+    if (stageId === this.props.stage._id) {
+      console.log('Stage: 현재 스테이지 업데이트, 강제 리렌더링');
+      this.forceUpdate();
+    }
+  };
+
+  handleGlobalUpdate = () => {
+    console.log('Stage: globalTicketUpdate 이벤트 수신, 강제 업데이트');
+    this.forceUpdate();
+    
+    // 부모 컴포넌트에도 리프레시 요청
+    if (this.props.loadMore) {
+      this.props.loadMore();
+    }
   };
 
   shouldComponentUpdate(nextProps: Props, nextState: State) {
@@ -119,6 +174,35 @@ export default class Stage extends React.Component<Props, State> {
     }
 
     return false;
+  }
+
+  // 마지막 단계에서 closeDate가 설정된 아이템들의 isComplete 자동 설정
+  checkAndUpdateCompleteStatus = () => {
+    const { stage, items, options } = this.props;
+    
+    // probability가 'Resolved'인 경우 마지막 단계로 간주
+    const isLastStage = stage?.probability === 'Resolved';
+    
+    if (!isLastStage) {
+      return;
+    }
+
+    // closeDate가 설정되어 있지만 isComplete가 false인 아이템들 찾기
+    const itemsToUpdate = items.filter(item => 
+      item.closeDate && !item.isComplete
+    );
+
+    if (itemsToUpdate.length > 0) {
+      console.log('Stage: 마지막 단계에서 자동으로 isComplete를 true로 설정할 아이템들:', itemsToUpdate.length);
+      
+      // 각 아이템에 대해 isComplete를 true로 설정
+      itemsToUpdate.forEach(item => {
+        // options.onUpdateItem이 있다면 사용, 없다면 직접 상태 업데이트
+        if (options.onUpdateItem) {
+          options.onUpdateItem({ ...item, isComplete: true });
+        }
+      });
+    }
   }
 
   onClosePopover = () => {

@@ -14,7 +14,7 @@ import {
   StageTitle
 } from "../../styles/stage";
 import { IItem, IOptions, IStage } from "../../types";
-import { __ } from "coreui/utils";
+import { __ } from "@erxes/ui/src/utils";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 
 import { AddForm } from "../../containers/portable";

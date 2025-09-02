@@ -30,32 +30,19 @@ function Top(props: Props) {
 
   useEffect(() => {
     // 디버깅: 현재 item 데이터 확인
-    console.log('Top component - item data:', {
-      item,
-      stage: item.stage,
-      pipeline: item.pipeline,
-      stageId: item.stageId,
-      // stage 객체의 모든 속성 확인
-      stageKeys: item.stage ? Object.keys(item.stage) : [],
-      // pipeline 객체의 모든 속성 확인
-      pipelineKeys: item.pipeline ? Object.keys(item.pipeline) : []
-    });
 
     // Apollo Client 캐시에서 stage 정보를 가져오는 시도
     if ((window as any).__APOLLO_CLIENT__) {
       try {
         const cache = (window as any).__APOLLO_CLIENT__.cache;
-        console.log('Apollo cache available:', cache);
         
         // 캐시에서 stage 정보를 찾아보기
         const cacheData = cache.extract();
-        console.log('Cache data:', cacheData);
         
         // stage 관련 데이터 찾기
         const stageEntries = Object.entries(cacheData).filter(([key, value]) => 
           key.includes('TicketsStage') || (value && typeof value === 'object' && (value as any).__typename === 'TicketsStage')
         );
-        console.log('Stage entries in cache:', stageEntries);
         
       } catch (error) {
         console.error('Apollo cache access error:', error);
