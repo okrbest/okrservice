@@ -138,7 +138,6 @@ export default function TicketEditForm(props: Props) {
   // WidgetComments 추가 뮤테이션 (ticket 타입일 때만)
   const [addWidgetComment] = useMutation(WIDGET_COMMENTS_ADD_MUTATION, {
     onCompleted: (data) => {
-      console.log("Comment added successfully:", data);
       refetchWidgetComments();
     },
     onError: (error) => {
@@ -150,7 +149,6 @@ export default function TicketEditForm(props: Props) {
   // WidgetComments 삭제 뮤테이션 (ticket 타입일 때만)
   const [deleteWidgetComment] = useMutation(WIDGET_COMMENTS_DELETE_MUTATION, {
     onCompleted: (data) => {
-      console.log("Comment deleted successfully:", data);
       // 삭제 성공 시 댓글 목록 새로고침
       refetchWidgetComments();
     },
@@ -163,7 +161,6 @@ export default function TicketEditForm(props: Props) {
   // WidgetComments 수정 뮤테이션 (ticket 타입일 때만)
   const [editWidgetComment] = useMutation(WIDGET_COMMENTS_EDIT_MUTATION, {
     onCompleted: (data) => {
-      console.log("Comment edited successfully:", data);
       // 수정 성공 시 댓글 목록 새로고침
       refetchWidgetComments();
     },
@@ -178,12 +175,10 @@ export default function TicketEditForm(props: Props) {
   // 댓글 추가 핸들러 (ticket 타입일 때만)
   const handleAddComment = async (content: string) => {
     if (!isTicketType) {
-      console.log("Comments are only available for ticket type");
       return;
     }
 
-    console.log("Attempting to add comment:", { content, itemId: item._id, currentUser: props.currentUser?._id, type });
-    
+   
     try {
       const result = await addWidgetComment({
         variables: {
@@ -194,7 +189,6 @@ export default function TicketEditForm(props: Props) {
           customerId: props.currentUser?._id || "",
         },
       });
-      console.log("Mutation result:", result);
       return result;
     } catch (error) {
       console.error("Failed to add comment:", error);
@@ -205,11 +199,10 @@ export default function TicketEditForm(props: Props) {
   // 댓글 삭제 핸들러 (ticket 타입일 때만)
   const handleDeleteComment = async (commentId: string) => {
     if (!isTicketType) {
-      console.log("Comments are only available for ticket type");
       return;
     }
 
-    console.log("Attempting to delete comment:", { commentId, itemId: item._id });
+
     
     try {
       // 댓글 삭제 뮤테이션 실행
@@ -217,11 +210,9 @@ export default function TicketEditForm(props: Props) {
         variables: { _id: commentId }
       });
       
-      console.log("Comment deletion result:", result);
       
       // 삭제 성공 시 댓글 목록 새로고침
       if (result.data?.widgetsTicketCommentsRemove) {
-        console.log("Comment deleted successfully, refreshing comments...");
         refetchWidgetComments();
       }
       
@@ -235,11 +226,9 @@ export default function TicketEditForm(props: Props) {
   // 댓글 수정 핸들러 (ticket 타입일 때만)
   const handleEditComment = async (commentId: string, content: string) => {
     if (!isTicketType) {
-      console.log("Comments are only available for ticket type");
       return;
     }
 
-    console.log("Attempting to edit comment:", { commentId, content, itemId: item._id });
     
     try {
       // 댓글 수정 뮤테이션 실행
@@ -250,11 +239,9 @@ export default function TicketEditForm(props: Props) {
         }
       });
       
-      console.log("Comment edit result:", result);
       
       // 수정 성공 시 댓글 목록 새로고침
       if (result.data?.widgetsTicketCommentEdit) {
-        console.log("Comment edited successfully, refreshing comments...");
         refetchWidgetComments();
       }
       
@@ -266,15 +253,11 @@ export default function TicketEditForm(props: Props) {
   };
 
   useEffect(() => {
-    console.log("useEffect triggered - item.requestType:", item.requestType);
     setSource(item.source);
     setRequestType(item.requestType);
   }, [item.source, item.requestType]);
 
   function renderSidebarFields(saveItem) {
-    console.log("renderSidebarFields called with saveItem:", saveItem);
-    console.log("Current requestType state:", requestType);
-    console.log("Current item.requestType:", item.requestType);
     
     // Source 필드 주석처리
     // const sourceValues = INTEGRATION_KINDS.ALL.map((kind) => ({
@@ -344,19 +327,12 @@ export default function TicketEditForm(props: Props) {
     const onRequestTypeChange = (option) => {
       const value = option ? option.value : "";
 
-      console.log("=== REQUEST TYPE CHANGE START ===");
-      console.log("RequestType changed to:", value);
-      console.log("Calling saveItem with:", { requestType: value });
 
       setRequestType(value);
 
       if (saveItem) {
         saveItem({ requestType: value });
-        console.log("saveItem called for requestType");
-      } else {
-        console.log("saveItem not available for requestType");
-      }
-      console.log("=== REQUEST TYPE CHANGE END ===");
+      } 
     };
 
     const RequestTypeOption = (props) => {

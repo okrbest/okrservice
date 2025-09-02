@@ -60,19 +60,17 @@ const WidgetComments = (props: WidgetCommentsProps) => {
 
   const handleSubmit = async () => {
     if (!content.trim() || !onAddComment) {
-      console.log("Cannot submit comment:", { content: content.trim(), onAddComment: !!onAddComment });
       return;
     }
     
-    console.log("Submitting comment:", content);
     setIsSubmitting(true);
     try {
       await onAddComment(content);
-      console.log("Comment submitted successfully");
       setContent("");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to submit comment:", error);
-      alert(`댓글 저장 실패: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+      alert(`댓글 저장 실패: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -85,29 +83,23 @@ const WidgetComments = (props: WidgetCommentsProps) => {
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    console.log('🗑️ Delete button clicked for comment:', commentId);
-    console.log('🗑️ onDeleteComment function exists:', !!onDeleteComment);
     
     if (!onDeleteComment) {
-      console.error('🗑️ onDeleteComment function is not provided!');
       alert('댓글 삭제 기능이 설정되지 않았습니다.');
       return;
     }
     
     if (window.confirm(__("Are you sure you want to delete this comment?"))) {
-      console.log('🗑️ User confirmed deletion, calling onDeleteComment...');
       setDeletingCommentId(commentId);
       try {
         await onDeleteComment(commentId);
-        console.log("🗑️ Comment deleted successfully");
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("🗑️ Failed to delete comment:", error);
         alert(__("Failed to delete comment"));
       } finally {
         setDeletingCommentId(null);
       }
     } else {
-      console.log('🗑️ User cancelled deletion');
     }
   };
 
@@ -186,7 +178,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
       await onEditComment(editingCommentId, editingContent);
       setEditingCommentId(null);
       setEditingContent("");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to edit comment:", error);
     }
   };
