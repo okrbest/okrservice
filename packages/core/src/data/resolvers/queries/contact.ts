@@ -1,7 +1,6 @@
 import { fetchEs } from "@erxes/api-utils/src/elasticsearch";
 import { IContext } from "../../../connectionResolver";
 import { getEsTypes } from "../../modules/coc/utils";
-// import { sortCompaniesByName } from "../../../utils/koreanSort";
 
 type ContactType = {
   _id: string;
@@ -153,7 +152,7 @@ const generateList = (type, response) => {
 
 const contactQueries = {
   async contacts(_root, args, { subdomain }: IContext) {
-    const { perPage, page, sortField, sortDirection } = args;
+    const { perPage, page } = args;
 
     let list: ContactType[] = [];
     let autoCompleteList: ContactType[] = [];
@@ -205,12 +204,6 @@ const contactQueries = {
 
       list = [...list, ...generateList(type, response)];
     }
-
-    // 회사 이름 정렬이 요청된 경우 한글 정렬 적용 (임시 비활성화)
-    // if (sortField === "primaryName") {
-    //   const sortedList = sortCompaniesByName(list, sortDirection);
-    //   return [...autoCompleteList, ...sortedList];
-    // }
 
     return [...autoCompleteList, ...list];
   }
