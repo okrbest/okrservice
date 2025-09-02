@@ -3147,5 +3147,6 @@
   "improvement": "개선요청",
   "request": "개선요청",
   "error": "오류처리",
-  "complaint": "오류처리"
+  "complaint": "오류처리",
+  "config": "설정변경"
 }

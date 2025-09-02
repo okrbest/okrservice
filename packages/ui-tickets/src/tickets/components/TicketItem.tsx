@@ -36,7 +36,8 @@ class TicketItem extends React.PureComponent<Props> {
       'improvement': { bg: '#e8f5e8', text: '#388e3c' },
       'request': { bg: '#e8f5e8', text: '#388e3c' }, 
       'error': { bg: '#ffebee', text: '#d32f2f' },
-      'complaint': { bg: '#ffebee', text: '#d32f2f' } 
+      'complaint': { bg: '#ffebee', text: '#d32f2f' },
+      'config': { bg: '#e3f2fd', text: '#1976d2' }
     };
 
     return colorMap[requestType] || { bg: '#f5f5f5', text: '#616161' };
