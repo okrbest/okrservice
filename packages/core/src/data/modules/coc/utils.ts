@@ -12,6 +12,7 @@ import { debugError } from '@erxes/api-utils/src/debuggers';
 import { companySchema } from '../../../db/models/definitions/companies';
 import { customerSchema } from '../../../db/models/definitions/customers';
 import { fetchSegment } from '../segments/queryBuilder';
+import { sortCompaniesByName } from '../../../utils/koreanSort';
 
 export interface ICountBy {
   [index: string]: number;
@@ -525,12 +526,14 @@ export class CommonBuilder<IListArgs extends ICommonListArgs> {
       _limit = 10000;
     }
 
+    // Elasticsearch 인덱스가 없을 때 MongoDB 직접 조회 사용
     if (
       !unlimited &&
-      page === 1 &&
-      perPage === 20 &&
-      (paramKeys === 'page,perPage' || paramKeys === 'page,perPage,type')
+      (paramKeys === 'page,perPage' || 
+       paramKeys === 'page,perPage,type' ||
+       paramKeys.includes('page') && paramKeys.includes('perPage'))
     ) {
+      console.log('Using MongoDB direct query due to simple params');
       return this.findAllMongo(_limit);
     }
 
@@ -561,7 +564,7 @@ export class CommonBuilder<IListArgs extends ICommonListArgs> {
 
       const esTypes = getEsTypes(this.contentType);
 
-      let fieldToSort = sortField || 'createdAt';
+      let fieldToSort = sortField || (this.contentType === 'companies' ? 'primaryName' : 'createdAt');
 
       if (!esTypes[fieldToSort] || esTypes[fieldToSort] === 'email') {
         fieldToSort = `${fieldToSort}.keyword`;
@@ -574,33 +577,54 @@ export class CommonBuilder<IListArgs extends ICommonListArgs> {
               ? sortDirection === -1
                 ? 'desc'
                 : 'asc'
-              : 'desc',
+              : (this.contentType === 'companies' ? 'asc' : 'desc'),
           },
         };
       }
     }
 
-    const response = await fetchEs({
-      subdomain: this.subdomain,
-      action,
-      index: this.contentType,
-      body: queryOptions,
-    });
+    try {
+      const response = await fetchEs({
+        subdomain: this.subdomain,
+        action,
+        index: this.contentType,
+        body: queryOptions,
+      });
 
-    if (action === 'count') {
-      return response && response.count ? response.count : 0;
-    }
+      if (action === 'count') {
+        return response && response.count ? response.count : 0;
+      }
 
-    const list = response.hits.hits.map(hit => {
+      const list = response.hits.hits.map(hit => {
+        return {
+          _id: getRealIdFromElk(hit._id),
+          ...hit._source,
+        };
+      });
+
+      // 회사 목록에 한글 정렬 적용 (기본 정렬만)
+      if (this.contentType === 'companies' && !sortField) {
+        console.log('=== CommonBuilder Korean Sort Debug ===');
+        console.log('Original list length:', list.length);
+        console.log('page:', this.params.page);
+        console.log('perPage:', this.params.perPage);
+        
+        const sortedList = sortCompaniesByName(list, 1);
+        console.log('After Korean sort length:', sortedList.length);
+        
+        return {
+          list: sortedList,
+          totalCount,
+        };
+      }
+
       return {
-        _id: getRealIdFromElk(hit._id),
-        ...hit._source,
+        list,
+        totalCount,
       };
-    });
-
-    return {
-      list,
-      totalCount,
-    };
+    } catch (error) {
+      console.log('Elasticsearch query failed, falling back to MongoDB:', error.message);
+      return this.findAllMongo(_limit);
+    }
   }
 }
