@@ -4,7 +4,6 @@ import { generateModels, IModels } from "../../../connectionResolver";
 import { sendInboxMessage } from "../../../messageBroker";
 import { CommonBuilder } from "./utils";
 import { generateElkIds } from "@erxes/api-utils/src/elasticsearch";
-import { sendCommonMessage } from "../../../messageBroker";
 
 interface ISortParams {
   [index: string]: number;
@@ -248,47 +247,6 @@ export class Builder extends CommonBuilder<IListArgs> {
         }
       ]
     };
-
-    // Add conformity filter for MongoDB
-    if (this.params.conformityMainType && this.params.conformityMainTypeId) {
-      const { conformityMainType, conformityMainTypeId, conformityIsSaved, conformityIsRelated } = this.params;
-      
-      let customerIds: string[] = [];
-
-      if (conformityIsSaved) {
-        customerIds = await sendCommonMessage({
-          subdomain: this.subdomain,
-          serviceName: "core",
-          action: "conformities.savedConformity",
-          data: {
-            mainType: conformityMainType,
-            mainTypeId: conformityMainTypeId,
-            relTypes: ["customer"]
-          },
-          isRPC: true,
-          defaultValue: []
-        });
-      }
-
-      if (conformityIsRelated) {
-        customerIds = await sendCommonMessage({
-          subdomain: this.subdomain,
-          serviceName: "core",
-          action: "conformities.relatedConformity",
-          data: {
-            mainType: conformityMainType,
-            mainTypeId: conformityMainTypeId,
-            relType: "customer"
-          },
-          isRPC: true,
-          defaultValue: []
-        });
-      }
-
-      if (customerIds.length > 0) {
-        selector._id = { $in: customerIds };
-      }
-    }
 
     const customers = await this.models.Customers.find(selector)
       .sort({ createdAt: -1 })

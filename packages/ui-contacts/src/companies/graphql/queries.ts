@@ -93,29 +93,9 @@ export const companies = `
   }
 `;
 
-export const companyDetail = `
-  query companyDetail($_id: String!) {
-    companyDetail(_id: $_id) {
-      ${companyFields}
-      customers {
-        _id
-        firstName
-        middleName
-        lastName
-        primaryEmail
-        primaryPhone
-        avatar
-        position
-        department
-      }
-    }
-  }
-`;
-
 export default {
   companyFields,
   listParamsDef,
   listParamsValue,
-  companies,
-  companyDetail
+  companies
 };
