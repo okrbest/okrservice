@@ -106,8 +106,8 @@ const WithQuery = withProps<Props>(
             mainType: data.mainType,
             mainTypeId: data.mainTypeId,
             isRelated: data.isRelated,
-            sortField: "primaryName",
-            sortDirection: 1,
+            sortField: "createdAt",
+            sortDirection: -1,
           },
           fetchPolicy: data.isRelated ? "network-only" : "cache-first",
         };
