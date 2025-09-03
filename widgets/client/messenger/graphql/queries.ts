@@ -128,6 +128,7 @@ const TICKET_LIST = gql`
       }
       description
       type
+      requestType
       createdAt
       priority
       widgetAlarm

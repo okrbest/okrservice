@@ -214,6 +214,7 @@ export interface ITicketItem {
   stage: ITicketStage;
   description: string;
   type: string;
+  requestType?: string;
   createdAt: string;
   priority?: string;
   attachments?: IAttachment[];

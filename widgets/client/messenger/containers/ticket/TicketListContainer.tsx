@@ -29,6 +29,7 @@ type TicketItem = {
   stage: TicketStage;
   description: string;
   type: string;
+  requestType?: string;
   createdAt: string;
   priority?: string;
   widgetAlarm?: boolean;

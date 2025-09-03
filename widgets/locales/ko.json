@@ -139,5 +139,6 @@
   "Ticket status": "티켓 상태",
   "inquiry": "단순문의",
   "improvement": "개선 요청",
-  "error": "오류처리"
+  "error": "오류처리",
+  "config": "설정변경"
 }

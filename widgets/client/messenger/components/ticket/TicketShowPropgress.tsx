@@ -43,13 +43,13 @@ const TicketShowProgress: React.FC<Props> = ({
   };
 
   const renderTicketIssue = () => {
-    const { name, type, description, attachments } = ticketData;
+    const { name, type, requestType, description, attachments } = ticketData;
 
     return (
       <div className="ticket-progress-content">
         <div className="content-header">
           <b>{name} </b>
-          <span>{__(type)}</span>
+          <span>{__(requestType || type)}</span>
         </div>
         {description && (
           <div
