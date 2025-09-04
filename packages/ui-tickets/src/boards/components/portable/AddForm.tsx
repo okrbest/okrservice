@@ -21,7 +21,6 @@ import React from "react";
 import Select from "react-select";
 import { checkLogic } from "@erxes/ui-forms/src/settings/properties/utils";
 import { invalidateCache } from "../../utils";
-import { loadDynamicComponent } from "@erxes/ui/src/utils/core";
 import RelationForm from "@erxes/ui-forms/src/forms/containers/RelationForm";
 
 type Props = {
@@ -66,6 +65,7 @@ type State = {
   departmentIds?: string[];
   isCheckUserTicket?: boolean;
   relationData?: any;
+  selectedCompanyIds?: string[];
 };
 
 class AddForm extends React.Component<Props, State> {
@@ -158,8 +158,10 @@ class AddForm extends React.Component<Props, State> {
       });
 
       if (checkLogic(logics)) {
-        return field;
+        return true;
       }
+      
+      return false;
     });
 
     customFieldsData = customFieldsData.filter((customField) =>
@@ -233,6 +235,18 @@ class AddForm extends React.Component<Props, State> {
 
     if (relationData) {
       doc.relationData = relationData;
+      
+      // relationData에서 companyIds와 customerIds를 추출하여 doc에 추가
+      console.log("AddForm - relationData:", relationData);
+      
+      if (relationData.companyIds && relationData.companyIds.length > 0) {
+        doc.companyIds = relationData.companyIds;
+        console.log("AddForm - added companyIds to doc:", relationData.companyIds);
+      }
+      if (relationData.customerIds && relationData.customerIds.length > 0) {
+        doc.customerIds = relationData.customerIds;
+        console.log("AddForm - added customerIds to doc:", relationData.customerIds);
+      }
     }
 
     if (branchIds) {
@@ -321,11 +335,30 @@ class AddForm extends React.Component<Props, State> {
 
   onRelationsChange = (ids: string[], relationType: string) => {
     const { relationData = {} } = this.state;
-    const key = relationType.split(":")[1];
+    let key = relationType.split(":")[1];
+
+    // company의 경우 companyIds로 변환
+    if (key === "company") {
+      key = "companyIds";
+    } else if (key === "customer") {
+      key = "customerIds";
+    }
 
     relationData[key] = ids;
 
-    this.setState({ relationData });
+    // 디버깅을 위한 콘솔 출력
+    console.log("AddForm - onRelationsChange:", { key, ids, relationType });
+
+    // company가 선택되면 customer 필터링을 위해 companyIds 상태 업데이트
+    if (key === "companyIds") {
+      console.log("AddForm - companyIds selected:", ids);
+      this.setState({ 
+        relationData,
+        selectedCompanyIds: ids 
+      });
+    } else {
+      this.setState({ relationData });
+    }
   };
 
   render() {
@@ -400,6 +433,8 @@ class AddForm extends React.Component<Props, State> {
           {...this.props}
           onChange={this.onRelationsChange}
           contentType={`tickets:${type}`}
+          relationData={this.state.relationData}
+          selectedCompanyIds={this.state.selectedCompanyIds}
         />
 
         <FormFooter>

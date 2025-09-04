@@ -78,6 +78,11 @@ const customerQueries = {
     
     await qb.buildAllQueries();
 
+    // Apply companyIds filter if provided
+    if (params.companyIds && params.companyIds.length > 0) {
+      await qb.companyIdsFilter(params.companyIds);
+    }
+
     const { list } = await qb.runQueries();
 
     return list;
@@ -97,6 +102,11 @@ const customerQueries = {
     });
 
     await qb.buildAllQueries();
+
+    // Apply companyIds filter if provided
+    if (params.companyIds && params.companyIds.length > 0) {
+      await qb.companyIdsFilter(params.companyIds);
+    }
 
     const { list, totalCount } = await qb.runQueries();
 

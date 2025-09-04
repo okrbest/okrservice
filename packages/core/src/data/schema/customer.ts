@@ -98,6 +98,7 @@ const queryParams = `
   segmentData: String
   emailValidationStatus:String
   registrationNumber:String
+  companyIds: [String]
   ${conformityQueryFields}
 `;
 

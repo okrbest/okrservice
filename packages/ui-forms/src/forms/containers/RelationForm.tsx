@@ -11,6 +11,8 @@ type Props = {
   contentType: string;
   insertedId?: string;
   onChange: (ids: string[], relationType: string) => void;
+  relationData?: any;
+  selectedCompanyIds?: string[];
 };
 
 const Container = (props: Props) => {
@@ -24,7 +26,7 @@ const Container = (props: Props) => {
 
   const fields: IField[] = data ? data.fieldsGetRelations || [] : [];
 
-  return <RelationForm {...props} fields={fields} />;
+  return <RelationForm {...props} fields={fields} relationData={props.relationData} selectedCompanyIds={props.selectedCompanyIds} />;
 };
 
 export default Container;

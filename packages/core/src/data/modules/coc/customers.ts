@@ -60,6 +60,7 @@ export interface IListArgs extends IConformityQueryParams {
   sortDirection?: number;
   popupData?: string;
   dateFilters?: string;
+  companyIds?: string[];
 }
 
 export class Builder extends CommonBuilder<IListArgs> {
@@ -76,6 +77,35 @@ export class Builder extends CommonBuilder<IListArgs> {
           state: this.params.type
         }
       });
+    }
+  }
+
+  // filter by company IDs
+  public async companyIdsFilter(companyIds: string[]): Promise<void> {
+    console.log("companyIdsFilter called with:", companyIds);
+    
+    if (companyIds && companyIds.length > 0) {
+      // conformities 컬렉션을 직접 조회하여 company와 연관된 customer ID들을 가져옴
+      const conformities = await this.models.Conformities.find({
+        mainType: "customer",
+        relType: "company",
+        relTypeId: { $in: companyIds }
+      }).lean();
+
+      console.log("Found conformities:", conformities);
+
+      const relIds = conformities.map(conf => conf.mainTypeId).filter(id => id);
+
+      console.log("Customer IDs from conformities:", relIds);
+
+      if (relIds && relIds.length > 0) {
+        this.positiveList.push({
+          terms: {
+            _id: relIds
+          }
+        });
+        console.log("Added to positiveList:", this.positiveList);
+      }
     }
   }
 
