@@ -561,7 +561,7 @@ export const setupMessageConsumers = async () => {
             title: "새로운 댓글이 추가되었습니다",
             content: `${customerName}님이 티켓 '${ticket.name}'에 댓글을 달았습니다: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`,
             action: "새로운 댓글",
-            link: `tickets/board?id=${boardId}&pipelineId=${pipelineId}&itemId=${ticket._id}`,
+            link: `ticket/board?id=${boardId}&pipelineId=${pipelineId}&itemId=${ticket._id}`,
             createdUser: { _id: customerId, details: { fullName: customerName } },
             contentType: "ticket",
             contentTypeId: ticket._id,
