@@ -90,7 +90,6 @@ const listParamsDef = `
   $segmentData: String
   $emailValidationStatus:String,
   $registrationNumber: String,
-  $companyIds: [String],
   ${conformityQueryFields}
 `;
 
@@ -108,7 +107,6 @@ const listParamsValue = `
   brand: $brand,
   integration: $integration
   form: $form,
-  companyIds: $companyIds,
   startDate: $startDate,
   endDate: $endDate,
   leadStatus: $leadStatus,
