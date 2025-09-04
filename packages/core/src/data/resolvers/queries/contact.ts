@@ -20,16 +20,27 @@ const generateSort = async ({
 }) => {
   let sort = {};
   const esTypes = getEsTypes(type);
-  let fieldToSort = sortField || "createdAt";
+  
+  // company 타입에 대해 기본 정렬을 primaryName으로 설정
+  let defaultSortField = "createdAt";
+  let defaultSortDirection = "desc";
+  
+  if (type === "companies") {
+    defaultSortField = "primaryName.keyword"; // keyword 필드 사용
+    defaultSortDirection = "asc"; // abc, ㄱㄴㄷ 순으로 정렬
+  }
+  
+  let fieldToSort = sortField || defaultSortField;
 
-  if (!esTypes[fieldToSort] || esTypes[fieldToSort] === "email") {
+  // 이미 .keyword가 붙어있으면 추가로 붙이지 않음
+  if (!fieldToSort.includes('.keyword') && (!esTypes[fieldToSort] || esTypes[fieldToSort] === "email")) {
     fieldToSort = `${fieldToSort}.keyword`;
   }
 
   if (!searchValue) {
     sort = {
       [fieldToSort]: {
-        order: sortDirection ? (sortDirection === -1 ? "desc" : "asc") : "desc"
+        order: sortDirection ? (sortDirection === -1 ? "desc" : "asc") : defaultSortDirection
       }
     };
   }

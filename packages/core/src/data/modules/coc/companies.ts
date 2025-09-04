@@ -10,7 +10,8 @@ export const sortBuilder = (params: IListArgs): TSortBuilder => {
   const sortField = params.sortField;
   const sortDirection = params.sortDirection || 0;
 
-  let sortParams: TSortBuilder = { primaryName: -1 };
+  // 기본 정렬을 primaryName 오름차순으로 설정 (abc, ㄱㄴㄷ 순)
+  let sortParams: TSortBuilder = { primaryName: 1 };
 
   if (sortField) {
     sortParams = { [sortField]: sortDirection };
@@ -45,7 +46,7 @@ export class Builder extends CommonBuilder<IListArgs> {
     };
 
     const companies = await this.models.Companies.find(selector)
-      .sort({ createdAt: -1 })
+      .sort({ primaryName: 1 }) // abc, ㄱㄴㄷ 순으로 정렬
       .limit(limit);
 
     const count = await this.models.Companies.find(selector).countDocuments();

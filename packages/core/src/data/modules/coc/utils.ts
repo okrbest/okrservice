@@ -561,9 +561,19 @@ export class CommonBuilder<IListArgs extends ICommonListArgs> {
 
       const esTypes = getEsTypes(this.contentType);
 
-      let fieldToSort = sortField || 'createdAt';
+      // company 타입에 대해 기본 정렬을 primaryName으로 설정
+      let defaultSortField = 'createdAt';
+      let defaultSortDirection = 'desc';
+      
+      if (this.contentType === 'companies') {
+        defaultSortField = 'primaryName.keyword'; // keyword 필드 사용
+        defaultSortDirection = 'asc'; // abc, ㄱㄴㄷ 순으로 정렬
+      }
+      
+      let fieldToSort = sortField || defaultSortField;
 
-      if (!esTypes[fieldToSort] || esTypes[fieldToSort] === 'email') {
+      // 이미 .keyword가 붙어있으면 추가로 붙이지 않음
+      if (!fieldToSort.includes('.keyword') && (!esTypes[fieldToSort] || esTypes[fieldToSort] === 'email')) {
         fieldToSort = `${fieldToSort}.keyword`;
       }
 
@@ -574,7 +584,7 @@ export class CommonBuilder<IListArgs extends ICommonListArgs> {
               ? sortDirection === -1
                 ? 'desc'
                 : 'asc'
-              : 'desc',
+              : defaultSortDirection,
           },
         };
       }
