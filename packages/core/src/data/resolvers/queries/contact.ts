@@ -16,38 +16,45 @@ const generateSort = async ({
   type,
   sortField,
   sortDirection,
-  searchValue
+  searchValue,
 }) => {
   let sort = {};
   const esTypes = getEsTypes(type);
-  
+
   // company 타입에 대해 기본 정렬을 primaryName으로 설정
   let defaultSortField = "createdAt";
   let defaultSortDirection = "desc";
-  
+
   if (type === "companies") {
-    defaultSortField = "primaryName.keyword"; // keyword 필드 사용
+    defaultSortField = "primaryName.raw"; // keyword 필드 사용
     defaultSortDirection = "asc"; // abc, ㄱㄴㄷ 순으로 정렬
   }
-  
+
   let fieldToSort = sortField || defaultSortField;
 
   // 이미 .keyword가 붙어있으면 추가로 붙이지 않음
-  if (!fieldToSort.includes('.keyword') && (!esTypes[fieldToSort] || esTypes[fieldToSort] === "email")) {
+  if (
+    !fieldToSort.includes(".keyword") &&
+    (!esTypes[fieldToSort] || esTypes[fieldToSort] === "email")
+  ) {
     fieldToSort = `${fieldToSort}.keyword`;
   }
 
   if (!searchValue) {
     sort = {
       [fieldToSort]: {
-        order: sortDirection ? (sortDirection === -1 ? "desc" : "asc") : defaultSortDirection
-      }
+        order: sortDirection
+          ? sortDirection === -1
+            ? "desc"
+            : "asc"
+          : defaultSortDirection,
+      },
     };
   }
   return sort;
 };
 
-const generateQuery = async args => {
+const generateQuery = async (args) => {
   const { searchValue, fieldsMustExist } = args;
 
   const positiveList: any = [];
@@ -59,30 +66,30 @@ const generateQuery = async args => {
         {
           match: {
             searchText: {
-              query: searchValue
-            }
-          }
+              query: searchValue,
+            },
+          },
         },
         {
           wildcard: {
-            searchText: `*${searchValue.toLowerCase()}*`
-          }
-        }
-      ]
-    }
+            searchText: `*${searchValue.toLowerCase()}*`,
+          },
+        },
+      ],
+    },
   });
 
   if (!!fieldsMustExist?.length) {
     for (const field of fieldsMustExist) {
       positiveList.push({
         exists: {
-          field
-        }
+          field,
+        },
       });
       negativeList.push({
         term: {
-          [field]: ""
-        }
+          [field]: "",
+        },
       });
     }
   }
@@ -91,13 +98,13 @@ const generateQuery = async args => {
     query: {
       bool: {
         must: positiveList,
-        must_not: negativeList
-      }
-    }
+        must_not: negativeList,
+      },
+    },
   };
 };
 
-const generateAutoCompleteQuery = args => {
+const generateAutoCompleteQuery = (args) => {
   if (args?.usageType !== "autoComplete") {
     return [];
   }
@@ -105,16 +112,16 @@ const generateAutoCompleteQuery = args => {
   return args?.searchValue
     ? args.searchValue
         .split(",")
-        .filter(value => {
+        .filter((value) => {
           if (value.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
             args.searchValue = args.searchValue.replace(`${value},`, "");
             return value;
           }
         })
-        .map(value => ({
+        .map((value) => ({
           match: {
-            primaryEmail: { query: value }
-          }
+            primaryEmail: { query: value },
+          },
         }))
     : [];
 };
@@ -144,7 +151,7 @@ const generateFullName = (contentType, source) => {
 };
 
 const generateList = (type, response) => {
-  return response.hits.hits.map(hit => {
+  return response.hits.hits.map((hit) => {
     const { primaryEmail, primaryPhone, avatar, createdAt, status } =
       hit._source || {};
 
@@ -156,7 +163,7 @@ const generateList = (type, response) => {
       createdAt,
       status,
       contentType: generateContentType(type, hit._source || {}),
-      fullName: generateFullName(type, hit._source || {})
+      fullName: generateFullName(type, hit._source || {}),
     };
   });
 };
@@ -185,15 +192,15 @@ const contactQueries = {
           body: {
             query: {
               bool: {
-                should: autoCompleteQuery
-              }
-            }
-          }
+                should: autoCompleteQuery,
+              },
+            },
+          },
         });
 
         autoCompleteList = [
           ...autoCompleteList,
-          ...generateList(type, response)
+          ...generateList(type, response),
         ];
       }
 
@@ -209,15 +216,15 @@ const contactQueries = {
           from: (_page - 1) * _limit,
           size: _limit - list.length,
           ...contactsQueryOptions,
-          sort: [contactsSortOptions]
-        }
+          sort: [contactsSortOptions],
+        },
       });
 
       list = [...list, ...generateList(type, response)];
     }
 
     return [...autoCompleteList, ...list];
-  }
+  },
 };
 
 export default contactQueries;

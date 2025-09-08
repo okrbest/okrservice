@@ -12,20 +12,31 @@ type Props = {
 };
 
 const SelectContacts = (props: Props) => {
-  const { field, onChange, relationData = {}, selectedCompanyIds: externalCompanyIds } = props;
+  const {
+    field,
+    onChange,
+    relationData = {},
+    selectedCompanyIds: externalCompanyIds,
+  } = props;
   const { relationType = "" } = field;
   const [selectedCompanyIds, setSelectedCompanyIds] = useState<string[]>([]);
 
   // 디버깅을 위한 콘솔 출력
   console.log("SelectContactsRelation - props:", props);
-  console.log("SelectContactsRelation - externalCompanyIds:", externalCompanyIds);
+  console.log(
+    "SelectContactsRelation - externalCompanyIds:",
+    externalCompanyIds
+  );
   console.log("SelectContactsRelation - relationData:", relationData);
   console.log("SelectContactsRelation - relationType:", relationType);
 
   // externalCompanyIds가 변경될 때 selectedCompanyIds 업데이트
   useEffect(() => {
     if (externalCompanyIds && externalCompanyIds.length > 0) {
-      console.log("SelectContactsRelation - updating selectedCompanyIds from external:", externalCompanyIds);
+      console.log(
+        "SelectContactsRelation - updating selectedCompanyIds from external:",
+        externalCompanyIds
+      );
       setSelectedCompanyIds(externalCompanyIds);
     }
   }, [externalCompanyIds]);
@@ -46,21 +57,33 @@ const SelectContacts = (props: Props) => {
   };
 
   const renderCustomerSelect = () => {
-    if (relationType.includes("company")) {
+    if (relationType === "core:company") {
       return null;
     }
 
     // 외부에서 전달된 companyIds를 우선적으로 사용
-    const companyIds = externalCompanyIds && externalCompanyIds.length > 0 ? externalCompanyIds : selectedCompanyIds;
-    
+    const companyIds =
+      externalCompanyIds && externalCompanyIds.length > 0
+        ? externalCompanyIds
+        : selectedCompanyIds;
+
     // company가 선택된 경우 해당 company의 customer만 필터링
-    const filterParams = companyIds && companyIds.length > 0 ? {
-      companyIds: companyIds
-    } : {};
+    const filterParams =
+      companyIds && companyIds.length > 0
+        ? {
+            companyIds: companyIds,
+          }
+        : {};
 
     // 디버깅을 위한 콘솔 출력
-    console.log("SelectContactsRelation - externalCompanyIds:", externalCompanyIds);
-    console.log("SelectContactsRelation - selectedCompanyIds:", selectedCompanyIds);
+    console.log(
+      "SelectContactsRelation - externalCompanyIds:",
+      externalCompanyIds
+    );
+    console.log(
+      "SelectContactsRelation - selectedCompanyIds:",
+      selectedCompanyIds
+    );
     console.log("SelectContactsRelation - companyIds:", companyIds);
     console.log("SelectContactsRelation - filterParams:", filterParams);
 
@@ -77,7 +100,7 @@ const SelectContacts = (props: Props) => {
   };
 
   const renderCompanySelect = () => {
-    if (relationType.includes("customer")) {
+    if (relationType === "core:customer") {
       return null;
     }
 
@@ -102,7 +125,10 @@ const SelectContacts = (props: Props) => {
   // 외부에서 전달된 companyIds가 변경되면 로컬 상태도 업데이트
   useEffect(() => {
     if (externalCompanyIds && externalCompanyIds.length > 0) {
-      console.log("SelectContactsRelation - updating selectedCompanyIds from external:", externalCompanyIds);
+      console.log(
+        "SelectContactsRelation - updating selectedCompanyIds from external:",
+        externalCompanyIds
+      );
       setSelectedCompanyIds(externalCompanyIds);
     }
   }, [externalCompanyIds]);
