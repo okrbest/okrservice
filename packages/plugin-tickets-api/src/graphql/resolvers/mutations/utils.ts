@@ -89,6 +89,43 @@ export const itemsAdd = async (
   doc.initialStageId = doc.stageId;
   doc.watchedUserIds = user && [user._id];
 
+  if (doc.customerIds && doc.customerIds.length > 0 && !doc.companyIds) {
+    const companyIds = new Set<string>();
+
+    for (const customerId of doc.customerIds) {
+      try {
+        // Customer의 Company 관계 조회
+        const customerCompanyIds = await sendCoreMessage({
+          subdomain,
+          action: "conformities.savedConformity",
+          data: {
+            mainType: "customer",
+            mainTypeId: customerId,
+            relTypes: ["company"],
+          },
+          isRPC: true,
+          defaultValue: [],
+        });
+
+        // Company ID 수집
+        customerCompanyIds.forEach((id) => companyIds.add(id));
+      } catch (error) {
+        console.error(
+          `Failed to get companies for customer ${customerId}:`,
+          error
+        );
+      }
+    }
+
+    // 수집된 Company IDs를 doc에 추가
+    if (companyIds.size > 0) {
+      doc.companyIds = Array.from(companyIds);
+      console.log(
+        `[Auto-set] Added ${doc.companyIds.length} companies for ticket from ${doc.customerIds.length} customers`
+      );
+    }
+  }
+
   const modifiedDoc = docModifier
     ? docModifier(doc)
     : {
@@ -285,19 +322,28 @@ export const itemsEdit = async (
   }
 
   const updatedItem = await modelUpate(_id, extendedDoc);
-  
+
   // 티켓의 description이 수정된 경우 widgetAlarm을 false로 설정
-  if (type === "ticket" && doc.description && doc.description !== oldItem.description) {
-    console.log('🔔 itemsEdit - Description modified for ticket:', _id, 'setting widgetAlarm to false');
-    
-    await models.Tickets.updateOne(
-      { _id },
-      { $set: { widgetAlarm: false } }
+  if (
+    type === "ticket" &&
+    doc.description &&
+    doc.description !== oldItem.description
+  ) {
+    console.log(
+      "🔔 itemsEdit - Description modified for ticket:",
+      _id,
+      "setting widgetAlarm to false"
     );
-    
-    console.log('🔔 Widget alarm set to false for ticket:', _id, 'due to description modification in itemsEdit');
+
+    await models.Tickets.updateOne({ _id }, { $set: { widgetAlarm: false } });
+
+    console.log(
+      "🔔 Widget alarm set to false for ticket:",
+      _id,
+      "due to description modification in itemsEdit"
+    );
   }
-  
+
   // labels should be copied to newly moved pipeline
   if (doc.stageId) {
     await copyPipelineLabels(models, { item: oldItem, doc, user });

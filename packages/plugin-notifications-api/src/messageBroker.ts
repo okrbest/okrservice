@@ -6,11 +6,11 @@ import {
   MessageArgs,
   MessageArgsOmitService,
   sendMessage,
-  getEnv
+  getEnv,
 } from "@erxes/api-utils/src/core";
 import {
   consumeQueue,
-  consumeRPCQueue
+  consumeRPCQueue,
 } from "@erxes/api-utils/src/messageBroker";
 import { debugError } from "@erxes/api-utils/src/debuggers";
 
@@ -24,15 +24,13 @@ interface ISendNotification {
   action: string;
   contentType: string;
   contentTypeId: string;
-  toMail: string,
+  toMail: string;
 }
-
-
 
 const sendNotification = async (
   models: IModels,
   subdomain: string,
-  doc: ISendNotification,
+  doc: ISendNotification
 ) => {
   const {
     createdUser,
@@ -51,7 +49,7 @@ const sendNotification = async (
 
   await sendCoreMessage({
     subdomain,
-    action: 'users.updateMany',
+    action: "users.updateMany",
     data: {
       selector: {
         _id: { $in: receiverIds },
@@ -65,7 +63,7 @@ const sendNotification = async (
   // collecting emails
   const recipients = await sendCoreMessage({
     subdomain,
-    action: 'users.find',
+    action: "users.find",
     data: {
       query: {
         _id: { $in: receiverIds },
@@ -99,7 +97,7 @@ const sendNotification = async (
           contentType,
           contentTypeId,
         },
-        createdUser._id,
+        createdUser._id
       );
 
       graphqlPubsub.publish(`notificationInserted:${subdomain}:${receiverId}`, {
@@ -112,13 +110,13 @@ const sendNotification = async (
       });
     } catch (e) {
       // Any other error is serious
-      if (e.message !== 'Configuration does not exist') {
+      if (e.message !== "Configuration does not exist") {
         throw e;
       }
     }
   } // end receiverIds loop
 
-  const DOMAIN = getEnv({ name: 'DOMAIN' });
+  const DOMAIN = getEnv({ name: "DOMAIN" });
 
   link = `${DOMAIN}${link}`;
 
@@ -133,12 +131,12 @@ const sendNotification = async (
 
   sendCoreMessage({
     subdomain,
-    action: 'sendEmail',
+    action: "sendEmail",
     data: {
       toEmails,
-      title: 'Notification',
+      title: "Notification",
       template: {
-        name: 'notification',
+        name: "notification",
         data: {
           notification: { ...doc, link },
           action,
@@ -150,29 +148,42 @@ const sendNotification = async (
   });
 };
 
-async function markNotificationsAsUnread(subdomain: string, receiverIds: string[]) {
+async function markNotificationsAsUnread(
+  subdomain: string,
+  receiverIds: string[]
+) {
   await sendCoreMessage({
     subdomain,
     action: "users.updateMany",
     data: {
       selector: { _id: { $in: receiverIds } },
-      modifier: { $set: { isShowNotification: false } }
-    }
+      modifier: { $set: { isShowNotification: false } },
+    },
   });
 }
 
 export const setupMessageConsumers = async () => {
   consumeQueue("notifications:send", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
+
+    if (data.receivers && Array.isArray(data.receivers)) {
+      data.receivers = [...new Set(data.receivers.filter((id) => id))];
+    }
+
     await sendNotification(models, subdomain, data);
   });
 
   consumeRPCQueue("notifications:send", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
+
+    if (data.receivers && Array.isArray(data.receivers)) {
+      data.receivers = [...new Set(data.receivers.filter((id) => id))];
+    }
+
     await sendNotification(models, subdomain, data);
 
     return {
-      status: "success"
+      status: "success",
     };
   });
 
@@ -190,7 +201,7 @@ export const setupMessageConsumers = async () => {
       const models = await generateModels(subdomain);
       return {
         status: "success",
-        data: await models.Notifications.checkIfRead(userId, itemId)
+        data: await models.Notifications.checkIfRead(userId, itemId),
       };
     }
   );
@@ -201,7 +212,7 @@ export const setupMessageConsumers = async () => {
       const models = await generateModels(subdomain);
       return {
         status: "success",
-        data: await models.Notifications.find(selector, fields)
+        data: await models.Notifications.find(selector, fields),
       };
     }
   );
@@ -210,7 +221,7 @@ export const setupMessageConsumers = async () => {
 export const sendCoreMessage = (args: MessageArgsOmitService): Promise<any> => {
   return sendMessage({
     serviceName: "core",
-    ...args
+    ...args,
   });
 };
 
@@ -218,7 +229,7 @@ export const sendCommonMessage = async (
   args: MessageArgs & { serviceName: string }
 ) => {
   return sendMessage({
-    ...args
+    ...args,
   });
 };
 
@@ -227,7 +238,7 @@ export const sendSegmentsMessage = async (
 ): Promise<any> => {
   return sendMessage({
     serviceName: "segments",
-    ...args
+    ...args,
   });
 };
 
@@ -236,6 +247,6 @@ export const sendClientPortalMessagge = async (
 ): Promise<any> => {
   return sendMessage({
     serviceName: "clientportal",
-    ...args
+    ...args,
   });
 };
