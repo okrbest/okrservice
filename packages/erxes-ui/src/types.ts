@@ -1,5 +1,5 @@
-import { IActivityLogForMonth } from '@erxes/ui-log/src/activityLogs/types';
-import { IUser } from './auth/types';
+import { IActivityLogForMonth } from "@erxes/ui-log/src/activityLogs/types";
+import { IUser } from "./auth/types";
 
 export interface IRouterProps {
   location: any;
@@ -189,7 +189,7 @@ export type IEditorProps = {
   showMentions?: boolean;
   toolbar?: any[];
   autoFocus?: boolean;
-  toolbarLocation?: 'top' | 'bottom';
+  toolbarLocation?: "top" | "bottom";
   autoGrow?: boolean;
   autoGrowMinHeight?: number | string;
   autoGrowMaxHeight?: number | string;
@@ -227,4 +227,4 @@ export interface IAbortController {
   abort?: () => void;
 }
 
-// workflow 실행
+// workflow Action 실행

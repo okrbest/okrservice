@@ -1,24 +1,24 @@
-import { generateModels, IModels } from './connectionResolver';
-import { stringRandomId } from '@erxes/api-utils/src/mongoose-types';
+import { generateModels, IModels } from "./connectionResolver";
+import { stringRandomId } from "@erxes/api-utils/src/mongoose-types";
 import {
   IProductCategoryDocument,
   IProductDocument,
-} from './db/models/definitions/products';
+} from "./db/models/definitions/products";
 
 const modelChanger = (type: string, models: IModels) => {
-  if (type === 'uoms') {
+  if (type === "uoms") {
     return models.Uoms;
   }
 
-  if (type === 'productCategories') {
+  if (type === "productCategories") {
     return models.ProductCategories;
   }
 
-  if (type === 'productsConfigs') {
+  if (type === "productsConfigs") {
     return models.ProductsConfigs;
   }
 
-  if (type === 'fields') {
+  if (type === "fields") {
     return models.Fields;
   }
 
@@ -40,12 +40,12 @@ const generateOrder = (parentCategory: any, doc: any) => {
 export default {
   types: [
     {
-      description: 'Products',
-      type: 'products',
+      description: "Products",
+      type: "products",
     },
     {
-      description: 'Forms',
-      type: 'forms',
+      description: "Forms",
+      type: "forms",
     },
   ],
   useTemplate: async ({ subdomain, data }) => {
@@ -58,14 +58,14 @@ export default {
     let reDirect: string | undefined;
 
     switch (contentType) {
-      case 'productCategories':
+      case "productCategories":
         reDirect = await productCategoryUseTemplate({
           models,
           content,
           relatedContents,
         });
         break;
-      case 'forms':
+      case "forms":
         reDirect = await formUseTemplate({
           models,
           content,
@@ -82,21 +82,21 @@ export default {
 
     const { contentType: currentType, content: stringifiedContent } = data;
 
-    const [serviceName, contentType] = (currentType || '').split(':');
+    const [serviceName, contentType] = (currentType || "").split(":");
 
     const mainContent = JSON.parse(stringifiedContent);
 
     let relatedContents: any[] = [];
 
-    if (serviceName === 'core') {
+    if (serviceName === "core") {
       switch (contentType) {
-        case 'productCategories':
+        case "productCategories":
           relatedContents = await productRelatedContents({
             models,
             mainContent,
           });
           break;
-        case 'forms':
+        case "forms":
           relatedContents = await formRelatedContents({ models, mainContent });
           break;
       }
@@ -120,22 +120,22 @@ export const productRelatedContents = async ({ models, mainContent }) => {
 
   if (categories.length) {
     relatedContents.push({
-      contentType: 'core:productCategories',
-      content: categories.map(category => JSON.stringify(category)),
+      contentType: "core:productCategories",
+      content: categories.map((category) => JSON.stringify(category)),
     });
 
-    categoryIds = categories.map(c => c._id);
+    categoryIds = categories.map((c) => c._id);
   }
 
   const products: IProductDocument[] = await models.Products.find(
-    { categoryId: { $in: categoryIds }, status: 'active' },
+    { categoryId: { $in: categoryIds }, status: "active" },
     { tagIds: 0, scopeBrandIds: 0 }
   ).lean();
 
   if (products.length) {
     relatedContents.push({
-      contentType: 'core:products',
-      content: products.map(product => JSON.stringify(product)),
+      contentType: "core:products",
+      content: products.map((product) => JSON.stringify(product)),
     });
 
     const uoms = new Set();
@@ -155,8 +155,8 @@ export const productRelatedContents = async ({ models, mainContent }) => {
 
     if (productUoms.length) {
       relatedContents.push({
-        contentType: 'core:uoms',
-        content: productUoms.map(uom => JSON.stringify(uom)),
+        contentType: "core:uoms",
+        content: productUoms.map((uom) => JSON.stringify(uom)),
       });
     }
   }
@@ -170,14 +170,14 @@ export const formRelatedContents = async ({ models, mainContent }) => {
   const relatedContents: any[] = [];
 
   const fields = await models.Fields.find(
-    { contentTypeId: formId, contentType: 'form', isDefinedByErxes: false },
+    { contentTypeId: formId, contentType: "form", isDefinedByErxes: false },
     { _id: 0, scopeBrandIds: 0, lastUpdatedUserId: 0, productCategoryId: 0 }
   ).lean();
 
   if (fields.length) {
     relatedContents.push({
-      contentType: 'core:fields',
-      content: fields.map(field => JSON.stringify(field)),
+      contentType: "core:fields",
+      content: fields.map((field) => JSON.stringify(field)),
     });
   }
 
@@ -207,7 +207,7 @@ export const productCategoryUseTemplate = async ({
     for (const relatedContent of relatedContents) {
       const { contentType: currentType, content } = relatedContent;
 
-      const [_, contentType] = currentType.split(':');
+      const [_, contentType] = currentType.split(":");
 
       const model: any = modelChanger(contentType, models);
 
@@ -224,7 +224,7 @@ export const productCategoryUseTemplate = async ({
           ...parsedContent
         } = JSON.parse(item);
 
-        if (contentType === 'uoms') {
+        if (contentType === "uoms") {
           const uom = await model.findOne({ code });
 
           if (uom) {
@@ -243,7 +243,7 @@ export const productCategoryUseTemplate = async ({
           createdAt: new Date(),
         };
 
-        if (contentType === 'productCategories') {
+        if (contentType === "productCategories") {
           parsedRelatedContent.parentId = productCategory._id;
           parsedRelatedContent.order = generateOrder(
             productCategory,
@@ -251,7 +251,7 @@ export const productCategoryUseTemplate = async ({
           );
         }
 
-        if (contentType === 'products') {
+        if (contentType === "products") {
           parsedRelatedContent.categoryId =
             idMapping[categoryId] || productCategory._id;
         }
@@ -265,7 +265,7 @@ export const productCategoryUseTemplate = async ({
     }
   }
 
-  return `/settings/product-service?categoryId=${productCategory._id || ''}`;
+  return `/settings/product-service?categoryId=${productCategory._id || ""}`;
 };
 
 export const formUseTemplate = async ({
@@ -290,7 +290,7 @@ export const formUseTemplate = async ({
     for (const relatedContent of relatedContents) {
       const { contentType: currentType, content } = relatedContent;
 
-      const [_, contentType] = currentType.split(':');
+      const [_, contentType] = currentType.split(":");
 
       const model: any = modelChanger(contentType, models);
 
@@ -308,7 +308,7 @@ export const formUseTemplate = async ({
           _id: newId,
         };
 
-        if (contentType === 'fields') {
+        if (contentType === "fields") {
           parsedRelatedContent.contentTypeId = form._id;
         }
 
@@ -323,3 +323,5 @@ export const formUseTemplate = async ({
 
   return `/forms/${type}s`;
 };
+
+// workflow Action 실행
