@@ -12,6 +12,8 @@ import { IItem, IItemParams, IOptions } from "../../types";
 import React, { useEffect, useState } from "react";
 import { __ } from "coreui/utils";
 import { extractAttachment } from "@erxes/ui/src/utils";
+import styled from "styled-components";
+import { useIsMobile } from "../../utils/mobile";
 
 import Actions from "./Actions";
 import ActivityInputs from "@erxes/ui-log/src/activityLogs/components/ActivityInputs";
@@ -27,12 +29,127 @@ import Icon from "@erxes/ui/src/components/Icon";
 import Labels from "../label/Labels";
 import Uploader from "@erxes/ui/src/components/Uploader";
 import { isEnabled } from "@erxes/ui/src/utils/core";
-import xss from "xss";
+
+// 모바일용 스타일드 컴포넌트들
+const MobileContent = styled(Content)<{ isMobile: boolean }>`
+  ${props => props.isMobile && `
+    @media (max-width: 768px) {
+      width: 160%;
+      max-width: 160%;
+      margin: 0;
+      box-sizing: border-box;
+    }
+  `}
+`;
+
+const MobileCommentContainer = styled.div<{ isMobile: boolean }>`
+  margin-bottom: 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  
+  ${props => props.isMobile && `
+    margin-bottom: 20px;
+    gap: 12px;
+    padding: 8px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+  `}
+`;
+
+const MobileCommentBubble = styled.div<{ isTeam: boolean; isMobile: boolean }>`
+  position: relative;
+  background-color: ${props => props.isTeam ? '#f0ecf9' : '#ffffff'};
+  padding: 10px 15px;
+  border-radius: 18px;
+  max-width: ${props => props.isTeam ? 'none' : 'none'};
+  min-width: ${props => props.isTeam ? '200px' : '200px'};
+  width: ${props => props.isTeam ? 'auto' : 'auto'};
+  word-wrap: break-word;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  border: ${props => props.isTeam ? '1px solid #f0ecf9' : '1px solid #e1e5e9'};
+  font-size: 12px;
+  line-height: 1.4;
+  
+  ${props => props.isMobile && `
+    padding: 16px 20px;
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+    font-size: 15px;
+    line-height: 1.6;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    border-radius: 12px;
+    box-sizing: border-box;
+  `}
+`;
+
+const MobileUserName = styled.div<{ isMobile: boolean }>`
+  min-width: 80px;
+  text-align: right;
+  font-weight: bold;
+  font-size: 12px;
+  color: #333;
+  padding-top: 5px;
+  
+  ${props => props.isMobile && `
+    min-width: 0;
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    padding: 6px 8px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+  `}
+`;
+
+const MobileCommentList = styled(Content)<{ isMobile: boolean }>`
+  padding: 12px 12px;
+  
+  ${props => props.isMobile && `
+    padding: 0;
+    min-height: 400px;
+    max-height: 500px;
+    background-color: #fafafa;
+    border-radius: 8px;
+    border: 1px solid #e1e5e9;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 160%;
+    max-width: 160%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  `}
+`;
+
+const MobileFormControl = styled(FormControl)`
+  @media (max-width: 768px) {
+    min-height: 100px !important;
+    font-size: 15px !important;
+    padding: 16px !important;
+    border-radius: 8px !important;
+    border: 2px solid #e1e5e9 !important;
+    resize: vertical !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+`;
 
 type DescProps = {
   item: IItem;
   saveItem: (doc: { [key: string]: any }, callback?: (item) => void) => void;
   contentType: string;
+  isMobile: boolean;
 };
 
 // WidgetComments 컴포넌트 수정
@@ -52,6 +169,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
+  const isMobile = useIsMobile();
 
   const handleChange = (e: React.FormEvent<HTMLElement>) => {
     const target = e.target as HTMLTextAreaElement;
@@ -103,14 +221,6 @@ const WidgetComments = (props: WidgetCommentsProps) => {
     }
   };
 
-  // 댓글 작성자와 현재 사용자가 같은지 확인
-  const canDeleteComment = (comment: any) => {
-
-    
-    if (!currentUser || !comment.createdUser) return false;
-    return comment.userType === 'team' && 
-           (currentUser._id === comment.createdUser._id || currentUser.isOwner || currentUser.isAdmin);
-  };
 
   // 댓글 수정 권한 확인
   const canEditComment = (comment: any) => {
@@ -198,50 +308,24 @@ const WidgetComments = (props: WidgetCommentsProps) => {
           {__("No widget comments yet")}
         </Content>
       ) : (
-        <Content style={{ padding: '12px 12px' }}>
+        <MobileCommentList isMobile={isMobile}>
           {widgetComments.map((comment) => {
             // 담당자(팀)인지 고객인지 구분
             const isTeam = comment.userType === 'team';
             
-
-            
-                         return (
-               <div key={comment._id} style={{ 
-                 marginBottom: '15px', 
-                 display: 'flex', 
-                 alignItems: 'flex-start',
-                 gap: '10px',
-                 marginLeft: isTeam ? '25px' : '-5px'
-               }}>
-                 {/* 사용자 이름 */}
-                 <div style={{ 
-                   minWidth: '80px',
-                   textAlign: 'right',
-                   fontWeight: 'bold',
-                   fontSize: '12px',
-                   color: '#333',
-                   paddingTop: '5px'
-                 }}>
-                   {comment.createdUser ? 
-                     (comment.createdUser.firstName && comment.createdUser.lastName ? 
-                       `${comment.createdUser.firstName} ${comment.createdUser.lastName}` : 
-                       (comment.createdUser.firstName || comment.createdUser.lastName || ' ')
-                     ) : ' '}
-                 </div>
-                 
-                                    {/* 말풍선 형태의 댓글 내용 */}
-                   <div style={{
-                     position: 'relative',
-                     backgroundColor: isTeam ? '#f0ecf9' : '#ffffff', // 담당자는 노란색, 고객은 흰색
-                     padding: '10px 15px',
-                     borderRadius: '18px',
-                     maxWidth: isTeam ? 'none' : 'none', // 담당자는 제한 없음, 고객도 제한 없음
-                     minWidth: isTeam ? '200px' : '200px', // 담당자는 더 넓게, 고객은 기본
-                     width: isTeam ? 'auto' : 'auto', // 담당자는 고정 너비, 고객은 자동
-                     wordWrap: 'break-word',
-                     boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                     border: isTeam ? '1px solid #f0ecf9' : '1px solid #e1e5e9'
-                   }}>
+            return (
+              <MobileCommentContainer key={comment._id} isMobile={isMobile} style={{ marginLeft: isMobile ? '0px' : (isTeam ? '25px' : '-5px') }}>
+                {/* 사용자 이름 */}
+                <MobileUserName isMobile={isMobile}>
+                  {comment.createdUser ? 
+                    (comment.createdUser.firstName && comment.createdUser.lastName ? 
+                      `${comment.createdUser.firstName} ${comment.createdUser.lastName}` : 
+                      (comment.createdUser.firstName || comment.createdUser.lastName || ' ')
+                    ) : ' '}
+                </MobileUserName>
+                
+                {/* 말풍선 형태의 댓글 내용 */}
+                <MobileCommentBubble isTeam={isTeam} isMobile={isMobile}>
                      {/* 수정 모드일 때와 일반 모드일 때 구분 */}
                      {editingCommentId === comment._id ? (
                        /* 수정 모드 */
@@ -322,17 +406,17 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                          </div>
                        </div>
                      )}
-                   </div>
-                 
-                 {/* 수정/삭제 버튼 - 말풍선 외부 오른쪽 하단에 배치 */}
-                 {isTeam && (
-                   <div style={{
-                     display: 'flex',
-                     justifyContent: 'flex-end',
-                     gap: '5px',
-                     marginTop: '8px',
-                     marginLeft: '10px'
-                   }}>
+                </MobileCommentBubble>
+                
+                {/* 수정/삭제 버튼 - 말풍선 외부 오른쪽 하단에 배치 */}
+                {isTeam && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: '5px',
+                    marginTop: '8px',
+                    marginLeft: '10px'
+                  }}>
                      {/* 수정 버튼 */}
                      {(() => {
                        const canEdit = canEditComment(comment);
@@ -381,24 +465,31 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                      >
                        
                      </Button>
-                   </div>
-                 )}
-               </div>
-             );
+                  </div>
+                )}
+              </MobileCommentContainer>
+            );
           })}
-        </Content>
+        </MobileCommentList>
       )}
 
       {/* 댓글 입력 폼 */}
-      <div style={{ marginTop: '15px' }}>
-        <FormControl
+      <div style={{ 
+        marginTop: isMobile ? '20px' : '15px',
+        width: isMobile ? '160%' : '100%',
+        maxWidth: isMobile ? '160%' : '100%',
+        marginLeft: isMobile ? '0' : '0',
+        marginRight: isMobile ? '0' : '0',
+        boxSizing: 'border-box'
+      }}>
+        <MobileFormControl
           componentclass="textarea"
           value={content}
           onChange={handleChange}
           onKeyPress={handleKeyPress}
           placeholder={__("Write a comment...")}
         />
-        <div style={{ marginTop: '10px' }}>
+        <div style={{ marginTop: isMobile ? '12px' : '10px' }}>
           {content.length > 0 && (
             <div style={{ textAlign: 'right' }}>
               <Button
@@ -407,6 +498,11 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                 icon="message"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
+                style={isMobile ? {
+                  padding: '8px 16px',
+                  fontSize: '14px',
+                  minHeight: '36px'
+                } : {}}
               >
                 {isSubmitting ? __("Saving...") : __("Save")}
               </Button>
@@ -419,7 +515,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
 };
 
 const Description = (props: DescProps) => {
-  const { item, saveItem, contentType } = props;
+  const { item, saveItem, contentType, isMobile } = props;
   const [edit, setEdit] = useState(false);
   const [isSubmitted, setSubmit] = useState(false);
   const [description, setDescription] = useState(item.description);
@@ -484,7 +580,8 @@ const Description = (props: DescProps) => {
         </TitleRow>
 
         {!edit ? (
-          <Content
+          <MobileContent
+            isMobile={isMobile}
             onClick={toggleEdit}
             dangerouslySetInnerHTML={{
               __html: item.description
@@ -559,7 +656,15 @@ const Left = (props: Props) => {
     onAddComment,
   } = props;
 
-
+  const isMobile = useIsMobile();
+  
+  // 디버깅용 로그
+  console.log('Left component - isMobile:', isMobile);
+  console.log('Left component - window.innerWidth:', typeof window !== 'undefined' ? window.innerWidth : 'undefined');
+  
+  // 직접 체크
+  const isMobileDirect = typeof window !== 'undefined' && window.innerWidth <= 768;
+  console.log('Left component - isMobileDirect:', isMobileDirect);
 
   const onChangeAttachment = (files: IAttachment[]) =>
     saveItem({ attachments: files });
@@ -605,7 +710,7 @@ const Left = (props: Props) => {
         <Uploader defaultFileList={attachments} onChange={onChangeAttachment} />
       </FormGroup>
 
-      <Description item={item} saveItem={saveItem} contentType={options.type} />
+      <Description item={item} saveItem={saveItem} contentType={options.type} isMobile={isMobile} />
 
       <WidgetComments 
         widgetComments={widgetComments} 
@@ -623,13 +728,15 @@ const Left = (props: Props) => {
         addItem={addItem}
       />
 
-      <ActivityInputs
-        contentTypeId={item._id}
-        contentType={`tickets:${options.type}`}
-        showEmail={false}
-      />
+      {!isMobile && (
+        <ActivityInputs
+          contentTypeId={item._id}
+          contentType={`tickets:${options.type}`}
+          showEmail={false}
+        />
+      )}
 
-      {
+      {!isMobile && (
         <ActivityLogs
           target={item.name}
           contentId={item._id}
@@ -640,7 +747,7 @@ const Left = (props: Props) => {
               : [{ name: "tickets:task", label: "Ticket" }]
           }
         />
-      }
+      )}
     </LeftContainer>
   );
 };

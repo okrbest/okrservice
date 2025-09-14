@@ -2,19 +2,28 @@ import { IEditFormContent, IOptions } from "../../boards/types";
 import { ITicket, ITicketParams } from "../types";
 import React, { useEffect, useState } from "react";
 import Select, { components } from "react-select";
-import { __ } from "coreui/utils";
+import { __ } from "@erxes/ui/src/utils";
 import { loadDynamicComponent } from "@erxes/ui/src/utils";
 import { useQuery, useMutation } from "@apollo/client";
 import { gql } from "@apollo/client";
+import { useIsMobile } from "../../boards/utils/mobile";
+import { MobileLayoutComponent } from "../../boards/components/editForm/MobileLayout";
+import MobileSidebar from "../../boards/components/editForm/MobileSidebar";
 
 import { Capitalize } from "@erxes/ui-settings/src/permissions/styles";
 import ChildrenSection from "../../boards/containers/editForm/ChildrenSection";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import EditForm from "../../boards/components/editForm/EditForm";
-import { Flex } from "@erxes/ui/src/styles/main";
+import styled from "styled-components";
 import FormGroup from "@erxes/ui/src/components/form/Group";
-import { INTEGRATION_KINDS } from "@erxes/ui/src/constants/integrations";
 import { ISelectedOption } from "@erxes/ui/src/types";
+
+// PC용 Flex 레이아웃 컴포넌트
+const Flex = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+`;
 import { IUser } from "@erxes/ui/src/auth/types";
 import Left from "../../boards/components/editForm/Left";
 import PortableDeals from "@erxes/ui-sales/src/deals/components/PortableDeals";
@@ -459,8 +468,61 @@ export default function TicketEditForm(props: Props) {
       currentUser,
     } = props;
 
+    const isMobile = useIsMobile();
     const renderSidebar = () => renderSidebarFields(saveItem);
 
+    // 모바일일 때만 새로운 레이아웃 사용
+    if (isMobile) {
+      const leftProps = {
+        options,
+        saveItem,
+        copyItem: copy,
+        removeItem: remove,
+        onUpdate,
+        item,
+        addItem,
+        sendToBoard,
+        onChangeStage,
+        onChangeRefresh: () => setRefresh(!refresh),
+        widgetComments: isTicketType ? widgetComments : [],
+        onAddComment: isTicketType ? handleAddComment : undefined,
+        onDeleteComment: isTicketType ? handleDeleteComment : undefined,
+        onEditComment: isTicketType ? handleEditComment : undefined,
+        currentUser,
+      };
+
+      const sidebarProps = {
+        options,
+        item,
+        sidebar: renderSidebar,
+        saveItem,
+        renderItems,
+        updateTimeTrack,
+        childrenSection: renderChildrenSection,
+        currentUser,
+      };
+
+      return (
+        <>
+          <Top
+            options={options}
+            stageId={state.stageId}
+            item={item}
+            saveItem={saveItem}
+            onChangeStage={onChangeStage}
+          />
+
+          <MobileLayoutComponent
+            isMobile={true}
+            sidebarContent={<MobileSidebar {...sidebarProps} />}
+          >
+            <Left {...leftProps} />
+          </MobileLayoutComponent>
+        </>
+      );
+    }
+
+    // PC일 때는 기존 레이아웃 그대로 사용
     return (
       <>
         <Top
