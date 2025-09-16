@@ -2,6 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import { colors, dimensions } from '@erxes/ui/src/styles';
 import { __ } from '@erxes/ui/src/utils';
+import StartDate from './StartDate';
+import CloseDate from './CloseDate';
 
 // 모바일용 레이아웃 컨테이너
 const MobileLayout = styled.div`
@@ -38,15 +40,6 @@ const MobileSidebarContainer = styled.div`
   }
 `;
 
-// 모바일용 사이드바 제목
-const MobileSidebarTitle = styled.h3`
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: ${colors.colorCoreDarkGray};
-  border-bottom: 2px solid ${colors.borderPrimary};
-  padding-bottom: 8px;
-`;
 
 // 모바일용 폼 그룹
 const MobileFormGroup = styled.div`
@@ -106,12 +99,16 @@ type Props = {
   children: React.ReactNode;
   sidebarContent?: React.ReactNode;
   isMobile?: boolean;
+  item?: any;
+  onCloseDateFieldsChange?: (key: string, value: any) => void;
 };
 
 const MobileLayoutComponent: React.FC<Props> = ({ 
   children, 
   sidebarContent, 
-  isMobile = false 
+  isMobile = false,
+  item,
+  onCloseDateFieldsChange
 }) => {
   // 디버깅을 위한 로그
   console.log('MobileLayoutComponent - isMobile:', isMobile);
@@ -121,15 +118,36 @@ const MobileLayoutComponent: React.FC<Props> = ({
     console.log('Rendering mobile layout');
     return (
       <MobileLayout>
+        {/* 시작일/마감일 섹션 - 스테이지 단계 바로 아래에 위치 */}
+        {item && onCloseDateFieldsChange && (
+          <>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', padding: '16px 0' }}>
+              <StartDate
+                onChangeField={onCloseDateFieldsChange}
+                startDate={item.startDate}
+                reminderMinute={item.reminderMinute}
+              />
+              <CloseDate
+                onChangeField={onCloseDateFieldsChange}
+                closeDate={item.closeDate}
+                startDate={item.startDate}
+                isCheckDate={item.pipeline?.isCheckDate}
+                createdDate={item.createdAt}
+                reminderMinute={item.reminderMinute}
+                isComplete={item.isComplete}
+                stage={item.stage}
+              />
+            </div>
+            <MobileDivider />
+          </>
+        )}
+        
         {children}
+        
         {sidebarContent && (
           <>
             <MobileDivider />
             <MobileSidebarContainer>
-              <MobileSidebarTitle>
-                <i className="icon-settings" />
-                {__('Additional Information')}
-              </MobileSidebarTitle>
               {sidebarContent}
             </MobileSidebarContainer>
           </>
@@ -150,7 +168,6 @@ export {
   MobileLayout,
   DesktopLayout,
   MobileSidebarContainer,
-  MobileSidebarTitle,
   MobileFormGroup,
   MobileLabel,
   MobileDivider,

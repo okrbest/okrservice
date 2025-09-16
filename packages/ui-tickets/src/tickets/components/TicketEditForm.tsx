@@ -452,6 +452,10 @@ export default function TicketEditForm(props: Props) {
     return <ChildrenSection {...updatedProps} />;
   };
 
+  const onCloseDateFieldsChange = (key: string, value: any) => {
+    saveItem({ [key]: value });
+  };
+
   function renderFormContent({
     state,
     copy,
@@ -515,6 +519,8 @@ export default function TicketEditForm(props: Props) {
           <MobileLayoutComponent
             isMobile={true}
             sidebarContent={<MobileSidebar {...sidebarProps} />}
+            item={item}
+            onCloseDateFieldsChange={onCloseDateFieldsChange}
           >
             <Left {...leftProps} />
           </MobileLayoutComponent>

@@ -11,7 +11,6 @@ import ControlLabel from '@erxes/ui/src/components/form/Label';
 import FormGroup from '@erxes/ui/src/components/form/Group';
 import { 
   MobileCard, 
-  MobileSectionTitle, 
   MobileFormGroup, 
   MobileLabel 
 } from './MobileLayout';
@@ -63,11 +62,6 @@ class MobileSidebar extends React.Component<Props> {
       <MobileSidebarContainer>
         {/* 담당자 섹션 */}
         <MobileCard>
-          <MobileSectionTitle>
-            <i className="icon-user" />
-            {__('Assignment')}
-          </MobileSectionTitle>
-          
           <MobileFormGroup>
             <MobileControlLabel>{__('Assigned to')}</MobileControlLabel>
             <SelectTeamMembers
@@ -86,11 +80,6 @@ class MobileSidebar extends React.Component<Props> {
 
         {/* 조직 구조 섹션 */}
         <MobileCard>
-          <MobileSectionTitle>
-            <i className="icon-sitemap" />
-            {__('Organization')}
-          </MobileSectionTitle>
-          
           <MobileFormGroup>
             <MobileControlLabel>{__('Branches')}</MobileControlLabel>
             <SelectNewBranches
@@ -119,22 +108,11 @@ class MobileSidebar extends React.Component<Props> {
         {/* 추가 사이드바 내용 */}
         {sidebar && (
           <MobileCard>
-            <MobileSectionTitle>
-              <i className="icon-cog" />
-              {__('Additional Settings')}
-            </MobileSectionTitle>
             {sidebar(saveItem)}
           </MobileCard>
         )}
 
         {/* 기타 섹션들 */}
-        <MobileCard>
-          <MobileSectionTitle>
-            <i className="icon-link" />
-            {__('Related Items')}
-          </MobileSectionTitle>
-          {childrenSection()}
-        </MobileCard>
       </MobileSidebarContainer>
     );
   }

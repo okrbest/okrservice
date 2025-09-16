@@ -38,6 +38,8 @@ const MobileContent = styled(Content)<{ isMobile: boolean }>`
       max-width: 160%;
       margin: 0;
       box-sizing: border-box;
+      font-size: 15px;
+      line-height: 1.6;
     }
   `}
 `;
@@ -674,19 +676,21 @@ const Left = (props: Props) => {
 
   return (
     <LeftContainer>
-      <Actions
-        item={item}
-        options={options}
-        copyItem={copyItem}
-        removeItem={removeItem}
-        saveItem={saveItem}
-        onUpdate={onUpdate}
-        sendToBoard={sendToBoard}
-        onChangeStage={onChangeStage}
-        onChangeRefresh={onChangeRefresh}
-      />
+      {!isMobile && (
+        <Actions
+          item={item}
+          options={options}
+          copyItem={copyItem}
+          removeItem={removeItem}
+          saveItem={saveItem}
+          onUpdate={onUpdate}
+          sendToBoard={sendToBoard}
+          onChangeStage={onChangeStage}
+          onChangeRefresh={onChangeRefresh}
+        />
+      )}
 
-      {item.labels.length > 0 && (
+      {!isMobile && item.labels.length > 0 && (
         <FormGroup>
           <TitleRow>
             <ControlLabel>
@@ -721,12 +725,14 @@ const Left = (props: Props) => {
         item={item}
       />
 
-      <Checklists
-        contentType={options.type}
-        contentTypeId={item._id}
-        stageId={item.stageId}
-        addItem={addItem}
-      />
+      {!isMobile && (
+        <Checklists
+          contentType={options.type}
+          contentTypeId={item._id}
+          stageId={item.stageId}
+          addItem={addItem}
+        />
+      )}
 
       {!isMobile && (
         <ActivityInputs

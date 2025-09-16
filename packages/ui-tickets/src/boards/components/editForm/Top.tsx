@@ -13,6 +13,7 @@ import FormControl from "@erxes/ui/src/components/form/Control";
 import Icon from "@erxes/ui/src/components/Icon";
 import Move from "../../containers/editForm/Move";
 import StartDate from "./StartDate";
+import { useIsMobile } from "../../utils/mobile";
 
 type Props = {
   item: IItem;
@@ -25,6 +26,7 @@ type Props = {
 
 function Top(props: Props) {
   const { item } = props;
+  const isMobile = useIsMobile();
 
   const [name, setName] = useState(item.name);
 
@@ -100,7 +102,7 @@ function Top(props: Props) {
   const renderNumber = () => {
     const { number } = item;
 
-    if (!number) {
+    if (!number || isMobile) {
       return null;
     }
 
@@ -134,21 +136,25 @@ function Top(props: Props) {
 
       <HeaderRow>
         <HeaderContent>{renderMove()}</HeaderContent>
-        <StartDate
-          onChangeField={onCloseDateFieldsChange}
-          startDate={item.startDate}
-          reminderMinute={item.reminderMinute}
-        />
-        <CloseDate
-          onChangeField={onCloseDateFieldsChange}
-          closeDate={item.closeDate}
-          startDate={item.startDate}
-          isCheckDate={item.pipeline.isCheckDate}
-          createdDate={item.createdAt}
-          reminderMinute={item.reminderMinute}
-          isComplete={item.isComplete}
-          stage={item.stage}
-        />
+        {!isMobile && (
+          <>
+            <StartDate
+              onChangeField={onCloseDateFieldsChange}
+              startDate={item.startDate}
+              reminderMinute={item.reminderMinute}
+            />
+            <CloseDate
+              onChangeField={onCloseDateFieldsChange}
+              closeDate={item.closeDate}
+              startDate={item.startDate}
+              isCheckDate={item.pipeline.isCheckDate}
+              createdDate={item.createdAt}
+              reminderMinute={item.reminderMinute}
+              isComplete={item.isComplete}
+              stage={item.stage}
+            />
+          </>
+        )}
       </HeaderRow>
     </React.Fragment>
   );

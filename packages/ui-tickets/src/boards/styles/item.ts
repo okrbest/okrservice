@@ -345,7 +345,7 @@ export const RightButton = styled(Button)`
 `;
 
 export const MoveContainer = styled(Flex)`
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   align-items: center;
   position: relative;
   will-change: contents;
