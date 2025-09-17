@@ -44,10 +44,10 @@ const Featured: React.FC = () => {
   const renderHardcodedArticles = () => {
     const hardcodedArticles = [
       {
-        title: "포괄임금제, 법에는 없지만 현실에선 왜 여전히 쓰일까?",
+        title: "총무관리 10편: 🎉하나의 신청서로 더 간편하게! 경조신청서(통합)",
         summary:
-          "포괄임금제는 말 그대로 기본급 외의 수당(연장근로, 야간, 휴일수당 등)을 미리 포함해 지급하는 임금 방식이에요.",
-        link: "https://5240.cloud/포괄임금제-의미-현실-폐지-대안/",
+          "하나의 신청서만 작성하면 휴가와 경조금을 한 번에 신청할 수 있는 새로운 「경조신청서」 기능이 오픈되었습니다.",
+        link: "https://blog.naver.com/5240hr/224009825250",
       },
     ];
 
