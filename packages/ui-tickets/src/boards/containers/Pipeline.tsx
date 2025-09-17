@@ -9,7 +9,7 @@ import {
   StagesQueryResponse
 } from "../types";
 import { PipelineConsumer, PipelineProvider } from "./PipelineContext";
-import React, { Component } from "react";
+import React, { Component, useState, useEffect } from "react";
 
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import Spinner from "@erxes/ui/src/components/Spinner";
@@ -21,9 +21,15 @@ import styled from "styled-components";
 import { withProps } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const Container = styled.div`
+const Container = styled.div<{ $isMobile: boolean }>`
   height: 100%;
-  display: inline-flex;
+  display: ${props => props.$isMobile ? 'flex' : 'inline-flex'};
+  flex-direction: ${props => props.$isMobile ? 'column' : 'row'};
+  overflow-y: ${props => props.$isMobile ? 'auto' : 'hidden'};
+  overflow-x: ${props => props.$isMobile ? 'hidden' : 'auto'};
+  width: ${props => props.$isMobile ? 'calc(100vw - 50px)' : 'auto'};
+  max-width: ${props => props.$isMobile ? 'calc(100vw - 50px)' : 'none'};
+  box-sizing: border-box;
 `;
 
 type Props = {
@@ -37,6 +43,24 @@ type Props = {
 };
 
 class WithStages extends Component<WithStagesQueryProps> {
+  state = {
+    isMobile: false
+  };
+
+  componentDidMount() {
+    this.checkMobile();
+    window.addEventListener('resize', this.checkMobile);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.checkMobile);
+  }
+
+  checkMobile = () => {
+    const isMobile = window.innerWidth <= 768;
+    this.setState({ isMobile });
+  };
+
   componentWillReceiveProps(nextProps: Props) {
     const { stagesQuery, queryParams } = this.props;
     const { pipelineId } = queryParams;
@@ -74,6 +98,7 @@ class WithStages extends Component<WithStagesQueryProps> {
       location
     } = this.props;
 
+    const { isMobile } = this.state;
     const stagesCount = this.countStages(stageMap);
 
     if (stagesCount === 0) {
@@ -114,11 +139,12 @@ class WithStages extends Component<WithStagesQueryProps> {
               <Droppable
                 droppableId="pipeline"
                 type="STAGE"
-                direction="horizontal"
+                direction={isMobile ? "vertical" : "horizontal"}
                 ignoreContainerClipping={true}
               >
                 {provided => (
                   <Container
+                    $isMobile={isMobile}
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                   >

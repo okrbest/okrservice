@@ -54,6 +54,7 @@ type Props = {
 
 type State = {
   showDetail: boolean;
+  isMobile: boolean;
 };
 
 class MainActionBar extends React.Component<Props, State> {
@@ -69,8 +70,23 @@ class MainActionBar extends React.Component<Props, State> {
     this.state = {
       showDetail:
         localStorage.getItem("showSalesDetail") === "true" ? true : false,
+      isMobile: false,
     };
   }
+
+  componentDidMount() {
+    this.checkMobile();
+    window.addEventListener('resize', this.checkMobile);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.checkMobile);
+  }
+
+  checkMobile = () => {
+    const isMobile = window.innerWidth <= 768;
+    this.setState({ isMobile });
+  };
 
   renderBoards() {
     const { currentBoard, boards } = this.props;
@@ -402,6 +418,8 @@ class MainActionBar extends React.Component<Props, State> {
       localStorage.setItem("showSalesDetail", `false`);
     }
 
+    const { isMobile } = this.state;
+    
     const actionBarLeft = (
       <BarItems>
         <HeaderLabel>
@@ -447,49 +465,53 @@ class MainActionBar extends React.Component<Props, State> {
             </Transition>
           </div>
         </Listbox>
-        <HeaderLink>
-          <Tip text={__("Manage Board & Pipeline")} placement="bottom">
-            <Link
-              to={`/settings/boards/${type}?boardId=${
-                currentBoard ? currentBoard._id : ""
-              }`}
-            >
-              <Icon icon="cog" />
-            </Link>
-          </Tip>
-        </HeaderLink>
+        {!isMobile && (
+          <HeaderLink>
+            <Tip text={__("Manage Board & Pipeline")} placement="bottom">
+              <Link
+                to={`/settings/boards/${type}?boardId=${
+                  currentBoard ? currentBoard._id : ""
+                }`}
+              >
+                <Icon icon="cog" />
+              </Link>
+            </Tip>
+          </HeaderLink>
+        )}
 
-        {currentPipeline ? (
+        {!isMobile && currentPipeline && (
           <PipelineWatch pipeline={currentPipeline} type={type} />
-        ) : null}
+        )}
 
-        {this.renderVisibility()}
+        {!isMobile && this.renderVisibility()}
       </BarItems>
     );
-
+    
     const actionBarRight = (
       <BarItems>
         {middleContent && middleContent()}
 
-        {this.renderGroupBy()}
+        {!isMobile && this.renderGroupBy()}
 
-        {this.renderChartView()}
+        {!isMobile && this.renderChartView()}
 
-        {this.renderTimeView()}
-        {queryParams && <Filter queryParams={queryParams} />}
-        <TemporarySegment
-          contentType={`tickets:${type}`}
-          serviceConfig={{
-            boardId: currentBoard?._id,
-            pipelineId: currentPipeline?._id,
-          }}
-          hideSaveButton
-        />
-        {this.renderViewChooser()}
+        {!isMobile && this.renderTimeView()}
+        {!isMobile && queryParams && <Filter queryParams={queryParams} />}
+        {!isMobile && (
+          <TemporarySegment
+            contentType={`tickets:${type}`}
+            serviceConfig={{
+              boardId: currentBoard?._id,
+              pipelineId: currentPipeline?._id,
+            }}
+            hideSaveButton
+          />
+        )}
+        {!isMobile && this.renderViewChooser()}
 
         {rightContent && rightContent()}
 
-        {this.renderFilter()}
+        {!isMobile && this.renderFilter()}
       </BarItems>
     );
 

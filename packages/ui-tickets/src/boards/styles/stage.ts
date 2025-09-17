@@ -15,6 +15,13 @@ const Container = styled.div`
   margin: 0 5px;
   width: ${stageWidth}px;
   transition: background-color 0.3s ease;
+  
+  @media (max-width: 768px) {
+    width: calc(100vw - 50px);
+    min-width: unset;
+    max-width: calc(100vw - 50px);
+    box-sizing: border-box;
+  }
 `;
 
 const StageRoot = styledTS<{ $isDragging: boolean }>(styled.div)`
@@ -29,6 +36,14 @@ const StageRoot = styledTS<{ $isDragging: boolean }>(styled.div)`
       ? 'rgba(0, 0, 0, 0.2) 0px 5px 20px 0px'
       : 'rgba(0, 0, 0, 0.15) 0px 1px 5px 0px'};
   `};
+  
+  @media (max-width: 768px) {
+    margin-bottom: 10px;
+    min-height: 200px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
 `;
 
 const Content = styledTS<{ type?: string }>(styled.div)`
@@ -92,6 +107,15 @@ const Body = styled.div`
   margin: 0 4px;
   &:hover {
     overflow-y: auto;
+  }
+  
+  @media (max-width: 768px) {
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 0 8px;
+    width: calc(100% - 16px);
+    max-width: calc(100% - 16px);
+    box-sizing: border-box;
   }
 `;
 

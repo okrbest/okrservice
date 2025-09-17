@@ -32,6 +32,16 @@ export const ScrolledContent = styled.div`
   flex: 1;
   will-change: contents;
   overflow: auto;
+  
+  @media (max-width: 768px) {
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin: 0;
+    padding: 5px;
+    width: calc(100vw - 50px);
+    max-width: calc(100vw - 50px);
+    box-sizing: border-box;
+  }
 `;
 
 export const RootBack = styled.div`
