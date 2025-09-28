@@ -46,7 +46,6 @@ export const setupMessageConsumers = async () => {
   });
 
   consumeRPCQueue("tickets:editItem", async ({ subdomain, data }) => {
-    console.log('🔔 tickets:editItem called with:', { subdomain, data });
     const models = await generateModels(subdomain);
 
     const objModels = {
@@ -66,11 +65,10 @@ export const setupMessageConsumers = async () => {
     const oldItem = await collection.findOne({ _id: itemId });
     const typeUpperCase = type.charAt(0).toUpperCase() + type.slice(1);
 
-    console.log('🔔 Processing editItem:', { type, itemId, oldDescription: oldItem?.description, newDescription: doc.description });
-
     // 티켓의 description이 수정된 경우 widgetAlarm을 false로 설정
     if (type === "ticket" && doc.description && doc.description !== oldItem.description) {
-      console.log('🔔 Description modified for ticket:', itemId, 'setting widgetAlarm to false');
+      // widgetAlarm이 true에서 false로 바뀌는지 확인
+      const wasWidgetAlarmTrue = (oldItem as any).widgetAlarm === true;
       
       // description 수정 후 widgetAlarm을 false로 설정
       const updatedItem = await itemsEdit(
@@ -85,13 +83,27 @@ export const setupMessageConsumers = async () => {
         collection[`update${typeUpperCase}`]
       );
       
-      // widgetAlarm을 false로 업데이트
-      await models.Tickets.updateOne(
-        { _id: itemId },
-        { $set: { widgetAlarm: false } }
-      );
-      
-      console.log('🔔 Widget alarm set to false for ticket:', itemId, 'due to description modification');
+      // widgetAlarm이 true인 경우에만 false로 업데이트하고 automation trigger 호출
+      if (wasWidgetAlarmTrue) {
+        await models.Tickets.updateOne(
+          { _id: itemId },
+          { $set: { widgetAlarm: false } }
+        );
+        
+        try {
+          await sendMessage({
+            subdomain,
+            serviceName: "automations",
+            action: "trigger",
+            data: {
+              type: "tickets:ticket",
+              targets: [updatedItem]
+            }
+          });
+        } catch (error) {
+          console.error('Failed to send automation trigger:', error);
+        }
+      }
       
       return {
         status: "success",
@@ -139,19 +151,43 @@ export const setupMessageConsumers = async () => {
       };
     }
 
-    console.log('🔔 Processing ticket edit:', { _id, oldDescription: oldTicket.description, newDescription: doc.description });
-
     // description이 수정된 경우 widgetAlarm을 false로 설정
     if (doc.description && doc.description !== oldTicket.description) {
-      console.log('🔔 Description modified for ticket:', _id, 'setting widgetAlarm to false');
+      // widgetAlarm이 true에서 false로 바뀌는지 확인
+      const wasWidgetAlarmTrue = (oldTicket as any).widgetAlarm === true;
       
-      // description 수정 후 widgetAlarm을 false로 설정
-      const updatedTicket = await models.Tickets.updateOne(
-        { _id },
-        { $set: { ...doc, widgetAlarm: false } }
-      );
+      let updatedTicket;
       
-      console.log('🔔 Widget alarm set to false for ticket:', _id, 'due to description modification');
+      // widgetAlarm이 true인 경우에만 false로 업데이트하고 automation trigger 호출
+      if (wasWidgetAlarmTrue) {
+        updatedTicket = await models.Tickets.updateOne(
+          { _id },
+          { $set: { ...doc, widgetAlarm: false } }
+        );
+        
+        try {
+          const ticket = await models.Tickets.findOne({ _id });
+          if (ticket) {
+            await sendMessage({
+              subdomain,
+              serviceName: "automations",
+              action: "trigger",
+              data: {
+                type: "tickets:ticket",
+                targets: [ticket]
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Failed to send automation trigger:', error);
+        }
+      } else {
+        // widgetAlarm이 이미 false인 경우 description만 업데이트
+        updatedTicket = await models.Tickets.updateOne(
+          { _id },
+          { $set: doc }
+        );
+      }
       
       return {
         status: "success",
@@ -520,21 +556,37 @@ export const setupMessageConsumers = async () => {
       // 티켓 담당자들에게 알림 보내기 (고객이 댓글을 남긴 경우에만)
       const assignedUserIds = ticket.assignedUserIds || [];
       
-                   // userType이 "client"가 아닌 경우 (담당자 등이 댓글을 단 경우)
-             // 해당 티켓의 widgetAlarm을 false로 설정하여 고객에게 알림 표시
-             if (userType !== "client") {
-               console.log('🔔 Setting widgetAlarm to false for ticket:', typeId, 'userType:', userType);
-               await models.Tickets.updateOne(
-                 { _id: typeId },
-                 { $set: { widgetAlarm: false } }
-               );
-               
-               // 업데이트 확인
-               const updatedTicket = await models.Tickets.findOne({ _id: typeId });
-               console.log('🔔 Updated ticket widgetAlarm:', (updatedTicket as any).widgetAlarm);
-             } else {
-               console.log('🔔 userType is "client", not setting widgetAlarm');
-             }
+      // userType이 "client"가 아닌 경우 (담당자 등이 댓글을 단 경우)
+      // 해당 티켓의 widgetAlarm을 false로 설정하여 고객에게 알림 표시
+      if (userType !== "client") {
+        // widgetAlarm이 true에서 false로 바뀌는지 확인
+        const wasWidgetAlarmTrue = (ticket as any).widgetAlarm === true;
+        
+        await models.Tickets.updateOne(
+          { _id: typeId },
+          { $set: { widgetAlarm: false } }
+        );
+        
+        // widgetAlarm이 true에서 false로 바뀔 때만 automation trigger 호출
+        if (wasWidgetAlarmTrue) {
+          try {
+            const updatedTicket = await models.Tickets.findOne({ _id: typeId });
+            if (updatedTicket) {
+              await sendMessage({
+                subdomain,
+                serviceName: "automations",
+                action: "trigger",
+                data: {
+                  type: "tickets:ticket",
+                  targets: [updatedTicket]
+                }
+              });
+            }
+          } catch (error) {
+            console.error('Failed to send automation trigger for comment:', error);
+          }
+        }
+      }
       
       // userType이 "client"인 경우에만 알림 보내기 (담당자 댓글은 제외)
       if (assignedUserIds.length > 0 && userType === "client") {

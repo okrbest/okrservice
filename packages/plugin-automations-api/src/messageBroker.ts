@@ -57,7 +57,6 @@ export const setupMessageConsumers = async () => {
       targets,
       executionId
     );
-    console.log({ waitingExecution });
 
     if (waitingExecution) {
       await doWaitingResponseAction(models, subdomain, data, waitingExecution);
