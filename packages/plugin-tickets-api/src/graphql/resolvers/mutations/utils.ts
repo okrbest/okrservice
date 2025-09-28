@@ -329,19 +329,29 @@ export const itemsEdit = async (
     doc.description &&
     doc.description !== oldItem.description
   ) {
-    console.log(
-      "🔔 itemsEdit - Description modified for ticket:",
-      _id,
-      "setting widgetAlarm to false"
-    );
+    // widgetAlarm이 true에서 false로 바뀌는지 확인
+    const wasWidgetAlarmTrue = (oldItem as any).widgetAlarm === true;
 
-    await models.Tickets.updateOne({ _id }, { $set: { widgetAlarm: false } });
+    // widgetAlarm이 true인 경우에만 false로 업데이트하고 automation trigger 호출
+    if (wasWidgetAlarmTrue) {
+      await models.Tickets.updateOne({ _id }, { $set: { widgetAlarm: false } });
 
-    console.log(
-      "🔔 Widget alarm set to false for ticket:",
-      _id,
-      "due to description modification in itemsEdit"
-    );
+      // Automation trigger 호출
+      try {
+        const { sendMessage } = await import("@erxes/api-utils/src/core");
+        await sendMessage({
+          subdomain,
+          serviceName: "automations",
+          action: "trigger",
+          data: {
+            type: "tickets:ticket",
+            targets: [updatedItem]
+          }
+        });
+      } catch (error) {
+        console.error('Failed to send automation trigger from itemsEdit:', error);
+      }
+    }
   }
 
   // labels should be copied to newly moved pipeline

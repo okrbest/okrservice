@@ -113,15 +113,16 @@ export const putCreateLog = async (
 ) => {
   const isAutomationsAvailable = await isEnabled("automations");
 
-  if (isAutomationsAvailable) {
-    sendMessage("automations:trigger", {
-      subdomain,
-      data: {
-        type: `${params.type}`,
-        targets: [params.object]
-      }
-    });
-  }
+  // 🔥 Automation trigger는 수동으로 호출하므로 여기서는 비활성화
+  // if (isAutomationsAvailable) {
+  //   sendMessage("automations:trigger", {
+  //     subdomain,
+  //     data: {
+  //       type: `${params.type}`,
+  //       targets: [params.object]
+  //     }
+  //   });
+  // }
 
   const isWebhooksAvailable = await isEnabled("webhooks");
 
@@ -151,15 +152,16 @@ export const putUpdateLog = async (
 ) => {
   const isAutomationsAvailable = await isEnabled("automations");
 
-  if (isAutomationsAvailable) {
-    sendMessage("automations:trigger", {
-      subdomain,
-      data: {
-        type: `${params.type}`,
-        targets: [params.updatedDocument]
-      }
-    });
-  }
+  // 🔥 Automation trigger는 수동으로 호출하므로 여기서는 비활성화
+  // if (isAutomationsAvailable) {
+  //   sendMessage("automations:trigger", {
+  //     subdomain,
+  //     data: {
+  //       type: `${params.type}`,
+  //       targets: [params.updatedDocument]
+  //     }
+  //   });
+  // }
 
   const isWebhooksAvailable = await isEnabled("webhooks");
 
@@ -257,16 +259,17 @@ export const putActivityLog = async (
   const isAutomationsAvailable = await isEnabled('automations');
 
   try {
-    if (isAutomationsAvailable && data.target) {
-      sendMessage('automations:trigger', {
-        subdomain,
-        data: {
-          type: `${data.contentType}`,
-          targets: [data.target],
-          ...(data.automations || {}),
-        },
-      });
-    }
+    // 🔥 Automation trigger는 수동으로 호출하므로 여기서는 비활성화
+    // if (isAutomationsAvailable && data.target) {
+    //   sendMessage('automations:trigger', {
+    //     subdomain,
+    //     data: {
+    //       type: `${data.contentType}`,
+    //       targets: [data.target],
+    //       ...(data.automations || {}),
+    //     },
+    //   });
+    // }
 
     return sendMessage('putActivityLog', {
       data: params,
