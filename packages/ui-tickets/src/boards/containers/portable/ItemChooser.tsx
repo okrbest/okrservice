@@ -55,10 +55,54 @@ class ItemChooserContainer extends React.Component<
     const { data, itemsQuery, search, perPage } = this.props;
 
     const queryName = data.options.queriesName.itemsQuery;
-    const datas = itemsQuery[queryName] || [];
+    let datas = itemsQuery[queryName] || [];
+    
+    // isRelated가 true일 때 (연관 티켓 선택 시) 자기 자신 제외
+    if (data.isRelated && data.mainTypeId) {
+      datas = datas.filter(item => item._id !== data.mainTypeId);
+    }
 
     const renderName = item => {
+      // 기본 티켓 이름만 문자열로 반환 (Chooser의 __ 함수 호환)
       return item.name || 'Unknown';
+    };
+    
+    // 고객과 회사 정보를 포함한 커스텀 렌더링
+    const renderItemName = item => {
+      const customerNames = item.customers?.length > 0
+        ? item.customers
+            .map(c => {
+              if (c.firstName || c.lastName) {
+                return `${c.firstName || ''} ${c.lastName || ''}`.trim();
+              }
+              return c.primaryEmail || '';
+            })
+            .filter(Boolean)
+            .join(', ')
+        : '';
+      
+      const companyNames = item.companies?.length > 0
+        ? item.companies
+            .map(c => c.primaryName || c.names?.[0] || '')
+            .filter(Boolean)
+            .join(', ')
+        : '';
+      
+      return (
+        <div>
+          <div style={{ fontWeight: 500 }}>{item.name || 'Unknown'}</div>
+          {customerNames && (
+            <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>
+              👤 {customerNames}
+            </div>
+          )}
+          {companyNames && (
+            <div style={{ fontSize: '12px', color: '#888', marginTop: '2px' }}>
+              🏢 {companyNames}
+            </div>
+          )}
+        </div>
+      );
     };
 
     const getAssociatedItem = (newItem: IItem) => {
@@ -114,7 +158,7 @@ class ItemChooserContainer extends React.Component<
       clearState: () => search(''),
       perPage: perPage || 10,
       title: data.options.title,
-      renderName,
+      renderName: renderItemName,
       renderForm: formProps => (
         <AddForm
           {...formProps}

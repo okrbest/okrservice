@@ -1,6 +1,6 @@
 import { colors } from "@erxes/ui/src/styles";
 import React from "react";
-import { __ } from "coreui/utils";
+import { __ } from "@erxes/ui/src/utils";
 import Assignees from "../../boards/components/Assignees";
 import Details from "../../boards/components/Details";
 import DueDateLabel from "../../boards/components/DueDateLabel";
@@ -14,6 +14,8 @@ import { IOptions } from "../../boards/types";
 import { renderPriority } from "../../boards/utils";
 import { ITicket } from "../types";
 import ItemArchivedStatus from "../../boards/components/portable/ItemArchivedStatus";
+import { useNavigate, useLocation } from "react-router-dom";
+import * as routerUtils from "@erxes/ui/src/utils/router";
 
 type Props = {
   stageId?: string;
@@ -28,8 +30,13 @@ type Props = {
   onUpdate?: (item: ITicket) => void;
 };
 
-class TicketItem extends React.PureComponent<Props> {
-  getRequestTypeColor = (requestType: string) => {
+const TicketItem: React.FC<Props> = (props) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const { item, isFormVisible, stageId, portable, onClick } = props;
+  
+  const getRequestTypeColor = (requestType: string) => {
     const colorMap: { [key: string]: { bg: string; text: string } } = {
       'inquiry': { bg: '#fff3e0', text: '#f57c00' },
       'usage': { bg: '#fff3e0', text: '#f57c00' },
@@ -43,26 +50,43 @@ class TicketItem extends React.PureComponent<Props> {
     return colorMap[requestType] || { bg: '#f5f5f5', text: '#616161' };
   };
 
-  renderForm = () => {
-    const { item, isFormVisible, stageId } = this.props;
+  const handleClick = () => {
+    // portable 모드일 때 티켓 페이지로 이동
+    if (portable && item.pipeline && item.pipeline.boardId) {
+      const boardId = item.pipeline.boardId;
+      const pipelineId = item.pipeline._id;
+      routerUtils.setParams(navigate, location, {
+        id: boardId,
+        pipelineId: pipelineId,
+        itemId: item._id
+      });
+    } else if (onClick) {
+      // 기존 onClick 동작
+      onClick();
+    }
+  };
 
+  const renderForm = () => {
     if (!isFormVisible) {
       return null;
     }
 
     return (
       <EditForm
-        {...this.props}
+        options={props.options}
         stageId={stageId || item.stageId}
         itemId={item._id}
         hideHeader={true}
         isPopupVisible={isFormVisible}
+        beforePopupClose={props.beforePopupClose}
+        onAdd={props.onAdd}
+        onRemove={props.onRemove}
+        onUpdate={props.onUpdate}
       />
     );
   };
 
-  renderContent() {
-    const { item } = this.props;
+  const renderContent = () => {
     const {
       customers,
       companies,
@@ -74,7 +98,7 @@ class TicketItem extends React.PureComponent<Props> {
       requestType,
     } = item;
 
-    const requestTypeColors = requestType ? this.getRequestTypeColor(requestType) : { bg: '#f5f5f5', text: '#616161' };
+    const requestTypeColors = requestType ? getRequestTypeColor(requestType) : { bg: '#f5f5f5', text: '#616161' };
 
     return (
       <>
@@ -122,34 +146,30 @@ class TicketItem extends React.PureComponent<Props> {
         <ItemFooter item={item} />
       </>
     );
-  }
+  };
 
-  render() {
-    const { item, portable, onClick } = this.props;
-
-    if (portable) {
-      return (
-        <>
-          <ItemContainer onClick={onClick}>
-            <ItemArchivedStatus
-              status={item.status || "active"}
-              skipContainer={false}
-            />
-            <Content>{this.renderContent()}</Content>
-          </ItemContainer>
-          {this.renderForm()}
-        </>
-      );
-    }
-
+  if (portable) {
     return (
       <>
-        <Labels labels={item.labels} indicator={true} />
-        <Content onClick={onClick}>{this.renderContent()}</Content>
-        {this.renderForm()}
+        <ItemContainer onClick={handleClick}>
+          <ItemArchivedStatus
+            status={item.status || "active"}
+            skipContainer={false}
+          />
+          <Content>{renderContent()}</Content>
+        </ItemContainer>
+        {renderForm()}
       </>
     );
   }
-}
+
+  return (
+    <>
+      <Labels labels={item.labels} indicator={true} />
+      <Content onClick={onClick}>{renderContent()}</Content>
+      {renderForm()}
+    </>
+  );
+};
 
 export default TicketItem;

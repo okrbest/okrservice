@@ -82,14 +82,34 @@ export const loadConformityClass = (models: IModels, _subdomain: string) => {
         e => !oldRelTypeIds.includes(e)
       );
 
-      // insert on new relTypeIds
-      const insertTypes = await addedTypeIds.map(relTypeId => ({
-        mainType: doc.mainType,
-        mainTypeId: doc.mainTypeId,
-        relType: doc.relType,
-        relTypeId
-      }));
-      await models.Conformities.insertMany(insertTypes);
+      // insert on new relTypeIds (양방향 저장)
+      const insertTypes: any[] = [];
+      for (const relTypeId of addedTypeIds) {
+        // A -> B 방향
+        insertTypes.push({
+          mainType: doc.mainType,
+          mainTypeId: doc.mainTypeId,
+          relType: doc.relType,
+          relTypeId
+        });
+        // B -> A 방향 (역방향 관계도 저장)
+        insertTypes.push({
+          mainType: doc.relType,
+          mainTypeId: relTypeId,
+          relType: doc.mainType,
+          relTypeId: doc.mainTypeId
+        });
+      }
+      if (insertTypes.length > 0) {
+        await models.Conformities.insertMany(insertTypes, {
+          ordered: false
+        }).catch(err => {
+          // 중복 키 에러는 무시 (이미 관계가 존재하는 경우)
+          if (err.code !== 11000) {
+            throw err;
+          }
+        });
+      }
 
       // delete on removedTypeIds
       await models.Conformities.deleteMany({
