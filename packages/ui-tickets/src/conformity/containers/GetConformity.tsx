@@ -58,6 +58,11 @@ const PortableItemsContainer = (props: IProps) => {
     }
 
     items = data[queryName] || [];
+    
+    // 같은 타입의 연관 관계일 때 자기 자신 제외
+    if (mainType === relType && mainTypeId) {
+      items = items.filter((item: any) => item._id !== mainTypeId);
+    }
   }
 
   const onChangeItem = () => {

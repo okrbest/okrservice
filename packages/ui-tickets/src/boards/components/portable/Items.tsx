@@ -155,7 +155,8 @@ class Items extends React.Component<Props, { openItemId?: string }> {
     const boxProps = {
       extraButtons: !hideQuickButtons && quickButtons,
       title: __(data.options.title),
-      name: relType && `show${relType}`
+      name: relType && `show${relType}`,
+      isOpen: true
     };
 
     return (

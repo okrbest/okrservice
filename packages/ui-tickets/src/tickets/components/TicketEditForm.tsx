@@ -29,6 +29,7 @@ import Left from "../../boards/components/editForm/Left";
 import PortableDeals from "@erxes/ui-sales/src/deals/components/PortableDeals";
 import PortablePurchase from "@erxes/ui-purchases/src/purchases/components/PortablePurchases";
 import PortableTasks from "@erxes/ui-tasks/src/tasks/components/PortableTasks";
+import PortableTickets from "./PortableTickets";
 import Sidebar from "../../boards/components/editForm/Sidebar";
 import Top from "../../boards/components/editForm/Top";
 import queryString from "query-string";
@@ -134,6 +135,9 @@ export default function TicketEditForm(props: Props) {
 
   // type이 "ticket"이 아닐 때는 댓글 기능 비활성화
   const isTicketType = type === "ticket";
+  
+  // 모바일 여부 확인
+  const isMobile = useIsMobile();
 
   // WidgetComments 쿼리 실행 (ticket 타입일 때만)
   const { data: widgetCommentsData, refetch: refetchWidgetComments } = useQuery(WIDGET_COMMENTS_QUERY, {
@@ -411,6 +415,8 @@ export default function TicketEditForm(props: Props) {
   function renderItems() {
     return (
       <>
+        <PortableTickets mainType="ticket" mainTypeId={props.item._id} />
+        
         {isEnabled("sales") && (
           <PortableDeals mainType="ticket" mainTypeId={props.item._id} />
         )}
@@ -452,10 +458,6 @@ export default function TicketEditForm(props: Props) {
     return <ChildrenSection {...updatedProps} />;
   };
 
-  const onCloseDateFieldsChange = (key: string, value: any) => {
-    saveItem({ [key]: value });
-  };
-
   function renderFormContent({
     state,
     copy,
@@ -463,6 +465,9 @@ export default function TicketEditForm(props: Props) {
     saveItem,
     onChangeStage,
   }: IEditFormContent) {
+    const onCloseDateFieldsChange = (key: string, value: any) => {
+      saveItem({ [key]: value });
+    };
     const {
       options,
       onUpdate,
@@ -472,7 +477,6 @@ export default function TicketEditForm(props: Props) {
       currentUser,
     } = props;
 
-    const isMobile = useIsMobile();
     const renderSidebar = () => renderSidebarFields(saveItem);
 
     // 모바일일 때만 새로운 레이아웃 사용

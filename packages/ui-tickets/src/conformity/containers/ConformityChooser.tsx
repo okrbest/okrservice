@@ -24,6 +24,7 @@ type Props = {
   refetchQuery: string;
   chooserComponent?: any;
   loading?: boolean;
+  callback?: () => void;
 } & CommonProps;
 
 type FinalProps = {
@@ -36,7 +37,8 @@ const ConformityChooser = (props: FinalProps) => {
     data,
     onSelect,
     chooserComponent,
-    refetchQuery
+    refetchQuery,
+    callback
   } = props;
 
   const onSelected = relTypes => {
@@ -81,6 +83,10 @@ const ConformityChooser = (props: FinalProps) => {
       .then(() => {
         if (onSelect) {
           onSelect(relTypes);
+        }
+        // refetch를 호출하여 UI 즉시 업데이트
+        if (callback) {
+          callback();
         }
       })
       .catch(error => {
