@@ -288,18 +288,8 @@ export const calculateExecution = async ({
       if (!isValid) {
         return;
       }
-    } else {
-      const isInSegmentResult = await isInSegment(subdomain, contentId, target._id);
-      
-      // 조건부 segment 우회 (환경 변수로 제어)
-      if (!isInSegmentResult) {
-        const bypassSegmentCheck = process.env.BYPASS_SEGMENT_CHECK === 'true';
-        const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
-        
-        if (!(bypassSegmentCheck || isDevelopment)) {
-          return;
-        }
-      }
+    } else if (!(await isInSegment(subdomain, contentId, target._id))) {
+      return;
     }
   } catch (e) {
     await models.Executions.createExecution({
@@ -336,20 +326,18 @@ export const calculateExecution = async ({
     let isChanged = false;
 
     for (const reEnrollmentRule of reEnrollmentRules) {
-      const ruleResult = isDiffValue(latestExecution.target, target, reEnrollmentRule);
-      if (ruleResult) {
+      if (isDiffValue(latestExecution.target, target, reEnrollmentRule)) {
         isChanged = true;
         break;
       }
     }
 
     if (!isChanged) {
-      // 테스트를 위해 re-enrollment 검사 우회
-      // return;
+      return;
     }
   }
 
-  const newExecution = await models.Executions.createExecution({
+  return models.Executions.createExecution({
     automationId,
     triggerId: id,
     triggerType: type,
@@ -359,8 +347,6 @@ export const calculateExecution = async ({
     status: EXECUTION_STATUS.ACTIVE,
     description: `Met enrollement criteria`
   });
-
-  return newExecution;
 };
 
 const isWaitingDateConfig = (dateConfig) => {
@@ -468,13 +454,11 @@ export const receiveTrigger = async ({
         });
 
         if (execution) {
-          const actionsMap = await getActionsMap(automation.actions);
-          
           await executeActions(
             subdomain,
             trigger.type,
             execution,
-            actionsMap,
+            await getActionsMap(automation.actions),
             trigger.actionId
           );
         }
