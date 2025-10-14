@@ -18,12 +18,10 @@ import {
   sendAutomationsMessage,
   sendCoreMessage,
   sendIntegrationsMessage,
-  sendTicketsMessage
+  sendTicketsMessage,
 } from "../../messageBroker";
 
-import {
-  AUTO_BOT_MESSAGES,
-} from "../../models/definitions/constants";
+import { AUTO_BOT_MESSAGES } from "../../models/definitions/constants";
 import EditorAttributeUtil from "@erxes/api-utils/src/editorAttributeUtils";
 import { IBrowserInfo } from "@erxes/api-utils/src/definitions/common";
 import { VERIFY_EMAIL_TRANSLATIONS } from "../../constants";
@@ -54,11 +52,10 @@ interface ITicketWidget {
   customerIds: string[];
 }
 
-
 export const pConversationClientMessageInserted = async (
   models,
   subdomain,
-  message: { _id: string;[other: string]: any }
+  message: { _id: string; [other: string]: any }
 ) => {
   const conversation = await models.Conversations.findOne(
     {
@@ -207,6 +204,19 @@ export const getMessengerData = async (
     ).find((condition) => condition.type === "getStarted");
   }
 
+  const allowedFileTypes = await getConfig(
+    "WIDGETS_UPLOAD_FILE_TYPES",
+    "",
+    models
+  );
+  const fileTypesArray =
+    typeof allowedFileTypes === "string"
+      ? allowedFileTypes
+          .split(",")
+          .map((type) => type.trim())
+          .filter((type) => type)
+      : allowedFileTypes || [];
+
   return {
     ...(messengerData || {}),
     getStarted: getStartedCondition ? getStartedCondition.isSelected : false,
@@ -214,6 +224,7 @@ export const getMessengerData = async (
     knowledgeBaseTopicId: topicId,
     websiteApps,
     formCodes,
+    allowedFileTypes: fileTypesArray,
   };
 };
 
@@ -240,21 +251,19 @@ const createVisitor = async (subdomain: string, visitorId: string) => {
 };
 
 const widgetMutations = {
-
-  async widgetTicketCreated(_root,
+  async widgetTicketCreated(
+    _root,
     doc: ITicketWidget,
     { subdomain }: IContext
   ) {
-
     return await sendTicketsMessage({
       subdomain,
       action: "widgets.createTicket",
       data: {
-        doc
+        doc,
       },
-      isRPC: true
+      isRPC: true,
     });
-
   },
   async widgetsTicketCustomersEdit(
     _root,
@@ -269,22 +278,22 @@ const widgetMutations = {
   ) {
     const { customerId, firstName, lastName, emails, phones } = args;
     if (!customerId) {
-      throw new Error('Customer ID not found');
+      throw new Error("Customer ID not found");
     }
     return await sendCoreMessage({
       subdomain,
-      action: 'customers.updateCustomer',
+      action: "customers.updateCustomer",
       data: {
         _id: customerId,
         doc: {
           firstName,
           lastName,
           emails,
-          phones
-        }
+          phones,
+        },
       },
       isRPC: true,
-      defaultValue: null
+      defaultValue: null,
     });
   },
   async widgetsTicketCheckProgressForget(
@@ -295,13 +304,13 @@ const widgetMutations = {
     },
     { subdomain }: IContext
   ) {
-
-    const { email, phoneNumber } = args
+    const { email, phoneNumber } = args;
     return sendTicketsMessage({
       subdomain,
-      action: 'widgets.fetchTicketProgressForget',
+      action: "widgets.fetchTicketProgressForget",
       data: {
-        email, phoneNumber
+        email,
+        phoneNumber,
       },
       isRPC: true,
     });
@@ -314,16 +323,20 @@ const widgetMutations = {
       typeId: string;
       content: string;
       userType: string;
-      customerId: string
+      customerId: string;
     },
-    { subdomain, }: IContext
+    { subdomain }: IContext
   ) {
-    const { type, typeId, content, userType, customerId } = args
+    const { type, typeId, content, userType, customerId } = args;
     return await sendTicketsMessage({
       subdomain,
-      action: 'widgets.commentAdd',
+      action: "widgets.commentAdd",
       data: {
-        type, typeId, content, userType, customerId
+        type,
+        typeId,
+        content,
+        userType,
+        customerId,
       },
       isRPC: true,
     });
@@ -333,18 +346,18 @@ const widgetMutations = {
     args: {
       _id: string;
     },
-    { subdomain, }: IContext
+    { subdomain }: IContext
   ) {
-    const { _id } = args
+    const { _id } = args;
     await sendTicketsMessage({
       subdomain,
-      action: 'widgets.comment.remove',
+      action: "widgets.comment.remove",
       data: {
-        _id
+        _id,
       },
       isRPC: true,
     });
-    return 'deleted';
+    return "deleted";
   },
 
   async widgetsTicketCommentEdit(
@@ -353,15 +366,15 @@ const widgetMutations = {
       _id: string;
       content: string;
     },
-    { subdomain, }: IContext
+    { subdomain }: IContext
   ) {
-    const { _id, content } = args
+    const { _id, content } = args;
     return await sendTicketsMessage({
       subdomain,
-      action: 'widgets.comment.edit',
+      action: "widgets.comment.edit",
       data: {
         _id,
-        content
+        content,
       },
       isRPC: true,
     });
@@ -374,10 +387,10 @@ const widgetMutations = {
     },
     { models, subdomain }: IContext
   ) {
-    const { number } = args
+    const { number } = args;
     return sendTicketsMessage({
       subdomain,
-      action: 'widgets.fetchTicketProgress',
+      action: "widgets.fetchTicketProgress",
       data: {
         number,
       },
@@ -483,24 +496,24 @@ const widgetMutations = {
 
       customer = customer
         ? await sendCoreMessage({
-          subdomain,
-          action: "customers.updateMessengerCustomer",
-          data: {
-            _id: customer._id,
-            doc,
-            customData
-          },
-          isRPC: true
-        })
+            subdomain,
+            action: "customers.updateMessengerCustomer",
+            data: {
+              _id: customer._id,
+              doc,
+              customData,
+            },
+            isRPC: true,
+          })
         : await sendCoreMessage({
-          subdomain,
-          action: "customers.createMessengerCustomer",
-          data: {
-            doc,
-            customData
-          },
-          isRPC: true
-        });
+            subdomain,
+            action: "customers.createMessengerCustomer",
+            data: {
+              doc,
+              customData,
+            },
+            isRPC: true,
+          });
     }
 
     if (visitorId) {
@@ -831,11 +844,11 @@ const widgetMutations = {
           responses.length !== 0
             ? responses
             : [
-              {
-                type: "text",
-                text: AUTO_BOT_MESSAGES.NO_RESPONSE
-              }
-            ];
+                {
+                  type: "text",
+                  text: AUTO_BOT_MESSAGES.NO_RESPONSE,
+                },
+              ];
 
         const botMessage = await models.ConversationMessages.createMessage({
           conversationId: conversation._id,
@@ -1254,8 +1267,6 @@ const widgetMutations = {
 
     return { botData: botRequest.responses };
   },
-
-
 };
 
 export default widgetMutations;
