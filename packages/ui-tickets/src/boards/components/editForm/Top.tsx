@@ -14,6 +14,8 @@ import Icon from "@erxes/ui/src/components/Icon";
 import Move from "../../containers/editForm/Move";
 import StartDate from "./StartDate";
 import { useIsMobile } from "../../utils/mobile";
+import Button from "@erxes/ui/src/components/Button";
+import { __ } from "@erxes/ui/src/utils";
 
 type Props = {
   item: IItem;
@@ -22,6 +24,7 @@ type Props = {
   saveItem: (doc: { [key: string]: any }) => void;
   onChangeStage?: (stageId: string) => void;
   amount?: () => React.ReactNode;
+  onSendEmail?: () => void;
 };
 
 function Top(props: Props) {
@@ -41,10 +44,10 @@ function Top(props: Props) {
         // 캐시에서 stage 정보를 찾아보기
         const cacheData = cache.extract();
         
-        // stage 관련 데이터 찾기
-        const stageEntries = Object.entries(cacheData).filter(([key, value]) => 
-          key.includes('TicketsStage') || (value && typeof value === 'object' && (value as any).__typename === 'TicketsStage')
-        );
+        // stage 관련 데이터 찾기 (디버깅용 - 현재 사용하지 않음)
+        // const stageEntries = Object.entries(cacheData).filter(([key, value]) => 
+        //   key.includes('TicketsStage') || (value && typeof value === 'object' && (value as any).__typename === 'TicketsStage')
+        // );
         
       } catch (error) {
         console.error('Apollo cache access error:', error);
@@ -95,6 +98,28 @@ function Top(props: Props) {
       <HeaderContentSmall>
         <ControlLabel>Score</ControlLabel>
         <p>{score.toLocaleString()}</p>
+      </HeaderContentSmall>
+    );
+  };
+
+  const renderEmailButton = () => {
+    const { onSendEmail } = props;
+    
+    if (!onSendEmail) {
+      return null;
+    }
+
+    return (
+      <HeaderContentSmall>
+        <Button
+          btnStyle="primary"
+          size="small"
+          icon="envelope"
+          onClick={onSendEmail}
+          uppercase={false}
+        >
+          {__("Send Email")}
+        </Button>
       </HeaderContentSmall>
     );
   };

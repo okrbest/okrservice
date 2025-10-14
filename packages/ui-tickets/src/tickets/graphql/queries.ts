@@ -71,6 +71,9 @@ const commonParamDefs = `
 export const ticketFields = `
   source
   requestType
+  emailSent
+  widgetAlarm
+  manualEmailRequest
 `;
 
 const tickets = `

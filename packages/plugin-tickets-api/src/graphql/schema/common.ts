@@ -47,6 +47,8 @@ export const commonTypes = `
   createdAt: Date
   hasNotified: Boolean
   widgetAlarm: Boolean
+  manualEmailRequest: Boolean
+  emailSent: Boolean
   assignedUserIds: [String]
   branchIds: [String]
   departmentIds:[String]
@@ -103,6 +105,9 @@ export const commonMutationParams = `
   tagIds: [String],
   branchIds: [String],
   departmentIds: [String],
+  manualEmailRequest: Boolean,
+  emailSent: Boolean,
+  widgetAlarm: Boolean,
 `;
 
 export const commonDragParams = `
@@ -133,6 +138,8 @@ export const commonListTypes = `
   priority: String
   hasNotified: Boolean
   widgetAlarm: Boolean
+  manualEmailRequest: Boolean
+  emailSent: Boolean
   score: Float
   number: String
   stageChangedDate: Date
