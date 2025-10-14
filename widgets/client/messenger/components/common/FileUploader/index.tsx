@@ -5,6 +5,7 @@ import { readFile } from "../../../../utils";
 import uploadHandler from "../../../../uploadHandler";
 import { useDropzone } from "react-dropzone";
 import { __ } from "../../../../utils";
+import { connection } from "../../../connection";
 
 const imgStyle = {
   display: "block",
@@ -25,6 +26,67 @@ const FileUploader = ({
   const [files, setFiles] = React.useState<FileWithUrl[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
 
+  // 허용된 파일 타입 가져오기
+  const getAllowedFileTypes = () => {
+    const allowedTypes = connection.data?.messengerData?.allowedFileTypes || [];
+
+    if (!allowedTypes || allowedTypes.length === 0) {
+      // 기본값: 이미지만 허용
+      return { "image/*": [] };
+    }
+
+    // MIME 타입을 react-dropzone accept 형식으로 변환
+    const acceptTypes: Record<string, string[]> = {};
+
+    allowedTypes.forEach((mimeType: string) => {
+      if (mimeType.startsWith("image/")) {
+        acceptTypes[mimeType] = [];
+      } else if (mimeType === "application/pdf") {
+        acceptTypes[mimeType] = [".pdf"];
+      } else if (mimeType === "application/msword") {
+        acceptTypes[mimeType] = [".doc"];
+      } else if (
+        mimeType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        acceptTypes[mimeType] = [".docx"];
+      } else if (mimeType === "application/vnd.ms-excel") {
+        acceptTypes[mimeType] = [".xls"];
+      } else if (
+        mimeType ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      ) {
+        acceptTypes[mimeType] = [".xlsx"];
+      } else if (mimeType === "application/vnd.ms-powerpoint") {
+        acceptTypes[mimeType] = [".ppt"];
+      } else if (
+        mimeType ===
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      ) {
+        acceptTypes[mimeType] = [".pptx"];
+      } else if (mimeType === "text/csv") {
+        acceptTypes[mimeType] = [".csv"];
+      } else if (mimeType === "text/plain") {
+        acceptTypes[mimeType] = [".txt"];
+      } else if (mimeType.startsWith("video/")) {
+        acceptTypes[mimeType] = [];
+      } else if (mimeType.startsWith("audio/")) {
+        acceptTypes[mimeType] = [];
+      } else if (mimeType === "application/zip") {
+        acceptTypes[mimeType] = [".zip"];
+      } else if (mimeType === "application/x-rar-compressed") {
+        acceptTypes[mimeType] = [".rar"];
+      } else {
+        // 기타 MIME 타입
+        acceptTypes[mimeType] = [];
+      }
+    });
+
+    return Object.keys(acceptTypes).length > 0
+      ? acceptTypes
+      : { "image/*": [] };
+  };
+
   const sendFiles = (files: FileList) => {
     const uploadedFiles: FileWithUrl[] = [];
     const total = files.length;
@@ -35,7 +97,6 @@ const FileUploader = ({
       beforeUpload: () => {
         setIsUploading(true);
       },
-      // upload to server
       afterUpload({ response, fileInfo }: { response: any; fileInfo: any }) {
         const updatedFile = {
           ...fileInfo,
@@ -49,10 +110,9 @@ const FileUploader = ({
 
         if (completed === total) {
           setIsUploading(false);
-          handleFiles(uploadedFiles); // ✅ send only after all uploads
+          handleFiles(uploadedFiles);
         }
       },
-
       onError: (message) => {
         alert(message);
         setIsUploading(false);
@@ -61,9 +121,7 @@ const FileUploader = ({
   };
 
   const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      "image/*": [],
-    },
+    accept: getAllowedFileTypes(),
     onDrop: (acceptedFiles) => {
       const updatedFiles = acceptedFiles.map((file) =>
         Object.assign(file, {
@@ -78,6 +136,12 @@ const FileUploader = ({
       if (fileList && fileList.length > 0) {
         sendFiles(fileList);
       }
+    },
+    onDropRejected: (fileRejections) => {
+      // 파일이 거부되었을 때 메시지 표시
+      const allowedTypes =
+        connection.data?.messengerData?.allowedFileTypes || [];
+      alert(`허용된 파일 형식: ${allowedTypes.join(", ")}`);
     },
   });
 
