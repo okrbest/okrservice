@@ -1,4 +1,26 @@
 import { getService, getServices } from '@erxes/api-utils/src/serviceDiscovery';
+import { getEnv } from '@erxes/api-utils/src/core';
+import { sendCoreMessage } from './messageBroker';
+
+export const getConfig = async (
+  code: string,
+  defaultValue?: string,
+  models?: any,
+  subdomain?: string
+) => {
+  // subdomain이 있으면 core에서 config 가져옴
+  if (subdomain) {
+    return sendCoreMessage({
+      subdomain,
+      action: 'getConfig',
+      data: { code, defaultValue },
+      isRPC: true,
+      defaultValue
+    });
+  }
+  
+  return getEnv({ name: code, defaultValue }) || defaultValue;
+};
 
 export const getIntegrationMeta = async () => {
   const serviceNames = await getServices();
