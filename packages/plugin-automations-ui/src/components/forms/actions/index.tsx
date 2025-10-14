@@ -25,6 +25,8 @@ const renderExtraContent = (props) => {
     activeAction: { type }
   } = props;
 
+  console.log('🔍 ActionForms - activeAction type:', type);
+
   const response = {
     default: <DefaultForm {...props} />,
     delay: <Delay {...props} />,
@@ -42,6 +44,8 @@ const renderExtraContent = (props) => {
     },
     type
   );
+
+  console.log('🔍 ActionForms - renderDynamicComponent result:', Component ? 'Component found' : 'No component');
 
   if (Component) {
     response[type] = Component;

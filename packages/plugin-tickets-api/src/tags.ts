@@ -34,7 +34,7 @@ export default {
         subdomain,
         action: "trigger",
         data: {
-          type: "tickets:ticket",
+          type: "ticket",
           targets: [response]
         },
         isRPC: true,

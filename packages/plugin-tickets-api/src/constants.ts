@@ -286,6 +286,30 @@ export const CARD_PROPERTIES_INFO = {
       validation: null,
       type: 'select',
       options: []
+    },
+    {
+      label: 'Manual Email Request',
+      field: 'manualEmailRequest',
+      canHide: false,
+      validation: null,
+      type: 'select',
+      options: ['true', 'false']
+    },
+    {
+      label: 'Email Sent',
+      field: 'emailSent',
+      canHide: false,
+      validation: null,
+      type: 'select',
+      options: ['true', 'false']
+    },
+    {
+      label: 'Widget Alarm',
+      field: 'widgetAlarm',
+      canHide: false,
+      validation: null,
+      type: 'select',
+      options: ['true', 'false']
     }
   ]
 };

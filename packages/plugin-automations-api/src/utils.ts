@@ -43,16 +43,21 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export const isInSegment = async (
   subdomain: string,
   segmentId: string,
-  targetId: string
+  targetId: string,
+  options?: any
 ) => {
+  console.log('🔍 isInSegment - Checking:', { segmentId, targetId, hasOptions: !!options });
+  
   await delay(15000);
 
   const response = await sendSegmentsMessage({
     subdomain,
     action: 'isInSegment',
-    data: { segmentId, idToCheck: targetId },
+    data: { segmentId, idToCheck: targetId, options },
     isRPC: true
   });
+
+  console.log('🔍 isInSegment - Response:', { segmentId, targetId, response });
 
   return response;
 };
@@ -68,6 +73,13 @@ export const executeActions = async (
     execution.status = EXECUTION_STATUS.COMPLETE;
     await execution.save();
 
+    console.log('✅ executeActions - Execution completed:', {
+      executionId: execution._id,
+      automationId: execution.automationId,
+      triggerId: execution.triggerId,
+      targetId: execution.targetId
+    });
+
     return 'finished';
   }
 
@@ -78,6 +90,13 @@ export const executeActions = async (
 
     return 'missed action';
   }
+
+  console.log('🎯 executeActions - Executing action:', {
+    executionId: execution._id,
+    actionId: currentActionId,
+    actionType: action.type,
+    targetId: execution.targetId
+  });
 
   execution.status = EXECUTION_STATUS.ACTIVE;
 
@@ -162,7 +181,30 @@ export const executeActions = async (
     }
 
     if (action.type.includes('create')) {
-      const [serviceName, type] = action.type.split(':');
+      // action.type이 "ticket.create" 또는 "tickets:ticket.create" 형태 모두 처리
+      let serviceName: string;
+      let collectionType: string;
+      
+      if (action.type.includes(':')) {
+        // "tickets:ticket.create" 형태
+        const [service, type] = action.type.split(':');
+        serviceName = service;
+        collectionType = type.replace('.create', '');
+      } else {
+        // "ticket.create" 형태
+        const typeMapping = {
+          'ticket': 'tickets',
+          'deal': 'sales',
+          'task': 'tasks',
+          'purchase': 'purchases',
+        };
+        
+        const baseType = action.type.replace('.create', '');
+        serviceName = typeMapping[baseType] || baseType;
+        collectionType = baseType;
+      }
+
+      console.log('🎯 executeActions - create action:', { actionType: action.type, serviceName, collectionType });
 
       actionResponse = await sendCommonMessage({
         subdomain,
@@ -172,7 +214,7 @@ export const executeActions = async (
           actionType: 'create',
           action,
           execution,
-          collectionType: type.replace('.create', '')
+          collectionType
         },
         isRPC: true
       });
@@ -204,6 +246,12 @@ export const executeActions = async (
   execAction.result = actionResponse;
   execution.actions = [...(execution.actions || []), execAction];
   execution = await execution.save();
+
+  console.log('✅ executeActions - Action completed, moving to next:', {
+    executionId: execution._id,
+    completedActionId: currentActionId,
+    nextActionId: action.nextActionId
+  });
 
   return executeActions(
     subdomain,
@@ -289,17 +337,30 @@ export const calculateExecution = async ({
         return;
       }
     } else {
-      const isInSegmentResult = await isInSegment(subdomain, contentId, target._id);
+      console.log('🔍 calculateExecution - Checking segment condition:', {
+        triggerId: id,
+        contentId,
+        targetId: target._id,
+        targetStageId: target.stageId,
+        targetName: target.name,
+        targetData: target  // 트리거 시점의 target 데이터 전체 로깅
+      });
       
-      // 조건부 segment 우회 (환경 변수로 제어)
+      // target 객체를 함께 전달하여 트리거 시점의 데이터로 segment 조건 체크
+      const isInSegmentResult = await isInSegment(subdomain, contentId, target._id, { targetObject: target });
+      
+      console.log('🔍 calculateExecution - Segment check result:', {
+        triggerId: id,
+        isInSegmentResult,
+        targetId: target._id
+      });
+      
       if (!isInSegmentResult) {
-        const bypassSegmentCheck = process.env.BYPASS_SEGMENT_CHECK === 'true';
-        const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
-        
-        if (!(bypassSegmentCheck || isDevelopment)) {
-          return;
-        }
+        console.log('⚠️ calculateExecution - Target does not match segment condition, skipping');
+        return;
       }
+      
+      console.log('✅ calculateExecution - Target matches segment condition, proceeding');
     }
   } catch (e) {
     await models.Executions.createExecution({
@@ -328,26 +389,79 @@ export const calculateExecution = async ({
     ? executions[0]
     : null;
 
+  console.log('🔍 calculateExecution - Latest execution check:', {
+    triggerId: id,
+    targetId: target._id,
+    hasLatestExecution: !!latestExecution,
+    latestExecutionStatus: latestExecution?.status,
+    latestExecutionId: latestExecution?._id
+  });
+
   if (latestExecution) {
-    if (!reEnrollment || !reEnrollmentRules.length) {
+    // 실행 중이거나 대기 중인 execution이 있으면 무한 루프 방지를 위해 새로운 execution 생성 안 함
+    if (latestExecution.status === EXECUTION_STATUS.ACTIVE || 
+        latestExecution.status === EXECUTION_STATUS.WAITING) {
+      console.log('⚠️ calculateExecution - Active or waiting execution exists, preventing infinite loop', {
+        executionId: latestExecution._id,
+        status: latestExecution.status
+      });
       return;
     }
 
-    let isChanged = false;
+    // 에러 상태의 execution은 재시도 허용
+    if (latestExecution.status === EXECUTION_STATUS.ERROR) {
+      console.log('🔄 calculateExecution - Previous execution failed, allowing retry', {
+        executionId: latestExecution._id,
+        status: latestExecution.status
+      });
+      // 에러 상태는 재등록 검사 없이 바로 새 execution 생성
+    } else {
+      // 수동 트리거(manualEmailRequest 등)는 재등록 검사 없이 항상 실행
+      const isManualTrigger = target.manualEmailRequest === true;
+      
+      if (isManualTrigger) {
+        console.log('🔄 calculateExecution - Manual trigger detected, bypassing re-enrollment check');
+      } else {
+        // 완료/누락 상태인 경우에만 재등록 검사
+        console.log('🔍 calculateExecution - Checking re-enrollment:', {
+          reEnrollment,
+          hasReEnrollmentRules: !!reEnrollmentRules?.length
+        });
 
-    for (const reEnrollmentRule of reEnrollmentRules) {
-      const ruleResult = isDiffValue(latestExecution.target, target, reEnrollmentRule);
-      if (ruleResult) {
-        isChanged = true;
-        break;
+        if (!reEnrollment || !reEnrollmentRules.length) {
+          console.log('⚠️ calculateExecution - No re-enrollment configured, skipping');
+          return;
+        }
+
+        let isChanged = false;
+
+        for (const reEnrollmentRule of reEnrollmentRules) {
+          const ruleResult = isDiffValue(latestExecution.target, target, reEnrollmentRule);
+          console.log('🔍 calculateExecution - Re-enrollment rule check:', {
+            rule: reEnrollmentRule,
+            ruleResult
+          });
+          if (ruleResult) {
+            isChanged = true;
+            break;
+          }
+        }
+
+        if (!isChanged) {
+          console.log('⚠️ calculateExecution - No value changed, skipping re-enrollment');
+          return;
+        }
+
+        console.log('✅ calculateExecution - Value changed, allowing re-enrollment');
       }
     }
-
-    if (!isChanged) {
-      // 테스트를 위해 re-enrollment 검사 우회
-      // return;
-    }
   }
+
+  console.log('✅ calculateExecution - Creating new execution:', {
+    automationId,
+    triggerId: id,
+    targetId: target._id
+  });
 
   const newExecution = await models.Executions.createExecution({
     automationId,
@@ -359,6 +473,8 @@ export const calculateExecution = async ({
     status: EXECUTION_STATUS.ACTIVE,
     description: `Met enrollement criteria`
   });
+
+  console.log('✅ calculateExecution - New execution created:', newExecution._id);
 
   return newExecution;
 };
@@ -432,6 +548,8 @@ export const receiveTrigger = async ({
   type: TriggerType;
   targets: any[];
 }) => {
+  console.log('🎯 receiveTrigger - type:', type, 'targets count:', targets.length);
+  
   const automations = await models.Automations.find({
     status: 'active',
     $or: [
@@ -444,20 +562,33 @@ export const receiveTrigger = async ({
     ]
   }).lean();
 
+  console.log('🎯 receiveTrigger - found automations:', automations.length);
+
   if (!automations.length) {
+    console.log('⚠️ receiveTrigger - No active automations found for type:', type);
     return;
   }
 
   for (const target of targets) {
+    console.log('🎯 receiveTrigger - Processing target:', target._id);
+    
     for (const automation of automations) {
+      console.log('🎯 receiveTrigger - Processing automation:', automation.name);
+      
       for (const trigger of automation.triggers) {
+        console.log('🎯 receiveTrigger - Checking trigger type:', trigger.type, 'includes', type, '?', trigger.type.includes(type));
+        
         if (!trigger.type.includes(type)) {
+          console.log('⚠️ receiveTrigger - Trigger type mismatch, skipping');
           continue;
         }
 
         if (isWaitingDateConfig(trigger?.config?.dateConfig)) {
+          console.log('⚠️ receiveTrigger - Waiting date config, skipping');
           continue;
         }
+
+        console.log('🎯 receiveTrigger - Calculating execution for automation:', automation.name);
 
         const execution = await calculateExecution({
           models,
@@ -466,6 +597,8 @@ export const receiveTrigger = async ({
           trigger,
           target
         });
+        
+        console.log('🎯 receiveTrigger - Execution result:', execution ? 'Created' : 'Skipped');
 
         if (execution) {
           const actionsMap = await getActionsMap(automation.actions);

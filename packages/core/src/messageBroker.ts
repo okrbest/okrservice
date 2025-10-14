@@ -1417,7 +1417,22 @@ export const fetchServiceForms = async (
   data,
   defaultValue?
 ) => {
-  const [serviceName, type] = contentType.split(':');
+  let serviceName: string;
+  let type: string;
+  
+  // contentType이 ":" 없이 단일 타입으로 전달된 경우 매핑
+  if (!contentType.includes(':')) {
+    const typeMapping = {
+      'ticket': 'tickets:ticket',
+      'deal': 'sales:deal',
+      'task': 'tasks:task',
+      'purchase': 'purchases:purchase',
+    };
+    
+    contentType = typeMapping[contentType] || contentType;
+  }
+  
+  [serviceName, type] = contentType.split(':');
 
   return sendMessage({
     subdomain,

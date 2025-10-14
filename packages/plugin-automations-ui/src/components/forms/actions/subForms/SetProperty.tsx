@@ -298,10 +298,14 @@ class SetProperty extends React.Component<Props, State> {
     const { type } = this.state;
     const { propertyTypesConst } = this.props;
 
-    const options = propertyTypesConst.map((p) => ({
+    console.log('🔍 SetProperty - propertyTypesConst:', propertyTypesConst);
+
+    const options = (propertyTypesConst || []).map((p) => ({
       label: p.label,
       value: p.value,
     }));
+
+    console.log('🔍 SetProperty - options:', options);
 
     const selectedProperty = options.find(({ value }) => value === type);
 

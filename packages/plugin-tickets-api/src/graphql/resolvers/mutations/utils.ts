@@ -323,7 +323,7 @@ export const itemsEdit = async (
 
   const updatedItem = await modelUpate(_id, extendedDoc);
 
-  // 티켓의 description이 수정된 경우 widgetAlarm을 false로 설정
+  // 티켓의 description이 수정된 경우 widgetAlarm을 false로, emailSent도 false로 설정 (버튼 활성화)
   if (
     type === "ticket" &&
     doc.description &&
@@ -331,26 +331,57 @@ export const itemsEdit = async (
   ) {
     // widgetAlarm이 true에서 false로 바뀌는지 확인
     const wasWidgetAlarmTrue = (oldItem as any).widgetAlarm === true;
+    const updateFields: any = { emailSent: false }; // emailSent는 항상 false로 리셋
 
-    // widgetAlarm이 true인 경우에만 false로 업데이트하고 automation trigger 호출
+    // widgetAlarm이 true인 경우에만 false로 업데이트
     if (wasWidgetAlarmTrue) {
-      await models.Tickets.updateOne({ _id }, { $set: { widgetAlarm: false } });
+      updateFields.widgetAlarm = false;
+    }
 
-      // Automation trigger 호출
-      try {
-        const { sendMessage } = await import("@erxes/api-utils/src/core");
-        await sendMessage({
-          subdomain,
-          serviceName: "automations",
-          action: "trigger",
-          data: {
-            type: "tickets:ticket",
-            targets: [updatedItem]
-          }
-        });
-      } catch (error) {
-        console.error('Failed to send automation trigger from itemsEdit:', error);
-      }
+    await models.Tickets.updateOne({ _id }, { $set: updateFields });
+    console.log('📝 Description 변경됨 - emailSent를 false로 설정하여 Send Email 버튼 활성화', updateFields);
+    
+    // updatedItem 객체에도 즉시 반영 (GraphQL 응답에 포함되도록)
+    updatedItem.emailSent = false;
+    if (wasWidgetAlarmTrue) {
+      updatedItem.widgetAlarm = false;
+    }
+  }
+
+  // manualEmailRequest가 true로 변경된 경우 자동화 트리거 (description 변경과 독립적)
+  console.log('🔍 manualEmailRequest 체크:', {
+    newValue: doc.manualEmailRequest,
+    oldValue: (oldItem as any).manualEmailRequest,
+    shouldTrigger: doc.manualEmailRequest === true && !(oldItem as any).manualEmailRequest
+  });
+  
+  if (doc.manualEmailRequest === true && !(oldItem as any).manualEmailRequest) {
+    console.log('🚀 manualEmailRequest 트리거 발동!');
+    try {
+      const { sendMessage } = await import("@erxes/api-utils/src/core");
+      await sendMessage({
+        subdomain,
+        serviceName: "automations",
+        action: "trigger",
+        data: {
+          type: "tickets:ticket",
+          targets: [updatedItem]
+        }
+      });
+      console.log('✅ manualEmailRequest 자동화 트리거 전송 완료');
+      
+      // 자동화 트리거 완료 후 manualEmailRequest를 false로, emailSent를 true로 설정 (버튼 비활성화)
+      await models.Tickets.updateOne({ _id }, { $set: { manualEmailRequest: false, emailSent: true } });
+      console.log('🔄 manualEmailRequest를 false로, emailSent를 true로 설정 완료 (Send Email 버튼 비활성화)');
+      
+      // updatedItem 객체에도 반영하여 GraphQL 응답에 포함
+      updatedItem.manualEmailRequest = false;
+      updatedItem.emailSent = true;
+    } catch (error) {
+      console.error('❌ Failed to send manual email automation trigger:', error);
+      // 에러 발생 시에도 리셋
+      await models.Tickets.updateOne({ _id }, { $set: { manualEmailRequest: false } });
+      updatedItem.manualEmailRequest = false;
     }
   }
 

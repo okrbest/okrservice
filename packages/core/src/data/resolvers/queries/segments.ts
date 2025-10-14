@@ -61,6 +61,18 @@ const segmentQueries = {
   },
 
   async segmentsGetAssociationTypes(_root, { contentType }) {
+    // contentType이 ":" 없이 단일 타입으로 전달된 경우 매핑
+    if (!contentType.includes(':')) {
+      const typeMapping = {
+        'ticket': 'tickets:ticket',
+        'deal': 'sales:deal',
+        'task': 'tasks:task',
+        'purchase': 'purchases:purchase',
+      };
+      
+      contentType = typeMapping[contentType] || contentType;
+    }
+    
     const [serviceName] = contentType.split(":");
 
     const service = await getService(serviceName);

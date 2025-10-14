@@ -89,7 +89,7 @@ export default {
   constants: {
     triggers: [
       {
-        type: 'tickets:ticket',
+        type: 'ticket',
         img: 'automation3.svg',
         icon: 'file-plus-alt',
         label: 'Ticket',
@@ -97,7 +97,7 @@ export default {
           'Start with a blank workflow that enrolls and is triggered off ticket'
       },
       {
-        type: 'tickets:ticket.probability',
+        type: 'ticket.probability',
         img: 'automation3.svg',
         icon: 'file-plus-alt',
         label: 'Ticket stage probability based',
@@ -108,7 +108,7 @@ export default {
     ],
     actions: [
       {
-        type: 'tickets:ticket.create',
+        type: 'ticket.create',
         icon: 'file-plus-alt',
         label: 'Create ticket',
         description: 'Create ticket',

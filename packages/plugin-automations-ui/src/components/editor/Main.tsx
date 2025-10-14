@@ -375,6 +375,13 @@ class Editor extends React.Component<Props, State> {
       constants: { triggersConst, actionsConst, propertyTypesConst }
     } = this.props;
 
+    console.log('🔍 Main - constants:', this.props.constants);
+    console.log('🔍 Main - propertyTypesConst:', propertyTypesConst);
+    console.log('🔍 Main - propertyTypesConst array:', JSON.stringify(propertyTypesConst, null, 2));
+    
+    // 글로벌 디버깅용
+    window.__lastConstants = this.props.constants;
+
     const onBack = () => this.setState({ showTrigger: false });
     const onBackAction = () => this.setState({ showAction: false });
 

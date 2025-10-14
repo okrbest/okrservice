@@ -298,11 +298,9 @@ class MainActionBar extends React.Component<Props, State> {
       <ButtonGroup>
         <Listbox>
           <div className="relative">
-            <Listbox.Button>
-              <Button btnStyle="primary" icon="list-ui-alt">
-                {__(viewType.charAt(0).toUpperCase() + viewType.slice(1))}
-                <Icon icon="angle-down" />
-              </Button>
+            <Listbox.Button as={Button} btnStyle="primary" icon="list-ui-alt">
+              {__(viewType.charAt(0).toUpperCase() + viewType.slice(1))}
+              <Icon icon="angle-down" />
             </Listbox.Button>
             <Transition
               leave="transition ease-in duration-100"

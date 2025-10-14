@@ -19,6 +19,7 @@ import Comment from "../../../comment/containers/Comment";
 import { __ } from "coreui/utils";
 import { loadDynamicComponent } from "@erxes/ui/src/utils";
 import { isEnabled } from "@erxes/ui/src/utils/core";
+import Button from "@erxes/ui/src/components/Button";
 
 type Props = {
   item: IItem;
@@ -30,6 +31,7 @@ type Props = {
   sendToBoard?: (item: any) => void;
   onChangeStage?: (stageId: string) => void;
   onChangeRefresh: () => void;
+  onSendEmail?: () => void;
 };
 
 class Actions extends React.Component<Props> {
@@ -53,6 +55,7 @@ class Actions extends React.Component<Props> {
       sendToBoard,
       onChangeStage,
       onChangeRefresh,
+      onSendEmail,
     } = this.props;
 
     const onLabelChange = (labels) => saveItem({ labels });
@@ -126,6 +129,34 @@ class Actions extends React.Component<Props> {
           parentTagId={pipelineTagId}
           singleSelect={false}
         />
+
+        {onSendEmail && (() => {
+          const isEnabled = !(item as any).widgetAlarm && !(item as any).emailSent;
+          console.log('🔘 Send Email 버튼 렌더링:', {
+            widgetAlarm: (item as any).widgetAlarm,
+            emailSent: (item as any).emailSent,
+            isEnabled
+          });
+          
+          return (
+            <Button
+              btnStyle={isEnabled ? "primary" : "simple"}
+              size="small"
+              icon="envelope"
+              onClick={isEnabled ? onSendEmail : undefined}
+              uppercase={false}
+              disabled={!isEnabled}
+              style={{
+                marginLeft: '100px', 
+                marginBottom: '5px',
+                opacity: isEnabled ? 1 : 0.5,
+                cursor: isEnabled ? 'pointer' : 'not-allowed'
+              }}
+            >
+              {__("Send Email")}
+            </Button>
+          );
+        })()}
 
         {loadDynamicComponent(
           "cardDetailAction",
