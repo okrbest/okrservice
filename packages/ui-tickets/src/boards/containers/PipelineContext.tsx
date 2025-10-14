@@ -290,10 +290,10 @@ class PipelineProviderInner extends React.Component<Props, State> {
     return index;
   };
 
-  componentWillReceiveProps(nextProps: Props) {
+  componentDidUpdate(prevProps: Props) {
     const { queryParams, queryParamsChanged } = this.props;
 
-    if (queryParamsChanged(queryParams, nextProps.queryParams)) {
+    if (queryParamsChanged(prevProps.queryParams, queryParams)) {
       const { stageIds } = this.state;
 
       PipelineProviderInner.tickets = [];

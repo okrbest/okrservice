@@ -9,6 +9,7 @@ import { gql } from "@apollo/client";
 import { useIsMobile } from "../../boards/utils/mobile";
 import { MobileLayoutComponent } from "../../boards/components/editForm/MobileLayout";
 import MobileSidebar from "../../boards/components/editForm/MobileSidebar";
+import { Alert } from "@erxes/ui/src/utils";
 
 import { Capitalize } from "@erxes/ui-settings/src/permissions/styles";
 import ChildrenSection from "../../boards/containers/editForm/ChildrenSection";
@@ -121,14 +122,54 @@ const WIDGET_COMMENTS_EDIT_MUTATION = gql`
   }
 `;
 
+const AUTOMATION_TRIGGER_MUTATION = gql`
+  mutation AutomationTriggerManual($type: String!, $targets: [JSON]!) {
+    automationTriggerManual(type: $type, targets: $targets) {
+      success
+      message
+    }
+  }
+`;
+
 export default function TicketEditForm(props: Props) {
-  const item = props.item;
+  const { item } = props;
   const [source, setSource] = useState(item.source);
   const [isCheckUserTicket, setIsCheckUserTicket] = useState(
     item.isCheckUserTicket
   );
   const [requestType, setRequestType] = useState(item.requestType);
   const [refresh, setRefresh] = useState(false);
+
+  // saveItem을 래핑하여 저장 후 자동으로 UI 새로고침
+  const [localItem, setLocalItem] = useState(item);
+  
+  // props.item이 변경되면 localItem도 업데이트
+  useEffect(() => {
+    setLocalItem(item);
+  }, [item]);
+  
+  const saveItem = (doc: any, callback?: (item) => void) => {
+    props.saveItem(doc, (updatedItem) => {
+      console.log('💾 saveItem 완료, 업데이트된 item:', updatedItem);
+      console.log('🔍 emailSent:', updatedItem?.emailSent, 'widgetAlarm:', updatedItem?.widgetAlarm, 'manualEmailRequest:', updatedItem?.manualEmailRequest);
+      
+      // 로컬 state 즉시 업데이트
+      setLocalItem(updatedItem);
+      
+      // callback 실행
+      if (callback) {
+        callback(updatedItem);
+      }
+      
+      // description이나 emailSent가 변경된 경우 UI 새로고침
+      if (doc.description !== undefined || doc.manualEmailRequest === true) {
+        console.log('🔄 UI 새로고침 예약');
+        setTimeout(() => {
+          setRefresh(prev => !prev);
+        }, 100); // 100ms로 단축
+      }
+    });
+  };
 
   // CardDetailAction.tsx와 동일한 방식으로 type 설정
   const type = item.stage?.type || "ticket";
@@ -138,6 +179,29 @@ export default function TicketEditForm(props: Props) {
   
   // 모바일 여부 확인
   const isMobile = useIsMobile();
+
+  // 자동화 트리거 mutation
+  const [triggerAutomation] = useMutation(AUTOMATION_TRIGGER_MUTATION);
+
+  // 수동 이메일 발송 함수 (자동화 트리거만 발동)
+  const handleSendEmail = async () => {
+    console.log('🚀 Send Email 버튼 클릭됨 - manualEmailRequest를 true로 설정');
+    try {
+      console.log('📝 manualEmailRequest를 true로 설정하여 자동화 트리거 활성화...');
+      
+      // manualEmailRequest를 true로 설정하여 자동화 트리거 활성화
+      // 서버에서 자동화 처리 후 자동으로 false로 리셋되고 emailSent가 true로 변경됨
+      // saveItem 래퍼 함수가 자동으로 UI를 새로고침함
+      await saveItem({ manualEmailRequest: true });
+      console.log('✅ manualEmailRequest 설정 완료 - 자동화 트리거가 발동됩니다');
+      
+      Alert.success("이메일이 발송되었습니다.");
+      
+    } catch (error: any) {
+      console.error('❌ manualEmailRequest 설정 에러:', error);
+      Alert.error("이메일 발송에 실패했습니다: " + error.message);
+    }
+  };
 
   // WidgetComments 쿼리 실행 (ticket 타입일 때만)
   const { data: widgetCommentsData, refetch: refetchWidgetComments } = useQuery(WIDGET_COMMENTS_QUERY, {
@@ -152,6 +216,19 @@ export default function TicketEditForm(props: Props) {
   const [addWidgetComment] = useMutation(WIDGET_COMMENTS_ADD_MUTATION, {
     onCompleted: (data) => {
       refetchWidgetComments();
+      
+      // 담당자가 댓글을 추가한 경우 emailSent를 false로 설정하여 Send Email 버튼 활성화
+      console.log('💬 댓글 추가 완료 - emailSent를 false로 업데이트하여 Send Email 버튼 활성화');
+      setLocalItem({
+        ...localItem,
+        emailSent: false,
+        widgetAlarm: false
+      });
+      
+      // UI 새로고침
+      setTimeout(() => {
+        setRefresh(prev => !prev);
+      }, 100);
     },
     onError: (error) => {
       console.error("Failed to add comment:", error);
@@ -477,6 +554,9 @@ export default function TicketEditForm(props: Props) {
       currentUser,
     } = props;
 
+    // localItem을 사용하여 최신 상태 반영 (saveItem 호출 후 즉시 업데이트됨)
+    const currentItem = localItem;
+
     const renderSidebar = () => renderSidebarFields(saveItem);
 
     // 모바일일 때만 새로운 레이아웃 사용
@@ -487,7 +567,7 @@ export default function TicketEditForm(props: Props) {
         copyItem: copy,
         removeItem: remove,
         onUpdate,
-        item,
+        item: currentItem,
         addItem,
         sendToBoard,
         onChangeStage,
@@ -497,11 +577,12 @@ export default function TicketEditForm(props: Props) {
         onDeleteComment: isTicketType ? handleDeleteComment : undefined,
         onEditComment: isTicketType ? handleEditComment : undefined,
         currentUser,
+        onSendEmail: handleSendEmail,
       };
 
       const sidebarProps = {
         options,
-        item,
+        item: currentItem,
         sidebar: renderSidebar,
         saveItem,
         renderItems,
@@ -515,7 +596,7 @@ export default function TicketEditForm(props: Props) {
           <Top
             options={options}
             stageId={state.stageId}
-            item={item}
+            item={currentItem}
             saveItem={saveItem}
             onChangeStage={onChangeStage}
           />
@@ -523,7 +604,7 @@ export default function TicketEditForm(props: Props) {
           <MobileLayoutComponent
             isMobile={true}
             sidebarContent={<MobileSidebar {...sidebarProps} />}
-            item={item}
+            item={currentItem}
             onCloseDateFieldsChange={onCloseDateFieldsChange}
           >
             <Left {...leftProps} />
@@ -538,9 +619,10 @@ export default function TicketEditForm(props: Props) {
         <Top
           options={options}
           stageId={state.stageId}
-          item={item}
+          item={currentItem}
           saveItem={saveItem}
           onChangeStage={onChangeStage}
+          onSendEmail={handleSendEmail}
         />
 
         <Flex>
@@ -550,7 +632,7 @@ export default function TicketEditForm(props: Props) {
             copyItem={copy}
             removeItem={remove}
             onUpdate={onUpdate}
-            item={item}
+            item={currentItem}
             addItem={addItem}
             sendToBoard={sendToBoard}
             onChangeStage={onChangeStage}
@@ -560,11 +642,12 @@ export default function TicketEditForm(props: Props) {
             onDeleteComment={isTicketType ? handleDeleteComment : undefined}
             onEditComment={isTicketType ? handleEditComment : undefined}
             currentUser={currentUser}
+            onSendEmail={handleSendEmail}
           />
 
           <Sidebar
             options={options}
-            item={item}
+            item={currentItem}
             sidebar={renderSidebar}
             saveItem={saveItem}
             renderItems={renderItems}
