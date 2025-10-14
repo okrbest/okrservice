@@ -20,6 +20,7 @@ import {
   sendIntegrationsMessage,
   sendTicketsMessage,
 } from "../../messageBroker";
+import { getConfig } from "../../utils";
 
 import { AUTO_BOT_MESSAGES } from "../../models/definitions/constants";
 import EditorAttributeUtil from "@erxes/api-utils/src/editorAttributeUtils";
@@ -207,7 +208,8 @@ export const getMessengerData = async (
   const allowedFileTypes = await getConfig(
     "WIDGETS_UPLOAD_FILE_TYPES",
     "",
-    models
+    models,
+    subdomain
   );
   const fileTypesArray =
     typeof allowedFileTypes === "string"
