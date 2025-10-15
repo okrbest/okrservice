@@ -113,15 +113,16 @@ export const putCreateLog = async (
 ) => {
   const isAutomationsAvailable = await isEnabled("automations");
 
-  if (isAutomationsAvailable) {
-    sendMessage("automations:trigger", {
-      subdomain,
-      data: {
-        type: `${params.type}`,
-        targets: [params.object]
-      }
-    });
-  }
+  // 🔥 Automation trigger는 수동으로 호출하므로 여기서는 비활성화
+  // if (isAutomationsAvailable) {
+  //   sendMessage("automations:trigger", {
+  //     subdomain,
+  //     data: {
+  //       type: `${params.type}`,
+  //       targets: [params.object]
+  //     }
+  //   });
+  // }
 
   const isWebhooksAvailable = await isEnabled("webhooks");
 
@@ -151,8 +152,7 @@ export const putUpdateLog = async (
 ) => {
   const isAutomationsAvailable = await isEnabled("automations");
 
-  // 🔥 Update 시에는 자동화 트리거를 수동으로 호출하므로 여기서는 비활성화
-  // (필요한 경우 itemsEdit 등에서 직접 호출)
+  // 🔥 Automation trigger는 수동으로 호출하므로 여기서는 비활성화
   // if (isAutomationsAvailable) {
   //   sendMessage("automations:trigger", {
   //     subdomain,

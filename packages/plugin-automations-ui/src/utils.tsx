@@ -324,23 +324,8 @@ export const getTriggerConfig = (
 export const renderDynamicComponent = (props, type) => {
   const plugins: any[] = (window as any).plugins || [];
 
-  // type에서 서비스 이름 추출 (예: "ticket.create" -> "ticket", "tickets:ticket.create" -> "tickets")
-  const [servicePart] = type.split(':');
-  const [baseType] = servicePart.split('.');
-  
-  // 단일 타입을 복수형으로 매핑
-  const typeMapping = {
-    'ticket': 'tickets',
-    'deal': 'sales',
-    'task': 'tasks',
-    'purchase': 'purchases',
-  };
-  
-  const mappedService = typeMapping[baseType] || baseType;
-
   for (const plugin of plugins) {
-    // 기존 방식 (tickets:ticket.create 형태) 또는 새로운 방식 (ticket.create 형태)
-    if ((type.includes(`${plugin.name}:`) || plugin.name === mappedService) && plugin.automation) {
+    if (type.includes(`${plugin.name}:`) && plugin.automation) {
       return (
         <RenderDynamicComponent
           scope={plugin.scope}

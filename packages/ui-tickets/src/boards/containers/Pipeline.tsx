@@ -61,11 +61,11 @@ class WithStages extends Component<WithStagesQueryProps> {
     this.setState({ isMobile });
   };
 
-  componentDidUpdate(prevProps: Props) {
+  componentWillReceiveProps(nextProps: Props) {
     const { stagesQuery, queryParams } = this.props;
     const { pipelineId } = queryParams;
 
-    if (this.queryParamsChanged(prevProps.queryParams, queryParams)) {
+    if (this.queryParamsChanged(queryParams, nextProps.queryParams)) {
       stagesQuery.refetch({ pipelineId });
     }
   }

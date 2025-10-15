@@ -33,7 +33,6 @@ type IOptions = {
   sortField?: string;
   sortDirection?: number;
   scroll?: boolean;
-  targetObject?: any;  // 트리거 시점의 target 객체
 };
 
 function mergeToMust(...queries: any[]): any[] {
@@ -69,73 +68,7 @@ export const isInSegment = async (
   idToCheck: string,
   options: IOptions = {}
 ): Promise<boolean> => {
-  console.log('🔍 isInSegment (core) - Start:', { 
-    subdomain, 
-    segmentId, 
-    idToCheck,
-    hasTargetObject: !!options.targetObject
-  });
-  
   const segment = await models.Segments.getSegment(segmentId);
-  
-  console.log('🔍 isInSegment (core) - Segment:', {
-    subdomain,
-    segmentId,
-    contentType: segment?.contentType,
-    conditions: segment?.conditions
-  });
-
-  // targetObject가 제공된 경우 직접 조건 체크 (트리거 시점의 데이터 사용)
-  if (options.targetObject && segment.conditions && segment.conditions.length > 0) {
-    console.log('🎯 isInSegment (core) - Using targetObject for condition check');
-    
-    try {
-      for (const condition of segment.conditions) {
-        if (condition.type === 'subSegment' && condition.subSegmentId) {
-          const subSegment = await models.Segments.findOne({ _id: condition.subSegmentId });
-          
-          if (subSegment && subSegment.conditions) {
-            for (const subCondition of subSegment.conditions) {
-              if (subCondition.type === 'property' && subCondition.propertyName) {
-                const targetValue = options.targetObject[subCondition.propertyName];
-                const expectedValue = subCondition.propertyValue;
-                
-                console.log('🔍 isInSegment (core) - Checking property from targetObject:', {
-                  propertyName: subCondition.propertyName,
-                  targetValue,
-                  expectedValue,
-                  operator: subCondition.propertyOperator
-                });
-                
-                // 연산자에 따른 조건 체크
-                let matches = false;
-                if (subCondition.propertyOperator === 'e') {
-                  matches = String(targetValue) === String(expectedValue);
-                } else if (subCondition.propertyOperator === 'it') {
-                  matches = targetValue === true || String(targetValue).toLowerCase() === 'true';
-                } else if (subCondition.propertyOperator === 'if') {
-                  matches = targetValue === false || String(targetValue).toLowerCase() === 'false';
-                }
-                
-                console.log('🔍 isInSegment (core) - Property check result:', { matches });
-                
-                if (matches) {
-                  console.log('✅ isInSegment (core) - Condition matched from targetObject');
-                  return true;
-                }
-              }
-            }
-          }
-        }
-      }
-      
-      console.log('⚠️ isInSegment (core) - No conditions matched from targetObject');
-      return false;
-    } catch (e) {
-      console.error('❌ isInSegment (core) - Error checking targetObject:', e.message);
-      // 에러 발생 시 기존 방식으로 fallback
-    }
-  }
 
   let defaultMustSelectorFieldName: string = "_id";
 
@@ -156,69 +89,6 @@ export const isInSegment = async (
   ];
 
   const count = await fetchSegment(models, subdomain, segment, options);
-  
-  console.log('🔍 isInSegment (core) - Result:', {
-    segmentId,
-    idToCheck,
-    count,
-    result: count > 0
-  });
-
-  // Elasticsearch 에러 시 MongoDB fallback
-  if (count === -1) {
-    console.log('⚠️ isInSegment (core) - Elasticsearch failed, using MongoDB fallback');
-    
-    try {
-      // segment의 subsegment conditions 체크
-      if (segment.conditions && segment.conditions.length > 0) {
-        for (const condition of segment.conditions) {
-          if (condition.type === 'subSegment' && condition.subSegmentId) {
-            const subSegment = await models.Segments.findOne({ _id: condition.subSegmentId });
-            
-            if (subSegment && subSegment.conditions) {
-              for (const subCondition of subSegment.conditions) {
-                if (subCondition.type === 'property' && subCondition.propertyName && subCondition.propertyOperator === 'e') {
-                  // MongoDB에서 직접 체크
-                  const contentType = subCondition.propertyType || segment.contentType;
-                  const collectionName = contentType.includes(':') ? contentType.split(':')[1] : contentType;
-                  
-                  console.log('🔍 isInSegment (core) - MongoDB fallback check:', {
-                    collectionName,
-                    idToCheck,
-                    propertyName: subCondition.propertyName,
-                    propertyValue: subCondition.propertyValue
-                  });
-                  
-                  // MongoDB collection에서 직접 확인
-                  const mongoose = models.Segments?.collection?.conn;
-                  if (mongoose) {
-                    const db = mongoose.db;
-                    const collection = db.collection(collectionName + 's'); // 'ticket' -> 'tickets'
-                    
-                    const query: any = {
-                      _id: idToCheck,
-                      [subCondition.propertyName]: subCondition.propertyValue
-                    };
-                    
-                    const doc = await collection.findOne(query);
-                    
-                    const found = !!doc;
-                    console.log('🔍 isInSegment (core) - MongoDB fallback result:', { found });
-                    
-                    return found;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.error('❌ isInSegment (core) - MongoDB fallback error:', e.message);
-    }
-    
-    return false;
-  }
 
   return count > 0;
 };

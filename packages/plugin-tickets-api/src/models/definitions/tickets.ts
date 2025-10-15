@@ -6,9 +6,6 @@ export interface ITicket extends IItemCommonFields {
   source?: string;
   requestType?: string;
   hasNotified?: boolean;
-  widgetAlarm?: boolean;
-  manualEmailRequest?: boolean;
-  emailSent?: boolean;
 }
 
 export interface ITicketDocument extends ITicket, Document {
@@ -22,7 +19,5 @@ export const ticketSchema = new Schema({
   source: field({ type: String, label: "Source" }),
   requestType: field({ type: String, label: "Request Type" }),
   hasNotified: field({ type: Boolean, default: true, label: "Has Notified" }),
-  widgetAlarm: field({ type: Boolean, default: true, label: "Widget Alarm" }),
-  manualEmailRequest: field({ type: Boolean, default: false, label: "Manual Email Request" }),
-  emailSent: field({ type: Boolean, default: false, label: "Email Sent" })
+  widgetAlarm: field({ type: Boolean, default: true, label: "Widget Alarm" })
 });

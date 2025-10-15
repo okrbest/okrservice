@@ -163,7 +163,6 @@ export const mutations = `
   automationsEdit(_id: String, ${commonFields}): Automation
   automationsRemove(automationIds: [String]): [String]
   archiveAutomations(automationIds: [String],isRestore:Boolean): [String]
-  automationTriggerManual(type: String!, targets: [JSON]!): JSON
 
   automationsSaveAsTemplate(_id: String!, name: String, duplicate: Boolean): Automation
   automationsCreateFromTemplate(_id: String): Automation

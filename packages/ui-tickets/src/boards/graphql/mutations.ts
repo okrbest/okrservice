@@ -18,12 +18,9 @@ export const commonMutationVariables = `
   $priority: String,
   $sourceConversationIds: [String],
   $customFieldsData: JSON,
-  $tagIds: [String],
+  $tagIds: [String]
   $branchIds:[String],
-  $departmentIds:[String],
-  $manualEmailRequest: Boolean,
-  $emailSent: Boolean,
-  $widgetAlarm: Boolean
+  $departmentIds:[String]
 `;
 
 export const commonMutationParams = `
@@ -44,12 +41,9 @@ export const commonMutationParams = `
   priority: $priority,
   sourceConversationIds: $sourceConversationIds,
   customFieldsData: $customFieldsData,
-  tagIds: $tagIds,
-  branchIds: $branchIds,
-  departmentIds: $departmentIds,
-  manualEmailRequest: $manualEmailRequest,
-  emailSent: $emailSent,
-  widgetAlarm: $widgetAlarm
+  tagIds: $tagIds
+  branchIds: $branchIds
+  departmentIds: $departmentIds
 `;
 
 export const commonDragVariables = `
@@ -197,9 +191,6 @@ export const commonFields = `
   branchIds
   departmentIds
   requestType
-  widgetAlarm
-  manualEmailRequest
-  emailSent
 `;
 
 const pipelinesWatch = `
