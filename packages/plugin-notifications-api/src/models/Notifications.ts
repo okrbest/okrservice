@@ -67,8 +67,17 @@ export const loadNotificationClass = (models) => {
         notifType: doc.notifType,
       });
 
+      console.log('🔔 [Notification] createNotification:', {
+        receiver: doc.receiver,
+        notifType: doc.notifType,
+        hasConfig: !!config,
+        isAllowed: config?.isAllowed,
+        willSend: !config || config.isAllowed
+      });
+
       // receiver disabled this notification
       if (config && !config.isAllowed) {
+        console.log('❌ [Notification] Blocked by user configuration:', doc.notifType);
         throw new Error('Configuration does not exist');
       }
 
@@ -120,8 +129,15 @@ export const loadNotificationConfigClass = (models) => {
 
       const oldOne = await models.NotificationConfigurations.findOne(selector);
 
-      // If already inserted then raise error
+      // If already inserted then update
       if (oldOne) {
+        console.log(`🔧 [NotificationConfig] Updating configuration:`, {
+          user: typeof user === 'string' ? user : user?._id,
+          notifType,
+          oldIsAllowed: oldOne.isAllowed,
+          newIsAllowed: isAllowed
+        });
+        
         await models.NotificationConfigurations.updateOne(
           { _id: oldOne._id },
           { $set: { isAllowed } }
@@ -131,6 +147,12 @@ export const loadNotificationConfigClass = (models) => {
       }
 
       // If it is first time then insert
+      console.log(`➕ [NotificationConfig] Creating new configuration:`, {
+        user: typeof user === 'string' ? user : user?._id,
+        notifType,
+        isAllowed
+      });
+      
       selector.isAllowed = isAllowed;
 
       return models.NotificationConfigurations.create(selector);

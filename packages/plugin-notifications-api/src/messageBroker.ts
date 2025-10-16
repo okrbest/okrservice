@@ -73,15 +73,11 @@ const sendNotification = async (
     isRPC: true,
     defaultValue: [],
   });
-  // collect recipient emails
-
+  
+  // collect recipient emails only from users who successfully received notification
+  // and have email notification enabled
   const toEmails: string[] = [];
 
-  for (const recipient of recipients) {
-    if (recipient.email) {
-      toEmails.push(recipient.email);
-    }
-  }
   // loop through receiver ids
   for (const receiverId of receiverIds) {
     try {
@@ -108,11 +104,23 @@ const sendNotification = async (
           content: notification.content,
         },
       });
+
+      // 알림 생성이 성공했을 때만 이메일 수집
+      // getNotificationByEmail 설정도 함께 체크
+      const recipient = recipients.find((r) => r._id === receiverId);
+      if (recipient && recipient.email && recipient.getNotificationByEmail) {
+        console.log(`📧 [Email] Adding to email list: ${recipient.email} (notifType: ${notifType})`);
+        toEmails.push(recipient.email);
+      } else if (recipient && recipient.email) {
+        console.log(`⚠️ [Email] Skipped (getNotificationByEmail=false): ${recipient.email}`);
+      }
     } catch (e) {
       // Any other error is serious
       if (e.message !== "Configuration does not exist") {
         throw e;
       }
+      console.log(`🚫 [Email] Notification blocked for receiver: ${receiverId} (notifType: ${notifType})`);
+      // Configuration does not exist = 사용자가 이 알림을 끔 -> 이메일도 보내지 않음
     }
   } // end receiverIds loop
 
@@ -120,32 +128,43 @@ const sendNotification = async (
 
   link = `${DOMAIN}${link}`;
 
-  // for controlling email template data filling
-  const modifier = (data: any, email: string) => {
-    const user = recipients.find((item) => item.email === email);
+  // 이메일 수신자가 있을 때만 이메일 발송
+  if (toEmails.length > 0) {
+    console.log(`✉️ [Email] Sending notification emails:`, {
+      notifType,
+      recipients: toEmails.length,
+      emails: toEmails
+    });
+    
+    // for controlling email template data filling
+    const modifier = (data: any, email: string) => {
+      const user = recipients.find((item) => item.email === email);
 
-    if (user) {
-      data.uid = user._id;
-    }
-  };
+      if (user) {
+        data.uid = user._id;
+      }
+    };
 
-  sendCoreMessage({
-    subdomain,
-    action: "sendEmail",
-    data: {
-      toEmails,
-      title: "Notification",
-      template: {
-        name: "notification",
-        data: {
-          notification: { ...doc, link },
-          action,
-          userName: getUserDetail(createdUser),
+    sendCoreMessage({
+      subdomain,
+      action: "sendEmail",
+      data: {
+        toEmails,
+        title: "Notification",
+        template: {
+          name: "notification",
+          data: {
+            notification: { ...doc, link },
+            action,
+            userName: getUserDetail(createdUser),
+          },
         },
+        modifier,
       },
-      modifier,
-    },
-  });
+    });
+  } else {
+    console.log(`🔇 [Email] No email recipients for notifType: ${notifType}`);
+  }
 };
 
 async function markNotificationsAsUnread(
