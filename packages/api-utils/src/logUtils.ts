@@ -2,7 +2,7 @@ import * as _ from "underscore";
 import redis from "./redis";
 import { IUserDocument } from "./types";
 import { isEnabled } from "./serviceDiscovery";
-import { sendMessage,  } from "./messageBroker";
+import { sendMessage } from "./messageBroker";
 
 export interface ILogDataParams {
   type: string;
@@ -88,7 +88,7 @@ export const gatherUsernames = async (
     foreignKey,
     prevList,
     nameFields: ["email", "username"],
-    items
+    items,
   });
 };
 
@@ -99,7 +99,7 @@ interface IFinalLogParams extends ILogDataParams {
 export const LOG_ACTIONS = {
   CREATE: "create",
   UPDATE: "update",
-  DELETE: "delete"
+  DELETE: "delete",
 };
 
 export type LogDesc = {
@@ -113,16 +113,15 @@ export const putCreateLog = async (
 ) => {
   const isAutomationsAvailable = await isEnabled("automations");
 
-  // 🔥 Automation trigger는 수동으로 호출하므로 여기서는 비활성화
-  // if (isAutomationsAvailable) {
-  //   sendMessage("automations:trigger", {
-  //     subdomain,
-  //     data: {
-  //       type: `${params.type}`,
-  //       targets: [params.object]
-  //     }
-  //   });
-  // }
+  if (isAutomationsAvailable) {
+    sendMessage("automations:trigger", {
+      subdomain,
+      data: {
+        type: `${params.type}`,
+        targets: [params.object],
+      },
+    });
+  }
 
   const isWebhooksAvailable = await isEnabled("webhooks");
 
@@ -132,8 +131,8 @@ export const putCreateLog = async (
       data: {
         action: LOG_ACTIONS.CREATE,
         type: params.type,
-        params
-      }
+        params,
+      },
     });
   }
 
@@ -152,16 +151,15 @@ export const putUpdateLog = async (
 ) => {
   const isAutomationsAvailable = await isEnabled("automations");
 
-  // 🔥 Automation trigger는 수동으로 호출하므로 여기서는 비활성화
-  // if (isAutomationsAvailable) {
-  //   sendMessage("automations:trigger", {
-  //     subdomain,
-  //     data: {
-  //       type: `${params.type}`,
-  //       targets: [params.updatedDocument]
-  //     }
-  //   });
-  // }
+  if (isAutomationsAvailable) {
+    sendMessage("automations:trigger", {
+      subdomain,
+      data: {
+        type: `${params.type}`,
+        targets: [params.updatedDocument],
+      },
+    });
+  }
 
   const isWebhooksAvailable = await isEnabled("webhooks");
 
@@ -171,8 +169,8 @@ export const putUpdateLog = async (
       data: {
         action: LOG_ACTIONS.UPDATE,
         type: params.type,
-        params
-      }
+        params,
+      },
     });
   }
 
@@ -197,8 +195,8 @@ export const putDeleteLog = async (
       data: {
         action: LOG_ACTIONS.DELETE,
         type: params.type,
-        params
-      }
+        params,
+      },
     });
   }
 
@@ -226,8 +224,8 @@ const putLog = async (
           object: params.object,
           newData: params.newData,
           extraDesc: params.extraDesc,
-          user
-        }
+          user,
+        },
       });
     }
   }
@@ -240,8 +238,8 @@ const putLog = async (
       unicode: user.username || user.email || user._id,
       object: JSON.stringify(params.object),
       newData: JSON.stringify(params.newData),
-      extraDesc: JSON.stringify(params.extraDesc)
-    }
+      extraDesc: JSON.stringify(params.extraDesc),
+    },
   });
 };
 
@@ -253,25 +251,24 @@ export interface IActivityLogParams {
 
 export const putActivityLog = async (
   subdomain: string,
-  params: IActivityLogParams,
+  params: IActivityLogParams
 ) => {
   const { data } = params;
-  const isAutomationsAvailable = await isEnabled('automations');
+  const isAutomationsAvailable = await isEnabled("automations");
 
   try {
-    // 🔥 Automation trigger는 수동으로 호출하므로 여기서는 비활성화
-    // if (isAutomationsAvailable && data.target) {
-    //   sendMessage('automations:trigger', {
-    //     subdomain,
-    //     data: {
-    //       type: `${data.contentType}`,
-    //       targets: [data.target],
-    //       ...(data.automations || {}),
-    //     },
-    //   });
-    // }
+    if (isAutomationsAvailable && data.target) {
+      sendMessage("automations:trigger", {
+        subdomain,
+        data: {
+          type: `${data.contentType}`,
+          targets: [data.target],
+          ...(data.automations || {}),
+        },
+      });
+    }
 
-    return sendMessage('putActivityLog', {
+    return sendMessage("putActivityLog", {
       data: params,
       subdomain,
     });
@@ -301,7 +298,7 @@ export const getSchemaLabels = (type: string, schemaMappings: ISchemaMap[]) => {
   let fieldNames: INameLabel[] = [];
 
   const found: ISchemaMap | undefined = schemaMappings.find(
-    m => m.name === type
+    (m) => m.name === type
   );
 
   if (found) {
@@ -319,7 +316,7 @@ export const getSchemaLabels = (type: string, schemaMappings: ISchemaMap[]) => {
         }
 
         // no need to show _id field
-        if (field && !field.label && name !== '_id') {
+        if (field && !field.label && name !== "_id") {
           fieldNames.push({ name, label: name });
         }
 
