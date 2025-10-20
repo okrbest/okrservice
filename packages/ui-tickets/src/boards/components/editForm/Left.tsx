@@ -152,7 +152,6 @@ type DescProps = {
   saveItem: (doc: { [key: string]: any }, callback?: (item) => void) => void;
   contentType: string;
   isMobile: boolean;
-  onChangeRefresh?: () => void;
 };
 
 // WidgetComments 컴포넌트 수정
@@ -518,7 +517,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
 };
 
 const Description = (props: DescProps) => {
-  const { item, saveItem, contentType, isMobile, onChangeRefresh } = props;
+  const { item, saveItem, contentType, isMobile } = props;
   const [edit, setEdit] = useState(false);
   const [isSubmitted, setSubmit] = useState(false);
   const [description, setDescription] = useState(item.description);
@@ -534,13 +533,7 @@ const Description = (props: DescProps) => {
   }, [isSubmitted]);
 
   const onSend = () => {
-    saveItem({ description }, () => {
-      // saveItem이 자동으로 UI를 새로고침하므로 onChangeRefresh는 필요 없음
-      // 하지만 호환성을 위해 남겨둠
-      if (onChangeRefresh) {
-        onChangeRefresh();
-      }
-    });
+    saveItem({ description });
     setSubmit(true);
   };
 
@@ -642,7 +635,6 @@ type Props = {
   sendToBoard?: (item: any) => void;
   onChangeStage?: (stageId: string) => void;
   onChangeRefresh: () => void;
-  onSendEmail?: () => void;
   widgetComments?: any[];
   onAddComment?: (content: string) => void;
   onDeleteComment?: (commentId: string) => void;
@@ -695,7 +687,6 @@ const Left = (props: Props) => {
           sendToBoard={sendToBoard}
           onChangeStage={onChangeStage}
           onChangeRefresh={onChangeRefresh}
-          onSendEmail={props.onSendEmail}
         />
       )}
 
@@ -723,7 +714,7 @@ const Left = (props: Props) => {
         <Uploader defaultFileList={attachments} onChange={onChangeAttachment} />
       </FormGroup>
 
-      <Description item={item} saveItem={saveItem} contentType={options.type} isMobile={isMobile} onChangeRefresh={onChangeRefresh} />
+      <Description item={item} saveItem={saveItem} contentType={options.type} isMobile={isMobile} />
 
       <WidgetComments 
         widgetComments={widgetComments} 
