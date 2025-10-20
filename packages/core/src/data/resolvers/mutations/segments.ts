@@ -20,6 +20,28 @@ const segmentMutations = {
   ) {
     const extendedDoc = docModifier(doc);
 
+    // UI에서 'tickets:ticket' 형태로 오면 DB에는 'ticket'으로 저장
+    const typeMapping = {
+      'tickets:ticket': 'ticket',
+      'sales:deal': 'deal',
+      'tasks:task': 'task',
+      'purchases:purchase': 'purchase',
+    };
+    
+    if (extendedDoc.contentType && extendedDoc.contentType.includes(':')) {
+      extendedDoc.contentType = typeMapping[extendedDoc.contentType] || extendedDoc.contentType;
+    }
+    
+    // conditions 안의 propertyType도 변환
+    if (extendedDoc.conditions) {
+      extendedDoc.conditions = extendedDoc.conditions.map(condition => {
+        if (condition.propertyType && condition.propertyType.includes(':')) {
+          condition.propertyType = typeMapping[condition.propertyType] || condition.propertyType;
+        }
+        return condition;
+      });
+    }
+
     const conditionSegments = extendedDoc.conditionSegments;
 
     const segment = await models.Segments.createSegment(
@@ -54,6 +76,29 @@ const segmentMutations = {
     { models, subdomain, user }: IContext
   ) {
     const segment = await models.Segments.getSegment(_id);
+    
+    // UI에서 'tickets:ticket' 형태로 오면 DB에는 'ticket'으로 저장
+    const typeMapping = {
+      'tickets:ticket': 'ticket',
+      'sales:deal': 'deal',
+      'tasks:task': 'task',
+      'purchases:purchase': 'purchase',
+    };
+    
+    if (doc.contentType && doc.contentType.includes(':')) {
+      doc.contentType = typeMapping[doc.contentType] || doc.contentType;
+    }
+    
+    // conditions 안의 propertyType도 변환
+    if (doc.conditions) {
+      doc.conditions = doc.conditions.map(condition => {
+        if (condition.propertyType && condition.propertyType.includes(':')) {
+          condition.propertyType = typeMapping[condition.propertyType] || condition.propertyType;
+        }
+        return condition;
+      });
+    }
+    
     const conditionSegments = doc.conditionSegments;
 
     const updated = await models.Segments.updateSegment(

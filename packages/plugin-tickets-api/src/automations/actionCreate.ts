@@ -141,7 +141,9 @@ export const actionCreate = async ({
         }
       });
     } else {
-      const mainType = execution.triggerType.split(':')[1];
+      // triggerType이 'ticket' 또는 'tickets:ticket' 형태 모두 처리
+      const triggerTypeParts = execution.triggerType.split(':');
+      const mainType = triggerTypeParts.length > 1 ? triggerTypeParts[1] : triggerTypeParts[0];
 
       await sendCoreMessage({
         subdomain,

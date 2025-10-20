@@ -18,6 +18,22 @@ export const getName = (type: string) => type.split(':')[1];
 export const getServiceName = (type: string) => type.split(':')[0];
 
 export const getEsIndexByContentType = async (contentType: string) => {
+  if (!contentType) {
+    return '';
+  }
+  
+  // DB에서 'ticket' 형태로 저장된 경우 'tickets:ticket'으로 변환
+  if (!contentType.includes(':')) {
+    const typeMapping = {
+      'ticket': 'tickets:ticket',
+      'deal': 'sales:deal',
+      'task': 'tasks:task',
+      'purchase': 'purchases:purchase',
+    };
+    
+    contentType = typeMapping[contentType] || contentType;
+  }
+  
   const [serviceName, type] = contentType.split(':');
 
   const service = await getService(serviceName);
