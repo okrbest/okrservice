@@ -6,6 +6,7 @@ import React from "react";
 import Select, { OnChangeValue } from "react-select";
 import SelectCompanies from "@erxes/ui-contacts/src/companies/containers/SelectCompanies";
 import SelectCustomers from "@erxes/ui-contacts/src/customers/containers/SelectCustomers";
+import TicketFilterDrawer from "./TicketFilterDrawer";
 import { __ } from "coreui/utils";
 import { getBoardViewType } from "@erxes/ui-tickets/src/boards/utils";
 import { isEnabled } from "@erxes/ui/src/utils/core";
@@ -64,10 +65,6 @@ const TicketMainActionBar = (props: Props) => {
         queryParams={queryParams}
         onSelect={onSelect}
         perPage={100}
-        filterParams={{
-          sortField: "primaryName",
-          sortDirection: 1
-        }}
       />
 
       <SelectCustomers
@@ -79,11 +76,22 @@ const TicketMainActionBar = (props: Props) => {
     </>
   );
 
+  const filterComponent = () => {
+    return (
+      <TicketFilterDrawer
+        queryParams={queryParams}
+        onSelect={onSelect}
+        btnSize="small"
+      />
+    );
+  };
+
   const extendedProps = {
     ...props,
     options,
     extraFilter,
-    link: `/ticket/${viewType}`
+    link: `/ticket/${viewType}`,
+    middleContent: filterComponent
   };
 
   return <MainActionBar viewType={viewType} {...extendedProps} />;

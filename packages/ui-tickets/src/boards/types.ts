@@ -424,6 +424,8 @@ export interface IFilterParams extends ISavedConformity {
   startDateEndDate: Date;
   closeDateStartDate: Date;
   closeDateEndDate: Date;
+  source?: string | string[];
+  requestType?: string | string[];
 }
 
 export interface INonFilterParams {

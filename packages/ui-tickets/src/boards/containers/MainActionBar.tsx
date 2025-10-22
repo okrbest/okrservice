@@ -54,7 +54,9 @@ const FILTER_PARAMS = [
   "startDateStartDate",
   "startDateEndDate",
   "closeDateStartDate",
-  "closeDateEndDate"
+  "closeDateEndDate",
+  "source",
+  "requestType"
 ];
 
 export const getBoardId = () => {

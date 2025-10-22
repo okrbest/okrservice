@@ -213,6 +213,8 @@ export const generateCommonFilters = async (
     customFieldsDataFilters,
     vendorCustomerIds,
     resolvedDayBetween,
+    source,
+    requestType,
   } = args;
 
   const isListEmpty = (value) => {
@@ -462,6 +464,14 @@ export const generateCommonFilters = async (
 
   if (priority) {
     filter.priority = contains(priority);
+  }
+
+  if (source) {
+    filter.source = contains(source);
+  }
+
+  if (requestType) {
+    filter.requestType = contains(requestType);
   }
 
   if (tagIds) {

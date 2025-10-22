@@ -188,7 +188,13 @@ export default withProps<Props>(
           extraParams: getExtraParams(queryParams),
           closeDateType: queryParams.closeDateType,
           userIds: queryParams.userIds,
-          assignedToMe: queryParams.assignedToMe
+          assignedToMe: queryParams.assignedToMe,
+          branchIds: queryParams.branchIds,
+          departmentIds: queryParams.departmentIds,
+          segment: queryParams.segment,
+          segmentData: queryParams.segmentData,
+          source: queryParams.source,
+          requestType: queryParams.requestType
         }
       })
     }),
