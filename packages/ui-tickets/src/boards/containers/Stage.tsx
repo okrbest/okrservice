@@ -253,6 +253,8 @@ const getFilterParams = (
     assignedToMe: queryParams.assignedToMe,
     startDate: queryParams.startDate,
     endDate: queryParams.endDate,
+    source: queryParams.source,
+    requestType: queryParams.requestType,
     ...getExtraParams(queryParams)
   };
 };

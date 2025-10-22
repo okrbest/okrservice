@@ -246,7 +246,9 @@ const WithQuery = withProps<WithQueryProps>(
           branchIds: queryParams.branchIds,
           departmentIds: queryParams.departmentIds,
           segment: queryParams.segment,
-          segmentData: queryParams.segmentData
+          segmentData: queryParams.segmentData,
+          source: queryParams.source,
+          requestType: queryParams.requestType
         },
         context: {
           fetchOptions: { signal: abortController && abortController.signal }

@@ -495,7 +495,7 @@ class MainActionBar extends React.Component<Props, State> {
 
         {!isMobile && this.renderTimeView()}
         {!isMobile && queryParams && <Filter queryParams={queryParams} />}
-        {!isMobile && (
+        {!isMobile && !middleContent && (
           <TemporarySegment
             contentType={`tickets:${type}`}
             serviceConfig={{

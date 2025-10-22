@@ -129,6 +129,8 @@ const stageParams = `
   startDateEndDate: Date
   closeDateStartDate: Date
   closeDateEndDate: Date
+  source: [String]
+  requestType: [String]
 `;
 
 export const queries = `

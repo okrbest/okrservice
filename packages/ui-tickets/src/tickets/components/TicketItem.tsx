@@ -50,6 +50,17 @@ const TicketItem: React.FC<Props> = (props) => {
     return colorMap[requestType] || { bg: '#f5f5f5', text: '#616161' };
   };
 
+  const getRequestTypeLabel = (requestType: string) => {
+    const labelMap: { [key: string]: string } = {
+      'inquiry': '단순문의',
+      'improvement': '개선요청',
+      'error': '오류처리',
+      'config': '설정변경'
+    };
+
+    return labelMap[requestType] || requestType;
+  };
+
   const handleClick = () => {
     // portable 모드일 때 티켓 페이지로 이동
     if (portable && item.pipeline && item.pipeline.boardId) {
@@ -118,7 +129,7 @@ const TicketItem: React.FC<Props> = (props) => {
               display: 'inline-block',
               fontWeight: '500'
             }}>
-              {__(requestType)}
+              {getRequestTypeLabel(requestType)}
             </span>
           </div>
         )}

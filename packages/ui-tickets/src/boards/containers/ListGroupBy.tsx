@@ -186,6 +186,10 @@ const getFilterParams = (
     startDate: queryParams.startDate,
     endDate: queryParams.endDate,
     pipelineId: queryParams.pipelineId,
+    branchIds: queryParams.branchIds,
+    departmentIds: queryParams.departmentIds,
+    source: queryParams.source,
+    requestType: queryParams.requestType,
     ...getExtraParams(queryParams)
   };
 

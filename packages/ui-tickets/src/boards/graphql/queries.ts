@@ -153,6 +153,8 @@ const commonParams = `
   $startDateEndDate: Date
   $closeDateStartDate: Date
   $closeDateEndDate: Date
+  $source: [String]
+  $requestType: [String]
 `;
 
 const commonParamDefs = `
@@ -176,6 +178,8 @@ const commonParamDefs = `
   startDateEndDate: $startDateEndDate
   closeDateStartDate: $closeDateStartDate
   closeDateEndDate: $closeDateEndDate
+  source: $source
+  requestType: $requestType
 `;
 
 const stageParams = `
