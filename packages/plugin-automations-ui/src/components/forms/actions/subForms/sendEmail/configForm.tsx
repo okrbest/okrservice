@@ -113,12 +113,9 @@ export const ConfigForm = ({
               inputName='subject'
               label={__('Email Subject')}
               config={doc}
-              onChange={() => null}
-              onKeyPress={(e: any) => {
-                const { name, value } = e.currentTarget as HTMLInputElement;
-                onChange({ [name]: value });
-              }}
+              onChange={onChange}
               triggerType={triggerType}
+              triggerConfig={triggerConfig}
             />
           )}
           subContent={__(config?.subject ? '' : 'Enter subject')}
