@@ -167,9 +167,11 @@ class PlaceHolderInput extends React.Component<Props, State> {
 
     if (attrWithSegmentConfig) {
       return (
-        <AttriibutionForms segmentId={triggerConfig?.contentId}>
-          {config => {
-            return <Attribution {...updatedProps} attrConfig={config} />;
+        <AttriibutionForms segmentId={triggerConfig?.contentId} triggerType={this.props.triggerType}>
+          {(config, contentType) => {
+            // segment의 contentType이 있으면 사용, 없으면 triggerType 사용
+            const finalTriggerType = contentType || this.props.triggerType;
+            return <Attribution {...updatedProps} triggerType={finalTriggerType} attrConfig={config} />;
           }}
         </AttriibutionForms>
       );

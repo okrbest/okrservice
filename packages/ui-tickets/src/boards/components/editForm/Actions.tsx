@@ -147,7 +147,6 @@ class Actions extends React.Component<Props> {
               uppercase={false}
               disabled={!isEnabled}
               style={{
-                marginLeft: '100px', 
                 marginBottom: '5px',
                 opacity: isEnabled ? 1 : 0.5,
                 cursor: isEnabled ? 'pointer' : 'not-allowed'
