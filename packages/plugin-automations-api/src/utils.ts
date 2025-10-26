@@ -430,24 +430,24 @@ export const calculateExecution = async ({
 
         if (!reEnrollment || !reEnrollmentRules.length) {
           console.log('⚠️ calculateExecution - No re-enrollment configured, skipping');
-      return;
-    }
+          return;
+        }
 
-    let isChanged = false;
+        let isChanged = false;
 
-    for (const reEnrollmentRule of reEnrollmentRules) {
-      const ruleResult = isDiffValue(latestExecution.target, target, reEnrollmentRule);
+        for (const reEnrollmentRule of reEnrollmentRules) {
+          const ruleResult = isDiffValue(latestExecution.target, target, reEnrollmentRule);
           console.log('🔍 calculateExecution - Re-enrollment rule check:', {
             rule: reEnrollmentRule,
             ruleResult
           });
-      if (ruleResult) {
-        isChanged = true;
-        break;
-      }
-    }
+          if (ruleResult) {
+            isChanged = true;
+            break;
+          }
+        }
 
-    if (!isChanged) {
+        if (!isChanged) {
           console.log('⚠️ calculateExecution - No value changed, skipping re-enrollment');
           return;
         }
@@ -550,14 +550,11 @@ export const receiveTrigger = async ({
 }) => {
   console.log('🎯 receiveTrigger - type:', type, 'targets count:', targets.length);
   
-  // DB에 'ticket' 형태로 저장된 경우를 위해 변환
-  const shortType = type.includes(':') ? type.split(':')[1] : type;
-  
   const automations = await models.Automations.find({
     status: 'active',
     $or: [
       {
-        'triggers.type': { $in: [type, shortType] }  // 'tickets:ticket' 또는 'ticket' 둘 다 매칭
+        'triggers.type': { $in: [type] }
       },
       {
         'triggers.type': { $regex: `^${type}\\..*` }
@@ -579,14 +576,9 @@ export const receiveTrigger = async ({
       console.log('🎯 receiveTrigger - Processing automation:', automation.name);
       
       for (const trigger of automation.triggers) {
-        // trigger.type이 'ticket' 형태로 저장되어 있고, type이 'tickets:ticket'으로 올 수 있으므로
-        const triggerMatches = trigger.type.includes(type) || 
-                              trigger.type === shortType || 
-                              type.includes(trigger.type);
+        console.log('🎯 receiveTrigger - Checking trigger type:', trigger.type, 'includes', type, '?', trigger.type.includes(type));
         
-        console.log('🎯 receiveTrigger - Checking trigger type:', trigger.type, 'matches', type, '?', triggerMatches);
-        
-        if (!triggerMatches) {
+        if (!trigger.type.includes(type)) {
           console.log('⚠️ receiveTrigger - Trigger type mismatch, skipping');
           continue;
         }
