@@ -10,7 +10,6 @@ import { withProps } from "@erxes/ui/src/utils";
 
 type Props = {
   segmentId: string;
-  triggerType?: string;
   children: any;
 };
 
@@ -24,7 +23,7 @@ class AttributesForm extends React.Component<FinalProps> {
   }
 
   render() {
-    const { segmentDetailQuery, children, triggerType } = this.props;
+    const { segmentDetailQuery, children } = this.props;
 
     const { segmentDetail, loading, error } = segmentDetailQuery || {};
 
@@ -44,10 +43,7 @@ class AttributesForm extends React.Component<FinalProps> {
       config = undefined;
     }
 
-    // segment의 contentType을 children에 전달 (없으면 triggerType 사용)
-    const contentType = segmentDetail?.contentType || triggerType;
-
-    return children(segmentDetail?.config || {}, contentType);
+    return children(segmentDetail?.config || {});
   }
 }
 
