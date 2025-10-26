@@ -22,6 +22,7 @@ export type TriggerType =
   | "task"
   | "purchase"
   | "ticket"
+  | "tickets:ticket"
   | "conversation";
 
 export interface ITrigger {
