@@ -61,11 +61,8 @@ const segmentQueries = {
   },
 
   async segmentsGetAssociationTypes(_root, { contentType }) {
-    if (!contentType) {
-      return [];
-    }
-    
     // contentType이 ":" 없이 단일 타입으로 전달된 경우 매핑
+    /*    
     if (!contentType.includes(':')) {
       const typeMapping = {
         'ticket': 'tickets:ticket',
@@ -76,7 +73,7 @@ const segmentQueries = {
       
       contentType = typeMapping[contentType] || contentType;
     }
-    
+*/
     const [serviceName] = contentType.split(":");
 
     const service = await getService(serviceName);
@@ -172,33 +169,7 @@ const segmentQueries = {
       }
     }
 
-    const segments = await models.Segments.find(selector).sort({ name: 1 });
-    
-    // DB에 'ticket' 형태로 저장된 경우 UI를 위해 'tickets:ticket'으로 변환
-    const typeMapping = {
-      'ticket': 'tickets:ticket',
-      'deal': 'sales:deal',
-      'task': 'tasks:task',
-      'purchase': 'purchases:purchase',
-    };
-    
-    return segments.map(segment => {
-      if (segment.contentType && !segment.contentType.includes(':')) {
-        segment.contentType = typeMapping[segment.contentType] || segment.contentType;
-      }
-      
-      // conditions 안의 propertyType도 변환
-      if (segment.conditions) {
-        segment.conditions = segment.conditions.map(condition => {
-          if (condition.propertyType && !condition.propertyType.includes(':')) {
-            condition.propertyType = typeMapping[condition.propertyType] || condition.propertyType;
-          }
-          return condition;
-        });
-      }
-      
-      return segment;
-    });
+    return models.Segments.find(selector).sort({ name: 1 });
   },
 
   /**
@@ -214,37 +185,11 @@ const segmentQueries = {
     if (contentType) {
       selector.contentType = contentType;
     }
-    const segments = await models.Segments.find({
+    return models.Segments.find({
       ...commonQuerySelector,
       ...selector,
       name: { $exists: true },
       $or: [{ subOf: { $exists: false } }, { subOf: "" }],
-    });
-    
-    // DB에 'ticket' 형태로 저장된 경우 UI를 위해 'tickets:ticket'으로 변환
-    const typeMapping = {
-      'ticket': 'tickets:ticket',
-      'deal': 'sales:deal',
-      'task': 'tasks:task',
-      'purchase': 'purchases:purchase',
-    };
-    
-    return segments.map(segment => {
-      if (segment.contentType && !segment.contentType.includes(':')) {
-        segment.contentType = typeMapping[segment.contentType] || segment.contentType;
-      }
-      
-      // conditions 안의 propertyType도 변환
-      if (segment.conditions) {
-        segment.conditions = segment.conditions.map(condition => {
-          if (condition.propertyType && !condition.propertyType.includes(':')) {
-            condition.propertyType = typeMapping[condition.propertyType] || condition.propertyType;
-          }
-          return condition;
-        });
-      }
-      
-      return segment;
     });
   },
 
@@ -252,35 +197,7 @@ const segmentQueries = {
    * Get one segment
    */
   async segmentDetail(_root, { _id }: { _id: string }, { models }: IContext) {
-    const segment = await models.Segments.findOne({ _id });
-    
-    if (!segment) {
-      return null;
-    }
-    
-    // DB에 'ticket' 형태로 저장된 경우 UI를 위해 'tickets:ticket'으로 변환
-    const typeMapping = {
-      'ticket': 'tickets:ticket',
-      'deal': 'sales:deal',
-      'task': 'tasks:task',
-      'purchase': 'purchases:purchase',
-    };
-    
-    if (segment.contentType && !segment.contentType.includes(':')) {
-      segment.contentType = typeMapping[segment.contentType] || segment.contentType;
-    }
-    
-    // conditions 안의 propertyType도 변환
-    if (segment.conditions) {
-      segment.conditions = segment.conditions.map(condition => {
-        if (condition.propertyType && !condition.propertyType.includes(':')) {
-          condition.propertyType = typeMapping[condition.propertyType] || condition.propertyType;
-        }
-        return condition;
-      });
-    }
-    
-    return segment;
+    return models.Segments.findOne({ _id });
   },
 
   /**
