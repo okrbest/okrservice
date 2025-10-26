@@ -83,12 +83,26 @@ export const setupMessageConsumers = async () => {
         collection[`update${typeUpperCase}`]
       );
       
-      // widgetAlarm이 true인 경우에만 false로 업데이트
+      // widgetAlarm이 true인 경우에만 false로 업데이트하고 automation trigger 호출
       if (wasWidgetAlarmTrue) {
         await models.Tickets.updateOne(
           { _id: itemId },
           { $set: { widgetAlarm: false } }
         );
+        
+        try {
+          await sendMessage({
+            subdomain,
+            serviceName: "automations",
+            action: "trigger",
+            data: {
+              type: "tickets:ticket",
+              targets: [updatedItem]
+            }
+          });
+        } catch (error) {
+          console.error('Failed to send automation trigger:', error);
+        }
       }
       
       return {
@@ -144,12 +158,29 @@ export const setupMessageConsumers = async () => {
       
       let updatedTicket;
       
-      // widgetAlarm이 true인 경우에만 false로 업데이트
+      // widgetAlarm이 true인 경우에만 false로 업데이트하고 automation trigger 호출
       if (wasWidgetAlarmTrue) {
         updatedTicket = await models.Tickets.updateOne(
           { _id },
           { $set: { ...doc, widgetAlarm: false } }
         );
+        
+        try {
+          const ticket = await models.Tickets.findOne({ _id });
+          if (ticket) {
+            await sendMessage({
+              subdomain,
+              serviceName: "automations",
+              action: "trigger",
+              data: {
+                type: "tickets:ticket",
+                targets: [ticket]
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Failed to send automation trigger:', error);
+        }
       } else {
         // widgetAlarm이 이미 false인 경우 description만 업데이트
         updatedTicket = await models.Tickets.updateOne(
@@ -526,36 +557,35 @@ export const setupMessageConsumers = async () => {
       const assignedUserIds = ticket.assignedUserIds || [];
       
       // userType이 "client"가 아닌 경우 (담당자 등이 댓글을 단 경우)
-      // 해당 티켓의 widgetAlarm을 false로, emailSent도 false로 설정하여 Send Email 버튼 활성화
+      // 해당 티켓의 widgetAlarm을 false로 설정하여 고객에게 알림 표시
       if (userType !== "client") {
-        console.log('🔔 Setting widgetAlarm and emailSent to false for ticket:', typeId, 'userType:', userType);
+        // widgetAlarm이 true에서 false로 바뀌는지 확인
+        const wasWidgetAlarmTrue = (ticket as any).widgetAlarm === true;
         
         await models.Tickets.updateOne(
           { _id: typeId },
-          { $set: { widgetAlarm: false, emailSent: false } }
+          { $set: { widgetAlarm: false } }
         );
         
-        console.log('✅ Widget alarm and emailSent set to false - Send Email button enabled');
-        
-        // 🔥 자동 이메일 발송 비활성화 - 수동 버튼으로만 발송
-        // if (wasWidgetAlarmTrue) {
-        //   try {
-        //     const updatedTicket = await models.Tickets.findOne({ _id: typeId });
-        //     if (updatedTicket) {
-        //       await sendMessage({
-        //         subdomain,
-        //         serviceName: "automations",
-        //         action: "trigger",
-        //         data: {
-        //           type: "tickets:ticket",
-        //           targets: [updatedTicket]
-        //         }
-        //       });
-        //     }
-        //   } catch (error) {
-        //     console.error('Failed to send automation trigger for comment:', error);
-        //   }
-        // }
+        // widgetAlarm이 true에서 false로 바뀔 때만 automation trigger 호출
+        if (wasWidgetAlarmTrue) {
+          try {
+            const updatedTicket = await models.Tickets.findOne({ _id: typeId });
+            if (updatedTicket) {
+              await sendMessage({
+                subdomain,
+                serviceName: "automations",
+                action: "trigger",
+                data: {
+                  type: "tickets:ticket",
+                  targets: [updatedTicket]
+                }
+              });
+            }
+          } catch (error) {
+            console.error('Failed to send automation trigger for comment:', error);
+          }
+        }
       }
       
       // userType이 "client"인 경우에만 알림 보내기 (담당자 댓글은 제외)

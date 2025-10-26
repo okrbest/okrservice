@@ -88,9 +88,6 @@ const AutomationDetailsContainer = (props: FinalProps) => {
   const automationNotes = automationNotesQuery.automationNotes || [];
   const constants = automationConstantsQuery.automationConstants || {};
 
-  console.log('🔍 EditAutomation - automationConstants:', constants);
-  console.log('🔍 EditAutomation - propertyTypesConst:', constants.propertyTypesConst);
-
   const updatedProps = {
     ...props,
     loading: automationDetailQuery.loading,

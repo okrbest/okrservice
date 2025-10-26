@@ -43,8 +43,8 @@ type FinalStageProps = {
 } & StageProps;
 
 class StageContainer extends React.PureComponent<FinalStageProps> {
-  componentDidUpdate(prevProps: FinalStageProps) {
-    const { stage, loadingState, onLoad, itemsQuery, options } = this.props;
+  componentWillReceiveProps(nextProps: FinalStageProps) {
+    const { stage, loadingState, onLoad, itemsQuery, options } = nextProps;
 
     if (itemsQuery && !itemsQuery.loading && loadingState !== 'loaded') {
       // Send loaded items to PipelineContext so that context is able to set it
