@@ -167,9 +167,65 @@ class Attachment extends React.Component<Props> {
     return <>({size}B)</>;
   }
 
+  getFileTypeLabel = (attachment) => {
+    const name = attachment.name || attachment.url || "";
+    const fileExtension = name.split(".").pop()?.toLowerCase() || "";
+    
+    // MIME 타입에서 간단한 타입으로 변환
+    if (attachment.type) {
+      const mimeType = attachment.type.toLowerCase();
+      
+      if (mimeType.startsWith("image/")) return "Image";
+      if (mimeType.startsWith("video/")) return "Video";
+      if (mimeType.startsWith("audio/")) return "Audio";
+      if (mimeType.includes("pdf")) return "PDF";
+      if (mimeType.includes("word") || mimeType.includes("document")) return "Word";
+      if (mimeType.includes("excel") || mimeType.includes("spreadsheet")) return "Excel";
+      if (mimeType.includes("powerpoint") || mimeType.includes("presentation")) return "PowerPoint";
+      if (mimeType.includes("zip") || mimeType.includes("compressed")) return "Archive";
+      if (mimeType.includes("text")) return "Text";
+    }
+    
+    // 파일 확장자에서 타입 추론
+    const extensionMap = {
+      // 이미지
+      jpg: "Image", jpeg: "Image", png: "Image", gif: "Image", bmp: "Image", svg: "Image", webp: "Image",
+      // 문서
+      pdf: "PDF",
+      doc: "Word", docx: "Word",
+      xls: "Excel", xlsx: "Excel",
+      ppt: "PowerPoint", pptx: "PowerPoint",
+      hwp: "HWP", hwpx: "HWP",
+      txt: "Text",
+      // 압축
+      zip: "Archive", rar: "Archive", "7z": "Archive",
+      // 비디오
+      mp4: "Video", avi: "Video", mov: "Video", wmv: "Video", flv: "Video",
+      // 오디오
+      mp3: "Audio", wav: "Audio", ogg: "Audio", m4a: "Audio",
+      // 기타
+      csv: "CSV",
+    };
+    
+    return extensionMap[fileExtension] || fileExtension.toUpperCase() || "File";
+  };
+
   renderOtherInfo = (attachment) => {
     const { small } = this.props;
     const name = attachment.name || attachment.url || "";
+    
+    // If name exists, use it. Otherwise extract from URL by removing random ID prefix (21 characters)
+    let downloadName = attachment.name;
+    if (!downloadName && attachment.url) {
+      const urlFileName = attachment.url;
+      downloadName = urlFileName.length > 21 ? urlFileName.substring(21) : urlFileName;
+    }
+    downloadName = downloadName || "file";
+    
+    // Add name parameter to URL for proper filename in download
+    const downloadUrl = attachment.url && attachment.url.includes('http') 
+      ? attachment.url 
+      : `${readFile(attachment.url)}&name=${encodeURIComponent(downloadName)}`;
 
     return (
       <>
@@ -177,7 +233,7 @@ class Attachment extends React.Component<Props> {
           <AttachmentName>{name}</AttachmentName>
           <Download
             rel="noopener noreferrer"
-            href={readFile(attachment.url)}
+            href={downloadUrl}
             target="_blank"
           >
             <Icon icon="external-link-alt" />
@@ -190,9 +246,9 @@ class Attachment extends React.Component<Props> {
                 {__("Size")}: {this.renderFileSize(attachment.size)}
               </div>
             )}
-            {!small && attachment.type && (
+            {!small && (
               <div>
-                {__("Type")}: {attachment.type}
+                {__("Type")}: {this.getFileTypeLabel(attachment)}
               </div>
             )}
           </span>
@@ -209,19 +265,34 @@ class Attachment extends React.Component<Props> {
       <FlexCenter>
         {attachments && (
           <AttachmentsContainer>
-            {attachments.map((att, i) => (
-              <div key={i}>
-                <AttachmentInfo>
-                  <a href={att.url}>{att.name}</a>
-                  {this.renderFileSize(att.size || 0)}
-                </AttachmentInfo>
-                <Icon
-                  size={10}
-                  icon="cancel"
-                  onClick={() => removeAttachment && removeAttachment(i)}
-                />
-              </div>
-            ))}
+            {attachments.map((att, i) => {
+              // If name exists, use it. Otherwise extract from URL by removing random ID prefix (21 characters)
+              let downloadName = att.name;
+              if (!downloadName && att.url) {
+                const urlFileName = att.url;
+                downloadName = urlFileName.length > 21 ? urlFileName.substring(21) : urlFileName;
+              }
+              downloadName = downloadName || "file";
+              
+              // Add name parameter to URL for proper filename in download
+              const downloadUrl = att.url && att.url.includes('http') 
+                ? att.url 
+                : `${readFile(att.url)}&name=${encodeURIComponent(downloadName)}`;
+              
+              return (
+                <div key={i}>
+                  <AttachmentInfo>
+                    <a href={downloadUrl}>{att.name}</a>
+                    {this.renderFileSize(att.size || 0)}
+                  </AttachmentInfo>
+                  <Icon
+                    size={10}
+                    icon="cancel"
+                    onClick={() => removeAttachment && removeAttachment(i)}
+                  />
+                </div>
+              );
+            })}
           </AttachmentsContainer>
         )}
       </FlexCenter>
@@ -308,6 +379,16 @@ class Attachment extends React.Component<Props> {
   };
 
   renderImagePreview(attachment) {
+    // 이미지 파일인지 다시 한번 확인
+    const url = attachment.url || attachment.name || "";
+    const fileExtension = url.split(".").pop()?.toLowerCase() || "";
+    const imageExtensions = ["png", "jpeg", "jpg", "gif", "bmp", "svg", "webp"];
+    
+    // 이미지 확장자가 아니면 아이콘으로 표시
+    if (!imageExtensions.includes(fileExtension)) {
+      return this.renderOtherFile(attachment, "file-2", true);
+    }
+    
     return (
       <ImageWithPreview
         onLoad={this.onLoadImage}
@@ -348,13 +429,18 @@ class Attachment extends React.Component<Props> {
     const { simple, withoutPreview } = this.props;
 
     const url = attachment.url || attachment.name || "";
-    const fileExtension = url.split(".").pop();
+    const fileExtension = url.split(".").pop()?.toLowerCase() || "";
 
     if (withoutPreview) {
       return this.renderWithoutPreview();
     }
 
-    if (attachment.type.startsWith("image")) {
+    // 이미지 확장자가 아닌 경우 이미지로 렌더링하지 않음
+    const imageExtensions = ["png", "jpeg", "jpg", "gif", "bmp", "svg", "webp"];
+    const isImageExtension = imageExtensions.includes(fileExtension);
+    
+    // attachment.type이 image로 시작하더라도 확장자가 이미지가 아니면 이미지로 렌더링하지 않음
+    if (attachment.type.startsWith("image") && isImageExtension) {
       if (simple) {
         return this.renderImagePreview(attachment);
       }

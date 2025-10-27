@@ -93,6 +93,16 @@ class ImageWithPreview extends React.Component<Props, State> {
 
   render() {
     const { alt, src, onLoad, imgPreviewWidth } = this.props;
+    
+    // 이미지 파일인지 확인
+    const url = src || "";
+    const fileExtension = url.split(".").pop()?.toLowerCase() || "";
+    const imageExtensions = ["png", "jpeg", "jpg", "gif", "bmp", "svg", "webp"];
+    
+    // 이미지 확장자가 아니면 렌더링하지 않음
+    if (!imageExtensions.includes(fileExtension)) {
+      return null;
+    }
 
     return (
       <>

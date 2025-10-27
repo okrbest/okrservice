@@ -11,6 +11,25 @@ import Input from "../common/Input";
 import TicketActivity from "./TicketAcitvity";
 import { useTicket } from "../../context/Ticket";
 
+// 파일 타입별 아이콘
+const getFileIcon = (extension: string): string => {
+  const iconMap: { [key: string]: string } = {
+    pdf: "📄",
+    doc: "📝",
+    docx: "📝",
+    xls: "📊",
+    xlsx: "📊",
+    ppt: "📊",
+    pptx: "📊",
+    txt: "📃",
+    zip: "🗜️",
+    rar: "🗜️",
+    csv: "📈",
+  };
+  
+  return iconMap[extension.toLowerCase()] || "📎";
+};
+
 type Props = {
   activityLogs: ITicketActivityLog[];
   comment: string;
@@ -29,17 +48,47 @@ const TicketShowProgress: React.FC<Props> = ({
   const { ticketData = {} } = useTicket();
 
   const renderAttachments = (attachments: IAttachment[]) => {
-    return attachments.map((attachment, index) => (
-      <div key={attachment.url} className="ticket-attachment">
-        <img
-          src={readFile(attachment.url)}
-          alt={`ticket-image-${index}`}
-          onLoad={() => {
-            URL.revokeObjectURL(attachment.name);
-          }}
-        />
-      </div>
-    ));
+    return attachments.map((attachment, index) => {
+      const attachmentName = attachment.url || attachment.name || "";
+      const fileExtension = attachmentName.split(".").pop()?.toLowerCase() || "";
+      const isImage = ["png", "jpeg", "jpg", "gif", "webp", "bmp", "svg"].indexOf(fileExtension) > -1;
+      
+      // If name exists, use it. Otherwise extract from URL by removing random ID prefix (21 characters)
+      let downloadName = attachment.name;
+      if (!downloadName && attachment.url) {
+        const urlFileName = attachment.url;
+        downloadName = urlFileName.length > 21 ? urlFileName.substring(21) : urlFileName;
+      }
+      downloadName = downloadName || "file";
+      
+      // Add name parameter to URL for proper filename in download
+      const downloadUrl = attachment.url && attachment.url.includes('http') 
+        ? attachment.url 
+        : `${readFile(attachment.url)}&name=${encodeURIComponent(downloadName)}`;
+      
+      return (
+        <div key={attachment.url} className="ticket-attachment">
+          {isImage ? (
+            <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
+              <img
+                src={readFile(attachment.url)}
+                alt={`ticket-image-${index}`}
+                onLoad={() => {
+                  URL.revokeObjectURL(attachment.name);
+                }}
+              />
+            </a>
+          ) : (
+            <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit" }}>
+              <div style={{ textAlign: "center", padding: "10px", cursor: "pointer" }}>
+                <span style={{ fontSize: "48px" }}>{getFileIcon(fileExtension)}</span>
+                <div style={{ fontSize: "12px", marginTop: "5px" }}>{attachment.name}</div>
+              </div>
+            </a>
+          )}
+        </div>
+      );
+    });
   };
 
   const renderTicketIssue = () => {

@@ -9,9 +9,77 @@ import { connection } from "../../../connection";
 
 const imgStyle = {
   display: "block",
-  width: "100px",
-  height: "80px",
+  width: "120px",
+  height: "110px",
   "object-fit": "cover",
+  borderRadius: "4px",
+};
+
+const fileWrapperStyle = {
+  display: "flex",
+  flexDirection: "column" as const,
+  alignItems: "center",
+  justifyContent: "center",
+  width: "120px",
+  height: "110px",
+  backgroundColor: "#f5f5f5",
+  borderRadius: "4px",
+  padding: "8px",
+  boxSizing: "border-box" as const,
+  position: "relative" as const,
+};
+
+const fileNameStyle = {
+  fontSize: "11px",
+  textAlign: "center" as const,
+  wordBreak: "break-word" as const,
+  marginTop: "6px",
+  color: "#333",
+  maxWidth: "110px",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical" as const,
+  lineHeight: "1.3",
+};
+
+const removeButtonStyle = {
+  position: "absolute" as const,
+  top: "2px",
+  right: "2px",
+  width: "20px",
+  height: "20px",
+  borderRadius: "50%",
+  backgroundColor: "#ff4d4f",
+  color: "white",
+  border: "none",
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "12px",
+  fontWeight: "bold" as const,
+  zIndex: 10,
+};
+
+// 파일 타입별 아이콘
+const getFileIcon = (extension: string): string => {
+  const iconMap: { [key: string]: string } = {
+    pdf: "📄",
+    doc: "📝",
+    docx: "📝",
+    xls: "📊",
+    xlsx: "📊",
+    ppt: "📊",
+    pptx: "📊",
+    txt: "📃",
+    zip: "🗜️",
+    rar: "🗜️",
+    csv: "📈",
+  };
+  
+  return iconMap[extension.toLowerCase()] || "📎";
 };
 
 interface FileWithUrl extends File {
@@ -145,22 +213,56 @@ const FileUploader = ({
     },
   });
 
-  const thumbs = files.map((file) => (
-    <div className="dropzone-thumb" key={file.name}>
-      <div className="inner">
-        <img
-          src={readFile(file.url || "")}
-          style={imgStyle}
-          // Revoke data uri after image is loaded
-          onLoad={() => {
-            if (file.url?.startsWith("blob:")) {
-              URL.revokeObjectURL(file.url);
-            }
-          }}
-        />
+  const removeFile = (fileToRemove: FileWithUrl) => {
+    setFiles((prevFiles) => {
+      const updatedFiles = prevFiles.filter((file) => file.name !== fileToRemove.name);
+      // 부모 컴포넌트에 업데이트된 파일 목록 전달
+      handleFiles(updatedFiles);
+      return updatedFiles;
+    });
+  };
+
+  const thumbs = files.map((file) => {
+    const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
+    const isImage = ["png", "jpeg", "jpg", "gif", "webp", "bmp", "svg"].includes(fileExtension);
+
+    return (
+      <div className="dropzone-thumb" key={file.name} style={{ position: "relative" }}>
+        <div className="inner" style={{ position: "relative" }}>
+          <button
+            style={removeButtonStyle}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              removeFile(file);
+            }}
+            title="파일 제거"
+          >
+            ×
+          </button>
+          {isImage ? (
+            <img
+              src={readFile(file.url || "")}
+              style={imgStyle}
+              alt={file.name}
+              onLoad={() => {
+                if (file.url?.startsWith("blob:")) {
+                  URL.revokeObjectURL(file.url);
+                }
+              }}
+            />
+          ) : (
+            <div style={fileWrapperStyle}>
+              <span style={{ fontSize: "40px", marginBottom: "4px" }}>{getFileIcon(fileExtension)}</span>
+              <span style={fileNameStyle} title={file.name}>
+                {file.name}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  ));
+    );
+  });
 
   React.useEffect(() => {
     // Make sure to revoke the data uris to avoid memory leaks, will run on unmount

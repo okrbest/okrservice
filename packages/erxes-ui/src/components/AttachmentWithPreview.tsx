@@ -227,6 +227,19 @@ class AttachmentWithPreview extends React.Component<Props, State> {
     const galleryAttachment =
       attachments[currentIndex !== 0 ? currentIndex : index || 0];
 
+    // If name exists, use it. Otherwise extract from URL by removing random ID prefix (21 characters)
+    let downloadName = galleryAttachment.name;
+    if (!downloadName && galleryAttachment.url) {
+      const urlFileName = galleryAttachment.url;
+      downloadName = urlFileName.length > 21 ? urlFileName.substring(21) : urlFileName;
+    }
+    downloadName = downloadName || "file";
+    
+    // Add name parameter to URL for proper filename in download
+    const downloadUrl = galleryAttachment.url && galleryAttachment.url.includes('http') 
+      ? galleryAttachment.url 
+      : `${readFile(galleryAttachment.url || "")}&name=${encodeURIComponent(downloadName)}`;
+
     return (
       <>
         <PreviewOverlay>
@@ -250,7 +263,7 @@ class AttachmentWithPreview extends React.Component<Props, State> {
                 {__("Open in new tab")}
               </a>
               <a
-                href={readFile(galleryAttachment.url || "")}
+                href={downloadUrl}
                 rel="noopener noreferrer"
               >
                 <Icon icon="download-1" size={12} /> {__("Download")}
@@ -311,6 +324,18 @@ class AttachmentWithPreview extends React.Component<Props, State> {
 
     if (forceShowIcon && icon) {
       return <Icon icon={icon} onClick={this.onToggle} />;
+    }
+
+    // 이미지 파일인지 확인
+    const isImageFile = attachment.type && attachment.type.startsWith("image");
+    const url = attachment.url || attachment.name || "";
+    const fileExtension = url.split(".").pop()?.toLowerCase() || "";
+    const imageExtensions = ["png", "jpeg", "jpg", "gif", "bmp", "svg", "webp"];
+    
+    // 이미지 타입이거나 이미지 확장자가 아니면 아이콘 표시
+    if (!isImageFile && !imageExtensions.includes(fileExtension)) {
+      // 아이콘이 있으면 아이콘 표시, 없으면 기본 파일 아이콘
+      return <Icon icon={icon || "file-2"} onClick={this.onToggle} />;
     }
 
     return (

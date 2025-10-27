@@ -303,6 +303,10 @@ app.get("/read-file", async (req: any, res, next) => {
       return res.send("Invalid key");
     }
 
+    console.log('🔍 read-file - key:', key);
+    console.log('🔍 read-file - name:', name);
+    console.log('🔍 read-file - attachment name:', name || key);
+
     const response = await readFileRequest({
       key,
       subdomain,
