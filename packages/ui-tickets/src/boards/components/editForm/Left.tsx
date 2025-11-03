@@ -9,9 +9,8 @@ import {
   EditorWrapper,
 } from "@erxes/ui-internalnotes/src/components/Form";
 import { IItem, IItemParams, IOptions } from "../../types";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import debounce from "lodash/debounce";
-import { __, readFile } from "coreui/utils";
+import React, { useEffect, useState } from "react";
+import { __ } from "coreui/utils";
 import { extractAttachment } from "@erxes/ui/src/utils";
 import styled from "styled-components";
 import { useIsMobile } from "../../utils/mobile";
@@ -154,7 +153,6 @@ type DescProps = {
   contentType: string;
   isMobile: boolean;
   onChangeRefresh?: () => void;
-  hasDescriptionConflict?: boolean;
 };
 
 // WidgetComments 컴포넌트 수정
@@ -276,7 +274,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
   // 수정 모드 시작
   const startEditing = (comment: any) => {
     setEditingCommentId(comment._id);
-    setEditingContent(comment.content ?? "");
+    setEditingContent(comment.content);
   };
 
   // 수정 취소
@@ -287,7 +285,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
 
   // 수정 저장
   const saveEditing = async () => {
-    if (!onEditComment || !editingCommentId || !(editingContent ?? "").trim()) return;
+    if (!onEditComment || !editingCommentId || !editingContent.trim()) return;
     
     try {
       await onEditComment(editingCommentId, editingContent);
@@ -371,7 +369,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                              btnStyle="success"
                              size="small"
                              onClick={saveEditing}
-                             disabled={!(editingContent ?? "").trim()}
+                             disabled={!editingContent.trim()}
                              style={{
                                padding: '3px 8px',
                                fontSize: '11px',
@@ -385,48 +383,8 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                      ) : (
                        /* 일반 모드 */
                        <div>
-                         {(comment.content && comment.content.trim()) ? (
-                           <div dangerouslySetInnerHTML={{ __html: comment.content }} />
-                         ) : null}
-                         {/* 첨부파일 */}
-                         {comment.attachments && comment.attachments.length > 0 ? (
-                           <div style={{ marginTop: 8 }}>
-                             {comment.attachments.map((att: { name?: string; url?: string; type?: string }, idx: number) => {
-                               const url = att.url ? readFile(att.url) : "";
-                               const isImage = att.type && att.type.startsWith("image/");
-                               const inlineUrl = url ? (url.indexOf("?") >= 0 ? url + "&inline=true" : url + "?inline=true") : "";
-                               return (
-                                 <div key={`${comment._id}-att-${idx}`} style={{ marginBottom: 4 }}>
-                                   {isImage ? (
-                                     <>
-                                       <a href={url} target="_blank" rel="noopener noreferrer">
-                                         <img
-                                           src={url}
-                                           alt={att.name || ""}
-                                           style={{ maxWidth: 200, maxHeight: 200, objectFit: "contain" }}
-                                         />
-                                       </a>
-                                       <div style={{ marginTop: 4, fontSize: 12 }}>
-                                         <a
-                                           href={inlineUrl}
-                                           target="_blank"
-                                           rel="noopener noreferrer"
-                                           style={{ color: "#6569df" }}
-                                         >
-                                           {__("Open in new window to view at full size")}
-                                         </a>
-                                       </div>
-                                     </>
-                                   ) : (
-                                     <a href={url} target="_blank" rel="noopener noreferrer">
-                                       {att.name || __("Attachment")}
-                                     </a>
-                                   )}
-                                 </div>
-                               );
-                             })}
-                           </div>
-                         ) : null}
+                         <div dangerouslySetInnerHTML={{ __html: comment.content }} />
+                         
                          {/* 시간 표시 */}
                          <div style={{ 
                            fontSize: '11px', 
@@ -559,39 +517,14 @@ const WidgetComments = (props: WidgetCommentsProps) => {
   );
 };
 
-const DESCRIPTION_DEBOUNCE_MS = 400;
-
-const Description = React.memo((props: DescProps) => {
-  const { item, saveItem, contentType, isMobile, onChangeRefresh, hasDescriptionConflict } = props;
+const Description = (props: DescProps) => {
+  const { item, saveItem, contentType, isMobile, onChangeRefresh } = props;
   const [edit, setEdit] = useState(false);
   const [isSubmitted, setSubmit] = useState(false);
   const [description, setDescription] = useState(item.description);
-  const descriptionRef = useRef(item.description);
-  const savedDescriptionRef = useRef<string | null>(null);
-  const lastSyncedModifiedAtRef = useRef<string | number | Date | undefined>(item.modifiedAt);
-
-  const setDescriptionDebounced = useMemo(
-    () => debounce((value: string) => setDescription(value), DESCRIPTION_DEBOUNCE_MS),
-    []
-  );
-
-  useEffect(() => {
-    return () => {
-      setDescriptionDebounced.cancel();
-    };
-  }, [setDescriptionDebounced]);
 
   useEffect(() => {
     setDescription(item.description);
-    descriptionRef.current = item.description;
-    lastSyncedModifiedAtRef.current = item.modifiedAt;
-  }, [item.description, item.modifiedAt]);
-
-  useEffect(() => {
-    if (savedDescriptionRef.current != null && item.description === savedDescriptionRef.current) {
-      savedDescriptionRef.current = null;
-      setSubmit(true);
-    }
   }, [item.description]);
 
   useEffect(() => {
@@ -600,90 +533,29 @@ const Description = React.memo((props: DescProps) => {
     }
   }, [isSubmitted]);
 
-  useEffect(() => {
-    if (hasDescriptionConflict) {
-      setEdit(true);
-      setSubmit(false);
-    }
-  }, [hasDescriptionConflict]);
-
-  const onSend = useCallback(() => {
-    setDescriptionDebounced.flush();
-    const latestDescription = descriptionRef.current;
-    savedDescriptionRef.current = latestDescription;
-    setSubmit(true);
-    saveItem(
-      {
-        description: latestDescription,
-        expectedModifiedAt: item.modifiedAt,
-      },
-      () => {
-        if (onChangeRefresh) {
-          onChangeRefresh();
-        }
-        savedDescriptionRef.current = null;
+  const onSend = () => {
+    saveItem({ description }, () => {
+      // saveItem이 자동으로 UI를 새로고침하므로 onChangeRefresh는 필요 없음
+      // 하지만 호환성을 위해 남겨둠
+      if (onChangeRefresh) {
+        onChangeRefresh();
       }
-    );
-  }, [saveItem, onChangeRefresh, setDescriptionDebounced, item.modifiedAt]);
+    });
+    setSubmit(true);
+  };
 
   const toggleEdit = () => {
     setEdit((currentValue) => {
       const newValue = !currentValue;
       
-      // 편집 모드로 진입할 때
-      if (!currentValue && newValue) {
-        if (typeof window !== 'undefined') {
-          const localStorageKey = `${contentType}_description_${item._id}`;
-          const storedData = localStorage.getItem(localStorageKey);
-          
-          if (storedData) {
-            try {
-              // JSON 형식으로 저장된 경우 (타임스탬프 포함)
-              const parsed = JSON.parse(storedData);
-              const storedContent = parsed.content;
-              const storedTimestamp = parsed.timestamp ? new Date(parsed.timestamp) : null;
-              const serverModifiedAt = item.modifiedAt ? new Date(item.modifiedAt) : null;
-              
-              // 서버가 더 최신이면 localStorage 클리어하고 서버 내용 사용
-              if (serverModifiedAt && storedTimestamp && serverModifiedAt > storedTimestamp) {
-                localStorage.removeItem(localStorageKey);
-                setDescription(item.description);
-                descriptionRef.current = item.description;
-              } else {
-                const content = storedContent || item.description;
-                setDescription(content);
-                descriptionRef.current = content;
-              }
-            } catch (e) {
-              // JSON 파싱 실패 시 기존 형식 (문자열만 저장된 경우)
-              // 내용이 다르면 서버 내용 사용 (다른 사용자가 수정했을 가능성)
-              const serverContent = item.description || '';
-              if (storedData !== serverContent) {
-                localStorage.removeItem(localStorageKey);
-                setDescription(serverContent);
-              } else {
-                setDescription(storedData);
-              }
-            }
-          } else {
-            setDescription(item.description);
-            descriptionRef.current = item.description;
-          }
-        } else {
-          setDescription(item.description);
-          descriptionRef.current = item.description;
-        }
-      }
-      
       // 편집 모드를 끌 때 (Cancel 시) localStorage 클리어 및 원본으로 되돌리기
       if (currentValue && !newValue) {
-        if (typeof window !== 'undefined') {
-          const localStorageKey = `${contentType}_description_${item._id}`;
-          localStorage.removeItem(localStorageKey);
-        }
+        // localStorage 클리어하여 Ctrl+Z로 사라진 상태가 복원되지 않도록 함
+        const localStorageKey = `${contentType}_description_${item._id}`;
+        localStorage.removeItem(localStorageKey);
+        
+        // description을 원본으로 되돌리기
         setDescription(item.description);
-        descriptionRef.current = item.description;
-        setDescriptionDebounced.cancel();
       }
       
       return newValue;
@@ -691,10 +563,9 @@ const Description = React.memo((props: DescProps) => {
     setSubmit(false);
   };
 
-  const onChangeDescription = useCallback((content: string) => {
-    descriptionRef.current = content;
-    setDescriptionDebounced(content);
-  }, [setDescriptionDebounced]);
+  const onChangeDescription = (content: string) => {
+    setDescription(content);
+  };
 
   const renderFooter = () => {
     return (
@@ -707,7 +578,7 @@ const Description = React.memo((props: DescProps) => {
         >
           Cancel
         </Button>
-        {item.description !== descriptionRef.current && (
+        {item.description !== description && (
           <Button
             onClick={onSend}
             btnStyle="success"
@@ -747,12 +618,7 @@ const Description = React.memo((props: DescProps) => {
         ) : (
           <EditorWrapper>
             <RichTextEditor
-              key={`${contentType}_description_${item._id}_${item.modifiedAt || ""}`}
-              content={
-                item.modifiedAt !== lastSyncedModifiedAtRef.current
-                  ? (item.description ?? "")
-                  : description
-              }
+              content={description}
               onChange={onChangeDescription}
               height={"max-content"}
               isSubmitted={isSubmitted}
@@ -780,8 +646,7 @@ const Description = React.memo((props: DescProps) => {
       </ContentWrapper>
     </FormGroup>
   );
-});
-Description.displayName = "Description";
+};
 
 type Props = {
   item: IItem;
@@ -800,7 +665,6 @@ type Props = {
   onDeleteComment?: (commentId: string) => void;
   onEditComment?: (commentId: string, content: string) => void;
   currentUser?: any;
-  descriptionConflictPending?: { doc: any; callback: (item: any) => void } | null;
 };
 
 const Left = (props: Props) => {
@@ -817,14 +681,20 @@ const Left = (props: Props) => {
     onChangeRefresh,
     widgetComments,
     onAddComment,
-    descriptionConflictPending,
   } = props;
 
   const isMobile = useIsMobile();
+  
+  // 디버깅용 로그
+  console.log('Left component - isMobile:', isMobile);
+  console.log('Left component - window.innerWidth:', typeof window !== 'undefined' ? window.innerWidth : 'undefined');
+  
+  // 직접 체크
+  const isMobileDirect = typeof window !== 'undefined' && window.innerWidth <= 768;
+  console.log('Left component - isMobileDirect:', isMobileDirect);
 
-  const onChangeAttachment = (files: IAttachment[]) => {
+  const onChangeAttachment = (files: IAttachment[]) =>
     saveItem({ attachments: files });
-  };
 
   const attachments =
     (item.attachments && extractAttachment(item.attachments)) || [];
@@ -870,14 +740,7 @@ const Left = (props: Props) => {
         <Uploader defaultFileList={attachments} onChange={onChangeAttachment} />
       </FormGroup>
 
-      <Description
-        item={item}
-        saveItem={saveItem}
-        contentType={options.type}
-        isMobile={isMobile}
-        onChangeRefresh={onChangeRefresh}
-        hasDescriptionConflict={!!descriptionConflictPending}
-      />
+      <Description item={item} saveItem={saveItem} contentType={options.type} isMobile={isMobile} onChangeRefresh={onChangeRefresh} />
 
       <WidgetComments 
         widgetComments={widgetComments} 
