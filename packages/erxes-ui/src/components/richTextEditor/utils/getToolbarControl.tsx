@@ -63,6 +63,8 @@ export function getToolbarControl({
     placeholder: RichTextEditor.Placeholder,
     table: RichTextEditor.TableControl,
     more: RichTextEditor.MoreControl,
+    undo: RichTextEditor.Undo,
+    redo: RichTextEditor.Redo,
   };
 
   const isValidToolbarControl = (control: string) =>

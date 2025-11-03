@@ -15,6 +15,8 @@ import {
   Justify,
   Hr,
   Quote,
+  ArrowCounterclockwise,
+  ArrowClockwise,
 } from 'react-bootstrap-icons';
 
 import { createControl } from './RichTextEditorControl';
@@ -139,3 +141,35 @@ export const ImageControl = createControl({
   isActive: { name: null, attributes: { textAlign: 'justify' } },
   operation: { name: 'setTextAlign', attributes: 'justify' },
 });
+
+// Undo 컨트롤은 별도 구현 (disabled 상태 처리 필요)
+export const UndoControl = () => {
+  const { editor, labels } = require('../RichTextEditor.context').useRichTextEditorContext();
+  const { RichTextEditorControlBase } = require('./RichTextEditorControl');
+  
+  const canUndo = editor?.can().undo();
+  
+  return React.createElement(RichTextEditorControlBase, {
+    'aria-label': labels.undoControlLabel,
+    title: labels.undoControlLabel,
+    disabled: !canUndo,
+    onClick: () => editor?.chain().focus().undo().run(),
+    icon: () => React.createElement(ArrowCounterclockwise),
+  });
+};
+
+// Redo 컨트롤은 별도 구현 (disabled 상태 처리 필요)
+export const RedoControl = () => {
+  const { editor, labels } = require('../RichTextEditor.context').useRichTextEditorContext();
+  const { RichTextEditorControlBase } = require('./RichTextEditorControl');
+  
+  const canRedo = editor?.can().redo();
+  
+  return React.createElement(RichTextEditorControlBase, {
+    'aria-label': labels.redoControlLabel,
+    title: labels.redoControlLabel,
+    disabled: !canRedo,
+    onClick: () => editor?.chain().focus().redo().run(),
+    icon: () => React.createElement(ArrowClockwise),
+  });
+};

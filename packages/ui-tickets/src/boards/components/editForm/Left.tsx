@@ -545,7 +545,21 @@ const Description = (props: DescProps) => {
   };
 
   const toggleEdit = () => {
-    setEdit((currentValue) => !currentValue);
+    setEdit((currentValue) => {
+      const newValue = !currentValue;
+      
+      // 편집 모드를 끌 때 (Cancel 시) localStorage 클리어 및 원본으로 되돌리기
+      if (currentValue && !newValue) {
+        // localStorage 클리어하여 Ctrl+Z로 사라진 상태가 복원되지 않도록 함
+        const localStorageKey = `${contentType}_description_${item._id}`;
+        localStorage.removeItem(localStorageKey);
+        
+        // description을 원본으로 되돌리기
+        setDescription(item.description);
+      }
+      
+      return newValue;
+    });
     setSubmit(false);
   };
 
@@ -611,6 +625,9 @@ const Description = (props: DescProps) => {
               autoFocus={true}
               name={`${contentType}_description_${item._id}`}
               toolbar={[
+                "undo",
+                "redo",
+                "|",
                 "bold",
                 "italic",
                 "orderedList",

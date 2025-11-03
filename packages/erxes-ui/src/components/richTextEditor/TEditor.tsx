@@ -130,14 +130,31 @@ const RichTextEditor = forwardRef(function RichTextEditor(
   const codeMirrorRef = useRef<ReactCodeMirrorRef>(null);
   const [isSourceEnabled, setIsSourceEnabled] = useState(false);
   const [showMention, setShowMention] = useState(false);
+  const isInitialContentSet = useRef(false); // 초기 content 설정 여부 추적
+  const hasRestoredFromLocalStorage = useRef(false); // localStorage 복원 여부 추적
   const extensions = useExtensions({
     placeholder,
     mentionSuggestion,
     limit,
   });
 
+  // ⭐ 초기 content를 useEditor에 전달하여 히스토리에 추가되지 않도록 함
+  const initialContent = useMemo(() => {
+    // localStorage 우선
+    if (name) {
+      const storedContent = localStorage.getItem(name);
+      if (storedContent) {
+        const storedContentAsJson = useGenerateJSON(storedContent);
+        return replaceSpanWithMention(storedContentAsJson);
+      }
+    }
+    // localStorage 없으면 content prop 사용
+    return content || '';
+  }, []); // 빈 의존성 배열 - 마운트 시 한 번만 실행
+
   const editor = useEditor({
     extensions,
+    content: initialContent,  // ⭐ 초기 content 전달
     parseOptions: { preserveWhitespace: true },
     autofocus: autoFocus,
     immediatelyRender: true,
@@ -156,7 +173,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     return () => {
       editor && editor.off("update", handleEditorChange);
     };
-  }, [editor, onChange]);
+  }, [editor, onChange, name]);
 
   useEffect(() => {
     setShowMention(showMentions);
@@ -182,47 +199,69 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     }
   }, [showMentions]);
 
+  // ⭐ 에디터 초기화 후 히스토리 강제 클리어
   useEffect(() => {
-    if (editor) {
-      const editorHTML = editor.getHTML();
-      const { from, to } = editor.state.selection;
-
-      if (editorHTML !== formattedContent) {
-        editor
-          .chain()
-          .setContent(formattedContent, false, {
-            preserveWhitespace: true,
-          })
-          .setTextSelection({ from, to })
-          .run();
-      }
-      onChange && onChange(formattedContent);
-    }
-  }, [editor, content]);
-
-  useEffect(() => {
-    if (editor && name) {
-      const storedContent = localStorage.getItem(name);
-
-      if (!storedContent) {
-        return;
-      }
-
-      // Convert stored content to JSON format
-      const storedContentAsJson = useGenerateJSON(storedContent);
-
-      // Regenerate content: When reloading, mention nodes might become spanMarks, so convert them back to mention node
-      const regeneratedContent = replaceSpanWithMention(storedContentAsJson);
-
-      // Set the regenerated content to the editor
-      editor.commands.setContent(regeneratedContent, false, {
-        preserveWhitespace: true,
+    if (editor && !isInitialContentSet.current) {
+      const initialHTML = editor.getHTML();
+      console.log('🔍 [TEditor] Editor initialized with content:', {
+        contentLength: initialHTML.length,
+        contentPreview: initialHTML.substring(0, 100),
+        canUndo: editor.can().undo(),
+        canRedo: editor.can().redo()
       });
-
-      // If onChange function is provided, generate HTML from the content and call onChange
-      onChange && onChange(generateHTML(regeneratedContent));
+      
+      // ⭐ 히스토리 강제 클리어: Tiptap이 초기 content도 히스토리에 추가하는 버그
+      setTimeout(() => {
+        if (editor && editor.view && editor.state) {
+          console.log('🔍 [TEditor] Starting history clear...');
+          
+          // 원래 내용 저장
+          const originalContent = editor.getHTML();
+          
+          console.log('🔍 [TEditor] Before clear:', {
+            canUndo: editor.can().undo(),
+            canRedo: editor.can().redo(),
+            contentLength: originalContent.length
+          });
+          
+          // ⭐ 모든 undo 실행하여 히스토리 스택 비우기
+          let undoCount = 0;
+          while (editor.can().undo() && undoCount < 100) {
+            editor.commands.undo();
+            undoCount++;
+          }
+          
+          console.log('🔍 [TEditor] After undoing all:', {
+            undoCount,
+            canUndo: editor.can().undo(),
+            currentContent: editor.getHTML().substring(0, 50)
+          });
+          
+          // 원래 내용으로 다시 설정 (히스토리에 추가하지 않음)
+          editor.commands.setContent(originalContent, false);
+          
+          // Redo 스택도 비우기
+          while (editor.can().redo()) {
+            editor.commands.redo();
+          }
+          
+          console.log('🔍 [TEditor] After forced history clear:', {
+            canUndo: editor.can().undo(),
+            canRedo: editor.can().redo(),
+            content: editor.getHTML().substring(0, 100)
+          });
+        }
+      }, 100);
+      
+      // 초기 content onChange 호출
+      onChange && onChange(initialHTML);
+      isInitialContentSet.current = true;
+      
+      if (name && localStorage.getItem(name)) {
+        hasRestoredFromLocalStorage.current = true;
+      }
     }
-  }, [editor, name]);
+  }, [editor]);
 
   useEffect(() => {
     if (name && isSubmitted) {
@@ -534,6 +573,8 @@ interface RichTextEditorType
   Placeholder: typeof RichTextEditorPlaceholderControl;
   TableControl: typeof TableControl;
   MoreControl: typeof MoreButtonControl;
+  Undo: typeof controls.UndoControl;
+  Redo: typeof controls.RedoControl;
 }
 
 const RichTextEditorComponent = RichTextEditor as RichTextEditorType;
@@ -576,6 +617,9 @@ RichTextEditorComponent.Placeholder = RichTextEditorPlaceholderControl;
 RichTextEditorComponent.TableControl = TableControl;
 
 RichTextEditorComponent.MoreControl = MoreButtonControl;
+
+RichTextEditorComponent.Undo = controls.UndoControl;
+RichTextEditorComponent.Redo = controls.RedoControl;
 
 export { RichTextEditorComponent as RichTextEditor, RichTextEditorType };
 

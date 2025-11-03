@@ -131,7 +131,10 @@ export default function useExtensions({
       Highlight.configure({ multicolor: true }),
       HorizontalRule,
       Dropcursor,
-      History,
+      History.configure({
+        depth: 100,  // undo 스택 깊이 설정
+        newGroupDelay: 500,  // 500ms 내 변경사항을 그룹화
+      }),
       Mention.configure({
         HTMLAttributes: {
           class: 'mention',
@@ -215,7 +218,10 @@ export function useGenerateJSON(html: string) {
     Highlight.configure({ multicolor: true }),
     HorizontalRule,
     Dropcursor,
-    History,
+    History.configure({
+      depth: 100,
+      newGroupDelay: 500,
+    }),
     Mention.configure({
       HTMLAttributes: {
         class: 'mention',
@@ -292,7 +298,10 @@ export function generateHTML(json: JSONContent) {
     Highlight.configure({ multicolor: true }),
     HorizontalRule,
     Dropcursor,
-    History,
+    History.configure({
+      depth: 100,
+      newGroupDelay: 500,
+    }),
     Mention.configure({
       HTMLAttributes: {
         class: 'mention',

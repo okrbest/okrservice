@@ -143,6 +143,12 @@ export interface IRichTextEditorLabels {
   colorPickerColorLabel(color: string): string;
 
   moreControlLabel: string;
+  
+  /** RichTextEditor.Undo control aria-label */
+  undoControlLabel: string;
+  
+  /** RichTextEditor.Redo control aria-label */
+  redoControlLabel: string;
 }
 
 export const DEFAULT_LABELS: IRichTextEditorLabels = {
@@ -215,4 +221,8 @@ export const DEFAULT_LABELS: IRichTextEditorLabels = {
   deleteTable: 'Delete table',
 
   moreControlLabel: 'More',
+  
+  // Undo/Redo controls
+  undoControlLabel: 'Undo',
+  redoControlLabel: 'Redo',
 };
