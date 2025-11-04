@@ -150,7 +150,7 @@ function EditForm(props: Props) {
 
   return (
     <Transition appear show={props.isPopupVisible} as={Fragment}>
-      <Dialog as="div" onClose={onHideModal} className={` relative z-10`}>
+      <Dialog as="div" onClose={() => {}} className={` relative z-10`}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"

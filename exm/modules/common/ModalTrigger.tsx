@@ -119,7 +119,7 @@ class ModalTrigger extends React.Component<Props, State> {
           size={size}
           show={isOpen}
           onHide={this.closeModal}
-          backdrop={backDrop}
+          backdrop={backDrop !== undefined ? backDrop : "static"}
           enforceFocus={enforceFocus}
           onExit={onExit}
           animation={isAnimate}

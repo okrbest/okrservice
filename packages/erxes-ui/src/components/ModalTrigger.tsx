@@ -157,7 +157,7 @@ const ModalTrigger: React.FC<Props> = forwardRef(
           size={size}
           show={isOpenTrigger}
           onHide={closeModal}
-          backdrop={backDrop}
+          backdrop={backDrop !== undefined ? backDrop : "static"}
           enforceFocus={enforceFocus}
           onExit={onExit}
           animation={isAnimate}
