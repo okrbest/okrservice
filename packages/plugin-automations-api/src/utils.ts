@@ -40,6 +40,85 @@ export const getEnv = ({
 };
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Segment가 manualEmailRequest 조건을 체크하는지 확인
+ */
+export const checkSegmentHasManualEmailCondition = async (
+  subdomain: string,
+  segmentId: string
+): Promise<boolean> => {
+  if (!segmentId) {
+    console.log('⚠️ checkSegmentHasManualEmailCondition - No segmentId provided');
+    return false;
+  }
+
+  try {
+    console.log('🔍 checkSegmentHasManualEmailCondition - Checking segment:', segmentId);
+    
+    // Segment 조회
+    const result = await sendCommonMessage({
+      subdomain,
+      serviceName: 'core',
+      action: 'segmentFindOne',
+      data: { _id: segmentId },
+      isRPC: true
+    });
+
+    const segment = result?.data || result;
+
+    if (!segment) {
+      console.log('⚠️ checkSegmentHasManualEmailCondition - Segment not found:', segmentId);
+      return false;
+    }
+
+    if (!segment.conditions) {
+      console.log('⚠️ checkSegmentHasManualEmailCondition - No conditions in segment:', segmentId);
+      return false;
+    }
+
+    console.log('🔍 checkSegmentHasManualEmailCondition - Segment conditions:', {
+      segmentId,
+      conditionsCount: segment.conditions.length,
+      conditions: segment.conditions.map(c => ({ 
+        type: c.type, 
+        propertyName: c.propertyName,
+        subSegmentId: c.subSegmentId 
+      }))
+    });
+
+    // Conditions를 순회하면서 manualEmailRequest 조건 찾기
+    for (const condition of segment.conditions) {
+      // Direct property check
+      if (condition.propertyName === 'manualEmailRequest') {
+        console.log('✅ checkSegmentHasManualEmailCondition - Found manualEmailRequest condition:', {
+          segmentId,
+          condition
+        });
+        return true;
+      }
+
+      // SubSegment가 있으면 재귀적으로 확인
+      if (condition.type === 'subSegment' && condition.subSegmentId) {
+        console.log('🔍 checkSegmentHasManualEmailCondition - Checking subSegment:', condition.subSegmentId);
+        const hasInSubSegment = await checkSegmentHasManualEmailCondition(
+          subdomain,
+          condition.subSegmentId
+        );
+        if (hasInSubSegment) {
+          console.log('✅ checkSegmentHasManualEmailCondition - Found in subSegment:', condition.subSegmentId);
+          return true;
+        }
+      }
+    }
+
+    console.log('⚠️ checkSegmentHasManualEmailCondition - manualEmailRequest condition not found in segment:', segmentId);
+    return false;
+  } catch (error) {
+    console.error('❌ checkSegmentHasManualEmailCondition - Error:', error);
+    return false;
+  }
+};
+
 export const isInSegment = async (
   subdomain: string,
   segmentId: string,
@@ -541,14 +620,16 @@ export const receiveTrigger = async ({
   models,
   subdomain,
   type,
-  targets
+  targets,
+  triggerSource
 }: {
   models: IModels;
   subdomain: string;
   type: TriggerType;
   targets: any[];
+  triggerSource?: string;
 }) => {
-  console.log('🎯 receiveTrigger - type:', type, 'targets count:', targets.length);
+  console.log('🎯 receiveTrigger - type:', type, 'targets count:', targets.length, 'triggerSource:', triggerSource);
   
   // DB에 'ticket' 형태로 저장된 경우를 위해 변환
   const shortType = type.includes(':') ? type.split(':')[1] : type;
@@ -589,6 +670,29 @@ export const receiveTrigger = async ({
         if (!triggerMatches) {
           console.log('⚠️ receiveTrigger - Trigger type mismatch, skipping');
           continue;
+        }
+
+        // Manual Email Request 필터링: triggerSource가 "manualEmailRequest"일 때
+        // 이 트리거의 segment가 manualEmailRequest 조건을 체크하는지 확인
+        if (triggerSource === 'manualEmailRequest') {
+          const hasManualEmailCondition = await checkSegmentHasManualEmailCondition(
+            subdomain,
+            trigger.config.contentId
+          );
+          
+          if (!hasManualEmailCondition) {
+            console.log('⚠️ receiveTrigger - Skipping non-manual trigger for manual email request:', {
+              automationName: automation.name,
+              triggerId: trigger.id,
+              segmentId: trigger.config.contentId,
+              reason: 'Segment does not check manualEmailRequest property'
+            });
+            continue;
+          }
+          console.log('✅ receiveTrigger - Manual email request trigger matched:', {
+            automationName: automation.name,
+            triggerId: trigger.id
+          });
         }
 
         if (isWaitingDateConfig(trigger?.config?.dateConfig)) {

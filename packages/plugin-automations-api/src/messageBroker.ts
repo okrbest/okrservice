@@ -22,7 +22,7 @@ export const setupMessageConsumers = async () => {
     debugInfo(`Receiving queue data: ${JSON.stringify(data)}`);
 
     const models = await generateModels(subdomain);
-    const { type, actionType, targets, executionId } = data;
+    const { type, actionType, targets, executionId, triggerSource } = data;
 
     if (actionType && actionType === "waiting") {
       await playWait(models, subdomain, data);
@@ -41,14 +41,14 @@ export const setupMessageConsumers = async () => {
       return;
     }
 
-    await receiveTrigger({ models, subdomain, type, targets });
+    await receiveTrigger({ models, subdomain, type, targets, triggerSource });
   });
 
   consumeRPCQueue("automations:trigger", async ({ subdomain, data }) => {
     debugInfo(`Receiving queue data: ${JSON.stringify(data)}`);
 
     const models = await generateModels(subdomain);
-    const { type, actionType, targets, executionId } = data;
+    const { type, actionType, targets, executionId, triggerSource } = data;
 
     const waitingExecution = await checkWaitingResponseAction(
       models,
@@ -67,7 +67,7 @@ export const setupMessageConsumers = async () => {
     }
 
     try {
-      await receiveTrigger({ models, subdomain, type, targets });
+      await receiveTrigger({ models, subdomain, type, targets, triggerSource });
       return {
         status: "success",
         data: "complete"

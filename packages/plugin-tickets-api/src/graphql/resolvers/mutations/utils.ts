@@ -381,7 +381,8 @@ export const itemsEdit = async (
         action: "trigger",
         data: {
           type: "tickets:ticket",
-          targets: [freshTicket]
+          targets: [freshTicket],
+          triggerSource: "manualEmailRequest"  // Manual Email Request 전용 플래그
         }
       });
       console.log('✅ manualEmailRequest 자동화 트리거 전송 완료');
