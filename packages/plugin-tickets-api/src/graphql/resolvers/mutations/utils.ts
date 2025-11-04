@@ -358,6 +358,22 @@ export const itemsEdit = async (
   if (doc.manualEmailRequest === true && !(oldItem as any).manualEmailRequest) {
     console.log('🚀 manualEmailRequest 트리거 발동!');
     try {
+      // DB에서 최신 데이터를 lean()으로 조회하여 plain object로 가져오기
+      const freshTicket = await models.Tickets.findOne({ _id }).lean();
+      
+      if (!freshTicket) {
+        throw new Error('Ticket not found after update');
+      }
+
+      console.log('🎯 [manualEmailRequest] Ticket data for automation:', {
+        _id: freshTicket._id,
+        name: freshTicket.name,
+        description: freshTicket.description?.substring(0, 100),
+        stageId: freshTicket.stageId,
+        status: freshTicket.status,
+        hasAllFields: !!(freshTicket.name && freshTicket.description)
+      });
+
       const { sendMessage } = await import("@erxes/api-utils/src/core");
       await sendMessage({
         subdomain,
@@ -365,7 +381,7 @@ export const itemsEdit = async (
         action: "trigger",
         data: {
           type: "tickets:ticket",
-          targets: [updatedItem]
+          targets: [freshTicket]
         }
       });
       console.log('✅ manualEmailRequest 자동화 트리거 전송 완료');

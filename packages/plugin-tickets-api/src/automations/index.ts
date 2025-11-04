@@ -63,13 +63,28 @@ export default {
   }) => {
     const models = await generateModels(subdomain);
 
+    // target을 plain object로 변환 (Mongoose Document일 경우 대비)
+    const plainTarget = target && typeof target.toObject === 'function' 
+      ? target.toObject() 
+      : target;
+
+    console.log('🔍 [replacePlaceHolders] Original target type:', target?.constructor?.name);
+    console.log('🔍 [replacePlaceHolders] Plain target fields:', Object.keys(plainTarget || {}));
+    console.log('🔍 [replacePlaceHolders] Target data:', {
+      _id: plainTarget?._id,
+      name: plainTarget?.name,
+      description: plainTarget?.description?.substring(0, 100),
+      stageId: plainTarget?.stageId,
+      status: plainTarget?.status
+    });
+
     return await replacePlaceHolders({
       models,
       subdomain,
       getRelatedValue,
       actionData: config,
       target: {
-        ...target,
+        ...plainTarget,
         ['createdBy.department']: '-',
         ['createdBy.branch']: '-',
         ['createdBy.phone']: '-',

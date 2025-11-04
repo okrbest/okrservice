@@ -286,6 +286,15 @@ export const generateDoc = async ({
 
   replacedContent = await replaceDocuments(subdomain, replacedContent, target);
 
+  console.log('📧 [generateDoc] Before replacePlaceHolders:', {
+    targetId: target?._id,
+    targetName: target?.name,
+    targetDescription: target?.description?.substring(0, 100),
+    configSubject: config.subject,
+    targetKeys: Object.keys(target || {}),
+    triggerType
+  });
+
   const { subject, content } = await sendCommonMessage({
     subdomain,
     serviceName,
@@ -301,6 +310,14 @@ export const generateDoc = async ({
     defaultValue: {}
   });
 
+  console.log('📧 [generateDoc] After replacePlaceHolders:', {
+    originalSubject: config.subject,
+    replacedSubject: subject,
+    subjectLength: subject?.length,
+    contentLength: content?.length,
+    hasPlaceholders: config.subject?.includes('{{')
+  });
+
   const toEmails = await getRecipientEmails({
     subdomain,
     config,
@@ -309,16 +326,30 @@ export const generateDoc = async ({
     execution
   });
 
+  console.log('📧 [generateDoc] Email recipients:', {
+    toEmails,
+    emailCount: toEmails?.length
+  });
+
   if (!toEmails?.length) {
     throw new Error('"Recieving emails not found"');
   }
 
-  return {
+  const emailDoc = {
     title: subject,
     fromEmail: generateFromEmail(sender, fromUserEmail),
     toEmails: toEmails.filter((email) => fromUserEmail !== email),
     customHtml: content
   };
+
+  console.log('📧 [generateDoc] Final email document:', {
+    title: emailDoc.title,
+    fromEmail: emailDoc.fromEmail,
+    toEmails: emailDoc.toEmails,
+    contentPreview: emailDoc.customHtml?.substring(0, 200)
+  });
+
+  return emailDoc;
 };
 
 export const getRecipientEmails = async ({
