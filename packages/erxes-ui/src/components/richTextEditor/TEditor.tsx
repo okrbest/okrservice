@@ -140,12 +140,22 @@ const RichTextEditor = forwardRef(function RichTextEditor(
 
   // ⭐ 초기 content를 useEditor에 전달하여 히스토리에 추가되지 않도록 함
   const initialContent = useMemo(() => {
+    // ⭐ 서버 사이드 렌더링 체크: localStorage는 브라우저에만 존재
+    if (typeof window === 'undefined') {
+      return content || '';
+    }
+    
     // localStorage 우선
     if (name) {
-      const storedContent = localStorage.getItem(name);
-      if (storedContent) {
-        const storedContentAsJson = useGenerateJSON(storedContent);
-        return replaceSpanWithMention(storedContentAsJson);
+      try {
+        const storedContent = localStorage.getItem(name);
+        if (storedContent) {
+          const storedContentAsJson = useGenerateJSON(storedContent);
+          return replaceSpanWithMention(storedContentAsJson);
+        }
+      } catch (e) {
+        // localStorage 접근 실패 시 content prop 사용
+        console.warn('localStorage access failed:', e);
       }
     }
     // localStorage 없으면 content prop 사용
@@ -165,7 +175,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     const handleEditorChange = ({ editor }) => {
       const editorContent = editor.getHTML();
       onChange && onChange(editorContent);
-      if (name) {
+      if (name && typeof window !== 'undefined') {
         localStorage.setItem(name, editorContent);
       }
     };
@@ -257,14 +267,14 @@ const RichTextEditor = forwardRef(function RichTextEditor(
       onChange && onChange(initialHTML);
       isInitialContentSet.current = true;
       
-      if (name && localStorage.getItem(name)) {
+      if (name && typeof window !== 'undefined' && localStorage.getItem(name)) {
         hasRestoredFromLocalStorage.current = true;
       }
     }
   }, [editor]);
 
   useEffect(() => {
-    if (name && isSubmitted) {
+    if (name && isSubmitted && typeof window !== 'undefined') {
       localStorage.removeItem(name);
     }
   }, [name, isSubmitted]);
@@ -511,7 +521,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     const editorContent = editor?.getHTML() || "";
     onChange && onChange(editorContent);
 
-    if (name) {
+    if (name && typeof window !== 'undefined') {
       localStorage.setItem(name, editorContent);
     }
 
