@@ -811,6 +811,14 @@ export const receiveTrigger = async ({
         if (execution) {
           const actionsMap = await getActionsMap(automation.actions);
           
+          // 원본 type을 사용 (trigger.type이 'ticket'처럼 잘못된 형식일 수 있음)
+          // execution.triggerType에는 올바른 'tickets:ticket' 형식이 저장되어 있음
+          console.log('🎯 receiveTrigger - Using triggerType for execution:', {
+            originalType: type,
+            triggerType: trigger.type,
+            executionTriggerType: execution.triggerType
+          });
+          
           await executeActions(
             subdomain,
             type,  // trigger.type 대신 원본 type 사용
