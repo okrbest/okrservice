@@ -1,7 +1,6 @@
 import { ChartTitle } from "../../styles";
 import React, { useEffect, useState } from "react";
 import { defaultLayout } from "../../utils";
-import { __ } from "coreui/utils";
 import ChartRenderer from "../../containers/chart/ChartRenderer";
 import { IChart } from "../../types";
 
@@ -36,10 +35,10 @@ const ChartGridLayout = (props: Props) => {
     globalFilters = {}
   } = props;
 
-  // Merge global filters with chart-specific filters (global filters take precedence)
+  // Merge global filters with chart-specific filters (chart filters take precedence)
   const mergedFilters = {
-    ...(chart.filter || {}),
-    ...globalFilters
+    ...globalFilters,
+    ...(chart.filter || {})
   };
 
   const [filters, setFilters] = useState<any>(mergedFilters);
@@ -48,8 +47,8 @@ const ChartGridLayout = (props: Props) => {
   useEffect(() => {
     // Re-merge filters when chart filter or global filters change
     const mergedFilters = {
-      ...(chart.filter || {}),
-      ...globalFilters
+      ...globalFilters,
+      ...(chart.filter || {})
     };
     setFilters(mergedFilters);
   }, [chart.filter, globalFilters]);
@@ -88,58 +87,36 @@ const ChartGridLayout = (props: Props) => {
     dashboardChartsEdit(chart._id, { layout: updatedLayout });
   };
 
-  const handleActionClick = (e: React.MouseEvent, callback: () => void) => {
-    e.preventDefault();
-    e.stopPropagation();
-    callback();
-  };
-
-  const handleTitleMouseDown = (e: React.MouseEvent) => {
-    // 드래그 시작을 방지
-    e.stopPropagation();
-  };
-
   return (
     <>
-      <ChartTitle onMouseDown={handleTitleMouseDown}>
-        <div>{__(chart.name) || chart.name}</div>
-        <span 
-          className="db-chart-action" 
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => handleActionClick(e, handleLock)}
-        >
+      <ChartTitle>
+        <div>{chart.name}</div>
+        <span className="db-chart-action" onClick={handleLock}>
           {!layout.static ? "lock" : "unlock"}
         </span>
         <span
           className="db-chart-action"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => handleActionClick(e, () => chartDuplicate(chart._id))}
+          onClick={() => chartDuplicate(chart._id)}
         >
           duplicate
         </span>
         {chartType && (chartType === "table" || chartType === "pivotTable") && (
-          <span 
-            className="db-chart-action"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => handleActionClick(e, () => exportTable(chart))}
-          >
+          <span className="db-chart-action" onClick={() => exportTable(chart)}>
             export
           </span>
         )}
         <span
           className="db-chart-action"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => handleActionClick(e, () => {
+          onClick={() => {
             setCurrentChart(chart);
             setShowDrawer(!showDrawer);
-          })}
+          }}
         >
           edit
         </span>
         <span
           className="db-chart-action"
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => handleActionClick(e, () => handleChartDelete(chart._id))}
+          onClick={() => handleChartDelete(chart._id)}
         >
           delete
         </span>

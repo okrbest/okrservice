@@ -4,11 +4,8 @@ import {
   DragField,
   RightDrawerContainer,
 } from "../../styles";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { defaultLayout, deserializeItem } from "../../utils";
-import { useNavigate, useLocation } from "react-router-dom";
-import { router } from "@erxes/ui/src/utils";
-import dayjs from "dayjs";
 
 import { BarItems } from "@erxes/ui/src";
 import Button from "@erxes/ui/src/components/Button";
@@ -57,25 +54,9 @@ const Report = (props: Props) => {
 
   const { charts = [] } = report;
   const wrapperRef = useRef<any>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
   const [showDrawer, setShowDrawer] = useState<any>(false);
   const [isDragging, setIsDragging] = useState(false);
   const [currentChart, setCurrentChart] = useState<any | undefined>(undefined);
-
-  // Set default dateRange to 'thisMonth' if not present
-  useEffect(() => {
-    if (!queryParams.dateRange) {
-      const startDate = dayjs().startOf('month').format('YYYY-MM-DD');
-      const endDate = dayjs().endOf('month').format('YYYY-MM-DD');
-      
-      router.setParams(navigate, location, {
-        dateRange: 'thisMonth',
-        startDate,
-        endDate
-      });
-    }
-  }, []);
 
   // Extract global filters from queryParams
   const assignedUserIds = queryParams.assignedUserIds?.split(',').filter(Boolean);
@@ -213,17 +194,6 @@ const Report = (props: Props) => {
     );
   };
 
-  const handleActionClick = (e: React.MouseEvent, callback: () => void) => {
-    e.preventDefault();
-    e.stopPropagation();
-    callback();
-  };
-
-  const handleTitleMouseDown = (e: React.MouseEvent) => {
-    // 드래그 시작을 방지
-    e.stopPropagation();
-  };
-
   const renderChart = (chart: any, index: number) => {
     const { chartType } = chart;
 
@@ -231,10 +201,10 @@ const Report = (props: Props) => {
       return null;
     }
 
-    // Merge global filters with chart-specific filters (global filters take precedence)
+    // Merge global filters with chart-specific filters
     const mergedFilters = {
-      ...(chart.filter || {}),
-      ...globalFilters
+      ...globalFilters,
+      ...(chart.filter || {})
     };
 
     return (
@@ -243,31 +213,28 @@ const Report = (props: Props) => {
         data-grid={defaultLayout(chart, index)}
         style={{ overflow: "hidden" }}
       >
-        <ChartTitle onMouseDown={handleTitleMouseDown}>
-          <div>{__(chart.name) || chart.name}</div>
+        <ChartTitle>
+          <div>{chart.name}</div>
           {chartType && chartType === "table" && (
             <span
               className="db-chart-action"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => handleActionClick(e, () => exportTable(chart))}
+              onClick={() => exportTable(chart)}
             >
               export
             </span>
           )}
           <span
             className="db-chart-action"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => handleActionClick(e, () => {
+            onClick={() => {
               setCurrentChart(chart);
               setShowDrawer(!showDrawer);
-            })}
+            }}
           >
             edit
           </span>
           <span
             className="db-chart-action"
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => handleActionClick(e, () => handleChartDelete(chart._id))}
+            onClick={() => handleChartDelete(chart._id)}
           >
             delete
           </span>
@@ -305,7 +272,6 @@ const Report = (props: Props) => {
             containerPadding={[30, 30]}
             useCSSTransforms={true}
             resizeHandles={["s", "w", "e", "n", "sw", "nw", "se", "ne"]}
-            cancel=".db-chart-action, .ChartTitle"
           >
             {(charts || []).map(deserializeItem).map(renderChart)}
           </DragField>
