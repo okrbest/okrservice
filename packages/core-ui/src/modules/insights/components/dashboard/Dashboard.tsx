@@ -23,6 +23,7 @@ import confirm from "@erxes/ui/src/utils/confirmation/confirm";
 import { getEnv } from "@erxes/ui/src/utils/index";
 import queryString from "query-string";
 import ChartGridLayout from "../chart/ChartGridLayout";
+import DashboardFilterBar from "./DashboardFilterBar";
 
 type Props = {
   queryParams: any;
@@ -53,6 +54,22 @@ const Dashboard = (props: Props) => {
   const [showDrawer, setShowDrawer] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [currentChart, setCurrentChart] = useState<any | undefined>(undefined);
+
+  // Extract global filters from queryParams
+  const assignedUserIds = queryParams.assignedUserIds?.split(',').filter(Boolean);
+  
+  const globalFilters = {
+    companyIds: queryParams.companyIds?.split(',').filter(Boolean),
+    customerIds: queryParams.customerIds?.split(',').filter(Boolean),
+    dateRange: queryParams.dateRange,
+    startDate: queryParams.startDate,
+    endDate: queryParams.endDate,
+    // Chart filters use userType + userIds pattern
+    ...(assignedUserIds?.length ? {
+      userType: 'assignedUserIds',
+      userIds: assignedUserIds
+    } : {})
+  };
 
   const closeDrawer = () => {
     setShowDrawer(false);
@@ -200,6 +217,7 @@ const Dashboard = (props: Props) => {
           handleChartDelete={handleChartDelete}
           dashboardChartsEdit={dashboardChartsEdit}
           chartDuplicate={chartDuplicate}
+          globalFilters={globalFilters}
         />
       </div>
     );
@@ -237,6 +255,7 @@ const Dashboard = (props: Props) => {
   return (
     <ContentContainer>
       <PageContent actionBar={renderActionBar()} transparent={false}>
+        <DashboardFilterBar queryParams={queryParams} />
         {renderContent()}
 
         <div ref={wrapperRef}>

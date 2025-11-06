@@ -16,6 +16,7 @@ type Props = {
   handleChartDelete: (_id: string) => void;
   dashboardChartsEdit: (_id: string, values: any) => void;
   chartDuplicate: (_id: string) => void;
+  globalFilters?: any;
 };
 
 const ChartGridLayout = (props: Props) => {
@@ -30,15 +31,27 @@ const ChartGridLayout = (props: Props) => {
     setShowDrawer,
     handleChartDelete,
     dashboardChartsEdit,
-    chartDuplicate
+    chartDuplicate,
+    globalFilters = {}
   } = props;
 
-  const [filters, setFilters] = useState<any>(chart.filter || {});
+  // Merge global filters with chart-specific filters (chart filters take precedence)
+  const mergedFilters = {
+    ...globalFilters,
+    ...(chart.filter || {})
+  };
+
+  const [filters, setFilters] = useState<any>(mergedFilters);
   const [layout, setLayout] = useState<any>(chart.layout || {});
 
   useEffect(() => {
-    setFilters(chart.filter || {});
-  }, [chart.filter]);
+    // Re-merge filters when chart filter or global filters change
+    const mergedFilters = {
+      ...globalFilters,
+      ...(chart.filter || {})
+    };
+    setFilters(mergedFilters);
+  }, [chart.filter, globalFilters]);
 
   useEffect(() => {
     if (JSON.stringify(layout) !== JSON.stringify(chart.layout)) {

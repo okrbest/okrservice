@@ -27,6 +27,7 @@ import { __ } from "coreui/utils";
 import confirm from "@erxes/ui/src/utils/confirmation/confirm";
 import { getEnv } from "@erxes/ui/src/utils/index";
 import queryString from "query-string";
+import DashboardFilterBar from "../dashboard/DashboardFilterBar";
 
 type Props = {
   queryParams: any;
@@ -56,6 +57,22 @@ const Report = (props: Props) => {
   const [showDrawer, setShowDrawer] = useState<any>(false);
   const [isDragging, setIsDragging] = useState(false);
   const [currentChart, setCurrentChart] = useState<any | undefined>(undefined);
+
+  // Extract global filters from queryParams
+  const assignedUserIds = queryParams.assignedUserIds?.split(',').filter(Boolean);
+  
+  const globalFilters = {
+    companyIds: queryParams.companyIds?.split(',').filter(Boolean),
+    customerIds: queryParams.customerIds?.split(',').filter(Boolean),
+    dateRange: queryParams.dateRange,
+    startDate: queryParams.startDate,
+    endDate: queryParams.endDate,
+    // Chart filters use userType + userIds pattern
+    ...(assignedUserIds?.length ? {
+      userType: 'assignedUserIds',
+      userIds: assignedUserIds
+    } : {})
+  };
 
   const closeDrawer = () => {
     setShowDrawer(false);
@@ -184,6 +201,12 @@ const Report = (props: Props) => {
       return null;
     }
 
+    // Merge global filters with chart-specific filters
+    const mergedFilters = {
+      ...globalFilters,
+      ...(chart.filter || {})
+    };
+
     return (
       <div
         key={chart._id || Math.random()}
@@ -224,7 +247,7 @@ const Report = (props: Props) => {
             serviceName: chart.serviceName,
             templateType: chart.templateType,
           }}
-          filter={chart.filter}
+          filter={mergedFilters}
           dimension={chart.dimension}
         />
       </div>
@@ -263,6 +286,7 @@ const Report = (props: Props) => {
   return (
     <ContentContainer>
       <PageContent actionBar={renderActionBar()} transparent={false}>
+        <DashboardFilterBar queryParams={queryParams} />
         {renderContent()}
 
         <div ref={wrapperRef}>
