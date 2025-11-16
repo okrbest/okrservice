@@ -9,7 +9,7 @@ import { gql } from "@apollo/client";
 import { useIsMobile } from "../../boards/utils/mobile";
 import { MobileLayoutComponent } from "../../boards/components/editForm/MobileLayout";
 import MobileSidebar from "../../boards/components/editForm/MobileSidebar";
-import { Alert, confirm } from "@erxes/ui/src/utils";
+import { Alert } from "@erxes/ui/src/utils";
 
 import { Capitalize } from "@erxes/ui-settings/src/permissions/styles";
 import ChildrenSection from "../../boards/containers/editForm/ChildrenSection";
@@ -65,12 +65,6 @@ const WIDGET_COMMENTS_QUERY = gql`
     widgetsTicketComments(typeId: $typeId, type: $type) {
       _id
       content
-      attachments {
-        name
-        url
-        type
-        size
-      }
       createdUser {
         _id
         email
@@ -144,7 +138,6 @@ export default function TicketEditForm(props: Props) {
     item.isCheckUserTicket
   );
   const [requestType, setRequestType] = useState(item.requestType);
-  const [functionCategory, setFunctionCategory] = useState(item.functionCategory);
   const [refresh, setRefresh] = useState(false);
 
   // saveItem을 래핑하여 저장 후 자동으로 UI 새로고침
@@ -157,19 +150,23 @@ export default function TicketEditForm(props: Props) {
   
   const saveItem = (doc: any, callback?: (item) => void) => {
     props.saveItem(doc, (updatedItem) => {
+      console.log('💾 saveItem 완료, 업데이트된 item:', updatedItem);
+      console.log('🔍 emailSent:', updatedItem?.emailSent, 'widgetAlarm:', updatedItem?.widgetAlarm, 'manualEmailRequest:', updatedItem?.manualEmailRequest);
+      
+      // 로컬 state 즉시 업데이트
       setLocalItem(updatedItem);
-
+      
+      // callback 실행
       if (callback) {
         callback(updatedItem);
       }
-
+      
+      // description이나 emailSent가 변경된 경우 UI 새로고침
       if (doc.description !== undefined || doc.manualEmailRequest === true) {
-        if (props.onUpdate) {
-          props.onUpdate(updatedItem);
-        }
-        if (doc.manualEmailRequest === true) {
-          setTimeout(() => setRefresh(prev => !prev), 100);
-        }
+        console.log('🔄 UI 새로고침 예약');
+        setTimeout(() => {
+          setRefresh(prev => !prev);
+        }, 100); // 100ms로 단축
       }
     });
   };
@@ -187,29 +184,23 @@ export default function TicketEditForm(props: Props) {
   const [triggerAutomation] = useMutation(AUTOMATION_TRIGGER_MUTATION);
 
   // 수동 이메일 발송 함수 (자동화 트리거만 발동)
-  const handleSendEmail = () => {
-    confirm(
-      __("정말로 알림 이메일을 전송하시겠습니까?"),
-      {
-        okLabel: __("전송"),
-        cancelLabel: __("취소"),
-      }
-    ).then(() => {
-      saveItem({ manualEmailRequest: true }, (updatedItem) => {
-        if (props.onUpdate) {
-          props.onUpdate(updatedItem);
-        }
-        setTimeout(() => {
-          setRefresh(prev => !prev);
-          if (props.onUpdate && updatedItem) {
-            props.onUpdate(updatedItem);
-          }
-        }, 500);
-      });
+  const handleSendEmail = async () => {
+    console.log('🚀 Send Email 버튼 클릭됨 - manualEmailRequest를 true로 설정');
+    try {
+      console.log('📝 manualEmailRequest를 true로 설정하여 자동화 트리거 활성화...');
+      
+      // manualEmailRequest를 true로 설정하여 자동화 트리거 활성화
+      // 서버에서 자동화 처리 후 자동으로 false로 리셋되고 emailSent가 true로 변경됨
+      // saveItem 래퍼 함수가 자동으로 UI를 새로고침함
+      await saveItem({ manualEmailRequest: true });
+      console.log('✅ manualEmailRequest 설정 완료 - 자동화 트리거가 발동됩니다');
+      
       Alert.success("이메일이 발송되었습니다.");
-    }).catch((error: any) => {
-      Alert.error("이메일 발송에 실패했습니다: " + (error?.message || '알 수 없는 오류'));
-    });
+      
+    } catch (error: any) {
+      console.error('❌ manualEmailRequest 설정 에러:', error);
+      Alert.error("이메일 발송에 실패했습니다: " + error.message);
+    }
   };
 
   // WidgetComments 쿼리 실행 (ticket 타입일 때만)
@@ -227,11 +218,12 @@ export default function TicketEditForm(props: Props) {
       refetchWidgetComments();
       
       // 담당자가 댓글을 추가한 경우 emailSent를 false로 설정하여 Send Email 버튼 활성화
-      setLocalItem((prev: any) => ({
-        ...prev,
+      console.log('💬 댓글 추가 완료 - emailSent를 false로 업데이트하여 Send Email 버튼 활성화');
+      setLocalItem({
+        ...localItem,
         emailSent: false,
         widgetAlarm: false
-      }));
+      });
       
       // UI 새로고침
       setTimeout(() => {
@@ -353,8 +345,7 @@ export default function TicketEditForm(props: Props) {
   useEffect(() => {
     setSource(item.source);
     setRequestType(item.requestType);
-    setFunctionCategory(item.functionCategory);
-  }, [item.source, item.requestType, item.functionCategory]);
+  }, [item.source, item.requestType]);
 
   function renderSidebarFields(saveItem) {
     
@@ -418,9 +409,7 @@ export default function TicketEditForm(props: Props) {
       { label: "개선요청", value: "improvement" },
       { label: "오류처리", value: "error" },
       { label: "설정변경", value: "config" },
-      { label: "추가개발", value: "additional_development" },
-      { label: "사용안내", value: "usage_guide" },
-      { label: "데이터작업", value: "data_work" }
+      { label: "추가개발", value: "additional_development" }
     ];
 
     const requestTypeValueRenderer = (option: ISelectedOption): React.ReactNode => (
@@ -452,31 +441,6 @@ export default function TicketEditForm(props: Props) {
           {requestTypeValueRenderer(props.data)}
         </components.SingleValue>
       );
-    };
-
-    // 기능분류 필드
-    const functionCategoryValues = [
-      { label: "인사", value: "hr" },
-      { label: "조직", value: "organization" },
-      { label: "근태", value: "attendance" },
-      { label: "급여", value: "payroll" },
-      { label: "평가", value: "evaluation" },
-      { label: "교육", value: "education" },
-      { label: "채용", value: "recruitment" },
-      { label: "복리후생", value: "benefits" },
-      { label: "PCOFF", value: "pcoff" },
-      { label: "전자결재", value: "approval" },
-      { label: "시스템", value: "system" },
-      { label: "모바일", value: "mobile" },
-      { label: "티그리스", value: "tigris" },
-    ];
-
-    const onFunctionCategoryChange = (option) => {
-      const value = option ? option.value : "";
-      setFunctionCategory(value);
-      if (saveItem) {
-        saveItem({ functionCategory: value });
-      }
     };
 
     return (
@@ -520,17 +484,6 @@ export default function TicketEditForm(props: Props) {
             onChange={onRequestTypeChange}
             isClearable={true}
             components={{ Option: RequestTypeOption, SingleValue: RequestTypeSingleValue }}
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <ControlLabel>기능분류</ControlLabel>
-          <Select
-            placeholder="기능분류를 선택하세요"
-            value={functionCategoryValues.find((f) => f.value === functionCategory)}
-            options={functionCategoryValues}
-            onChange={onFunctionCategoryChange}
-            isClearable={true}
           />
         </FormGroup>
       </>
@@ -589,7 +542,6 @@ export default function TicketEditForm(props: Props) {
     remove,
     saveItem,
     onChangeStage,
-    descriptionConflictPending,
   }: IEditFormContent) {
     const onCloseDateFieldsChange = (key: string, value: any) => {
       saveItem({ [key]: value });
@@ -627,7 +579,6 @@ export default function TicketEditForm(props: Props) {
         onEditComment: isTicketType ? handleEditComment : undefined,
         currentUser,
         onSendEmail: handleSendEmail,
-        descriptionConflictPending,
       };
 
       const sidebarProps = {
@@ -693,7 +644,6 @@ export default function TicketEditForm(props: Props) {
             onEditComment={isTicketType ? handleEditComment : undefined}
             currentUser={currentUser}
             onSendEmail={handleSendEmail}
-            descriptionConflictPending={descriptionConflictPending}
           />
 
           <Sidebar

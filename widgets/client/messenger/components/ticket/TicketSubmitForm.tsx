@@ -35,8 +35,6 @@ const TicketSubmitForm: React.FC<Props> = ({
   const submitText = __("Submit");
   const continueText = __("Continue");
   const { email, firstName, lastName, phone } = formData;
-  const [showTooltip, setShowTooltip] = React.useState(false);
-  const [showVisibilityTooltip, setShowVisibilityTooltip] = React.useState(false);
 
   const { isAuthFieldsVisible } = useConfig();
 
@@ -87,49 +85,8 @@ const TicketSubmitForm: React.FC<Props> = ({
           )}
           <div className="ticket-form-item">
             <div className="input-container">
-              <label htmlFor="ticketType" style={{ position: "relative" }}>
-                {__("고객요청구분")} <span className="required">*</span>
-                <span 
-                  className="ticket-request-type-tooltip" 
-                  style={{ marginLeft: "5px", cursor: "pointer", fontSize: "14px", display: "inline-block" }}
-                  onMouseEnter={() => setShowTooltip(true)}
-                  onMouseLeave={() => setShowTooltip(false)}
-                >
-                  ℹ️
-                  {showTooltip && (
-                    <span 
-                      className="ticket-request-type-tooltip-text"
-                      style={{
-                        width: '250px',
-                        backgroundColor: '#fff',
-                        color: '#666',
-                        textAlign: 'left',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        padding: '10px 12px',
-                        position: 'absolute',
-                        zIndex: 1000,
-                        top: '100%',
-                        marginTop: '5px',
-                        left: '50%',
-                        marginLeft: '-125px',
-                        fontSize: '11px',
-                        lineHeight: '1.5',
-                        whiteSpace: 'normal',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                        pointerEvents: 'none'
-                      }}
-                    >
-                      단순문의: 일반적인 문의사항<br />
-                      개선요청: 기능 개선 요청<br />
-                      오류처리: 버그나 오류 신고<br />
-                      설정변경: 시스템 설정 변경 요청<br />
-                      추가개발: 새로운 기능 개발 요청<br />
-                      사용안내: 시스템 사용 방법 안내<br />
-                      데이터작업: 데이터 관련 작업 요청
-                    </span>
-                  )}
-                </span>
+              <label htmlFor="ticketType">
+                {__("Ticket type")} <span className="required">*</span>
               </label>
               <select
                 id="ticketType"
@@ -137,66 +94,11 @@ const TicketSubmitForm: React.FC<Props> = ({
                 value={formData.ticketType}
                 required
               >
-                <option value="">{__("요청구분을 선택하세요")}</option>
-                <option value="inquiry">{__("단순문의")}</option>
-                <option value="improvement">{__("개선요청")}</option>
-                <option value="error">{__("오류처리")}</option>
-                <option value="config">{__("설정변경")}</option>
-                <option value="additional_development">{__("추가개발")}</option>
-                <option value="usage_guide">{__("사용안내")}</option>
-                <option value="data_work">{__("데이터작업")}</option>
-              </select>
-            </div>
-          </div>
-          <div className="ticket-form-item">
-            <div className="input-container">
-              <label htmlFor="visibility" style={{ position: "relative" }}>
-                {__("공개 설정")} <span className="required">*</span>
-                <span 
-                  className="ticket-visibility-tooltip" 
-                  style={{ marginLeft: "5px", cursor: "pointer", fontSize: "14px", display: "inline-block" }}
-                  onMouseEnter={() => setShowVisibilityTooltip(true)}
-                  onMouseLeave={() => setShowVisibilityTooltip(false)}
-                >
-                  ℹ️
-                  {showVisibilityTooltip && (
-                    <span 
-                      className="ticket-visibility-tooltip-text"
-                      style={{
-                        width: '280px',
-                        backgroundColor: '#fff',
-                        color: '#666',
-                        textAlign: 'left',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        padding: '10px 12px',
-                        position: 'absolute',
-                        zIndex: 1000,
-                        top: '100%',
-                        marginTop: '5px',
-                        left: '50%',
-                        marginLeft: '-140px',
-                        fontSize: '11px',
-                        lineHeight: '1.5',
-                        whiteSpace: 'normal',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                        pointerEvents: 'none'
-                      }}
-                    >
-                      공개: 회사 내 동료들이 회사 티켓보기에서 볼 수 있습니다<br />
-                      비공개: 민감한 내용일 경우 비공개로 설정하세요
-                    </span>
-                  )}
-                </span>
-              </label>
-              <select
-                id="visibility"
-                onChange={handleChange}
-                value={formData.visibility}
-                required
-              >
-                <option value="public">{__("공개")}</option>
-                <option value="private">{__("비공개")}</option>
+                <option value="inquiry">{__("inquiry")}</option>
+                <option value="improvement">{__("improvement")}</option>
+                <option value="error">{__("error")}</option>
+                <option value="config">{__("config")}</option>
+                <option value="additional_development">{__("additional_development")}</option>
               </select>
             </div>
           </div>

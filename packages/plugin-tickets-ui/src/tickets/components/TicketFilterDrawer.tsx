@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { __ } from "coreui/utils";
 import Button from "@erxes/ui/src/components/Button";
 import SelectCompanies from "@erxes/ui-contacts/src/companies/containers/SelectCompanies";
 import SelectCustomers from "@erxes/ui-contacts/src/customers/containers/SelectCustomers";
-import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
 import Select, { OnChangeValue } from "react-select";
 import { IOption } from "@erxes/ui/src/types";
 import { Transition } from "@headlessui/react";
@@ -33,7 +32,6 @@ const ScrolledContent = styled.div`
   flex: 1;
   overflow: auto;
   padding: ${dimensions.coreSpacing}px;
-  padding-bottom: ${dimensions.coreSpacing * 2}px;
 `;
 
 const FilterHeader = styled.div`
@@ -67,8 +65,6 @@ type Props = {
 const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const scrolledContentRef = useRef<HTMLDivElement>(null);
-  const requestTypeSectionRef = useRef<HTMLDivElement>(null);
   
   const [showDrawer, setShowDrawer] = useState(false);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>(
@@ -77,88 +73,12 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>(
     queryParams?.customerIds ? (typeof queryParams.customerIds === 'string' ? queryParams.customerIds.split(",") : queryParams.customerIds) : []
   );
-  const [selectedAssignedUserIds, setSelectedAssignedUserIds] = useState<string[]>(
-    queryParams?.assignedUserIds ? (typeof queryParams.assignedUserIds === 'string' ? queryParams.assignedUserIds.split(",") : queryParams.assignedUserIds) : []
-  );
-  const [selectedPriorities, setSelectedPriorities] = useState<string[]>(
-    queryParams?.priority
-      ? Array.isArray(queryParams.priority)
-        ? queryParams.priority
-        : [queryParams.priority]
-      : []
-  );
   const [selectedRequestTypes, setSelectedRequestTypes] = useState<string[]>(
     queryParams?.requestType ? (Array.isArray(queryParams.requestType) ? queryParams.requestType : [queryParams.requestType]) : []
-  );
-  const [selectedQualityImpacts, setSelectedQualityImpacts] = useState<string[]>(
-    queryParams?.qualityImpact ? (Array.isArray(queryParams.qualityImpact) ? queryParams.qualityImpact : [queryParams.qualityImpact]) : []
-  );
-  const [selectedFunctionCategories, setSelectedFunctionCategories] = useState<string[]>(
-    queryParams?.functionCategory ? (Array.isArray(queryParams.functionCategory) ? queryParams.functionCategory : [queryParams.functionCategory]) : []
   );
 
   const toggleDrawer = () => {
     setShowDrawer(!showDrawer);
-  };
-
-  const scrollToRequestTypeSection = () => {
-    if (scrolledContentRef.current && requestTypeSectionRef.current) {
-      const container = scrolledContentRef.current;
-      const targetEl = requestTypeSectionRef.current;
-
-      const containerRect = container.getBoundingClientRect();
-      const targetRect = targetEl.getBoundingClientRect();
-
-      const delta = targetRect.top - containerRect.top;
-      const newScrollTop = container.scrollTop + delta - 16;
-
-      container.scrollTo({
-        top: Math.max(newScrollTop, 0),
-        behavior: "smooth",
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (showDrawer) {
-      scheduleScroll(false, 0);
-    }
-  }, [showDrawer]);
-
-  const scrollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const scheduleScroll = (scrollToBottom = false, delay = 0) => {
-    if (scrollingTimeoutRef.current) {
-      clearTimeout(scrollingTimeoutRef.current);
-    }
-
-    scrollingTimeoutRef.current = setTimeout(() => {
-      requestAnimationFrame(() => {
-        scrollToRequestTypeSection(scrollToBottom);
-      });
-    }, delay);
-  };
-
-  useEffect(() => {
-    if (!showDrawer && scrollingTimeoutRef.current) {
-      clearTimeout(scrollingTimeoutRef.current);
-    }
-  }, [showDrawer]);
-
-  const handleRequestTypeMenuOpen = () => {
-    scheduleScroll(false, 0);
-  };
-
-  const priorityValues = [
-    { label: __("Critical"), value: "Critical" },
-    { label: __("High"), value: "High" },
-    { label: __("Medium"), value: "Medium" },
-    { label: __("Low"), value: "Low" }
-  ];
-
-  const onPrioritySelect = (ops: OnChangeValue<IOption, true>) => {
-    const values = ops ? ops.map((option) => option.value) : [];
-    setSelectedPriorities(values);
   };
 
   const requestTypeValues = [
@@ -166,47 +86,12 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     { label: __("개선요청"), value: "improvement" },
     { label: __("오류처리"), value: "error" },
     { label: __("설정변경"), value: "config" },
-    { label: __("추가개발"), value: "additional_development" },
-    { label: __("사용안내"), value: "usage_guide" },
-    { label: __("데이터작업"), value: "data_work" }
+    { label: __("추가개발"), value: "additional_development" }
   ];
 
   const onRequestTypeSelect = (ops: OnChangeValue<IOption, true>) => {
     const values = ops ? ops.map((option) => option.value) : [];
     setSelectedRequestTypes(values);
-  };
-
-  const qualityImpactValues = [
-    { label: __("치명적"), value: "critical" },
-    { label: __("중대"), value: "major" },
-    { label: __("경미"), value: "minor" },
-    { label: __("시각적"), value: "visual" }
-  ];
-
-  const onQualityImpactSelect = (ops: OnChangeValue<IOption, true>) => {
-    const values = ops ? ops.map((option) => option.value) : [];
-    setSelectedQualityImpacts(values);
-  };
-
-  const functionCategoryValues = [
-    { label: __("인사"), value: "hr" },
-    { label: __("조직"), value: "organization" },
-    { label: __("근태"), value: "attendance" },
-    { label: __("급여"), value: "payroll" },
-    { label: __("평가"), value: "evaluation" },
-    { label: __("교육"), value: "education" },
-    { label: __("채용"), value: "recruitment" },
-    { label: __("복리후생"), value: "benefits" },
-    { label: __("PCOFF"), value: "pcoff" },
-    { label: __("전자결재"), value: "approval" },
-    { label: __("시스템"), value: "system" },
-    { label: __("모바일"), value: "mobile" },
-    { label: __("티그리스"), value: "tigris" },
-  ];
-
-  const onFunctionCategorySelect = (ops: OnChangeValue<IOption, true>) => {
-    const values = ops ? ops.map((option) => option.value) : [];
-    setSelectedFunctionCategories(values);
   };
 
   const onCompanySelect = (values: string[] | string, name: string) => {
@@ -224,11 +109,6 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     setSelectedCustomers(customerIds);
   };
 
-  const onAssignedUserSelect = (values: string[] | string, name: string) => {
-    const assignedUserIds = Array.isArray(values) ? values : values ? [values] : [];
-    setSelectedAssignedUserIds(assignedUserIds);
-  };
-
   const applyFilter = () => {
     // 먼저 제거할 파라미터들을 제거
     const paramsToRemove: string[] = [];
@@ -239,20 +119,8 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     if (selectedCustomers.length === 0 && queryParams.customerIds) {
       paramsToRemove.push("customerIds");
     }
-    if (selectedAssignedUserIds.length === 0 && queryParams.assignedUserIds) {
-      paramsToRemove.push("assignedUserIds");
-    }
-    if (selectedPriorities.length === 0 && queryParams.priority) {
-      paramsToRemove.push("priority");
-    }
     if (selectedRequestTypes.length === 0 && queryParams.requestType) {
       paramsToRemove.push("requestType");
-    }
-    if (selectedQualityImpacts.length === 0 && queryParams.qualityImpact) {
-      paramsToRemove.push("qualityImpact");
-    }
-    if (selectedFunctionCategories.length === 0 && queryParams.functionCategory) {
-      paramsToRemove.push("functionCategory");
     }
 
     if (paramsToRemove.length > 0) {
@@ -268,20 +136,8 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     if (selectedCustomers.length > 0) {
       paramsToSet.customerIds = selectedCustomers;
     }
-    if (selectedAssignedUserIds.length > 0) {
-      paramsToSet.assignedUserIds = selectedAssignedUserIds;
-    }
-    if (selectedPriorities.length > 0) {
-      paramsToSet.priority = selectedPriorities;
-    }
     if (selectedRequestTypes.length > 0) {
       paramsToSet.requestType = selectedRequestTypes;
-    }
-    if (selectedQualityImpacts.length > 0) {
-      paramsToSet.qualityImpact = selectedQualityImpacts;
-    }
-    if (selectedFunctionCategories.length > 0) {
-      paramsToSet.functionCategory = selectedFunctionCategories;
     }
 
     if (Object.keys(paramsToSet).length > 0) {
@@ -294,22 +150,8 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
   const clearFilter = () => {
     setSelectedCompanies([]);
     setSelectedCustomers([]);
-    setSelectedAssignedUserIds([]);
-    setSelectedPriorities([]);
     setSelectedRequestTypes([]);
-    setSelectedQualityImpacts([]);
-    setSelectedFunctionCategories([]);
-    routerUtils.removeParams(
-      navigate,
-      location,
-      "companyIds",
-      "customerIds",
-      "assignedUserIds",
-      "priority",
-      "requestType",
-      "qualityImpact",
-      "functionCategory"
-    );
+    routerUtils.removeParams(navigate, location, "companyIds", "customerIds", "requestType");
     toggleDrawer();
   };
 
@@ -326,7 +168,7 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
           />
         </FilterHeader>
 
-        <ScrolledContent ref={scrolledContentRef}>
+        <ScrolledContent>
           <FormGroup>
             <ControlLabel>{__("회사 선택")}</ControlLabel>
             <SelectCompanies
@@ -364,84 +206,6 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
           </FormGroup>
 
           <FormGroup>
-            <ControlLabel>{__("담당자")}</ControlLabel>
-            <SelectTeamMembers
-              label={__("담당자를 선택하세요")}
-              name="assignedUserIds"
-              queryParams={queryParams}
-              onSelect={onAssignedUserSelect}
-              multi={true}
-              initialValue={selectedAssignedUserIds}
-            />
-            <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
-              {__("선택한 담당자가 배정된 티켓만 표시됩니다")}
-            </p>
-          </FormGroup>
-
-          <FormGroup>
-            <ControlLabel>{__("우선순위")}</ControlLabel>
-            <Select
-              placeholder={__("우선순위를 선택하세요")}
-              value={priorityValues.filter((p) =>
-                selectedPriorities.includes(p.value)
-              )}
-              options={priorityValues}
-              name="priority"
-              onChange={onPrioritySelect}
-              isMulti={true}
-              menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
-              styles={{
-                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-              }}
-            />
-            <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
-              {`${__("Critical")}, ${__("High")}, ${__("Medium")}, ${__("Low")}`}
-            </p>
-          </FormGroup>
-
-          <FormGroup>
-            <ControlLabel>{__("중요도(품질영향)")}</ControlLabel>
-            <Select
-              placeholder={__("중요도를 선택하세요")}
-              value={qualityImpactValues.filter((qi) =>
-                selectedQualityImpacts.includes(qi.value)
-              )}
-              options={qualityImpactValues}
-              name="qualityImpact"
-              onChange={onQualityImpactSelect}
-              isMulti={true}
-              menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
-              styles={{
-                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-              }}
-            />
-            <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
-              {__("치명적, 중대, 경미, 시각적")}
-            </p>
-          </FormGroup>
-
-          <FormGroup>
-            <ControlLabel>{__("기능분류")}</ControlLabel>
-            <Select
-              placeholder={__("기능분류를 선택하세요")}
-              value={functionCategoryValues.filter((fc) =>
-                selectedFunctionCategories.includes(fc.value)
-              )}
-              options={functionCategoryValues}
-              name="functionCategory"
-              onChange={onFunctionCategorySelect}
-              isMulti={true}
-              menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
-              styles={{
-                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-              }}
-            />
-            <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
-              {__("인사, 조직, 근태, 급여, 평가, 교육, 채용, 복리후생, PCOFF, 전자결재, 시스템")}
-            </p>
-          </FormGroup>
-
-          <FormGroup ref={requestTypeSectionRef}>
             <ControlLabel>{__("고객요청구분")}</ControlLabel>
             <Select
               placeholder={__("고객요청구분을 선택하세요")}
@@ -452,14 +216,9 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
               name="requestType"
               onChange={onRequestTypeSelect}
               isMulti={true}
-              onMenuOpen={handleRequestTypeMenuOpen}
-              menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
-              styles={{
-                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-              }}
             />
             <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
-              {__("단순문의, 개선요청, 오류처리, 설정변경, 추가개발, 사용안내, 데이터작업")}
+              {__("단순문의, 개선요청, 오류처리, 설정변경, 추가개발")}
             </p>
           </FormGroup>
         </ScrolledContent>
