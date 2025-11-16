@@ -85,7 +85,8 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     { label: __("단순문의"), value: "inquiry" },
     { label: __("개선요청"), value: "improvement" },
     { label: __("오류처리"), value: "error" },
-    { label: __("설정변경"), value: "config" }
+    { label: __("설정변경"), value: "config" },
+    { label: __("추가개발"), value: "additional_development" }
   ];
 
   const onRequestTypeSelect = (ops: OnChangeValue<IOption, true>) => {
@@ -217,7 +218,7 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
               isMulti={true}
             />
             <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
-              {__("단순문의, 개선요청, 오류처리, 설정변경")}
+              {__("단순문의, 개선요청, 오류처리, 설정변경, 추가개발")}
             </p>
           </FormGroup>
         </ScrolledContent>

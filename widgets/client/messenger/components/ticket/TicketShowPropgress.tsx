@@ -46,6 +46,73 @@ const TicketShowProgress: React.FC<Props> = ({
   activityLogs,
 }) => {
   const { ticketData = {} } = useTicket();
+  const descriptionRef = React.useRef<HTMLDivElement>(null);
+
+  // description 내 이미지 처리
+  React.useEffect(() => {
+    if (descriptionRef.current) {
+      const images = descriptionRef.current.querySelectorAll('img:not([data-link-added])');
+      images.forEach((imgElement) => {
+        const img = imgElement as HTMLImageElement;
+        // 이미지 크기를 위젯에 맞게 조정
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        img.style.cursor = 'pointer';
+        img.setAttribute('data-link-added', 'true');
+        
+        const originalSrc = img.src || img.getAttribute('src');
+        if (originalSrc) {
+          // 이미지 아래에 링크 추가
+          const linkWrapper = document.createElement('div');
+          linkWrapper.className = 'image-view-original-link';
+          linkWrapper.style.cssText = 'margin-top: 4px; margin-bottom: 8px; text-align: center;';
+          
+          const link = document.createElement('a');
+          link.href = '#';
+          link.textContent = __('원본 이미지 보기');
+          link.style.cssText = 'font-size: 12px; color: #007bff; text-decoration: none; cursor: pointer;';
+          link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // URL에서 name 파라미터 제거하여 다운로드 방지
+            let viewUrl = originalSrc;
+            if (viewUrl.includes('&name=')) {
+              viewUrl = viewUrl.split('&name=')[0];
+            }
+            
+            // fetch로 이미지를 가져와서 blob URL로 변환하여 새 탭에서 열기
+            try {
+              const response = await fetch(viewUrl, { mode: 'cors' });
+              if (response.ok) {
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+                if (newWindow) {
+                  // 창이 열린 후 blob URL 정리
+                  setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                }
+              } else {
+                // fetch 실패 시 직접 열기 (CORS 문제 등)
+                window.open(viewUrl, '_blank', 'noopener,noreferrer');
+              }
+            } catch (error) {
+              // 오류 발생 시 직접 열기
+              console.warn('Failed to fetch image:', error);
+              window.open(viewUrl, '_blank', 'noopener,noreferrer');
+            }
+          });
+          
+          linkWrapper.appendChild(link);
+          
+          // 이미지 다음에 링크 삽입
+          if (img.parentNode) {
+            img.parentNode.insertBefore(linkWrapper, img.nextSibling);
+          }
+        }
+      });
+    }
+  }, [ticketData.description]);
 
   const renderAttachments = (attachments: IAttachment[]) => {
     return attachments.map((attachment, index) => {
@@ -102,6 +169,8 @@ const TicketShowProgress: React.FC<Props> = ({
         </div>
         {description && (
           <div
+            ref={descriptionRef}
+            className="ticket-description-content"
             dangerouslySetInnerHTML={{
               __html: xss(description.replace(/\n/g, "<br />")),
             }}
@@ -114,6 +183,86 @@ const TicketShowProgress: React.FC<Props> = ({
         )}
       </div>
     );
+  };
+
+  const commentRefs = React.useRef<Map<string, HTMLDivElement>>(new Map());
+
+  // 댓글 내 이미지 처리
+  React.useEffect(() => {
+    commentRefs.current.forEach((element) => {
+      if (element) {
+        const images = element.querySelectorAll('img:not([data-link-added])');
+        images.forEach((imgElement) => {
+          const img = imgElement as HTMLImageElement;
+          // 이미지 크기를 위젯에 맞게 조정
+          img.style.maxWidth = '100%';
+          img.style.height = 'auto';
+          img.style.cursor = 'pointer';
+          img.style.maxHeight = '300px';
+          img.style.objectFit = 'contain';
+          img.setAttribute('data-link-added', 'true');
+          
+          const originalSrc = img.src || img.getAttribute('src');
+          if (originalSrc) {
+            // 이미지 아래에 링크 추가
+            const linkWrapper = document.createElement('div');
+            linkWrapper.className = 'image-view-original-link';
+            linkWrapper.style.cssText = 'margin-top: 4px; margin-bottom: 8px; text-align: center;';
+            
+            const link = document.createElement('a');
+            link.href = '#';
+            link.textContent = __('원본 이미지 보기');
+            link.style.cssText = 'font-size: 11px; color: #007bff; text-decoration: none; cursor: pointer;';
+            link.addEventListener('click', async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // URL에서 name 파라미터 제거하여 다운로드 방지
+              let viewUrl = originalSrc;
+              if (viewUrl.includes('&name=')) {
+                viewUrl = viewUrl.split('&name=')[0];
+              }
+              
+              // fetch로 이미지를 가져와서 blob URL로 변환하여 새 탭에서 열기
+              try {
+                const response = await fetch(viewUrl, { mode: 'cors' });
+                if (response.ok) {
+                  const blob = await response.blob();
+                  const blobUrl = URL.createObjectURL(blob);
+                  const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+                  if (newWindow) {
+                    // 창이 열린 후 blob URL 정리
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                  }
+                } else {
+                  // fetch 실패 시 직접 열기 (CORS 문제 등)
+                  window.open(viewUrl, '_blank', 'noopener,noreferrer');
+                }
+              } catch (error) {
+                // 오류 발생 시 직접 열기
+                console.warn('Failed to fetch image:', error);
+                window.open(viewUrl, '_blank', 'noopener,noreferrer');
+              }
+            });
+            
+            linkWrapper.appendChild(link);
+            
+            // 이미지 다음에 링크 삽입
+            if (img.parentNode) {
+              img.parentNode.insertBefore(linkWrapper, img.nextSibling);
+            }
+          }
+        });
+      }
+    });
+  }, [comments]);
+
+  const setCommentRef = (commentId: string, element: HTMLDivElement | null) => {
+    if (element) {
+      commentRefs.current.set(commentId, element);
+    } else {
+      commentRefs.current.delete(commentId);
+    }
   };
 
   const renderComments = () => {
@@ -160,7 +309,8 @@ const TicketShowProgress: React.FC<Props> = ({
               dangerouslySetInnerHTML={{ __html: __("added <b>comment</b>") }}
             />
             <div
-              className="comment"
+              ref={(el) => setCommentRef(comment._id, el)}
+              className="comment ticket-comment-content"
               dangerouslySetInnerHTML={{
                 __html: xss(content.replace(/\n/g, "<br />")),
               }}

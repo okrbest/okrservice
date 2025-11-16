@@ -408,7 +408,8 @@ export default function TicketEditForm(props: Props) {
       { label: "단순문의", value: "inquiry" },
       { label: "개선요청", value: "improvement" },
       { label: "오류처리", value: "error" },
-      { label: "설정변경", value: "config" }
+      { label: "설정변경", value: "config" },
+      { label: "추가개발", value: "additional_development" }
     ];
 
     const requestTypeValueRenderer = (option: ISelectedOption): React.ReactNode => (

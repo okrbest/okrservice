@@ -44,7 +44,8 @@ const TicketItem: React.FC<Props> = (props) => {
       'request': { bg: '#e8f5e8', text: '#388e3c' }, 
       'error': { bg: '#ffebee', text: '#d32f2f' },
       'complaint': { bg: '#ffebee', text: '#d32f2f' },
-      'config': { bg: '#e3f2fd', text: '#1976d2' }
+      'config': { bg: '#e3f2fd', text: '#1976d2' },
+      'additional_development': { bg: '#f3e5f5', text: '#7b1fa2' }
     };
 
     return colorMap[requestType] || { bg: '#f5f5f5', text: '#616161' };
@@ -55,7 +56,8 @@ const TicketItem: React.FC<Props> = (props) => {
       'inquiry': '단순문의',
       'improvement': '개선요청',
       'error': '오류처리',
-      'config': '설정변경'
+      'config': '설정변경',
+      'additional_development': '추가개발'
     };
 
     return labelMap[requestType] || requestType;
