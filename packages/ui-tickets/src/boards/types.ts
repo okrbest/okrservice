@@ -234,6 +234,8 @@ export interface IItem {
   departmentIds: string[];
   branchIds: string[];
   isCheckUserTicket?: boolean;
+  qualityImpact?: string;
+  functionCategory?: string;
 }
 
 export interface IDraggableLocation {

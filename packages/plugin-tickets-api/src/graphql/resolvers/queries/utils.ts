@@ -91,6 +91,8 @@ export const generateExtraFilters = async (filter, extraParams) => {
     source,
     userIds,
     priority,
+    qualityImpact,
+    functionCategory,
     startDate,
     endDate,
     createdStartDate,
@@ -119,6 +121,14 @@ export const generateExtraFilters = async (filter, extraParams) => {
 
   if (priority) {
     filter.priority = contains(priority);
+  }
+
+  if (qualityImpact) {
+    filter.qualityImpact = contains(qualityImpact);
+  }
+
+  if (functionCategory) {
+    filter.functionCategory = contains(functionCategory);
   }
 
   if (startDate) {
@@ -215,6 +225,8 @@ export const generateCommonFilters = async (
     resolvedDayBetween,
     source,
     requestType,
+    qualityImpact,
+    functionCategory,
   } = args;
 
   const isListEmpty = (value) => {
@@ -472,6 +484,14 @@ export const generateCommonFilters = async (
 
   if (requestType) {
     filter.requestType = contains(requestType);
+  }
+
+  if (qualityImpact) {
+    filter.qualityImpact = contains(qualityImpact);
+  }
+
+  if (functionCategory) {
+    filter.functionCategory = contains(functionCategory);
   }
 
   if (tagIds) {
@@ -1133,6 +1153,8 @@ export const getItemList = async (
         departmentIds: 1,
         userId: 1,
         requestType: 1,
+        qualityImpact: 1,
+        functionCategory: 1,
         hasNotified: 1,
         ...(extraFields || {}),
       },

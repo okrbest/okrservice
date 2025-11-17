@@ -11,6 +11,8 @@ const commonParams = `
   $assignedUserIds: [String],
   $closeDateType: String,
   $priority: [String],
+  $qualityImpact: [String],
+  $functionCategory: [String],
   $source: [String],
   $requestType: [String],
   $labelIds: [String],
@@ -43,6 +45,8 @@ const commonParamDefs = `
   assignedUserIds: $assignedUserIds,
   closeDateType: $closeDateType,
   priority: $priority,
+  qualityImpact: $qualityImpact,
+  functionCategory: $functionCategory,
   source: $source,
   requestType: $requestType,
   labelIds: $labelIds,
@@ -71,6 +75,8 @@ const commonParamDefs = `
 export const ticketFields = `
   source
   requestType
+  qualityImpact
+  functionCategory
   emailSent
   widgetAlarm
   manualEmailRequest

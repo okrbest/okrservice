@@ -6,6 +6,7 @@ import * as React from "react";
 import Dropdown from "@erxes/ui/src/components/Dropdown";
 import styled from "styled-components";
 import { __ } from "coreui/utils";
+import { Menu } from "@headlessui/react";
 
 export const ActionItem = styled.button`
   width: 100%;
@@ -28,6 +29,8 @@ type IProps = {
   items: string[];
   trigger: React.ReactNode;
   multiple?: boolean;
+  indicatorComponent?: React.ComponentType<{ value: string }>;
+  labelMapper?: (value: string) => string;
 };
 
 class SelectItem extends React.Component<IProps> {
@@ -42,9 +45,16 @@ class SelectItem extends React.Component<IProps> {
   };
 
   render() {
-    const { onChange, items, trigger } = this.props;
+    const { onChange, items, trigger, indicatorComponent, labelMapper } = this.props;
+    const Indicator = indicatorComponent || PriorityIndicator;
 
     const onChangeItem = (value: string) => onChange(value);
+    const getLabel = (value: string) => {
+      if (labelMapper) {
+        return labelMapper(value);
+      }
+      return __(value);
+    };
 
     return (
       <Dropdown
@@ -53,12 +63,19 @@ class SelectItem extends React.Component<IProps> {
         isMenuWidthFit={true}
       >
         {items.map((item) => (
-          <li key={item}>
-            <ActionItem onClick={onChangeItem.bind(this, item)}>
-              <PriorityIndicator value={item} /> {__(item)}
-              {this.isChecked(item) && <Icon icon="check-1" />}
-            </ActionItem>
-          </li>
+          <Menu.Item key={item}>
+            {({ active }) => (
+              <ActionItem 
+                onClick={() => onChangeItem(item)}
+                style={{
+                  backgroundColor: active ? colors.bgActive : 'transparent'
+                }}
+              >
+                <Indicator value={item} /> {getLabel(item)}
+                {this.isChecked(item) && <Icon icon="check-1" />}
+              </ActionItem>
+            )}
+          </Menu.Item>
         ))}
       </Dropdown>
     );

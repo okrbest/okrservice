@@ -138,6 +138,7 @@ export default function TicketEditForm(props: Props) {
     item.isCheckUserTicket
   );
   const [requestType, setRequestType] = useState(item.requestType);
+  const [functionCategory, setFunctionCategory] = useState(item.functionCategory);
   const [refresh, setRefresh] = useState(false);
 
   // saveItem을 래핑하여 저장 후 자동으로 UI 새로고침
@@ -377,7 +378,8 @@ export default function TicketEditForm(props: Props) {
   useEffect(() => {
     setSource(item.source);
     setRequestType(item.requestType);
-  }, [item.source, item.requestType]);
+    setFunctionCategory(item.functionCategory);
+  }, [item.source, item.requestType, item.functionCategory]);
 
   function renderSidebarFields(saveItem) {
     
@@ -475,6 +477,29 @@ export default function TicketEditForm(props: Props) {
       );
     };
 
+    // 기능분류 필드
+    const functionCategoryValues = [
+      { label: "인사", value: "hr" },
+      { label: "조직", value: "organization" },
+      { label: "근태", value: "attendance" },
+      { label: "급여", value: "payroll" },
+      { label: "평가", value: "evaluation" },
+      { label: "교육", value: "education" },
+      { label: "채용", value: "recruitment" },
+      { label: "복리후생", value: "benefits" },
+      { label: "PCOFF", value: "pcoff" },
+      { label: "전자결재", value: "approval" },
+      { label: "시스템", value: "system" }
+    ];
+
+    const onFunctionCategoryChange = (option) => {
+      const value = option ? option.value : "";
+      setFunctionCategory(value);
+      if (saveItem) {
+        saveItem({ functionCategory: value });
+      }
+    };
+
     return (
       <>
         {/* Source 필드 주석처리
@@ -516,6 +541,17 @@ export default function TicketEditForm(props: Props) {
             onChange={onRequestTypeChange}
             isClearable={true}
             components={{ Option: RequestTypeOption, SingleValue: RequestTypeSingleValue }}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <ControlLabel>기능분류</ControlLabel>
+          <Select
+            placeholder="기능분류를 선택하세요"
+            value={functionCategoryValues.find((f) => f.value === functionCategory)}
+            options={functionCategoryValues}
+            onChange={onFunctionCategoryChange}
+            isClearable={true}
           />
         </FormGroup>
       </>

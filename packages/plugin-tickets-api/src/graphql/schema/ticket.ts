@@ -16,6 +16,8 @@ export const types = ({ contacts, clientPortal }) => `
   type TicketListItem {
     customPropertiesData: JSON,
     requestType: String,
+    qualityImpact: String,
+    functionCategory: String,
     ${commonListTypes}
   }
 
@@ -26,6 +28,8 @@ export const types = ({ contacts, clientPortal }) => `
       contacts
         ? `
     requestType: String
+    qualityImpact: String
+    functionCategory: String
     ${contacts
     ? `
       companies: [Company]
@@ -65,6 +69,8 @@ const listQueryParams = `
   priority: [String]
   source: [String]
   requestType: [String]
+  qualityImpact: [String]
+  functionCategory: [String]
   labelIds: [String]
   sortField: String
   sortDirection: Int
@@ -129,6 +135,8 @@ const ticketMutationParams = `
   type: String,
   isCheckUserTicket: Boolean
   requestType: String,
+  qualityImpact: String,
+  functionCategory: String,
 `;
 
 export const mutations = `
