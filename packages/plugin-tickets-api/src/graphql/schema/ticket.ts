@@ -18,7 +18,6 @@ export const types = ({ contacts, clientPortal }) => `
     requestType: String,
     qualityImpact: String,
     functionCategory: String,
-    visibility: String,
     ${commonListTypes}
   }
 
@@ -31,7 +30,6 @@ export const types = ({ contacts, clientPortal }) => `
     requestType: String
     qualityImpact: String
     functionCategory: String
-    visibility: String
     ${contacts
     ? `
       companies: [Company]
@@ -119,7 +117,7 @@ const archivedTicketsParams = `
 `;
 
 export const queries = `
-  ticketDetail(_id: String!, includeRelations: Boolean): Ticket
+  ticketDetail(_id: String!): Ticket
   tickets(${listQueryParams}): [TicketListItem]
   ticketsTotalCount(${listQueryParams}): Int
   archivedTickets(

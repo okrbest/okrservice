@@ -49,12 +49,19 @@ class Actions extends React.Component<Props> {
   onQualityImpactChange = (value: string) => {
     const { onUpdate, saveItem } = this.props;
 
+    console.log('🔧 onQualityImpactChange 호출됨:', value);
+
     if (saveItem) {
+      console.log('💾 saveItem 호출 - qualityImpact:', value);
       saveItem({ qualityImpact: value }, (updatedItem) => {
+        console.log('✅ saveItem 완료 - updatedItem:', updatedItem);
+        console.log('📊 updatedItem.qualityImpact:', updatedItem?.qualityImpact);
         if (onUpdate) {
           onUpdate(updatedItem);
         }
       });
+    } else {
+      console.error('❌ saveItem이 없습니다!');
     }
   };
 
@@ -183,6 +190,12 @@ class Actions extends React.Component<Props> {
 
         {onSendEmail && (() => {
           const isEnabled = !(item as any).widgetAlarm && !(item as any).emailSent;
+          console.log('🔘 Send Email 버튼 렌더링:', {
+            widgetAlarm: (item as any).widgetAlarm,
+            emailSent: (item as any).emailSent,
+            isEnabled
+          });
+          
           return (
             <Button
               btnStyle={isEnabled ? "primary" : "simple"}
