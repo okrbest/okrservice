@@ -336,9 +336,9 @@ const TicketShowProgress: React.FC<Props> = ({
           </div>
         ) : (
           <>
-            {activityLogs.map((log, index) => (
-              <TicketActivity key={index} activity={log} />
-            ))}
+        {activityLogs.map((log, index) => (
+          <TicketActivity key={index} activity={log} />
+        ))}
           </>
         )}
         {renderComments()}
