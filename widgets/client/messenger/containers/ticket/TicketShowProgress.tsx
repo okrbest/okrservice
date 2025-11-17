@@ -28,7 +28,8 @@ const TicketShowProgressContainer = (props: Props) => {
       typeId: ticketData._id,
       type: "ticket",
     },
-    fetchPolicy: "network-only",
+    fetchPolicy: "cache-and-network", // 캐시 활용으로 성능 개선
+    skip: !ticketData._id, // ticketData가 없으면 쿼리 실행 안 함
   });
 
   const [commentsAdd, { loading }] = useMutation(TICKET_COMMENTS_ADD, {
@@ -50,7 +51,8 @@ const TicketShowProgressContainer = (props: Props) => {
       contentType: "tickets:ticket",
       contentId: ticketData._id,
     },
-    fetchPolicy: "network-only",
+    fetchPolicy: "cache-and-network", // 캐시 활용으로 성능 개선
+    skip: !ticketData._id, // ticketData가 없으면 쿼리 실행 안 함
   });
 
   const onComment = () => {
@@ -65,7 +67,8 @@ const TicketShowProgressContainer = (props: Props) => {
     });
   };
 
-  if (activityLoading || loading || commentsLoading) {
+  // 댓글 로딩 중일 때만 전체 로더 표시, 액티비티는 별도 처리
+  if (loading || commentsLoading) {
     return <div className="loader" />;
   }
 
@@ -74,6 +77,7 @@ const TicketShowProgressContainer = (props: Props) => {
   return (
     <TicketShowProgress
       activityLogs={activityData?.activityLogs || []}
+      activityLoading={activityLoading}
       setComment={setComment}
       comment={comment}
       comments={comments}
