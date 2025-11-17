@@ -32,6 +32,7 @@ const getFileIcon = (extension: string): string => {
 
 type Props = {
   activityLogs: ITicketActivityLog[];
+  activityLoading?: boolean;
   comment: string;
   comments: ITicketComment[];
   setComment: (comment: string) => void;
@@ -44,6 +45,7 @@ const TicketShowProgress: React.FC<Props> = ({
   comment,
   comments,
   activityLogs,
+  activityLoading = false,
 }) => {
   const { ticketData = {} } = useTicket();
   const descriptionRef = React.useRef<HTMLDivElement>(null);
@@ -328,9 +330,17 @@ const TicketShowProgress: React.FC<Props> = ({
     return (
       <div className="ticket-progress-logs">
         <span>{__("Ticket log")}</span>
-        {activityLogs.map((log, index) => (
-          <TicketActivity key={index} activity={log} />
-        ))}
+        {activityLoading ? (
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <div className="loader" style={{ margin: '0 auto' }} />
+          </div>
+        ) : (
+          <>
+            {activityLogs.map((log, index) => (
+              <TicketActivity key={index} activity={log} />
+            ))}
+          </>
+        )}
         {renderComments()}
       </div>
     );
