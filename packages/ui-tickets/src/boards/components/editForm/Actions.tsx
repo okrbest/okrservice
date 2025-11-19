@@ -9,6 +9,7 @@ import LabelChooser from "../../containers/label/LabelChooser";
 import { PRIORITIES } from "../../constants";
 import { PopoverButton } from "@erxes/ui-inbox/src/inbox/styles";
 import PriorityIndicator from "./PriorityIndicator";
+import QualityImpactIndicator from "./QualityImpactIndicator";
 import React from "react";
 import SelectItem from "../../components/SelectItem";
 import { TAG_TYPES } from "@erxes/ui-tags/src/constants";
@@ -45,6 +46,25 @@ class Actions extends React.Component<Props> {
     }
   };
 
+  onQualityImpactChange = (value: string) => {
+    const { onUpdate, saveItem } = this.props;
+
+    console.log('🔧 onQualityImpactChange 호출됨:', value);
+
+    if (saveItem) {
+      console.log('💾 saveItem 호출 - qualityImpact:', value);
+      saveItem({ qualityImpact: value }, (updatedItem) => {
+        console.log('✅ saveItem 완료 - updatedItem:', updatedItem);
+        console.log('📊 updatedItem.qualityImpact:', updatedItem?.qualityImpact);
+        if (onUpdate) {
+          onUpdate(updatedItem);
+        }
+      });
+    } else {
+      console.error('❌ saveItem이 없습니다!');
+    }
+  };
+
   render() {
     const {
       item,
@@ -70,7 +90,36 @@ class Actions extends React.Component<Props> {
         ) : (
           <Icon icon="sort-amount-up" />
         )}
-        {item.priority ? __(item.priority) : __("Priority")}
+        {__("우선순위")}: {item.priority ? __(item.priority) : __("선택")}
+      </ColorButton>
+    );
+
+    const QUALITY_IMPACTS = ["critical", "major", "minor", "visual"];
+    const getQualityImpactLabel = (value: string) => {
+      switch (value) {
+        case "critical":
+          return "치명적";
+        case "major":
+          return "중대";
+        case "minor":
+          return "경미";
+        case "visual":
+          return "시각적";
+        default:
+          return value;
+      }
+    };
+
+    const qualityImpactTrigger = (
+      <ColorButton>
+        {(item as any).qualityImpact ? (
+          <QualityImpactIndicator value={(item as any).qualityImpact} />
+        ) : (
+          <Icon icon="exclamation-triangle" />
+        )}
+        {__("중요도")}: {(item as any).qualityImpact
+          ? getQualityImpactLabel((item as any).qualityImpact)
+          : __("선택")}
       </ColorButton>
     );
 
@@ -97,6 +146,15 @@ class Actions extends React.Component<Props> {
           selectedItems={item.priority}
           onChange={this.onPriorityChange}
           trigger={priorityTrigger}
+        />
+
+        <SelectItem
+          items={QUALITY_IMPACTS}
+          selectedItems={(item as any).qualityImpact}
+          onChange={this.onQualityImpactChange}
+          trigger={qualityImpactTrigger}
+          indicatorComponent={QualityImpactIndicator}
+          labelMapper={getQualityImpactLabel}
         />
 
         <LabelChooser

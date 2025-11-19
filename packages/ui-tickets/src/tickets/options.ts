@@ -51,6 +51,8 @@ const options = {
   getExtraParams: (queryParams: any) => {
     const {
       priority,
+      qualityImpact,
+      functionCategory,
       source,
       userIds,
       startDate,
@@ -68,6 +70,14 @@ const options = {
 
     if (priority) {
       extraParams.priority = toArray(priority);
+    }
+
+    if (qualityImpact) {
+      extraParams.qualityImpact = toArray(qualityImpact);
+    }
+
+    if (functionCategory) {
+      extraParams.functionCategory = toArray(functionCategory);
     }
 
     if (source) {

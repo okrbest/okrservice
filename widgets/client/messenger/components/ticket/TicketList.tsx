@@ -30,6 +30,86 @@ type Props = {
 };
 
 const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick }) => {
+  const descriptionRefs = React.useRef<Map<string, HTMLDivElement>>(new Map());
+
+  // description 내 이미지 처리
+  React.useEffect(() => {
+    descriptionRefs.current.forEach((element, ticketId) => {
+      if (element) {
+        const images = element.querySelectorAll('img:not([data-link-added])');
+        images.forEach((imgElement) => {
+          const img = imgElement as HTMLImageElement;
+          // 이미지 크기를 위젯에 맞게 조정
+          img.style.maxWidth = '100%';
+          img.style.height = 'auto';
+          img.style.cursor = 'pointer';
+          img.style.maxHeight = '150px';
+          img.style.objectFit = 'contain';
+          img.setAttribute('data-link-added', 'true');
+          
+          const originalSrc = img.src || img.getAttribute('src');
+          if (originalSrc) {
+            // 이미지 아래에 링크 추가
+            const linkWrapper = document.createElement('div');
+            linkWrapper.className = 'image-view-original-link';
+            linkWrapper.style.cssText = 'margin-top: 4px; margin-bottom: 8px; text-align: center;';
+            
+            const link = document.createElement('a');
+            link.href = '#';
+            link.textContent = __('원본 이미지 보기');
+            link.style.cssText = 'font-size: 11px; color: #007bff; text-decoration: none; cursor: pointer;';
+            link.addEventListener('click', async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // URL에서 name 파라미터 제거하여 다운로드 방지
+              let viewUrl = originalSrc;
+              if (viewUrl.includes('&name=')) {
+                viewUrl = viewUrl.split('&name=')[0];
+              }
+              
+              // fetch로 이미지를 가져와서 blob URL로 변환하여 새 탭에서 열기
+              try {
+                const response = await fetch(viewUrl, { mode: 'cors' });
+                if (response.ok) {
+                  const blob = await response.blob();
+                  const blobUrl = URL.createObjectURL(blob);
+                  const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+                  if (newWindow) {
+                    // 창이 열린 후 blob URL 정리
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+                  }
+                } else {
+                  // fetch 실패 시 직접 열기 (CORS 문제 등)
+                  window.open(viewUrl, '_blank', 'noopener,noreferrer');
+                }
+              } catch (error) {
+                // 오류 발생 시 직접 열기
+                console.warn('Failed to fetch image:', error);
+                window.open(viewUrl, '_blank', 'noopener,noreferrer');
+              }
+            });
+            
+            linkWrapper.appendChild(link);
+            
+            // 이미지 다음에 링크 삽입
+            if (img.parentNode) {
+              img.parentNode.insertBefore(linkWrapper, img.nextSibling);
+            }
+          }
+        });
+      }
+    });
+  }, [tickets]);
+
+  const setDescriptionRef = (ticketId: string, element: HTMLDivElement | null) => {
+    if (element) {
+      descriptionRefs.current.set(ticketId, element);
+    } else {
+      descriptionRefs.current.delete(ticketId);
+    }
+  };
+
   const getPriorityClass = (priority?: string) => {
     switch (priority?.toLowerCase()) {
       case "critical":
@@ -107,7 +187,9 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick }) => {
           <h4 className="ticket-title">{ticket.name}</h4>
           {ticket.description && (
             <div 
+              ref={(el) => setDescriptionRef(ticket._id, el)}
               className="ticket-description"
+              onClick={(e) => e.stopPropagation()}
               dangerouslySetInnerHTML={{ 
                 __html: ticket.description.length > 100
                   ? `${ticket.description.substring(0, 100)}...`
@@ -123,7 +205,7 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick }) => {
               <span className={`ticket-status ${getStatusClass(ticket.status)}`}>
                 {ticket.stage?.name || ticket.status}
               </span>
-              <span className="ticket-type">{__(ticket.requestType || ticket.type)}</span>
+              <span className="ticket-type">{__(ticket.type)}</span>
               {ticket.priority && (
                 <span className={`ticket-priority ${getPriorityClass(ticket.priority)}`}>
                   {__(ticket.priority)}

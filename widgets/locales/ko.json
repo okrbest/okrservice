@@ -140,5 +140,7 @@
   "inquiry": "단순문의",
   "improvement": "개선 요청",
   "error": "오류처리",
-  "config": "설정변경"
+  "config": "설정변경",
+  "additional_development": "추가개발",
+  "원본 이미지 보기": "원본 이미지 보기"
 }

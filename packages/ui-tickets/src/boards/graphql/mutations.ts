@@ -91,6 +91,8 @@ export const commonListFields = `
   customProperties
   status
   requestType
+  qualityImpact
+  functionCategory
   tags {
     _id
     name
@@ -197,6 +199,8 @@ export const commonFields = `
   branchIds
   departmentIds
   requestType
+  qualityImpact
+  functionCategory
   widgetAlarm
   manualEmailRequest
   emailSent

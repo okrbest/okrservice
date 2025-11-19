@@ -25,6 +25,7 @@ import asyncComponent from "modules/common/components/AsyncComponent";
 import { getVersion } from "@erxes/ui/src/utils/core";
 import queryString from "query-string";
 import withCurrentUser from "modules/auth/containers/withCurrentUser";
+import { setupTokenExpirationChecker } from "@erxes/ui/src/utils/tokenChecker";
 // import { getEnv } from "@erxes/ui/src/utils";
 // import posthog from "posthog-js";
 // import { initializeFaro } from "@grafana/faro-react";
@@ -188,6 +189,15 @@ const renderRoutes = currentUser => {
 };
 
 const Routes = ({ currentUser }: { currentUser: IUser }) => {
+  React.useEffect(() => {
+    // 클릭 이벤트 리스너 설정 (토큰 만료 체크)
+    const cleanup = setupTokenExpirationChecker();
+    
+    return () => {
+      cleanup();
+    };
+  }, []);
+  
   return (
     <Router>
       <BrowserRoutes>

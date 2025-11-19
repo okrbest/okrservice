@@ -5035,6 +5035,65 @@ select.form-control:focus,
   word-break: break-word;
 }
 
+.ticket-description img,
+.ticket-description-content img {
+  max-width: 100% !important;
+  height: auto !important;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 8px 0;
+  transition: opacity 0.2s ease;
+}
+
+.ticket-description img:hover,
+.ticket-description-content img:hover {
+  opacity: 0.9;
+}
+
+.ticket-description-content {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.ticket-description-content img {
+  max-height: 400px;
+  object-fit: contain;
+}
+
+.ticket-comment-content img {
+  max-width: 100% !important;
+  height: auto !important;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 8px 0;
+  max-height: 300px;
+  object-fit: contain;
+  transition: opacity 0.2s ease;
+}
+
+.ticket-comment-content img:hover {
+  opacity: 0.9;
+}
+
+.image-view-original-link {
+  margin-top: 4px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.image-view-original-link a {
+  font-size: 12px;
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.image-view-original-link a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
 .ticket-item-footer {
   border-top: 1px solid #f5f5f5;
   padding-top: 0.75rem;

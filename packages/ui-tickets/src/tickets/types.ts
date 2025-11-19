@@ -3,11 +3,15 @@ import { IItem, IItemParams } from '../boards/types';
 export interface ITicket extends IItem {
   source?: string;
   requestType?: string;
+  qualityImpact?: string;
+  functionCategory?: string;
 }
 
 export interface ITicketParams extends IItemParams {
   source?: string;
   requestType?: string;
+  qualityImpact?: string;
+  functionCategory?: string;
 }
 
 export type TicketsQueryResponse = {

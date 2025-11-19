@@ -22,13 +22,53 @@ const httpLink = createHttpLink({
   credentials: "include"
 });
 
-// Error handler
-const errorLink = onError(({ graphQLErrors }) => {
-  if (graphQLErrors && graphQLErrors.length > 0) {
-    const [error] = graphQLErrors;
+// 중복 리다이렉트 방지를 위한 플래그
+let isRedirecting = false;
 
-    if (error.message === "Login required") {
-      window.location.reload();
+// Error handler
+const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
+  // 이미 리다이렉트 중이면 무시
+  if (isRedirecting) {
+    return;
+  }
+
+  // GraphQL 에러 체크
+  if (graphQLErrors && graphQLErrors.length > 0) {
+    for (const error of graphQLErrors) {
+      // "Login required" 에러는 토큰 만료로 발생
+      if (error.message === "Login required" || error.message === "login required") {
+        isRedirecting = true;
+        console.log('토큰 만료 감지: 로그인 화면으로 리다이렉트합니다.');
+        window.location.href = "/";
+        return;
+      }
+    }
+  }
+
+  // 네트워크 에러 체크 (401 Unauthorized 등)
+  if (networkError) {
+    const statusCode = (networkError as any).statusCode;
+    const status = (networkError as any).status;
+    
+    // 401 Unauthorized는 토큰 만료를 의미
+    if (statusCode === 401 || status === 401) {
+      isRedirecting = true;
+      console.log('인증 실패 (401): 로그인 화면으로 리다이렉트합니다.');
+      window.location.href = "/";
+      return;
+    }
+
+    // 네트워크 에러 메시지에 "unauthorized" 또는 "login"이 포함된 경우
+    const errorMessage = (networkError as any).message || String(networkError);
+    if (
+      errorMessage.toLowerCase().includes('unauthorized') ||
+      errorMessage.toLowerCase().includes('login required') ||
+      errorMessage.toLowerCase().includes('token expired')
+    ) {
+      isRedirecting = true;
+      console.log('인증 에러 감지: 로그인 화면으로 리다이렉트합니다.');
+      window.location.href = "/";
+      return;
     }
   }
 });
