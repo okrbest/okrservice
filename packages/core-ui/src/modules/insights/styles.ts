@@ -184,30 +184,57 @@ const DragField = styledTS<{ haveChart?: boolean } & any>(
   }
 `;
 
-const ChartTitle = styled.div`
+const ChartTitle = styled.div.attrs({
+  className: 'ChartTitle'
+})`
   display: flex;
   align-items: center;
   position: relative;
   width: 100%;
-  z-index: 1000;
+  z-index: 10;
   left: 0;
   right: 0;
 
   padding: 0 1.25rem 1.25rem 1.25rem;
+  
+  /* 드래그 비활성화 */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  
   div {
     font-weight: 700;
     font-size: 1rem;
+    pointer-events: none;
   }
   span {
     font-weight: 500;
     /* display:none; */
     cursor: pointer;
     margin-right: 0.5rem;
+    pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+  .db-chart-action {
+    pointer-events: auto !important;
+    z-index: 11;
+    position: relative;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
   span:first-of-type {
     margin-left: auto;
     margin-right: 0.5rem;
     color: ${colors.colorPrimary};
+    pointer-events: none;
   }
   span:last-of-type {
     color: ${colors.colorCoreRed};

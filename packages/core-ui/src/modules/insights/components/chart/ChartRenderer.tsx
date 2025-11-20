@@ -10,6 +10,7 @@ import {
   horizontalDottedLine
 } from "./utils";
 import { commarizeNumbers, formatNumbers } from "../../utils";
+import { __ } from "coreui/utils";
 import ChartLegend from './ChartLegend';
 
 Chart.register([Colors, ChartDataLabels, Tooltip]);
@@ -49,11 +50,20 @@ const ChartRenderer = (props: IChartProps) => {
 
   const [chartInstance, setChartInstance] = useState<Chart | null>(null);
 
+  // Translate labels
+  const translatedLabels = (labels || []).map(label => {
+    if (typeof label === 'string' && label) {
+      const translated = __(label);
+      return translated || label;
+    }
+    return label;
+  });
+
   const [chartData, setChartData] = useState({
-    labels: labels,
+    labels: translatedLabels,
     datasets: datasets?.length ? datasets : dataset || [
       {
-        label: title || 'Default Dataset',
+        label: title ? __(title) || title : 'Default Dataset',
         data,
         backgroundColor: DEFAULT_CHART_COLORS,
         borderColor: DEFAULT_CHART_COLORS.map(color => color.replace('0.6', '1')),
@@ -83,6 +93,14 @@ const ChartRenderer = (props: IChartProps) => {
       enabled: true,
       displayColors: false,
       callbacks: {
+        title: function(context) {
+          const index = context[0].dataIndex;
+          const label = translatedLabels[index];
+          if (typeof label === 'string' && label) {
+            return label;
+          }
+          return context[0].label || '';
+        },
         label: function (context) {
           let label = context.dataset.label || "";
           let value = context.parsed.y;
@@ -126,6 +144,14 @@ const ChartRenderer = (props: IChartProps) => {
         }
       },
       scales: {
+        x: {
+          ticks: {
+            callback: function(value, index) {
+              const label = translatedLabels[index];
+              return label || value;
+            }
+          }
+        },
         y: {
           ticks: {
             callback: (context, index) => {
@@ -156,6 +182,21 @@ const ChartRenderer = (props: IChartProps) => {
       };
     }
   }, [chartType]);
+
+  useEffect(() => {
+    // Update chartData when labels change
+    const updatedLabels = (labels || []).map(label => {
+      if (typeof label === 'string' && label) {
+        const translated = __(label);
+        return translated || label;
+      }
+      return label;
+    });
+    setChartData(prevData => ({
+      ...prevData,
+      labels: updatedLabels
+    }));
+  }, [labels]);
 
   useEffect(() => {
     if (chartInstance) {

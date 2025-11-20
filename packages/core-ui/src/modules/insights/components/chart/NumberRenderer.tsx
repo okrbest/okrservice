@@ -2,6 +2,7 @@ import React from 'react'
 import styled from 'styled-components';
 import styledTs from 'styled-components-ts';
 import { formatNumbers } from '../../utils';
+import { __ } from "coreui/utils";
 
 const NumberContainer = styled.div`
     height: 100%;
@@ -55,12 +56,15 @@ const NumberRenderer = (props: Props) => {
     return (
 
         <NumberLayout column={labels?.length || 1}>
-            {(labels || []).map((label, index) => (
+            {(labels || []).map((label, index) => {
+              const displayLabel = typeof label === 'string' && label ? (__(label) || label) : label;
+              return (
                 <NumberContainer key={index}>
-                    <Title>{label}</Title>
+                    <Title>{displayLabel}</Title>
                     <Number>{formatNumbers(data[index], 'x', 'commarize')}</Number>
                 </NumberContainer>
-            ))}
+              );
+            })}
         </NumberLayout>
 
     )

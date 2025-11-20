@@ -14,6 +14,10 @@ const reportTemplates = [
       'TicketTotalsByFrequency',
       'TicketAverageTimeToCloseByRep',
       'TicketTotalsBySource',
+      'TicketCountByPriority',
+      'TicketCountByImportance',
+      'TicketCountByCustomerRequestType',
+      'TicketCountByFeatureClassification',
     ],
     img: 'https://sciter.com/wp-content/uploads/2022/08/chart-js.png',
   }

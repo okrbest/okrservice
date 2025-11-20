@@ -19,6 +19,7 @@ import {
   getIntegrationsKinds,
   getStageIds,
 } from "../utils";
+import { sendCoreMessage } from "../../messageBroker";
 
 const DIMENSION_OPTIONS = [
   { label: "Team members", value: "teamMember" },
@@ -2923,6 +2924,809 @@ export const ticketCharts = [
         fieldType: "checkbox",
         fieldLabel: "Group fields with the same name",
         fieldDefaultValue: false,
+      },
+    ],
+  },
+  // TicketCountByPriority
+  {
+    templateType: "TicketCountByPriority",
+    serviceType: "tickets",
+    name: "Ticket Count By Priority",
+    chartTypes: [
+      "bar",
+      "line",
+      "pie",
+      "doughnut",
+      "radar",
+      "polarArea",
+      "table",
+    ],
+    getChartResult: async (
+      models: IModels,
+      filter: any,
+      chartType: string,
+      subdomain: string
+    ) => {
+      const matchFilter = await buildMatchFilter(
+        filter,
+        "ticket",
+        subdomain,
+        models
+      );
+
+      const pipeline: any[] = [
+        {
+          $match: {
+            priority: { $nin: [null, "", " "] },
+            ...matchFilter,
+          },
+        },
+        {
+          $group: {
+            _id: "$priority",
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ];
+
+      const tickets = await models.Tickets.aggregate(pipeline);
+
+      const totalCountByPriority = (tickets || []).reduce(
+        (acc, { _id, count }) => {
+          acc[_id] = count;
+          return acc;
+        },
+        {}
+      );
+
+      const data = Object.values(totalCountByPriority);
+      const labels = Object.keys(totalCountByPriority);
+      const title = "Ticket Count By Priority";
+
+      return { title, data, labels };
+    },
+    filterTypes: [
+      // USER TYPE FILTER
+      {
+        fieldName: "userType",
+        fieldType: "select",
+        multi: false,
+        fieldDefaultValue: "userId",
+        fieldOptions: USER_TYPES,
+        fieldLabel: "Select user type",
+      },
+      // USER FILTER
+      {
+        fieldName: "userIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "users",
+        fieldLabel: "Select users",
+      },
+      // BRANCH FILTER
+      {
+        fieldName: "branchIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "branches",
+        fieldLabel: "Select branches",
+      },
+      // DEPARTMENT FILTER
+      {
+        fieldName: "departmentIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "departments",
+        fieldLabel: "Select departments",
+      },
+      // COMPANY FILTER
+      {
+        fieldName: "companyIds",
+        fieldType: "select",
+        fieldQuery: "companies",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "primaryName",
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "company"}`,
+        fieldLabel: "Select companies",
+      },
+      // CUSTOMER FILTER
+      {
+        fieldName: "customerIds",
+        fieldType: "select",
+        fieldQuery: "customers",
+        multi: true,
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "customer"}`,
+        fieldLabel: "Select customers",
+      },
+      // TAG FILTER
+      {
+        fieldName: "tagIds",
+        fieldType: "select",
+        fieldQuery: "tags",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "tickets:ticket", "perPage": 1000}`,
+        multi: true,
+        fieldLabel: "Select tags",
+      },
+      // BOARD FILTER
+      {
+        fieldName: "boardId",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "ticketsBoards",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldRequiredQueryParams: ["type"],
+        fieldQueryVariables: `{"type": "ticket"}`,
+        fieldLabel: "Select board",
+      },
+      // PIPELINE FILTER
+      {
+        fieldName: "pipelineIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "ticketsPipelines",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "ticket"}`,
+        logics: [
+          {
+            logicFieldName: "boardId",
+            logicFieldVariable: "boardId",
+          },
+        ],
+        fieldLabel: "Select pipelines",
+      },
+      // STAGE FILTER
+      {
+        fieldName: "stageIds",
+        fieldType: "select",
+        fieldQuery: "ticketsStages",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldParentVariable: "pipelineId",
+        fieldParentQuery: "ticketsPipelines",
+        logics: [
+          {
+            logicFieldName: "pipelineIds",
+            logicFieldVariable: "pipelineIds",
+          },
+        ],
+        fieldLabel: "Select stages",
+      },
+      // STATUS FILTER
+      {
+        fieldName: "status",
+        fieldType: "select",
+        fieldOptions: STATUS_TYPES,
+        fieldLabel: "Select status",
+      },
+      // DATE RANGE FILTER
+      {
+        fieldName: "dateRange",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "date",
+        fieldOptions: DATERANGE_TYPES,
+        fieldLabel: "Select date range",
+        fieldDefaultValue: "all",
+      },
+      // DATE RANGE TYPE FILTER
+      {
+        fieldName: "dateRangeType",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "date",
+        fieldOptions: DATERANGE_BY_TYPES,
+        fieldLabel: "Select date range type",
+        fieldDefaultValue: "createdAt",
+      },
+    ],
+  },
+  // TicketCountByImportance
+  {
+    templateType: "TicketCountByImportance",
+    serviceType: "tickets",
+    name: "Ticket Count By Importance",
+    chartTypes: [
+      "bar",
+      "line",
+      "pie",
+      "doughnut",
+      "radar",
+      "polarArea",
+      "table",
+    ],
+    getChartResult: async (
+      models: IModels,
+      filter: any,
+      chartType: string,
+      subdomain: string
+    ) => {
+      const matchFilter = await buildMatchFilter(
+        filter,
+        "ticket",
+        subdomain,
+        models
+      );
+
+      // 중요도 필드 (qualityImpact) - 티켓 스키마의 직접 필드
+      const pipeline: any[] = [
+        {
+          $match: {
+            qualityImpact: { $nin: [null, "", " "] },
+            ...matchFilter,
+          },
+        },
+        {
+          $group: {
+            _id: "$qualityImpact",
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ];
+
+      const tickets = await models.Tickets.aggregate(pipeline);
+
+      const totalCountByImportance = (tickets || []).reduce(
+        (acc, { _id, count }) => {
+          acc[_id] = count;
+          return acc;
+        },
+        {}
+      );
+
+      const data = Object.values(totalCountByImportance);
+      const labels = Object.keys(totalCountByImportance);
+      const title = "Ticket Count By Importance";
+
+      return { title, data, labels };
+    },
+    filterTypes: [
+      // USER TYPE FILTER
+      {
+        fieldName: "userType",
+        fieldType: "select",
+        multi: false,
+        fieldDefaultValue: "userId",
+        fieldOptions: USER_TYPES,
+        fieldLabel: "Select user type",
+      },
+      // USER FILTER
+      {
+        fieldName: "userIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "users",
+        fieldLabel: "Select users",
+      },
+      // BRANCH FILTER
+      {
+        fieldName: "branchIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "branches",
+        fieldLabel: "Select branches",
+      },
+      // DEPARTMENT FILTER
+      {
+        fieldName: "departmentIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "departments",
+        fieldLabel: "Select departments",
+      },
+      // COMPANY FILTER
+      {
+        fieldName: "companyIds",
+        fieldType: "select",
+        fieldQuery: "companies",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "primaryName",
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "company"}`,
+        fieldLabel: "Select companies",
+      },
+      // CUSTOMER FILTER
+      {
+        fieldName: "customerIds",
+        fieldType: "select",
+        fieldQuery: "customers",
+        multi: true,
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "customer"}`,
+        fieldLabel: "Select customers",
+      },
+      // TAG FILTER
+      {
+        fieldName: "tagIds",
+        fieldType: "select",
+        fieldQuery: "tags",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "tickets:ticket", "perPage": 1000}`,
+        multi: true,
+        fieldLabel: "Select tags",
+      },
+      // BOARD FILTER
+      {
+        fieldName: "boardId",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "ticketsBoards",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldRequiredQueryParams: ["type"],
+        fieldQueryVariables: `{"type": "ticket"}`,
+        fieldLabel: "Select board",
+      },
+      // PIPELINE FILTER
+      {
+        fieldName: "pipelineIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "ticketsPipelines",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "ticket"}`,
+        logics: [
+          {
+            logicFieldName: "boardId",
+            logicFieldVariable: "boardId",
+          },
+        ],
+        fieldLabel: "Select pipelines",
+      },
+      // STAGE FILTER
+      {
+        fieldName: "stageIds",
+        fieldType: "select",
+        fieldQuery: "ticketsStages",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldParentVariable: "pipelineId",
+        fieldParentQuery: "ticketsPipelines",
+        logics: [
+          {
+            logicFieldName: "pipelineIds",
+            logicFieldVariable: "pipelineIds",
+          },
+        ],
+        fieldLabel: "Select stages",
+      },
+      // STATUS FILTER
+      {
+        fieldName: "status",
+        fieldType: "select",
+        fieldOptions: STATUS_TYPES,
+        fieldLabel: "Select status",
+      },
+      // DATE RANGE FILTER
+      {
+        fieldName: "dateRange",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "date",
+        fieldOptions: DATERANGE_TYPES,
+        fieldLabel: "Select date range",
+        fieldDefaultValue: "all",
+      },
+      // DATE RANGE TYPE FILTER
+      {
+        fieldName: "dateRangeType",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "date",
+        fieldOptions: DATERANGE_BY_TYPES,
+        fieldLabel: "Select date range type",
+        fieldDefaultValue: "createdAt",
+      },
+    ],
+  },
+  // TicketCountByCustomerRequestType
+  {
+    templateType: "TicketCountByCustomerRequestType",
+    serviceType: "tickets",
+    name: "Ticket Count By Customer Request Type",
+    chartTypes: [
+      "bar",
+      "line",
+      "pie",
+      "doughnut",
+      "radar",
+      "polarArea",
+      "table",
+    ],
+    getChartResult: async (
+      models: IModels,
+      filter: any,
+      chartType: string,
+      subdomain: string
+    ) => {
+      const matchFilter = await buildMatchFilter(
+        filter,
+        "ticket",
+        subdomain,
+        models
+      );
+
+      // 고객요청구분 필드 (requestType) - 티켓 스키마의 직접 필드
+      const pipeline: any[] = [
+        {
+          $match: {
+            requestType: { $nin: [null, "", " "] },
+            ...matchFilter,
+          },
+        },
+        {
+          $group: {
+            _id: "$requestType",
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ];
+
+      const tickets = await models.Tickets.aggregate(pipeline);
+
+      const totalCountByRequestType = (tickets || []).reduce(
+        (acc, { _id, count }) => {
+          acc[_id] = count;
+          return acc;
+        },
+        {}
+      );
+
+      const data = Object.values(totalCountByRequestType);
+      const labels = Object.keys(totalCountByRequestType);
+      const title = "Ticket Count By Customer Request Type";
+
+      return { title, data, labels };
+    },
+    filterTypes: [
+      // USER TYPE FILTER
+      {
+        fieldName: "userType",
+        fieldType: "select",
+        multi: false,
+        fieldDefaultValue: "userId",
+        fieldOptions: USER_TYPES,
+        fieldLabel: "Select user type",
+      },
+      // USER FILTER
+      {
+        fieldName: "userIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "users",
+        fieldLabel: "Select users",
+      },
+      // BRANCH FILTER
+      {
+        fieldName: "branchIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "branches",
+        fieldLabel: "Select branches",
+      },
+      // DEPARTMENT FILTER
+      {
+        fieldName: "departmentIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "departments",
+        fieldLabel: "Select departments",
+      },
+      // COMPANY FILTER
+      {
+        fieldName: "companyIds",
+        fieldType: "select",
+        fieldQuery: "companies",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "primaryName",
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "company"}`,
+        fieldLabel: "Select companies",
+      },
+      // CUSTOMER FILTER
+      {
+        fieldName: "customerIds",
+        fieldType: "select",
+        fieldQuery: "customers",
+        multi: true,
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "customer"}`,
+        fieldLabel: "Select customers",
+      },
+      // TAG FILTER
+      {
+        fieldName: "tagIds",
+        fieldType: "select",
+        fieldQuery: "tags",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "tickets:ticket", "perPage": 1000}`,
+        multi: true,
+        fieldLabel: "Select tags",
+      },
+      // BOARD FILTER
+      {
+        fieldName: "boardId",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "ticketsBoards",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldRequiredQueryParams: ["type"],
+        fieldQueryVariables: `{"type": "ticket"}`,
+        fieldLabel: "Select board",
+      },
+      // PIPELINE FILTER
+      {
+        fieldName: "pipelineIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "ticketsPipelines",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "ticket"}`,
+        logics: [
+          {
+            logicFieldName: "boardId",
+            logicFieldVariable: "boardId",
+          },
+        ],
+        fieldLabel: "Select pipelines",
+      },
+      // STAGE FILTER
+      {
+        fieldName: "stageIds",
+        fieldType: "select",
+        fieldQuery: "ticketsStages",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldParentVariable: "pipelineId",
+        fieldParentQuery: "ticketsPipelines",
+        logics: [
+          {
+            logicFieldName: "pipelineIds",
+            logicFieldVariable: "pipelineIds",
+          },
+        ],
+        fieldLabel: "Select stages",
+      },
+      // STATUS FILTER
+      {
+        fieldName: "status",
+        fieldType: "select",
+        fieldOptions: STATUS_TYPES,
+        fieldLabel: "Select status",
+      },
+      // DATE RANGE FILTER
+      {
+        fieldName: "dateRange",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "date",
+        fieldOptions: DATERANGE_TYPES,
+        fieldLabel: "Select date range",
+        fieldDefaultValue: "all",
+      },
+      // DATE RANGE TYPE FILTER
+      {
+        fieldName: "dateRangeType",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "date",
+        fieldOptions: DATERANGE_BY_TYPES,
+        fieldLabel: "Select date range type",
+        fieldDefaultValue: "createdAt",
+      },
+    ],
+  },
+  // TicketCountByFeatureClassification
+  {
+    templateType: "TicketCountByFeatureClassification",
+    serviceType: "tickets",
+    name: "Ticket Count By Feature Classification",
+    chartTypes: [
+      "bar",
+      "line",
+      "pie",
+      "doughnut",
+      "radar",
+      "polarArea",
+      "table",
+    ],
+    getChartResult: async (
+      models: IModels,
+      filter: any,
+      chartType: string,
+      subdomain: string
+    ) => {
+      const matchFilter = await buildMatchFilter(
+        filter,
+        "ticket",
+        subdomain,
+        models
+      );
+
+      // 기능분류 필드 (functionCategory) - 티켓 스키마의 직접 필드
+      const pipeline: any[] = [
+        {
+          $match: {
+            functionCategory: { $nin: [null, "", " "] },
+            ...matchFilter,
+          },
+        },
+        {
+          $group: {
+            _id: "$functionCategory",
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ];
+
+      const tickets = await models.Tickets.aggregate(pipeline);
+
+      const totalCountByFeature = (tickets || []).reduce(
+        (acc, { _id, count }) => {
+          acc[_id] = count;
+          return acc;
+        },
+        {}
+      );
+
+      const data = Object.values(totalCountByFeature);
+      const labels = Object.keys(totalCountByFeature);
+      const title = "Ticket Count By Feature Classification";
+
+      return { title, data, labels };
+    },
+    filterTypes: [
+      // USER TYPE FILTER
+      {
+        fieldName: "userType",
+        fieldType: "select",
+        multi: false,
+        fieldDefaultValue: "userId",
+        fieldOptions: USER_TYPES,
+        fieldLabel: "Select user type",
+      },
+      // USER FILTER
+      {
+        fieldName: "userIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "users",
+        fieldLabel: "Select users",
+      },
+      // BRANCH FILTER
+      {
+        fieldName: "branchIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "branches",
+        fieldLabel: "Select branches",
+      },
+      // DEPARTMENT FILTER
+      {
+        fieldName: "departmentIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "departments",
+        fieldLabel: "Select departments",
+      },
+      // COMPANY FILTER
+      {
+        fieldName: "companyIds",
+        fieldType: "select",
+        fieldQuery: "companies",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "primaryName",
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "company"}`,
+        fieldLabel: "Select companies",
+      },
+      // CUSTOMER FILTER
+      {
+        fieldName: "customerIds",
+        fieldType: "select",
+        fieldQuery: "customers",
+        multi: true,
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "customer"}`,
+        fieldLabel: "Select customers",
+      },
+      // TAG FILTER
+      {
+        fieldName: "tagIds",
+        fieldType: "select",
+        fieldQuery: "tags",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "tickets:ticket", "perPage": 1000}`,
+        multi: true,
+        fieldLabel: "Select tags",
+      },
+      // BOARD FILTER
+      {
+        fieldName: "boardId",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "ticketsBoards",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldRequiredQueryParams: ["type"],
+        fieldQueryVariables: `{"type": "ticket"}`,
+        fieldLabel: "Select board",
+      },
+      // PIPELINE FILTER
+      {
+        fieldName: "pipelineIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "ticketsPipelines",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "ticket"}`,
+        logics: [
+          {
+            logicFieldName: "boardId",
+            logicFieldVariable: "boardId",
+          },
+        ],
+        fieldLabel: "Select pipelines",
+      },
+      // STAGE FILTER
+      {
+        fieldName: "stageIds",
+        fieldType: "select",
+        fieldQuery: "ticketsStages",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldParentVariable: "pipelineId",
+        fieldParentQuery: "ticketsPipelines",
+        logics: [
+          {
+            logicFieldName: "pipelineIds",
+            logicFieldVariable: "pipelineIds",
+          },
+        ],
+        fieldLabel: "Select stages",
+      },
+      // STATUS FILTER
+      {
+        fieldName: "status",
+        fieldType: "select",
+        fieldOptions: STATUS_TYPES,
+        fieldLabel: "Select status",
+      },
+      // DATE RANGE FILTER
+      {
+        fieldName: "dateRange",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "date",
+        fieldOptions: DATERANGE_TYPES,
+        fieldLabel: "Select date range",
+        fieldDefaultValue: "all",
+      },
+      // DATE RANGE TYPE FILTER
+      {
+        fieldName: "dateRangeType",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "date",
+        fieldOptions: DATERANGE_BY_TYPES,
+        fieldLabel: "Select date range type",
+        fieldDefaultValue: "createdAt",
       },
     ],
   },
