@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { formatNumbers } from "../../utils";
 import { colors } from "@erxes/ui/src/styles";
 import { ChartTable, ScrollWrapper } from "../../styles";
+import { __ } from "coreui/utils";
 
 const SortWrapper = styled.th`
   position: relative;
@@ -123,11 +124,12 @@ const TableList = (props: Props) => {
 
             if (labels?.length) {
               const formatType = title.toLowerCase().includes('time') || title?.toLowerCase().includes('duration') ? 'time' : "commarize"
+              const displayItem = typeof item === 'string' && item ? (__(item) || item) : item;
 
               return (
                 <tr key={index} onDoubleClick={() => handleRowClick(item)}>
                   <td>
-                    <b>{item}</b>
+                    <b>{displayItem}</b>
                   </td>
                   <td>{formatNumbers(data[index], formatType, "x")}</td>
                 </tr>

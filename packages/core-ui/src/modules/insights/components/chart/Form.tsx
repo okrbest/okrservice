@@ -77,7 +77,7 @@ const Form = (props: Props) => {
   }));
 
   const chartTemplatesOptions = (chartTemplates || []).map((c) => ({
-    label: c.name,
+    label: __(c.name) || c.name,
     value: c.templateType,
   }));
 

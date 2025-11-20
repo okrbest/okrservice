@@ -22,7 +22,7 @@ const FilterBarContainer = styled.div`
   margin-bottom: 20px;
   border-radius: 4px;
   position: relative;
-  z-index: 1000;
+  z-index: 1;
   overflow: visible;
 `;
 
@@ -34,7 +34,7 @@ const FilterRow = styled.div`
   overflow: visible;
   background: ${colors.colorWhite};
   position: relative;
-  z-index: 50;
+  z-index: 1;
 `;
 
 const FilterItem = styled.div`
@@ -43,7 +43,7 @@ const FilterItem = styled.div`
   max-width: 300px;
   overflow: visible;
   position: relative;
-  z-index: 100;
+  z-index: 1;
   background: ${colors.colorWhite};
 `;
 
@@ -60,7 +60,7 @@ const CollapsibleFilters = styled.div<{ isExpanded: boolean }>`
   transition: max-height 0.3s ease-in-out;
   background: ${colors.colorWhite};
   position: relative;
-  z-index: 100;
+  z-index: 1;
 `;
 
 type Props = {
@@ -179,7 +179,7 @@ const DashboardFilterBar = (props: Props) => {
 
   return (
     <FilterBarContainer>
-      <FilterRow style={{ zIndex: 200, position: 'relative' }}>
+      <FilterRow>
         <FilterItem>
           <FormGroup>
             <ControlLabel>{__('Companies')}</ControlLabel>
