@@ -3172,5 +3172,21 @@
   "This year": "올해",
   "Last year": "작년",
   "Custom date": "직접 선택",
-  "Report": "보고서"
+  "Report": "보고서",
+  "additional_development": "추가 개발",
+  "critical": "치명적",
+  "major": "중대",
+  "minor": "경미",
+  "visual": "시각적",
+  "hr": "인사",
+  "organization": "조직",
+  "attendance": "근태",
+  "payroll": "급여",
+  "evaluation": "평가",
+  "education": "교육",
+  "recruitment": "채용",
+  "benefits": "복리후생",
+  "pcoff": "PCOFF",
+  "approval": "전자결재",
+  "system": "시스템"
 }

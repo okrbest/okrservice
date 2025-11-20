@@ -1,6 +1,7 @@
 import { ChartTitle } from "../../styles";
 import React, { useEffect, useState } from "react";
 import { defaultLayout } from "../../utils";
+import { __ } from "coreui/utils";
 import ChartRenderer from "../../containers/chart/ChartRenderer";
 import { IChart } from "../../types";
 
@@ -87,36 +88,58 @@ const ChartGridLayout = (props: Props) => {
     dashboardChartsEdit(chart._id, { layout: updatedLayout });
   };
 
+  const handleActionClick = (e: React.MouseEvent, callback: () => void) => {
+    e.preventDefault();
+    e.stopPropagation();
+    callback();
+  };
+
+  const handleTitleMouseDown = (e: React.MouseEvent) => {
+    // 드래그 시작을 방지
+    e.stopPropagation();
+  };
+
   return (
     <>
-      <ChartTitle>
-        <div>{chart.name}</div>
-        <span className="db-chart-action" onClick={handleLock}>
+      <ChartTitle onMouseDown={handleTitleMouseDown}>
+        <div>{__(chart.name) || chart.name}</div>
+        <span 
+          className="db-chart-action" 
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => handleActionClick(e, handleLock)}
+        >
           {!layout.static ? "lock" : "unlock"}
         </span>
         <span
           className="db-chart-action"
-          onClick={() => chartDuplicate(chart._id)}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => handleActionClick(e, () => chartDuplicate(chart._id))}
         >
           duplicate
         </span>
         {chartType && (chartType === "table" || chartType === "pivotTable") && (
-          <span className="db-chart-action" onClick={() => exportTable(chart)}>
+          <span 
+            className="db-chart-action"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => handleActionClick(e, () => exportTable(chart))}
+          >
             export
           </span>
         )}
         <span
           className="db-chart-action"
-          onClick={() => {
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => handleActionClick(e, () => {
             setCurrentChart(chart);
             setShowDrawer(!showDrawer);
-          }}
+          })}
         >
           edit
         </span>
         <span
           className="db-chart-action"
-          onClick={() => handleChartDelete(chart._id)}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => handleActionClick(e, () => handleChartDelete(chart._id))}
         >
           delete
         </span>

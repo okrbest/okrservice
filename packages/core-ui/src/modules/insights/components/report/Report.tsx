@@ -194,6 +194,17 @@ const Report = (props: Props) => {
     );
   };
 
+  const handleActionClick = (e: React.MouseEvent, callback: () => void) => {
+    e.preventDefault();
+    e.stopPropagation();
+    callback();
+  };
+
+  const handleTitleMouseDown = (e: React.MouseEvent) => {
+    // 드래그 시작을 방지
+    e.stopPropagation();
+  };
+
   const renderChart = (chart: any, index: number) => {
     const { chartType } = chart;
 
@@ -213,28 +224,31 @@ const Report = (props: Props) => {
         data-grid={defaultLayout(chart, index)}
         style={{ overflow: "hidden" }}
       >
-        <ChartTitle>
-          <div>{chart.name}</div>
+        <ChartTitle onMouseDown={handleTitleMouseDown}>
+          <div>{__(chart.name) || chart.name}</div>
           {chartType && chartType === "table" && (
             <span
               className="db-chart-action"
-              onClick={() => exportTable(chart)}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => handleActionClick(e, () => exportTable(chart))}
             >
               export
             </span>
           )}
           <span
             className="db-chart-action"
-            onClick={() => {
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => handleActionClick(e, () => {
               setCurrentChart(chart);
               setShowDrawer(!showDrawer);
-            }}
+            })}
           >
             edit
           </span>
           <span
             className="db-chart-action"
-            onClick={() => handleChartDelete(chart._id)}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => handleActionClick(e, () => handleChartDelete(chart._id))}
           >
             delete
           </span>
@@ -272,6 +286,7 @@ const Report = (props: Props) => {
             containerPadding={[30, 30]}
             useCSSTransforms={true}
             resizeHandles={["s", "w", "e", "n", "sw", "nw", "se", "ne"]}
+            cancel=".db-chart-action, .ChartTitle"
           >
             {(charts || []).map(deserializeItem).map(renderChart)}
           </DragField>
