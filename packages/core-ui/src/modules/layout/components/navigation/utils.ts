@@ -34,6 +34,12 @@ export const pluginNavigations = (): any[] => {
   const plugins: PluginConfig[] = (window as any).plugins || [];
   const navigationMenus: any[] = [
     {
+      text: "Insight",
+      url: "/insight",
+      icon: "icon-reload",
+      location: "mainNavigation"
+    },
+    {
       text: "Contacts",
       url: "/contacts/customer",
       icon: "icon-user",
@@ -53,12 +59,6 @@ export const pluginNavigations = (): any[] => {
       icon: "icon-laptop",
       location: "mainNavigation",
       permission: "showForms"
-    },
-    {
-      text: "Insight",
-      url: "/insight",
-      icon: "icon-reload",
-      location: "mainNavigation"
     }
   ];
 
