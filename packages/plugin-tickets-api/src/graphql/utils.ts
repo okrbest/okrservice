@@ -96,6 +96,8 @@ export const sendNotifications = async (
     action: action ? action : `has updated ${contentType}`,
     content,
     link: `/${contentType}/board?id=${pipeline.boardId}&pipelineId=${pipeline._id}&itemId=${item._id}`,
+    itemName: item.name,
+    itemDescription: item.description,
 
     // exclude current user, invited user and removed users
     receivers: [
@@ -141,6 +143,8 @@ export const sendNotifications = async (
       notifType: NOTIFICATION_TYPES[`${contentType.toUpperCase()}_ADD`],
       action: `invited you to the ${contentType}: `,
       content: `'${item.name}'`,
+      emailTitle: `담당자 지정 : ${item.name}`,
+      emailContent: item.description,
       receivers: invitedUsers.filter((id) => id !== user._id),
     });
 
