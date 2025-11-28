@@ -138,23 +138,14 @@ export const sendNotifications = async (
   }
 
   if (invitedUsers && invitedUsers.length > 0) {
-    const filteredReceivers = invitedUsers.filter((id) => id !== user._id);
-    console.log(`🔍 [Debug] sendNotification for ticketAdd:`, {
-      invitedUsers,
-      user_id: user._id,
-      filteredReceivers,
-      filteredReceiversCount: filteredReceivers.length,
-      emailTitle: `새로 발급된 '${item.name}' 티켓의 담당자로 지정되었습니다`,
-    });
-    
     sendNotification(subdomain, {
       ...notificationDoc,
       notifType: NOTIFICATION_TYPES[`${contentType.toUpperCase()}_ADD`],
       action: `invited you to the ${contentType}: `,
       content: `'${item.name}'`,
-      emailTitle: `새로 발급된 '${item.name}' 티켓의 담당자로 지정되었습니다`,
+      emailTitle: `담당자 지정 : ${item.name}`,
       emailContent: item.description,
-      receivers: filteredReceivers,
+      receivers: invitedUsers.filter((id) => id !== user._id),
     });
 
     sendCoreMessage({
@@ -175,15 +166,9 @@ export const sendNotifications = async (
     });
   }
 
-  // invitedUsers가 없고 type이 ${contentType}Add일 때는 알림을 보내지 않음
-  // (담당자가 없으면 "담당자로 지정되었습니다" 알림을 보낼 필요가 없음)
-  // 다른 타입의 알림(Edit, Change 등)은 정상적으로 전송
-  const isAddType = type === `${contentType}Add`;
-  if (!isAddType || (invitedUsers && invitedUsers.length > 0)) {
-    sendNotification(subdomain, {
-      ...notificationDoc,
-    });
-  }
+  sendNotification(subdomain, {
+    ...notificationDoc,
+  });
 };
 
 export const boardId = async (models: IModels, item: any) => {
