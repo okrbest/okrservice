@@ -13,6 +13,7 @@ import {
   consumeRPCQueue,
 } from "@erxes/api-utils/src/messageBroker";
 import { debugError } from "@erxes/api-utils/src/debuggers";
+import { NOTIFICATION_TYPES } from "./constants";
 
 interface ISendNotification {
   createdUser;
@@ -25,6 +26,10 @@ interface ISendNotification {
   contentType: string;
   contentTypeId: string;
   toMail: string;
+  emailTitle?: string;
+  emailContent?: string;
+  itemName?: string;
+  itemDescription?: string;
 }
 
 const sendNotification = async (
@@ -41,6 +46,10 @@ const sendNotification = async (
     action,
     contentType,
     contentTypeId,
+    emailTitle,
+    emailContent,
+    itemName,
+    itemDescription,
   } = doc;
 
   let { link } = doc;
@@ -128,6 +137,28 @@ const sendNotification = async (
 
   link = `${DOMAIN}${link}`;
 
+  const isTicketAssign = notifType === NOTIFICATION_TYPES.TICKET_ADD;
+  const fallbackTicketTitle =
+    itemName ||
+    (typeof content === "string" ? content.replace(/'/g, "") : "") ||
+    title;
+  const finalEmailTitle =
+    (isTicketAssign &&
+      (emailTitle || (fallbackTicketTitle && `담당자 지정 : ${fallbackTicketTitle}`))) ||
+    title ||
+    "Notification";
+
+  const notificationTemplateData: Record<string, any> = {
+    ...doc,
+    link,
+    isTicketAssign,
+  };
+
+  if (isTicketAssign && (emailContent || itemDescription)) {
+    notificationTemplateData.content =
+      emailContent || itemDescription || notificationTemplateData.content;
+  }
+
   // 이메일 수신자가 있을 때만 이메일 발송
   if (toEmails.length > 0) {
     console.log(`✉️ [Email] Sending notification emails:`, {
@@ -150,11 +181,11 @@ const sendNotification = async (
       action: "sendEmail",
       data: {
         toEmails,
-        title: "Notification",
+        title: finalEmailTitle,
         template: {
           name: "notification",
           data: {
-            notification: { ...doc, link },
+            notification: notificationTemplateData,
             action,
             userName: getUserDetail(createdUser),
           },
