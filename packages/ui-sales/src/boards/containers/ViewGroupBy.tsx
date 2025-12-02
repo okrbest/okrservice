@@ -21,6 +21,8 @@ import { TagsQueryResponse } from "@erxes/ui-tags/src/types";
 import { queries as tagQueries } from "@erxes/ui-tags/src/graphql";
 import { AllUsersQueryResponse } from "@erxes/ui/src/auth/types";
 import { queries as userQueries } from "@erxes/ui/src/team/graphql";
+import { FieldsGroupsQueryResponse } from "@erxes/ui-forms/src/settings/properties/types";
+import { queries as fieldQueries } from "@erxes/ui-forms/src/settings/properties/graphql";
 
 const Container = styled.div`
   min-height: 500px;
@@ -41,6 +43,8 @@ type WithStagesProps = {
   pipelineAssigneeQuery: any;
   tagsQuery?: TagsQueryResponse;
   usersQuery: AllUsersQueryResponse;
+  fieldsGroupsQuery?: FieldsGroupsQueryResponse;
+  customerFieldsGroupsQuery?: FieldsGroupsQueryResponse;
 } & Props;
 
 class WithStages extends Component<WithStagesProps> {
@@ -54,8 +58,69 @@ class WithStages extends Component<WithStagesProps> {
       viewType,
       pipeline,
       tagsQuery,
-      usersQuery
+      usersQuery,
+      fieldsGroupsQuery,
+      customerFieldsGroupsQuery
     } = this.props;
+
+    // Deal 타입일 때 커스텀 필드 목록 추출
+    let customFields: any[] = [];
+    if (options.type === "deal" && fieldsGroupsQuery && !fieldsGroupsQuery.loading && fieldsGroupsQuery.fieldsGroups) {
+      const expectedContentType = `sales:${options.type}`;
+      customFields = fieldsGroupsQuery.fieldsGroups
+        .flatMap((group) => group.fields || [])
+        .filter((field) => {
+          // 필드가 존재하고, 시스템 필드가 아니며, 보이는 필드이고, 이름이 있는 필드만 포함
+          // 그리고 올바른 contentType을 가진 필드만 포함
+          return field && 
+                 !field.isDefinedByErxes && 
+                 field.isVisible && 
+                 (field.text || field.name) &&
+                 (field.text || field.name).trim() !== '' &&
+                 field.contentType === expectedContentType;
+        })
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
+    }
+
+    // Customer 필드에서 메일발송일과 직전소통일 필드 ID 찾기
+    let mailSentDateFieldId: string | null = null;
+    let lastContactDateFieldId: string | null = null;
+    
+    if (options.type === "deal" && customerFieldsGroupsQuery && !customerFieldsGroupsQuery.loading && customerFieldsGroupsQuery.fieldsGroups) {
+      const allFields = customerFieldsGroupsQuery.fieldsGroups.flatMap((group) => group.fields || []);
+      
+      console.log("ViewGroupBy: Searching for date fields in", allFields.length, "customer fields");
+      
+      for (const field of allFields) {
+        if (!field || !field._id) continue;
+        
+        const fieldName = field.text || field.name || "";
+        const fieldType = field.type || "";
+        const lowerFieldName = fieldName.toLowerCase().replace(/\s+/g, "");
+        
+        console.log("ViewGroupBy: Checking field:", fieldName, "Type:", fieldType, "ID:", field._id);
+        
+        // More flexible matching for 메일발송일
+        if ((lowerFieldName.includes("메일") && (lowerFieldName.includes("발송") || lowerFieldName.includes("보낸"))) ||
+            fieldName === "메일발송일" ||
+            fieldName === "메일 발송일" ||
+            lowerFieldName === "메일발송일") {
+          mailSentDateFieldId = field._id;
+          console.log("ViewGroupBy: ✓ Found 메일발송일 field:", fieldName, field._id);
+        }
+        
+        // More flexible matching for 직전소통일
+        if ((lowerFieldName.includes("직전") && lowerFieldName.includes("소통")) ||
+            fieldName === "직전소통일" ||
+            fieldName === "직전 소통일" ||
+            lowerFieldName === "직전소통일") {
+          lastContactDateFieldId = field._id;
+          console.log("ViewGroupBy: ✓ Found 직전소통일 field:", fieldName, field._id);
+        }
+      }
+      
+      console.log("ViewGroupBy: Final field IDs - mailSentDateFieldId:", mailSentDateFieldId, "lastContactDateFieldId:", lastContactDateFieldId);
+    }
 
     let groupType = "stage";
     let groups: any[] = stagesQuery.salesStages || [];
@@ -166,6 +231,9 @@ class WithStages extends Component<WithStagesProps> {
             length={groups.length}
             queryParams={queryParams}
             refetchStages={stagesQuery.refetch}
+            customFields={customFields}
+            mailSentDateFieldId={mailSentDateFieldId}
+            lastContactDateFieldId={lastContactDateFieldId}
           />
         ))}
       </Container>
@@ -227,6 +295,36 @@ export default withProps<Props>(
           ids: queryParams?.assignedUserIds
         }
       })
-    })
+    }),
+    graphql<Props, FieldsGroupsQueryResponse, { contentType: string; config?: { boardId?: string; pipelineId?: string } }>(
+      gql(fieldQueries.fieldsGroups),
+      {
+        name: "fieldsGroupsQuery",
+        skip: ({ options }: Props) => options.type !== "deal",
+        options: ({ pipeline, queryParams, options }: Props) => ({
+          variables: {
+            contentType: `sales:${options.type}`,
+            isDefinedByErxes: false,
+            config: {
+              boardId: pipeline.boardId || queryParams?.boardId || "",
+              pipelineId: pipeline._id || "",
+            },
+          },
+        }),
+      }
+    ),
+    graphql<Props, FieldsGroupsQueryResponse, { contentType: string; isDefinedByErxes?: boolean }>(
+      gql(fieldQueries.fieldsGroups),
+      {
+        name: "customerFieldsGroupsQuery",
+        skip: ({ options }: Props) => options.type !== "deal",
+        options: () => ({
+          variables: {
+            contentType: "core:customer",
+            // Remove isDefinedByErxes filter to get all fields
+          },
+        }),
+      }
+    )
   )(WithStages)
 );

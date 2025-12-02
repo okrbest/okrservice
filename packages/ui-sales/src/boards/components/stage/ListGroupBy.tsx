@@ -37,6 +37,9 @@ type Props = {
   onRemoveItem: (itemId: string, stageId: string) => void;
   groupObj: any;
   groupType: string;
+  customFields?: any[];
+  mailSentDateFieldId?: string | null;
+  lastContactDateFieldId?: string | null;
 };
 
 const ListGroupBy = (props: Props) => {
@@ -108,7 +111,7 @@ const ListGroupBy = (props: Props) => {
   };
 
   const renderTable = () => {
-    const { groupObj, items, options, groupType } = props;
+    const { groupObj, items, options, groupType, customFields = [], mailSentDateFieldId, lastContactDateFieldId } = props;
 
     if (!groupObj) {
       return <EmptyState icon="grid" text="No stage" size="small" />;
@@ -124,16 +127,19 @@ const ListGroupBy = (props: Props) => {
           <thead>
             <tr>
               <th>{__("Card Title")}</th>
-              <th>{groupType === "stage" ? __("Label") : __("Stage")}</th>
-              {(groupType === "assignee" || groupType === "dueDate") && (
-                <th>{__("Label")}</th>
-              )}
-              <th>{groupType === "priority" ? __("Label") : __("Priority")}</th>
-              <th>{__("Due Date")}</th>
-              {groupType !== "assignee" && <th>{__("Assignee")}</th>}
-              {options.type === "deal" && <th>{__("Products")}</th>}
+              {options.type === "deal" && <th>{__("메일발송일")}</th>}
+              {options.type === "deal" && <th>{__("직전소통일")}</th>}
               <th>{__("Associated Customer")}</th>
-              <ColumnLastChild>{__("Associated Company")}</ColumnLastChild>
+              <th>{__("Associated Company")}</th>
+              {groupType !== "assignee" && <th>{__("Assignee")}</th>}
+              {groupType !== "stage" && <th>{__("Stage")}</th>}
+              {options.type === "deal" && customFields.map((field, index) => (
+                index === customFields.length - 1 ? (
+                  <ColumnLastChild key={field._id}>{field.text || field.name}</ColumnLastChild>
+                ) : (
+                  <th key={field._id}>{field.text || field.name}</th>
+                )
+              ))}
             </tr>
           </thead>
           <tbody id="groupByList">
@@ -147,6 +153,9 @@ const ListGroupBy = (props: Props) => {
                 groupType={groupType}
                 groupObj={groupObj}
                 itemRowComponent={ListItemRow}
+                customFields={customFields}
+                mailSentDateFieldId={mailSentDateFieldId}
+                lastContactDateFieldId={lastContactDateFieldId}
               />
             ))}
           </tbody>

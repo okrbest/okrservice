@@ -239,6 +239,13 @@ export const ColumnLastChild = styled.th`
   }
 `;
 
+export const ColumnLastChildTd = styled.td`
+  &:last-child {
+    text-align: left !important;
+  }
+  font-weight: normal !important;
+`;
+
 export const ActionList = styled(PopoverList)`
   width: 230px;
   li a {

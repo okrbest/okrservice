@@ -17,6 +17,8 @@ type Props = {
   options: IOptions;
   loading?: boolean;
   showType?: string;
+  hideGroupSidebar?: boolean;
+  compact?: boolean;
 };
 
 type FinalProps = {
@@ -58,6 +60,8 @@ const CustomFieldsSection = (props: FinalProps) => {
     fieldsGroups: fieldsGroupsQuery ? fieldsGroupsQuery.fieldsGroups : [],
     doc: item,
     showType: props.showType,
+    hideGroupSidebar: props.hideGroupSidebar,
+    compact: props.compact,
   };
 
   return <GenerateCustomFields {...updatedProps} />;

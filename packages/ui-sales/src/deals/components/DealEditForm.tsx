@@ -13,6 +13,7 @@ import ActivityLogs from "@erxes/ui-log/src/activityLogs/containers/ActivityLogs
 import CommonActions from "../../boards/components/editForm/CommonActions";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
 import CustomFieldsSection from "../../boards/containers/editForm/CustomFieldsSection";
+import CustomerDateFields from "./CustomerDateFields";
 import EditForm from "../../boards/components/editForm/EditForm";
 import FullEditForm from "./FullEditForm";
 import { HeaderContentSmall } from "../../boards/styles/item";
@@ -254,6 +255,7 @@ export default class DealEditForm extends React.Component<Props, State> {
           onUpdate={onUpdate}
           onChangeStage={onChangeStage}
         />
+        <CustomFieldsSection item={item} options={options} showType="list" hideGroupSidebar={true} compact={true} />
         <CommonActions
           options={options}
           saveItem={saveItem}

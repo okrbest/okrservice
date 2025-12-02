@@ -13,6 +13,7 @@ import {
   LabelColumn,
   StageColumn
 } from '../../styles/item';
+import { ColumnLastChildTd } from '../../styles/stage';
 import { IOptions } from '../../types';
 import { __ } from 'coreui/utils';
 import React from 'react';
@@ -26,6 +27,10 @@ type Props = {
   isFormVisible?: boolean;
   options: IOptions;
   groupType?: string;
+  beforePopupClose?: (afterPopupClose?: () => void) => void;
+  customFields?: any[];
+  mailSentDateFieldId?: string | null;
+  lastContactDateFieldId?: string | null;
 };
 
 class ListItemRow extends React.PureComponent<Props> {
@@ -38,7 +43,7 @@ class ListItemRow extends React.PureComponent<Props> {
   }
 
   renderForm = () => {
-    const { item, isFormVisible, stageId } = this.props;
+    const { item, isFormVisible, stageId, options, beforePopupClose } = this.props;
 
     if (!isFormVisible) {
       return null;
@@ -46,11 +51,12 @@ class ListItemRow extends React.PureComponent<Props> {
 
     return (
       <EditForm
-        {...this.props}
-        stageId={stageId || item.stageId}
         itemId={item._id}
+        stageId={stageId || item.stageId}
+        options={options}
         hideHeader={true}
         isPopupVisible={isFormVisible}
+        beforePopupClose={beforePopupClose}
       />
     );
   };
@@ -105,8 +111,83 @@ class ListItemRow extends React.PureComponent<Props> {
     return '-';
   };
 
+  getDealCustomFieldValue = (item: IDeal, fieldName: string): string => {
+    if (!item.customFieldsData || !Array.isArray(item.customFieldsData)) {
+      return '-';
+    }
+
+    const fieldData = item.customFieldsData.find(
+      (data: any) => data.field === fieldName
+    );
+
+    if (!fieldData || !fieldData.value) {
+      return '-';
+    }
+
+    // 배열인 경우 쉼표로 구분하여 표시
+    if (Array.isArray(fieldData.value)) {
+      return fieldData.value.join(', ');
+    }
+
+    return String(fieldData.value);
+  };
+
+  getCustomerCustomFieldValue = (customers: any[], fieldId: string | null): string => {
+    if (!fieldId || !customers || !Array.isArray(customers) || customers.length === 0) {
+      console.log("ListItemRow: getCustomerCustomFieldValue - no fieldId or customers", { fieldId, customersLength: customers?.length });
+      return '-';
+    }
+
+    const firstCustomer = customers[0];
+    if (!firstCustomer || !firstCustomer.customFieldsData || !Array.isArray(firstCustomer.customFieldsData)) {
+      console.log("ListItemRow: getCustomerCustomFieldValue - no customFieldsData", { 
+        hasCustomer: !!firstCustomer, 
+        hasCustomFieldsData: !!firstCustomer?.customFieldsData,
+        customFieldsDataLength: firstCustomer?.customFieldsData?.length 
+      });
+      return '-';
+    }
+
+    console.log("ListItemRow: getCustomerCustomFieldValue - searching for fieldId:", fieldId, "in customFieldsData:", firstCustomer.customFieldsData);
+
+    // Find field by field ID
+    const fieldData = firstCustomer.customFieldsData.find(
+      (data: any) => data.field === fieldId
+    );
+
+    console.log("ListItemRow: getCustomerCustomFieldValue - found fieldData:", fieldData);
+
+    if (!fieldData || !fieldData.value) {
+      console.log("ListItemRow: getCustomerCustomFieldValue - no fieldData or value");
+      return '-';
+    }
+
+    // If value is a date string, format it
+    if (typeof fieldData.value === 'string') {
+      // Try to parse as ISO date string
+      const dateMatch = fieldData.value.match(/^\d{4}-\d{2}-\d{2}/);
+      if (dateMatch) {
+        try {
+          const date = new Date(fieldData.value);
+          if (!isNaN(date.getTime())) {
+            return dayjs(date).format('YYYY-MM-DD');
+          }
+        } catch (e) {
+          // Not a valid date, return as string
+        }
+      }
+    }
+
+    // 배열인 경우 쉼표로 구분하여 표시
+    if (Array.isArray(fieldData.value)) {
+      return fieldData.value.join(', ');
+    }
+
+    return String(fieldData.value);
+  };
+
   render() {
-    const { item, onClick, groupType, options } = this.props;
+    const { item, onClick, groupType, options, mailSentDateFieldId, lastContactDateFieldId } = this.props;
 
     const {
       customers,
@@ -127,51 +208,85 @@ class ListItemRow extends React.PureComponent<Props> {
               {__('Last updated')}: {this.renderDate(item.modifiedAt)}
             </LastUpdate>
           </ColumnChild>
-          {this.renderStage()}
-          {(groupType === 'assignee' || groupType === 'dueDate') && (
-            <LabelColumn>
-              {this.checkNull(labels.length > 0, <Labels labels={labels} />)}
-            </LabelColumn>
-          )}
-          {this.renderPriority()}
-          <td>
-            {this.checkNull(
-              Boolean(closeDate || isComplete),
-              <DueDateLabel closeDate={closeDate} isComplete={isComplete} />
-            )}
-          </td>
-          {groupType !== 'assignee' && (
-            <td>
-              {this.checkNull(
-                assignedUsers.length > 0,
-                <PriceContainer>
-                  <Left>
-                    <Assignees users={assignedUsers} />
-                  </Left>
-                </PriceContainer>
-              )}
+          {options.type === 'deal' && (
+            <td style={{ fontWeight: 'normal' }}>
+              {(() => {
+                console.log("ListItemRow: Rendering 메일발송일 with fieldId:", mailSentDateFieldId, "customers:", customers);
+                return this.getCustomerCustomFieldValue(customers, mailSentDateFieldId || null);
+              })()}
             </td>
           )}
           {options.type === 'deal' && (
-            <td>
-              {this.checkNull(
-                products && products.length > 0,
-                <Details color="#63D2D6" items={products || []} />
-              )}
+            <td style={{ fontWeight: 'normal' }}>
+              {(() => {
+                console.log("ListItemRow: Rendering 직전소통일 with fieldId:", lastContactDateFieldId, "customers:", customers);
+                return this.getCustomerCustomFieldValue(customers, lastContactDateFieldId || null);
+              })()}
             </td>
           )}
           <td>
             {this.checkNull(
               customers.length > 0,
-              <Details color="#F7CE53" items={customers || []} />
+              (() => {
+                // Remove duplicates by _id
+                const uniqueCustomers = customers.filter((customer, index, self) =>
+                  index === self.findIndex((c) => c._id === customer._id)
+                );
+                return <Details color="#F7CE53" items={uniqueCustomers || []} />;
+              })()
             )}
           </td>
           <ColumnChild>
             {this.checkNull(
               companies.length > 0,
-              <Details color="#EA475D" items={companies || []} />
+              (() => {
+                // Remove duplicates by _id
+                const uniqueCompanies = companies.filter((company, index, self) =>
+                  index === self.findIndex((c) => c._id === company._id)
+                );
+                return <Details color="#EA475D" items={uniqueCompanies || []} />;
+              })()
             )}
           </ColumnChild>
+          {groupType !== 'assignee' && (
+            <td>
+              {this.checkNull(
+                assignedUsers.length > 0,
+                assignedUsers.map((user: any) => user.details?.fullName || user.email || user.username || '-').join(', ')
+              )}
+            </td>
+          )}
+          {groupType !== 'stage' && (
+            <StageColumn>
+              <span>{item.stage ? item.stage.name : '-'}</span>
+            </StageColumn>
+          )}
+          {options.type === 'deal' && this.props.customFields && this.props.customFields.map((field, index) => {
+            const fieldData = item.customFieldsData?.find(
+              (data: any) => data.field === field._id
+            );
+            
+            let value = '-';
+            if (fieldData && fieldData.value) {
+              if (Array.isArray(fieldData.value)) {
+                value = fieldData.value.join(', ');
+              } else {
+                value = String(fieldData.value);
+              }
+            }
+            
+            const isLast = index === this.props.customFields.length - 1;
+            
+            return isLast ? (
+              <ColumnLastChildTd key={field._id}>
+                {value}
+              </ColumnLastChildTd>
+            ) : (
+              <td key={field._id} style={{ fontWeight: 'normal' }}>
+                {value}
+              </td>
+            );
+          })}
         </tr>
         {this.renderForm()}
       </>
