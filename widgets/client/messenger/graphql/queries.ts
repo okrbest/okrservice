@@ -82,12 +82,6 @@ const TICKET_COMMENTS = gql`
     widgetsTicketComments(typeId: $typeId, type: $type) {
       _id
       content
-      attachments {
-        name
-        url
-        type
-        size
-      }
       createdUser {
         _id
         email
@@ -122,8 +116,8 @@ const TICKET_ACTIVITY_LOGS = gql`
 `;
 
 const TICKET_LIST = gql`
-  query widgetsTicketList($customerId: String!, $includeCompanyTickets: Boolean) {
-    widgetsTicketList(customerId: $customerId, includeCompanyTickets: $includeCompanyTickets) {
+  query widgetsTicketList($customerId: String!) {
+    widgetsTicketList(customerId: $customerId) {
       _id
       name
       number
@@ -138,8 +132,6 @@ const TICKET_LIST = gql`
       createdAt
       priority
       widgetAlarm
-      customerName
-      visibility
       attachments {
         url
         name
@@ -354,12 +346,6 @@ const integrationsFetchApi = `
   }
 `;
 
-const widgetsGetDealFields = `
-  query widgetsGetDealFields($boardId: String!, $pipelineId: String!) {
-    widgetsGetDealFields(boardId: $boardId, pipelineId: $pipelineId)
-  }
-`;
-
 export {
   GET_UNREAD_COUNT,
   GET_CONVERSATION_DETAIL,
@@ -381,6 +367,5 @@ export {
   integrationsFetchApi,
   getEngageMessage,
   customerDetail,
-  widgetsGetDealFields,
   MESSAGE_FIELDS,
 };
