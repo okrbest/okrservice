@@ -40,7 +40,6 @@ type Props = {
   customFields?: any[];
   mailSentDateFieldId?: string | null;
   lastContactDateFieldId?: string | null;
-  fullHeight?: boolean;
 };
 
 const ListGroupBy = (props: Props) => {
@@ -127,11 +126,10 @@ const ListGroupBy = (props: Props) => {
         <Table $hover={true} $bordered={true}>
           <thead>
             <tr>
+              <th>{__("Card Title")}</th>
               {options.type === "deal" && <th>{__("메일발송일")}</th>}
               {options.type === "deal" && <th>{__("직전소통일")}</th>}
               <th>{__("Associated Customer")}</th>
-              {options.type === "deal" && <th>{__("Customer Email")}</th>}
-              {options.type === "deal" && <th>{__("Customer Phone")}</th>}
               <th>{__("Associated Company")}</th>
               {groupType !== "assignee" && <th>{__("Assignee")}</th>}
               {groupType !== "stage" && <th>{__("Stage")}</th>}
@@ -166,16 +164,14 @@ const ListGroupBy = (props: Props) => {
     );
   };
 
-  const { groupType, fullHeight } = props;
+  const { groupType } = props;
 
   return (
-    <ListContainer $fullHeight={fullHeight}>
+    <ListContainer>
       <Header>
         <StageTitle>{renderHeader()}</StageTitle>
       </Header>
-      <ListBody $fullHeight={fullHeight} onScroll={onScroll}>
-        {renderTable()}
-      </ListBody>
+      <ListBody onScroll={onScroll}>{renderTable()}</ListBody>
       {groupType === "stage" && <Footer>{renderAddItemTrigger()}</Footer>}
     </ListContainer>
   );
