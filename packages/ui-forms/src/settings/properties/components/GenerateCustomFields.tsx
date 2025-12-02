@@ -7,6 +7,7 @@ import {
   DynamicContentRight,
   FlexCenter,
 } from "@erxes/ui/src/styles/main";
+import styled from "styled-components";
 import { IField, ILocationOption } from "@erxes/ui/src/types";
 import { IFieldGroup, LogicParams } from "../types";
 import { __ } from "coreui/utils";
@@ -26,6 +27,62 @@ import { checkLogic } from "../utils";
 
 declare const navigator: any;
 
+const CompactContentRight = styled(DynamicContentRight)`
+  padding: 10px 0 20px 0 !important;
+  margin-bottom: 0 !important;
+  min-height: auto !important;
+  height: auto !important;
+  
+  > div {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    height: auto !important;
+  }
+  
+  > div > div {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .form-group {
+    margin-bottom: 17px !important;
+  }
+  
+  .sc-jDGrhZ,
+  .sc-bsPxzk,
+  .sc-jBJwtS,
+  .sc-jpcgnz,
+  .sc-kNjbYB,
+  .sc-gPwOIA,
+  .sc-eLoUeK,
+  .sc-kNvUGl {
+    margin-bottom: 17px !important;
+    
+    &:last-child {
+      margin-bottom: 0 !important;
+      padding-bottom: 0 !important;
+    }
+  }
+  
+  /* 버튼 영역 숨기기 */
+  .sc-MhbtI,
+  .sc-cheZyZ,
+  [class*="SidebarFooter"],
+  [class*="Footer"] {
+    display: none !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* 빈 공간 제거 */
+  * {
+    &:last-child {
+      margin-bottom: 0 !important;
+    }
+  }
+`;
+
 type Props = {
   isDetail: boolean;
   customFieldsData: any;
@@ -36,6 +93,8 @@ type Props = {
   object?: any;
   data: any;
   showType?: string;
+  hideGroupSidebar?: boolean;
+  compact?: boolean;
   save?: (data: { customFieldsData: any }, callback: () => any) => void;
   saveGroup: (
     data: any,
@@ -54,6 +113,8 @@ type State = {
 };
 const STORAGE_KEY = `erxes_sidebar_section_config`;
 class GenerateGroup extends React.Component<Props, State> {
+  private saveTimeout: NodeJS.Timeout | null = null;
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -61,6 +122,12 @@ class GenerateGroup extends React.Component<Props, State> {
       data: JSON.parse(JSON.stringify(props.data)),
       currentLocation: { lat: 0, lng: 0 },
     };
+  }
+
+  componentWillUnmount() {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout);
+    }
   }
 
   async componentDidMount() {
@@ -207,6 +274,43 @@ class GenerateGroup extends React.Component<Props, State> {
     this.setState(updatedState);
     if (this.props.onValuesChange) {
       this.props.onValuesChange(updatedState);
+    }
+    
+    // compact 모드일 때 자동 저장
+    if (this.props.compact && this.props.saveGroup) {
+      const { fieldGroup } = this.props;
+      const fieldGroupId = fieldGroup._id;
+      
+      // debounce를 위해 setTimeout 사용
+      if (this.saveTimeout) {
+        clearTimeout(this.saveTimeout);
+      }
+      
+      this.saveTimeout = setTimeout(() => {
+        // 최신 데이터 사용
+        const latestData = { ...data };
+        if (isMultiple) {
+          if (!latestData[fieldGroupId]) {
+            latestData[fieldGroupId] = [];
+          }
+          if (!latestData[fieldGroupId][index]) {
+            latestData[fieldGroupId][index] = {};
+          }
+          latestData[fieldGroupId][index][_id] = value;
+        } else {
+          latestData[_id] = value;
+        }
+        
+        this.props.saveGroup(
+          isMultiple ? { [fieldGroupId]: latestData[fieldGroupId] } : { [_id]: value },
+          (error) => {
+            if (error) {
+              Alert.error(error.message);
+            }
+          },
+          extraValue ? { [_id]: extraValue } : undefined
+        );
+      }, 500);
     }
   };
 
@@ -534,11 +638,19 @@ class GenerateGroup extends React.Component<Props, State> {
     }
 
     if (showType === "list") {
+      if (this.props.hideGroupSidebar) {
+        return (
+          <>
+            {this.renderContent()}
+          </>
+        );
+      }
       return (
-        <>
+        <DynamicComponentList>
+          <h4>{fieldGroup.name}</h4>
           {this.renderContent()}
           {this.renderButtons(true)}
-        </>
+        </DynamicComponentList>
       );
     }
 
@@ -599,6 +711,8 @@ type GroupsProps = {
   loading?: boolean;
   object?: any;
   showType?: string;
+  hideGroupSidebar?: boolean;
+  compact?: boolean;
   save?: (data: { customFieldsData: any }, callback: () => any) => void;
   collapseCallback?: () => void;
   onValuesChange?: (customFieldsData: any) => void;
@@ -716,6 +830,8 @@ class GenerateGroups extends React.Component<
           loading={loading}
           data={data}
           showType={showType}
+          hideGroupSidebar={this.props.hideGroupSidebar}
+          compact={this.props.compact}
           customFieldsData={customFieldsData}
           fieldGroup={fieldGroup}
           fieldsGroups={groupsWithParents}
@@ -729,12 +845,7 @@ class GenerateGroups extends React.Component<
       );
 
       if (showType === "list") {
-        return (
-          <DynamicComponentList>
-            <h4>{fieldGroup.name}</h4>
-            {content}
-          </DynamicComponentList>
-        );
+        return content;
       }
 
       return content;
@@ -767,6 +878,14 @@ class GenerateGroups extends React.Component<
     };
 
     if (showType && showType === "list") {
+      if (this.props.hideGroupSidebar) {
+        return (
+          <CompactContentRight overflow={true}>
+            {this.renderGroups(groups)}
+          </CompactContentRight>
+        );
+      }
+
       return (
         <DynamicContent>
           <DynamicContentLeft>

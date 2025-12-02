@@ -17,6 +17,9 @@ type Props = {
   groupType?: string;
   groupObj?: any;
   hasNotified?: boolean;
+  customFields?: any[];
+  mailSentDateFieldId?: string | null;
+  lastContactDateFieldId?: string | null;
 };
 
 const Item: React.FC<Props> = (props) => {

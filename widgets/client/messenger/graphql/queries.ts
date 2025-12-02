@@ -132,6 +132,10 @@ const TICKET_LIST = gql`
       createdAt
       priority
       widgetAlarm
+      attachments {
+        url
+        name
+      }
     }
   }
 `;

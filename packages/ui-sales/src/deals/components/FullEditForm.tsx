@@ -23,6 +23,7 @@ import CommonActions from "../../boards/components/editForm/CommonActions";
 import CustomFieldsSection from "../../boards/containers/editForm/CustomFieldsSection";
 import DealDynamicComponent from "./DynamicComponent";
 import FileAndDescription from "../../boards/components/editForm/FileAndDescription";
+import CustomerDateFields from "./CustomerDateFields";
 import Header from "../../boards/components/editForm/Header";
 import { HeaderContent } from "../../boards/styles/item";
 import { IUser } from "@erxes/ui/src/auth/types";
@@ -141,6 +142,7 @@ const FullEditForm = (props: Props) => {
       <>
         <HeaderContent>{renderMove()}</HeaderContent>
         <FileAndDescription item={item} options={options} saveItem={saveItem} />
+        <CustomFieldsSection item={item} options={options} showType="list" hideGroupSidebar={true} compact={true} />
         <ActivityInputs
           contentTypeId={item._id}
           contentType={`sales:${options.type}`}

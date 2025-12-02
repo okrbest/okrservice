@@ -726,9 +726,11 @@ export const setupMessageConsumers = async () => {
           stage: stage ? { _id: stage._id, name: stage.name } : null,
           description: ticket.description,
           type: ticket.type,
+          requestType: ticket.requestType,
           createdAt: ticket.createdAt,
           priority: ticket.priority,
-          hasNotified: (ticket as any).hasNotified !== undefined ? (ticket as any).hasNotified : true
+          hasNotified: (ticket as any).hasNotified !== undefined ? (ticket as any).hasNotified : true,
+          attachments: ticket.attachments || []
         };
       })
     );
@@ -777,9 +779,11 @@ export const setupMessageConsumers = async () => {
           stage: stage ? { _id: stage._id, name: stage.name } : null,
           description: ticket.description,
           type: ticket.type,
+          requestType: ticket.requestType,
           createdAt: ticket.createdAt,
           priority: ticket.priority,
-          hasNotified: hasNotified
+          hasNotified: hasNotified,
+          attachments: ticket.attachments || []
         };
       })
     );
@@ -830,9 +834,11 @@ export const setupMessageConsumers = async () => {
           stage: stage ? { _id: stage._id, name: stage.name } : null,
           description: ticket.description,
           type: ticket.type,
+          requestType: ticket.requestType,
           createdAt: ticket.createdAt,
           priority: ticket.priority,
-          hasNotified: hasNotified
+          hasNotified: hasNotified,
+          attachments: ticket.attachments || []
         };
       })
     );

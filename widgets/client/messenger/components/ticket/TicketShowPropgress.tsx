@@ -135,18 +135,73 @@ const TicketShowProgress: React.FC<Props> = ({
         ? attachment.url 
         : `${readFile(attachment.url)}&name=${encodeURIComponent(downloadName)}`;
       
+      // 원본 이미지 보기 URL (name 파라미터 제거)
+      const viewUrl = attachment.url && attachment.url.includes('http')
+        ? attachment.url
+        : readFile(attachment.url);
+      const originalViewUrl = viewUrl.includes('&name=') 
+        ? viewUrl.split('&name=')[0] 
+        : viewUrl;
+      
+      const handleImageClick = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // fetch로 이미지를 가져와서 blob URL로 변환하여 새 탭에서 열기
+        try {
+          const response = await fetch(originalViewUrl, { mode: 'cors' });
+          if (response.ok) {
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+            if (newWindow) {
+              // 창이 열린 후 blob URL 정리
+              setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+            }
+          } else {
+            // fetch 실패 시 직접 열기 (CORS 문제 등)
+            window.open(originalViewUrl, '_blank', 'noopener,noreferrer');
+          }
+        } catch (error) {
+          // 오류 발생 시 직접 열기
+          console.warn('Failed to fetch image:', error);
+          window.open(originalViewUrl, '_blank', 'noopener,noreferrer');
+        }
+      };
+      
       return (
-        <div key={attachment.url} className="ticket-attachment">
+        <div key={`${attachment.url}-${index}`} className="ticket-attachment">
           {isImage ? (
-            <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
+            <div style={{ marginBottom: '8px' }}>
               <img
                 src={readFile(attachment.url)}
                 alt={`ticket-image-${index}`}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                  cursor: 'pointer',
+                  display: 'block'
+                }}
+                onClick={handleImageClick}
                 onLoad={() => {
                   URL.revokeObjectURL(attachment.name);
                 }}
               />
-            </a>
+              <div style={{ marginTop: '4px', marginBottom: '8px', textAlign: 'center' }}>
+                <a
+                  href="#"
+                  onClick={handleImageClick}
+                  style={{
+                    fontSize: '12px',
+                    color: '#007bff',
+                    textDecoration: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {__('원본 이미지 보기')}
+                </a>
+              </div>
+            </div>
           ) : (
             <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit" }}>
               <div style={{ textAlign: "center", padding: "10px", cursor: "pointer" }}>

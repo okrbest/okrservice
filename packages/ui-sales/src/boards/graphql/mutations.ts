@@ -95,6 +95,7 @@ export const commonListFields = `
   number
   tagIds
   customProperties
+  customFieldsData
   status
   tags {
     _id
@@ -153,6 +154,7 @@ export const commonFields = `
         primaryEmail
         primaryPhone
         visitorContactInfo
+        customFieldsData
       }
     
 

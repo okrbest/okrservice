@@ -1,12 +1,11 @@
 import { IItem, IOptions } from "../../types";
 
-import DueDateChooser from "./DueDateChooser";
 import Header from "./Header";
 import { HeaderContent } from "../../styles/item";
 import Move from "../../containers/editForm/Move";
 import React from "react";
 import { __ } from "coreui/utils";
-import CloseDate from "./CloseDate";
+import CustomerDateFields from "../../../deals/components/CustomerDateFields";
 
 type Props = {
   item: IItem;
@@ -42,16 +41,7 @@ function Top(props: Props) {
     <React.Fragment>
       <Header item={item} saveItem={saveItem} amount={amount} />
       <HeaderContent>{renderMove()}</HeaderContent>
-      <CloseDate
-        onChangeField={onCloseDateFieldsChange}
-        closeDate={item.closeDate}
-        startDate={item.startDate}
-        isCheckDate={item.pipeline.isCheckDate}
-        createdDate={item.createdAt}
-        reminderMinute={item.reminderMinute}
-        isComplete={item.isComplete}
-      />
-      <DueDateChooser item={item} saveItem={saveItem} onUpdate={onUpdate} />
+      <CustomerDateFields item={item} />
     </React.Fragment>
   );
 }

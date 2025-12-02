@@ -23,6 +23,9 @@ type StageProps = {
   options: IOptions;
   refetchStages: ({ pipelineId }: { pipelineId?: string }) => Promise<any>;
   length: number;
+  customFields?: any[];
+  mailSentDateFieldId?: string | null;
+  lastContactDateFieldId?: string | null;
 };
 
 type FinalStageProps = {
@@ -126,7 +129,10 @@ class ListGroupByContainer extends React.PureComponent<FinalStageProps, State> {
       groupType,
       itemsQuery,
       itemsTotalCountQuery,
-      options
+      options,
+      customFields,
+      mailSentDateFieldId,
+      lastContactDateFieldId
     } = this.props;
 
     if (itemsQuery.loading) {
@@ -158,6 +164,9 @@ class ListGroupByContainer extends React.PureComponent<FinalStageProps, State> {
         onAddItem={refetch}
         onRemoveItem={refetch}
         refetch={refetch}
+        customFields={customFields}
+        mailSentDateFieldId={mailSentDateFieldId}
+        lastContactDateFieldId={lastContactDateFieldId}
       />
     );
   }

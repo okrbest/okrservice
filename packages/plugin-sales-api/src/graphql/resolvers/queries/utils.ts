@@ -1231,6 +1231,7 @@ export const getItemList = async (
         primaryEmail: 1,
         primaryPhone: 1,
         emails: 1,
+        customFieldsData: 1,
         phones: 1
       }
     },
@@ -1258,6 +1259,7 @@ export const getItemList = async (
         middleName: 1,
         visitorContactInfo: 1,
         primaryEmail: 1,
+        customFieldsData: 1,
         primaryPhone: 1,
         emails: 1,
         phones: 1

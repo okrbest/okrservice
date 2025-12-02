@@ -245,9 +245,12 @@ const TICKET_CHECK_PROGRESS = gql`
       attachments {
         url
         name
+        type
+        size
       }
       description
       type
+      requestType
     }
   }
 `;

@@ -7,8 +7,8 @@ import ActivityLogs from "@erxes/ui-log/src/activityLogs/containers/ActivityLogs
 import Checklists from "../../../checklists/containers/Checklists";
 import { ColorButton } from "../../styles/common";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
-import DueDateChooser from "./DueDateChooser";
 import FileAndDescription from "./FileAndDescription";
+import CustomerDateFields from "../../../deals/components/CustomerDateFields";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import { IUser } from "@erxes/ui/src/auth/types";
 import Icon from "@erxes/ui/src/components/Icon";
@@ -105,7 +105,7 @@ const CommonActions = (props: Props) => {
       </FormGroup>
 
       {isFullView && (
-        <DueDateChooser item={item} saveItem={saveItem} onUpdate={onUpdate} />
+        <CustomerDateFields item={item} />
       )}
 
       <FormGroup>
