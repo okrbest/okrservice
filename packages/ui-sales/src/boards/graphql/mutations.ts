@@ -179,6 +179,7 @@ export const commonFields = `
     details {
       avatar
       fullName
+      operatorPhone
     }
   }
   labels {
