@@ -202,12 +202,6 @@ class ListItemRow extends React.PureComponent<Props> {
     return (
       <>
         <tr onClick={onClick} key={item._id} style={{ cursor: 'pointer' }}>
-          <ColumnChild>
-            <h5>{item.name}</h5>
-            <LastUpdate>
-              {__('Last updated')}: {this.renderDate(item.modifiedAt)}
-            </LastUpdate>
-          </ColumnChild>
           {options.type === 'deal' && (
             <td style={{ fontWeight: 'normal' }}>
               {(() => {
@@ -248,6 +242,22 @@ class ListItemRow extends React.PureComponent<Props> {
               })()
             )}
           </ColumnChild>
+          {groupType !== 'assignee' && (
+            <td>
+              {this.checkNull(
+                assignedUsers.length > 0,
+                assignedUsers.map((user: any) => user.details?.operatorPhone || '-').join(', ')
+              )}
+            </td>
+          )}
+          {groupType !== 'assignee' && (
+            <td>
+              {this.checkNull(
+                assignedUsers.length > 0,
+                assignedUsers.map((user: any) => user.email || '-').join(', ')
+              )}
+            </td>
+          )}
           {groupType !== 'assignee' && (
             <td>
               {this.checkNull(
