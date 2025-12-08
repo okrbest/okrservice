@@ -84,10 +84,17 @@ export const setupMessageConsumers = async () => {
       );
       
       // widgetAlarm이 true인 경우에만 false로 업데이트
+      // assignAlarm을 true로 설정 (description 변경 시)
       if (wasWidgetAlarmTrue) {
         await models.Tickets.updateOne(
           { _id: itemId },
-          { $set: { widgetAlarm: false } }
+          { $set: { widgetAlarm: false, assignAlarm: true } }
+        );
+      } else {
+        // widgetAlarm이 이미 false인 경우에도 assignAlarm은 true로 설정
+        await models.Tickets.updateOne(
+          { _id: itemId },
+          { $set: { assignAlarm: true } }
         );
       }
       
@@ -576,6 +583,13 @@ export const setupMessageConsumers = async () => {
       
       // userType이 "client"인 경우에만 알림 보내기 (담당자 댓글은 제외)
       if (assignedUserIds.length > 0 && userType === "client") {
+        // assignAlarm을 true로 설정 (client가 댓글을 단 경우)
+        await models.Tickets.updateOne(
+          { _id: typeId },
+          { $set: { assignAlarm: true } }
+        );
+        console.log('🔔 Assign alarm set to true for ticket:', typeId, 'due to client comment');
+        
         // stage와 pipeline 정보 가져오기
         const stage = await models.Stages.findOne({ _id: ticket.stageId });
         let boardId = "";

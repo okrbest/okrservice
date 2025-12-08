@@ -138,6 +138,15 @@ export const sendNotifications = async (
   }
 
   if (invitedUsers && invitedUsers.length > 0) {
+    const filteredReceivers = invitedUsers.filter((id) => id !== user._id);
+    console.log(`🔍 [Debug] sendNotification for ticketAdd:`, {
+      invitedUsers,
+      user_id: user._id,
+      filteredReceivers,
+      filteredReceiversCount: filteredReceivers.length,
+      emailTitle: `담당자 지정 : ${item.name}`,
+    });
+    
     sendNotification(subdomain, {
       ...notificationDoc,
       notifType: NOTIFICATION_TYPES[`${contentType.toUpperCase()}_ADD`],
@@ -145,7 +154,7 @@ export const sendNotifications = async (
       content: `'${item.name}'`,
       emailTitle: `담당자 지정 : ${item.name}`,
       emailContent: item.description,
-      receivers: invitedUsers.filter((id) => id !== user._id),
+      receivers: filteredReceivers,
     });
 
     sendCoreMessage({

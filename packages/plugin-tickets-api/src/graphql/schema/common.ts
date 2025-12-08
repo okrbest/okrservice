@@ -84,7 +84,6 @@ export const commonTypes = `
   customProperties: JSON
   type: String
   isCheckUserTicket: Boolean
-  customerName: String
 `;
 
 export const commonMutationParams = `
@@ -111,7 +110,6 @@ export const commonMutationParams = `
   emailSent: Boolean,
   widgetAlarm: Boolean,
   assignAlarm: Boolean,
-  expectedModifiedAt: Date,
 `;
 
 export const commonDragParams = `

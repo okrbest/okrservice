@@ -78,6 +78,8 @@ export default {
       status: plainTarget?.status
     });
 
+    console.log('🔍 [replacePlaceHolders] relatedValueProps:', relatedValueProps);
+    
     return await replacePlaceHolders({
       models,
       subdomain,
@@ -98,6 +100,7 @@ export default {
         pipelineLabels: '-'
       },
       relatedValueProps,
+      isRelated: true, // relatedValueProps를 사용하기 위해 명시적으로 true 설정
       complexFields: ['productsData']
     });
   },
