@@ -415,7 +415,10 @@ export const calculateExecution = async ({
       // 수동 트리거(manualEmailRequest 등)는 재등록 검사 없이 항상 실행
       const isManualTrigger = target.manualEmailRequest === true;
       
-      if (!isManualTrigger) {
+      // assignAlarm이 true인 경우 재등록 검사 없이 항상 실행 (description 수정으로 인한 트리거)
+      const isAssignAlarmTrigger = target.assignAlarm === true;
+      
+      if (!isManualTrigger && !isAssignAlarmTrigger) {
         // 완료/누락 상태인 경우에만 재등록 검사
         if (!reEnrollment || !reEnrollmentRules.length) {
           return;

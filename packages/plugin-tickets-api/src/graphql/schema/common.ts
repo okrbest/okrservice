@@ -47,6 +47,7 @@ export const commonTypes = `
   createdAt: Date
   hasNotified: Boolean
   widgetAlarm: Boolean
+  assignAlarm: Boolean
   manualEmailRequest: Boolean
   emailSent: Boolean
   assignedUserIds: [String]
@@ -108,6 +109,7 @@ export const commonMutationParams = `
   manualEmailRequest: Boolean,
   emailSent: Boolean,
   widgetAlarm: Boolean,
+  assignAlarm: Boolean,
 `;
 
 export const commonDragParams = `
@@ -138,6 +140,7 @@ export const commonListTypes = `
   priority: String
   hasNotified: Boolean
   widgetAlarm: Boolean
+  assignAlarm: Boolean
   manualEmailRequest: Boolean
   emailSent: Boolean
   score: Float

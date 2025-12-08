@@ -338,6 +338,9 @@ export const itemsEdit = async (
       updateFields.widgetAlarm = false;
     }
 
+    // assignAlarm을 true로 설정 (description 변경 시)
+    updateFields.assignAlarm = true;
+
     await models.Tickets.updateOne({ _id }, { $set: updateFields });
     console.log('📝 Description 변경됨 - emailSent를 false로 설정하여 Send Email 버튼 활성화', updateFields);
     
@@ -346,6 +349,7 @@ export const itemsEdit = async (
     if (wasWidgetAlarmTrue) {
       updatedItem.widgetAlarm = false;
     }
+    updatedItem.assignAlarm = true;
   }
 
   // manualEmailRequest가 true로 변경된 경우 자동화 트리거 (description 변경과 독립적)
