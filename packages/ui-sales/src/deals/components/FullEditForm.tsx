@@ -142,6 +142,7 @@ const FullEditForm = (props: Props) => {
       <>
         <HeaderContent>{renderMove()}</HeaderContent>
         <FileAndDescription item={item} options={options} saveItem={saveItem} />
+        {options.type === "deal" && <CustomerDateFields item={item} />}
         <CustomFieldsSection item={item} options={options} showType="list" hideGroupSidebar={true} compact={true} />
         <ActivityInputs
           contentTypeId={item._id}

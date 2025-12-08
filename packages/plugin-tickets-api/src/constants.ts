@@ -310,6 +310,14 @@ export const CARD_PROPERTIES_INFO = {
       validation: null,
       type: 'select',
       options: ['true', 'false']
+    },
+    {
+      label: 'Assign Alarm',
+      field: 'assignAlarm',
+      canHide: false,
+      validation: null,
+      type: 'select',
+      options: ['true', 'false']
     }
   ]
 };

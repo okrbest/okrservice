@@ -324,7 +324,6 @@ const automationMutations = {
     { type, targets }: { type: string; targets: any[] },
     { models, subdomain }: IContext
   ) {
-    console.log('🚀 automationTriggerManual 호출됨:', { type, targets: targets.map(t => t._id) });
     try {
       await receiveTrigger({
         models,
@@ -333,10 +332,8 @@ const automationMutations = {
         targets
       });
       
-      console.log('✅ 자동화 트리거 성공:', type);
       return { success: true, message: 'Automation triggered successfully' };
     } catch (error) {
-      console.error('❌ 자동화 트리거 실패:', error);
       return { success: false, message: error.message };
     }
   }

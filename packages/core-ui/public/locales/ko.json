@@ -3188,5 +3188,10 @@
   "benefits": "복리후생",
   "pcoff": "PCOFF",
   "approval": "전자결재",
-  "system": "시스템"
+  "system": "시스템",
+  "Associated Customer": "담당자",
+  "Associated Company": "회사명",
+  "Assignee": "안내자",
+  "Assignee Phone": "연락처",
+  "Assignee Email": "E-mail 주소"
 }

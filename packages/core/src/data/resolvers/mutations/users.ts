@@ -564,7 +564,13 @@ const userMutations = {
     { isAllowed }: { isAllowed: boolean },
     { user, models }: IContext
   ) {
-    return models.Users.configGetNotificationByEmail(user._id, isAllowed);
+    const result = await models.Users.configGetNotificationByEmail(user._id, isAllowed);
+    console.log(`🔍 [Debug] usersConfigGetNotificationByEmail:`, {
+      userId: user._id,
+      isAllowed,
+      savedValue: result?.getNotificationByEmail,
+    });
+    return result;
   },
 
   async usersSetChatStatus(

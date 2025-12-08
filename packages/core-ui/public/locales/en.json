@@ -2441,5 +2441,10 @@
   "Filter by lead status" : "Filter by lead status",
   "Export this leads" : "Export this leads",
   "Change email status" : "Change email status",
-  "Change phone status" : "Change phone status"
+  "Change phone status" : "Change phone status",
+  "Associated Customer": "Associated Customer",
+  "Associated Company": "Associated Company",
+  "Assignee": "Assignee",
+  "Assignee Phone": "Assignee Phone",
+  "Assignee Email": "Assignee Email"
 }

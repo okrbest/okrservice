@@ -48,13 +48,10 @@ export const checkSegmentHasManualEmailCondition = async (
   segmentId: string
 ): Promise<boolean> => {
   if (!segmentId) {
-    console.log('⚠️ checkSegmentHasManualEmailCondition - No segmentId provided');
     return false;
   }
 
   try {
-    console.log('🔍 checkSegmentHasManualEmailCondition - Checking segment:', segmentId);
-    
     // Segment 조회
     const result = await sendCommonMessage({
       subdomain,
@@ -67,54 +64,34 @@ export const checkSegmentHasManualEmailCondition = async (
     const segment = result?.data || result;
 
     if (!segment) {
-      console.log('⚠️ checkSegmentHasManualEmailCondition - Segment not found:', segmentId);
       return false;
     }
 
     if (!segment.conditions) {
-      console.log('⚠️ checkSegmentHasManualEmailCondition - No conditions in segment:', segmentId);
       return false;
     }
-
-    console.log('🔍 checkSegmentHasManualEmailCondition - Segment conditions:', {
-      segmentId,
-      conditionsCount: segment.conditions.length,
-      conditions: segment.conditions.map(c => ({ 
-        type: c.type, 
-        propertyName: c.propertyName,
-        subSegmentId: c.subSegmentId 
-      }))
-    });
 
     // Conditions를 순회하면서 manualEmailRequest 조건 찾기
     for (const condition of segment.conditions) {
       // Direct property check
       if (condition.propertyName === 'manualEmailRequest') {
-        console.log('✅ checkSegmentHasManualEmailCondition - Found manualEmailRequest condition:', {
-          segmentId,
-          condition
-        });
         return true;
       }
 
       // SubSegment가 있으면 재귀적으로 확인
       if (condition.type === 'subSegment' && condition.subSegmentId) {
-        console.log('🔍 checkSegmentHasManualEmailCondition - Checking subSegment:', condition.subSegmentId);
         const hasInSubSegment = await checkSegmentHasManualEmailCondition(
           subdomain,
           condition.subSegmentId
         );
         if (hasInSubSegment) {
-          console.log('✅ checkSegmentHasManualEmailCondition - Found in subSegment:', condition.subSegmentId);
           return true;
         }
       }
     }
 
-    console.log('⚠️ checkSegmentHasManualEmailCondition - manualEmailRequest condition not found in segment:', segmentId);
     return false;
   } catch (error) {
-    console.error('❌ checkSegmentHasManualEmailCondition - Error:', error);
     return false;
   }
 };
@@ -125,8 +102,6 @@ export const isInSegment = async (
   targetId: string,
   options?: any
 ) => {
-  console.log('🔍 isInSegment - Checking:', { segmentId, targetId, hasOptions: !!options });
-  
   await delay(15000);
 
   const response = await sendSegmentsMessage({
@@ -135,8 +110,6 @@ export const isInSegment = async (
     data: { segmentId, idToCheck: targetId, options },
     isRPC: true
   });
-
-  console.log('🔍 isInSegment - Response:', { segmentId, targetId, response });
 
   return response;
 };
@@ -152,13 +125,6 @@ export const executeActions = async (
     execution.status = EXECUTION_STATUS.COMPLETE;
     await execution.save();
 
-    console.log('✅ executeActions - Execution completed:', {
-      executionId: execution._id,
-      automationId: execution.automationId,
-      triggerId: execution.triggerId,
-      targetId: execution.targetId
-    });
-
     return 'finished';
   }
 
@@ -169,13 +135,6 @@ export const executeActions = async (
 
     return 'missed action';
   }
-
-  console.log('🎯 executeActions - Executing action:', {
-    executionId: execution._id,
-    actionId: currentActionId,
-    actionType: action.type,
-    targetId: execution.targetId
-  });
 
   execution.status = EXECUTION_STATUS.ACTIVE;
 
@@ -283,8 +242,6 @@ export const executeActions = async (
         collectionType = baseType;
       }
 
-      console.log('🎯 executeActions - create action:', { actionType: action.type, serviceName, collectionType });
-
       actionResponse = await sendCommonMessage({
         subdomain,
         serviceName,
@@ -325,12 +282,6 @@ export const executeActions = async (
   execAction.result = actionResponse;
   execution.actions = [...(execution.actions || []), execAction];
   execution = await execution.save();
-
-  console.log('✅ executeActions - Action completed, moving to next:', {
-    executionId: execution._id,
-    completedActionId: currentActionId,
-    nextActionId: action.nextActionId
-  });
 
   return executeActions(
     subdomain,
@@ -416,30 +367,12 @@ export const calculateExecution = async ({
         return;
       }
     } else {
-      console.log('🔍 calculateExecution - Checking segment condition:', {
-        triggerId: id,
-        contentId,
-        targetId: target._id,
-        targetStageId: target.stageId,
-        targetName: target.name,
-        targetData: target  // 트리거 시점의 target 데이터 전체 로깅
-      });
-      
       // target 객체를 함께 전달하여 트리거 시점의 데이터로 segment 조건 체크
       const isInSegmentResult = await isInSegment(subdomain, contentId, target._id, { targetObject: target });
       
-      console.log('🔍 calculateExecution - Segment check result:', {
-        triggerId: id,
-        isInSegmentResult,
-        targetId: target._id
-      });
-      
       if (!isInSegmentResult) {
-        console.log('⚠️ calculateExecution - Target does not match segment condition, skipping');
         return;
       }
-      
-      console.log('✅ calculateExecution - Target matches segment condition, proceeding');
     }
   } catch (e) {
     await models.Executions.createExecution({
@@ -468,79 +401,45 @@ export const calculateExecution = async ({
     ? executions[0]
     : null;
 
-  console.log('🔍 calculateExecution - Latest execution check:', {
-    triggerId: id,
-    targetId: target._id,
-    hasLatestExecution: !!latestExecution,
-    latestExecutionStatus: latestExecution?.status,
-    latestExecutionId: latestExecution?._id
-  });
-
   if (latestExecution) {
     // 실행 중이거나 대기 중인 execution이 있으면 무한 루프 방지를 위해 새로운 execution 생성 안 함
     if (latestExecution.status === EXECUTION_STATUS.ACTIVE || 
         latestExecution.status === EXECUTION_STATUS.WAITING) {
-      console.log('⚠️ calculateExecution - Active or waiting execution exists, preventing infinite loop', {
-        executionId: latestExecution._id,
-        status: latestExecution.status
-      });
       return;
     }
 
     // 에러 상태의 execution은 재시도 허용
     if (latestExecution.status === EXECUTION_STATUS.ERROR) {
-      console.log('🔄 calculateExecution - Previous execution failed, allowing retry', {
-        executionId: latestExecution._id,
-        status: latestExecution.status
-      });
       // 에러 상태는 재등록 검사 없이 바로 새 execution 생성
     } else {
       // 수동 트리거(manualEmailRequest 등)는 재등록 검사 없이 항상 실행
       const isManualTrigger = target.manualEmailRequest === true;
       
-      if (isManualTrigger) {
-        console.log('🔄 calculateExecution - Manual trigger detected, bypassing re-enrollment check');
-      } else {
+      // assignAlarm이 true인 경우 재등록 검사 없이 항상 실행 (description 수정으로 인한 트리거)
+      const isAssignAlarmTrigger = target.assignAlarm === true;
+      
+      if (!isManualTrigger && !isAssignAlarmTrigger) {
         // 완료/누락 상태인 경우에만 재등록 검사
-        console.log('🔍 calculateExecution - Checking re-enrollment:', {
-          reEnrollment,
-          hasReEnrollmentRules: !!reEnrollmentRules?.length
-        });
-
         if (!reEnrollment || !reEnrollmentRules.length) {
-          console.log('⚠️ calculateExecution - No re-enrollment configured, skipping');
-      return;
-    }
-
-    let isChanged = false;
-
-    for (const reEnrollmentRule of reEnrollmentRules) {
-      const ruleResult = isDiffValue(latestExecution.target, target, reEnrollmentRule);
-          console.log('🔍 calculateExecution - Re-enrollment rule check:', {
-            rule: reEnrollmentRule,
-            ruleResult
-          });
-      if (ruleResult) {
-        isChanged = true;
-        break;
-      }
-    }
-
-    if (!isChanged) {
-          console.log('⚠️ calculateExecution - No value changed, skipping re-enrollment');
           return;
         }
 
-        console.log('✅ calculateExecution - Value changed, allowing re-enrollment');
+        let isChanged = false;
+
+        for (const reEnrollmentRule of reEnrollmentRules) {
+          const ruleResult = isDiffValue(latestExecution.target, target, reEnrollmentRule);
+          if (ruleResult) {
+            isChanged = true;
+            break;
+          }
+        }
+
+        if (!isChanged) {
+          return;
+        }
       }
     }
   }
-
-  console.log('✅ calculateExecution - Creating new execution:', {
-    automationId,
-    triggerId: id,
-    targetId: target._id
-  });
 
   const newExecution = await models.Executions.createExecution({
     automationId,
@@ -552,8 +451,6 @@ export const calculateExecution = async ({
     status: EXECUTION_STATUS.ACTIVE,
     description: `Met enrollement criteria`
   });
-
-  console.log('✅ calculateExecution - New execution created:', newExecution._id);
 
   return newExecution;
 };
@@ -629,8 +526,6 @@ export const receiveTrigger = async ({
   targets: any[];
   triggerSource?: string;
 }) => {
-  console.log('🎯 receiveTrigger - type:', type, 'targets count:', targets.length, 'triggerSource:', triggerSource);
-  
   // DB에 'ticket' 형태로 저장된 경우를 위해 변환
   const shortType = type.includes(':') ? type.split(':')[1] : type;
   
@@ -646,29 +541,19 @@ export const receiveTrigger = async ({
     ]
   }).lean();
 
-  console.log('🎯 receiveTrigger - found automations:', automations.length);
-
   if (!automations.length) {
-    console.log('⚠️ receiveTrigger - No active automations found for type:', type);
     return;
   }
 
   for (const target of targets) {
-    console.log('🎯 receiveTrigger - Processing target:', target._id);
-    
     for (const automation of automations) {
-      console.log('🎯 receiveTrigger - Processing automation:', automation.name);
-      
       for (const trigger of automation.triggers) {
         // trigger.type이 'ticket' 형태로 저장되어 있고, type이 'tickets:ticket'으로 올 수 있으므로
         const triggerMatches = trigger.type.includes(type) || 
                               trigger.type === shortType || 
                               type.includes(trigger.type);
         
-        console.log('🎯 receiveTrigger - Checking trigger type:', trigger.type, 'matches', type, '?', triggerMatches);
-        
         if (!triggerMatches) {
-          console.log('⚠️ receiveTrigger - Trigger type mismatch, skipping');
           continue;
         }
 
@@ -681,26 +566,13 @@ export const receiveTrigger = async ({
           );
           
           if (!hasManualEmailCondition) {
-            console.log('⚠️ receiveTrigger - Skipping non-manual trigger for manual email request:', {
-              automationName: automation.name,
-              triggerId: trigger.id,
-              segmentId: trigger.config.contentId,
-              reason: 'Segment does not check manualEmailRequest property'
-            });
             continue;
           }
-          console.log('✅ receiveTrigger - Manual email request trigger matched:', {
-            automationName: automation.name,
-            triggerId: trigger.id
-          });
         }
 
         if (isWaitingDateConfig(trigger?.config?.dateConfig)) {
-          console.log('⚠️ receiveTrigger - Waiting date config, skipping');
           continue;
         }
-
-        console.log('🎯 receiveTrigger - Calculating execution for automation:', automation.name);
 
         const execution = await calculateExecution({
           models,
@@ -709,19 +581,9 @@ export const receiveTrigger = async ({
           trigger,
           target
         });
-        
-        console.log('🎯 receiveTrigger - Execution result:', execution ? 'Created' : 'Skipped');
 
         if (execution) {
           const actionsMap = await getActionsMap(automation.actions);
-          
-          // 원본 type을 사용 (trigger.type이 'ticket'처럼 잘못된 형식일 수 있음)
-          // execution.triggerType에는 올바른 'tickets:ticket' 형식이 저장되어 있음
-          console.log('🎯 receiveTrigger - Using triggerType for execution:', {
-            originalType: type,
-            triggerType: trigger.type,
-            executionTriggerType: execution.triggerType
-          });
           
           await executeActions(
             subdomain,

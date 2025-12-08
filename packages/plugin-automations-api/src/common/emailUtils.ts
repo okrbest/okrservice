@@ -98,8 +98,12 @@ const getAttributionEmails = async ({
   const relatedValueProps = {};
 
   if (!attributes?.length) {
+    console.log('⚠️ [getAttributionEmails] No attributes found in value:', value);
     return [];
   }
+
+  console.log('🔍 [getAttributionEmails] Attributes found:', attributes);
+  console.log('🔍 [getAttributionEmails] Target assignedUserIds:', target?.assignedUserIds);
 
   for (const attribute of attributes) {
     if (attribute === 'triggerExecutors') {
@@ -128,6 +132,8 @@ const getAttributionEmails = async ({
     }
   }
 
+  console.log('🔍 [getAttributionEmails] Calling replacePlaceHolders with relatedValueProps:', relatedValueProps);
+  
   const replacedContent = await sendCommonMessage({
     subdomain,
     serviceName,
@@ -142,10 +148,14 @@ const getAttributionEmails = async ({
     isRPC: true,
     defaultValue: {}
   });
+  
+  console.log('🔍 [getAttributionEmails] Replaced content result:', replacedContent);
+
+  console.log('🔍 [getAttributionEmails] Replaced content:', replacedContent[key]);
 
   const generatedEmails = generateEmails(replacedContent[key]);
 
-  console.log({ generatedEmails });
+  console.log('🔍 [getAttributionEmails] Generated emails:', generatedEmails);
 
   return [...emails, ...generatedEmails];
 };
@@ -279,21 +289,29 @@ export const generateDoc = async ({
     fromUserEmail = fromUser?.email;
   }
 
+  // assignAlarm이 true이고 modifiedBy가 있을 때만 수정자 이메일 가져오기
+  // (description 수정으로 인한 assignAlarm인 경우에만 수정자 제외)
+  let modifiedByEmail = '';
+  if (target?.assignAlarm === true && target?.modifiedBy) {
+    const modifiedUser = await sendCoreMessage({
+      subdomain,
+      action: 'users.findOne',
+      data: {
+        _id: target.modifiedBy
+      },
+      isRPC: true,
+      defaultValue: null
+    });
+
+    modifiedByEmail = modifiedUser?.email || '';
+  }
+
   let replacedContent = (template?.content || '').replace(
     new RegExp(`{{\\s*${type}\\.\\s*(.*?)\\s*}}`, 'g'),
     '{{ $1 }}'
   );
 
   replacedContent = await replaceDocuments(subdomain, replacedContent, target);
-
-  console.log('📧 [generateDoc] Before replacePlaceHolders:', {
-    targetId: target?._id,
-    targetName: target?.name,
-    targetDescription: target?.description?.substring(0, 100),
-    configSubject: config.subject,
-    targetKeys: Object.keys(target || {}),
-    triggerType
-  });
 
   const { subject, content } = await sendCommonMessage({
     subdomain,
@@ -310,14 +328,6 @@ export const generateDoc = async ({
     defaultValue: {}
   });
 
-  console.log('📧 [generateDoc] After replacePlaceHolders:', {
-    originalSubject: config.subject,
-    replacedSubject: subject,
-    subjectLength: subject?.length,
-    contentLength: content?.length,
-    hasPlaceholders: config.subject?.includes('{{')
-  });
-
   const toEmails = await getRecipientEmails({
     subdomain,
     config,
@@ -326,28 +336,34 @@ export const generateDoc = async ({
     execution
   });
 
-  console.log('📧 [generateDoc] Email recipients:', {
-    toEmails,
-    emailCount: toEmails?.length
-  });
-
   if (!toEmails?.length) {
-    throw new Error('"Recieving emails not found"');
+    const errorDetails = {
+      triggerType,
+      configKeys: Object.keys(config),
+      targetAssignedUserIds: target?.assignedUserIds,
+      targetId: target?._id
+    };
+    console.error('❌ [generateDoc] No recipient emails found:', errorDetails);
+    throw new Error(`"Recieving emails not found. Check if ticket has assigned users or email configuration is correct. Details: ${JSON.stringify(errorDetails)}"`);
   }
+
+  // 발신자는 항상 제외
+  // assignAlarm이 true이고 modifiedBy가 있을 때만 수정자도 제외 (description 수정인 경우)
+  const excludedEmails = [fromUserEmail];
+  if (modifiedByEmail) {
+    excludedEmails.push(modifiedByEmail);
+  }
+  
+  const filteredToEmails = toEmails.filter(
+    (email) => !excludedEmails.includes(email)
+  );
 
   const emailDoc = {
     title: subject,
     fromEmail: generateFromEmail(sender, fromUserEmail),
-    toEmails: toEmails.filter((email) => fromUserEmail !== email),
+    toEmails: filteredToEmails,
     customHtml: content
   };
-
-  console.log('📧 [generateDoc] Final email document:', {
-    title: emailDoc.title,
-    fromEmail: emailDoc.fromEmail,
-    toEmails: emailDoc.toEmails,
-    contentPreview: emailDoc.customHtml?.substring(0, 200)
-  });
 
   return emailDoc;
 };
@@ -364,6 +380,10 @@ export const getRecipientEmails = async ({
 
   const reciepentTypeKeys = reciepentTypes.map((rT) => rT.name);
 
+  console.log('🔍 [getRecipientEmails] Config keys:', Object.keys(config));
+  console.log('🔍 [getRecipientEmails] Trigger type:', triggerType);
+  console.log('🔍 [getRecipientEmails] Target assignedUserIds:', target?.assignedUserIds);
+
   for (const key of Object.keys(config)) {
     if (reciepentTypeKeys.includes(key) && !!config[key]) {
       const [serviceName, contentType] = triggerType
@@ -374,6 +394,8 @@ export const getRecipientEmails = async ({
         (rT) => rT.name === key
       );
 
+      console.log(`🔍 [getRecipientEmails] Processing recipient type: ${type}, key: ${key}, value:`, config[key]);
+
       if (type === 'teamMember') {
         const emails = await getTeamMemberEmails({
           subdomain,
@@ -382,6 +404,7 @@ export const getRecipientEmails = async ({
           }
         });
 
+        console.log(`🔍 [getRecipientEmails] Team member emails:`, emails);
         toEmails = [...toEmails, ...emails];
         continue;
       }
@@ -397,6 +420,7 @@ export const getRecipientEmails = async ({
           key: type
         });
 
+        console.log(`🔍 [getRecipientEmails] Attribution emails:`, emails);
         toEmails = [...toEmails, ...emails];
         continue;
       }
@@ -404,6 +428,7 @@ export const getRecipientEmails = async ({
       if (type === 'customMail') {
         const emails = config[key] || [];
 
+        console.log(`🔍 [getRecipientEmails] Custom emails:`, emails);
         toEmails = [...toEmails, ...emails];
         continue;
       }
@@ -420,13 +445,17 @@ export const getRecipientEmails = async ({
           isRPC: true
         });
 
+        console.log(`🔍 [getRecipientEmails] Service emails:`, emails);
         toEmails = [...toEmails, ...emails];
         continue;
       }
     }
   }
 
-  return [...new Set(toEmails)];
+  const uniqueEmails = [...new Set(toEmails)];
+  console.log('🔍 [getRecipientEmails] Final unique emails:', uniqueEmails);
+
+  return uniqueEmails;
 };
 
 const setActivityLog = async ({
@@ -470,9 +499,177 @@ export const handleEmail = async ({
       return { error: 'Something went wrong fetching data' };
     }
 
+    // target에서 고객 ID 목록 가져오기 (티켓, 딜 등의 경우)
+    const customerIds = target?.customerIds || [];
+    let customerMapByEmail: { [email: string]: any } = {};
+    
+    // 고객 ID가 있으면 미리 고객 정보 조회하여 이메일 주소로 매핑
+    if (customerIds && customerIds.length > 0) {
+      try {
+        const customers = await sendCoreMessage({
+          subdomain,
+          action: 'customers.find',
+          data: {
+            query: { _id: { $in: customerIds } }
+          },
+          isRPC: true,
+          defaultValue: []
+        });
+
+        if (customers && customers.length > 0) {
+          // 각 고객의 이메일 주소로 매핑
+          for (const customer of customers) {
+            const emails = [
+              customer.primaryEmail,
+              ...(customer.emails || [])
+            ].filter(Boolean);
+
+            // 고객의 회사 정보 조회
+            let companyName = null;
+            if (customer.companyIds && customer.companyIds.length > 0) {
+              const companies = await sendCoreMessage({
+                subdomain,
+                action: 'companies.find',
+                data: {
+                  query: { _id: { $in: customer.companyIds } },
+                  limit: 1
+                },
+                isRPC: true,
+                defaultValue: []
+              });
+              
+              if (companies && companies.length > 0) {
+                companyName = companies[0].primaryName;
+              }
+            }
+
+            const customerInfo = {
+              customerName: [customer.firstName, customer.lastName]
+                .filter(Boolean)
+                .join(' ') || customer.primaryEmail || emails[0],
+              companyName: companyName
+            };
+
+            // 각 이메일 주소에 대해 매핑 저장
+            emails.forEach(email => {
+              if (email && !customerMapByEmail[email]) {
+                customerMapByEmail[email] = customerInfo;
+              }
+            });
+          }
+        }
+      } catch (customerError) {
+        debugError(`Failed to fetch customer info from target:`, customerError);
+      }
+    }
+
+    // toEmails에 있는 모든 이메일 주소에 대해 고객 정보 조회
+    // target.customerIds에 없는 경우에도 이메일로 조회
+    if (params.toEmails && params.toEmails.length > 0) {
+      try {
+        // 이미 조회한 이메일은 제외
+        const emailsToQuery = params.toEmails.filter(email => !customerMapByEmail[email]);
+        
+        if (emailsToQuery.length > 0) {
+          
+          // RPC가 $or를 지원하지 않으므로 각 이메일을 개별 조회
+          const allCustomers: any[] = [];
+          
+          for (const email of emailsToQuery) {
+            try {
+              // primaryEmail로 조회
+              const customerByPrimary = await sendCoreMessage({
+                subdomain,
+                action: 'customers.findOne',
+                data: { primaryEmail: email },
+                isRPC: true,
+                defaultValue: null
+              });
+              
+              if (customerByPrimary) {
+                // 중복 체크
+                if (!allCustomers.find(c => c._id === customerByPrimary._id)) {
+                  allCustomers.push(customerByPrimary);
+                }
+                continue;
+              }
+              
+              // emails 배열에서 조회 (findOne은 단일 값만 지원하므로 find 사용)
+              const customersByEmails = await sendCoreMessage({
+                subdomain,
+                action: 'customers.find',
+                data: {
+                  query: { emails: email }
+                },
+                isRPC: true,
+                defaultValue: []
+              });
+              
+              if (customersByEmails && customersByEmails.length > 0) {
+                customersByEmails.forEach(customer => {
+                  if (!allCustomers.find(c => c._id === customer._id)) {
+                    allCustomers.push(customer);
+                  }
+                });
+              }
+            } catch (emailError) {
+              // 에러 무시
+            }
+          }
+
+          const customers = allCustomers;
+
+          if (customers && customers.length > 0) {
+            for (const customer of customers) {
+              const emails = [
+                customer.primaryEmail,
+                ...(customer.emails || [])
+              ].filter(Boolean);
+
+              // 고객의 회사 정보 조회
+              let companyName = null;
+              if (customer.companyIds && customer.companyIds.length > 0) {
+                const companies = await sendCoreMessage({
+                  subdomain,
+                  action: 'companies.find',
+                  data: {
+                    query: { _id: { $in: customer.companyIds } },
+                    limit: 1
+                  },
+                  isRPC: true,
+                  defaultValue: []
+                });
+                
+                if (companies && companies.length > 0) {
+                  companyName = companies[0].primaryName;
+                }
+              }
+
+              const customerInfo = {
+                customerName: [customer.firstName, customer.lastName]
+                  .filter(Boolean)
+                  .join(' ') || customer.primaryEmail || emails[0],
+                companyName: companyName
+              };
+
+              // 각 이메일 주소에 대해 매핑 저장
+              emails.forEach(email => {
+                if (email && emailsToQuery.includes(email) && !customerMapByEmail[email]) {
+                  customerMapByEmail[email] = customerInfo;
+                }
+              });
+            }
+          }
+        }
+      } catch (emailQueryError) {
+        debugError(`Failed to fetch customer info by emails:`, emailQueryError);
+      }
+    }
+
     const responses = await sendEmails({
       subdomain,
-      params
+      params,
+      customerMapByEmail // 미리 조회한 고객 정보 맵 전달
     });
 
     await setActivityLog({
@@ -481,6 +678,37 @@ export const handleEmail = async ({
       target,
       responses
     });
+
+    // 이메일 발송 후 10초 뒤에 assignAlarm을 false로 설정 (티켓의 경우)
+    // description 수정으로 인한 assignAlarm인 경우에만 리셋
+    if (
+      triggerType === 'tickets:ticket' &&
+      target?.assignAlarm === true &&
+      target?._id
+    ) {
+      // 비동기로 처리하여 이메일 발송 응답을 기다리지 않음
+      (async () => {
+        try {
+          // 10초 대기
+          await new Promise(resolve => setTimeout(resolve, 10000));
+          
+          await sendCommonMessage({
+            subdomain,
+            serviceName: 'tickets',
+            action: 'tickets.updateOne',
+            data: {
+              selector: { _id: target._id },
+              modifier: { $set: { assignAlarm: false } }
+            },
+            isRPC: true,
+            defaultValue: null
+          });
+          console.log('✅ Assign alarm set to false after 10 seconds for ticket:', target._id);
+        } catch (error) {
+          debugError(`Failed to reset assignAlarm for ticket ${target._id}:`, error);
+        }
+      })();
+    }
 
     return { ...params, responses };
   } catch (err) {
@@ -544,10 +772,12 @@ const createTransporter = async ({ ses }, configs) => {
 
 const sendEmails = async ({
   subdomain,
-  params
+  params,
+  customerMapByEmail = {}
 }: {
   subdomain: string;
   params: any;
+  customerMapByEmail?: { [email: string]: any };
 }) => {
   const { toEmails = [], fromEmail, title, customHtml, attachments } = params;
 
@@ -636,9 +866,85 @@ const sendEmails = async ({
 
     try {
       const info = await transporter.sendMail(mailOptions);
-      responses.push({ messageId: info.messageId, toEmail });
+      
+      // 먼저 미리 조회한 고객 정보 맵에서 확인
+      let customerInfo = customerMapByEmail[toEmail] || null;
+      
+      // 맵에 없으면 이메일 주소로 고객 정보 조회
+      if (!customerInfo) {
+        try {
+          const customers = await sendCoreMessage({
+            subdomain,
+            action: 'customers.find',
+            data: {
+              query: {
+                $or: [
+                  { primaryEmail: toEmail },
+                  { emails: { $in: [toEmail] } }
+                ]
+              },
+              limit: 1
+            },
+            isRPC: true,
+            defaultValue: []
+          });
+
+          if (customers && customers.length > 0) {
+            const customer = customers[0];
+            
+            // 고객의 회사 정보 조회
+            let companyName = null;
+            if (customer.companyIds && customer.companyIds.length > 0) {
+              const companies = await sendCoreMessage({
+                subdomain,
+                action: 'companies.find',
+                data: {
+                  query: { _id: { $in: customer.companyIds } },
+                  limit: 1
+                },
+                isRPC: true,
+                defaultValue: []
+              });
+              
+              if (companies && companies.length > 0) {
+                companyName = companies[0].primaryName;
+              }
+            }
+
+            customerInfo = {
+              customerName: [customer.firstName, customer.lastName]
+                .filter(Boolean)
+                .join(' ') || toEmail,
+              companyName: companyName
+            };
+          }
+        } catch (customerError) {
+          // 고객 정보 조회 실패해도 이메일 전송은 계속 진행
+          debugError(`Failed to fetch customer info for ${toEmail}:`, customerError);
+        }
+      }
+      
+      const responseItem: any = { 
+        messageId: info.messageId, 
+        toEmail
+      };
+      
+      if (customerInfo) {
+        responseItem.customerInfo = customerInfo;
+      }
+      
+      responses.push(responseItem);
     } catch (error) {
-      responses.push({ fromEmail, toEmail, error });
+      // 에러가 발생해도 고객 정보는 포함
+      const errorResponse: any = { fromEmail, toEmail, error };
+      
+      // 고객 정보가 있으면 추가
+      const customerInfo = customerMapByEmail[toEmail] || null;
+      if (customerInfo) {
+        errorResponse.customerInfo = customerInfo;
+      }
+      
+      responses.push(errorResponse);
       debugError(error);
     }
   }

@@ -55,6 +55,9 @@ class SendEmail extends React.Component<Props> {
       return '';
     };
 
+    // responses가 배열이 아닐 경우 처리
+    const responsesArray = Array.isArray(responses) ? responses : [];
+
     return (
       <ul>
         <li>
@@ -68,13 +71,42 @@ class SendEmail extends React.Component<Props> {
         <li>
           <LabelContainer>
             <strong>To: </strong>
-            {responses.map((response, i) => (
-              <Tip key={i} text={getLabelText(response)}>
-                <Label lblStyle={getLabelColor(response)}>
-                  {response?.toEmail || ''}
-                </Label>
-              </Tip>
-            ))}
+            {responsesArray.map((response, i) => {
+              const email = response?.toEmail || '';
+              const customerInfo = response?.customerInfo;
+              
+              if (customerInfo) {
+                const customerName = customerInfo.customerName || '';
+                const companyName = customerInfo.companyName || '';
+                
+                const parts = [];
+                if (companyName) {
+                  parts.push(`회사명: ${companyName}`);
+                }
+                if (customerName) {
+                  parts.push(`이름: ${customerName}`);
+                }
+                parts.push(`이메일: ${email}`);
+                
+                const displayText = parts.join(' ');
+                
+                return (
+                  <Tip key={i} text={getLabelText(response)}>
+                    <Label lblStyle={getLabelColor(response)}>
+                      {displayText}
+                    </Label>
+                  </Tip>
+                );
+              }
+              
+              return (
+                <Tip key={i} text={getLabelText(response)}>
+                  <Label lblStyle={getLabelColor(response)}>
+                    {email}
+                  </Label>
+                </Tip>
+              );
+            })}
           </LabelContainer>
         </li>
       </ul>
@@ -83,6 +115,7 @@ class SendEmail extends React.Component<Props> {
 
   render() {
     const { action, result, hideTemplate } = this.props;
+    
     return (
       <div>
         {!hideTemplate && this.renderTemplate(action, result)}

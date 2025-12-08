@@ -53,19 +53,50 @@ export const getRelatedValue = async (
       isRPC: true
     });
 
+    console.log('🔍 [getRelatedValue] assignedUserIds - users found:', users?.length);
+    console.log('🔍 [getRelatedValue] assignedUserIds - relatedValueProps:', relatedValueProps?.[targetKey]);
+    console.log('🔍 [getRelatedValue] assignedUserIds - users emails:', users?.map(u => u.email));
+
     if (!!relatedValueProps[targetKey]) {
       const { key, filter } = relatedValueProps[targetKey] || {};
-      return users
-        .filter((user) => (filter ? user[filter.key] === filter.value : user))
-        .map((user) => user[key])
+      console.log('🔍 [getRelatedValue] Using relatedValueProps, key:', key);
+      console.log('🔍 [getRelatedValue] Filter:', filter);
+      console.log('🔍 [getRelatedValue] Users before filter:', users.map(u => ({ _id: u._id, email: u.email, registrationToken: u.registrationToken })));
+      
+      let filteredUsers = users;
+      if (filter) {
+        filteredUsers = users.filter((user) => {
+          const userValue = user[filter.key];
+          // null이나 undefined인 경우를 모두 체크 (registrationToken 필터의 경우)
+          const filterResult = filter.value === null 
+            ? (userValue === null || userValue === undefined)
+            : userValue === filter.value;
+          console.log(`🔍 [getRelatedValue] User ${user._id} filter check: ${filter.key}(${userValue}) === ${filter.value} = ${filterResult}`);
+          return filterResult;
+        });
+      }
+      
+      console.log('🔍 [getRelatedValue] Users after filter:', filteredUsers.length);
+      
+      const result = filteredUsers
+        .map((user) => {
+          const value = user[key];
+          console.log(`🔍 [getRelatedValue] User ${user._id} - ${key}:`, value);
+          return value;
+        })
+        .filter(Boolean) // null이나 undefined 제거
         .join(', ');
+      console.log('🔍 [getRelatedValue] Result with relatedValueProps:', result);
+      return result;
     }
 
-    return (
+    const defaultResult = (
       users.map(
         (user) => (user.detail && user.detail.fullName) || user.email
       ) || []
     ).join(', ');
+    console.log('🔍 [getRelatedValue] Result without relatedValueProps:', defaultResult);
+    return defaultResult;
   }
 
   if (targetKey === 'tagIds') {
