@@ -329,6 +329,7 @@ export const generateSystemFields = ({ data: { groupId, type } }) => {
       text: e.label,
       type: e.type,
       field: e.field,
+      name: e.field,  // name 속성 추가 - 자동화 UI에서 사용
       canHide: e.canHide,
       validation: e.validation,
       groupId,
