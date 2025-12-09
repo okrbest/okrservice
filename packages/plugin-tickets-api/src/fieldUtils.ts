@@ -2,7 +2,8 @@ import { generateFieldsFromSchema } from '@erxes/api-utils/src/fieldUtils';
 import { generateModels, IModels } from './connectionResolver';
 import {
   BOARD_ITEM_EXPORT_EXTENDED_FIELDS,
-  BOARD_ITEM_EXTENDED_FIELDS
+  BOARD_ITEM_EXTENDED_FIELDS,
+  CARD_PROPERTIES_INFO
 } from './constants';
 import { sendCoreMessage } from './messageBroker';
 
@@ -441,6 +442,22 @@ export const generateFields = async ({ subdomain, data }) => {
     };
 
     fields = [...fields, stageOptions];
+  }
+
+  // CARD_PROPERTIES_INFO의 필드들을 추가 (widgetAlarm, emailSent, manualEmailRequest, assignAlarm 등)
+  // 자동화나 세그먼트에서 사용할 수 있도록 항상 포함
+  if (type === 'ticket') {
+    const systemFields = CARD_PROPERTIES_INFO.ALL.map(e => ({
+      _id: Math.random(),
+      name: e.field,
+      label: e.label,
+      type: e.type,
+      validation: e.validation || undefined,  // null을 undefined로 변환
+      options: e.options,
+      selectOptions: e.options ? e.options.map(opt => ({ value: opt, label: opt })) : []
+    }));
+
+    fields = [...fields, ...systemFields];
   }
 
   return fields;
