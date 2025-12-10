@@ -548,6 +548,47 @@ const Description = (props: DescProps) => {
     setEdit((currentValue) => {
       const newValue = !currentValue;
       
+      // 편집 모드로 진입할 때
+      if (!currentValue && newValue) {
+        if (typeof window !== 'undefined') {
+          const localStorageKey = `${contentType}_description_${item._id}`;
+          const storedData = localStorage.getItem(localStorageKey);
+          
+          if (storedData) {
+            try {
+              // JSON 형식으로 저장된 경우 (타임스탬프 포함)
+              const parsed = JSON.parse(storedData);
+              const storedContent = parsed.content;
+              const storedTimestamp = parsed.timestamp ? new Date(parsed.timestamp) : null;
+              const serverModifiedAt = item.modifiedAt ? new Date(item.modifiedAt) : null;
+              
+              // 서버가 더 최신이면 localStorage 클리어하고 서버 내용 사용
+              if (serverModifiedAt && storedTimestamp && serverModifiedAt > storedTimestamp) {
+                localStorage.removeItem(localStorageKey);
+                setDescription(item.description);
+              } else {
+                // localStorage가 더 최신이거나 타임스탬프가 없으면 localStorage 사용
+                setDescription(storedContent || item.description);
+              }
+            } catch (e) {
+              // JSON 파싱 실패 시 기존 형식 (문자열만 저장된 경우)
+              // 내용이 다르면 서버 내용 사용 (다른 사용자가 수정했을 가능성)
+              const serverContent = item.description || '';
+              if (storedData !== serverContent) {
+                localStorage.removeItem(localStorageKey);
+                setDescription(serverContent);
+              } else {
+                setDescription(storedData);
+              }
+            }
+          } else {
+            setDescription(item.description);
+          }
+        } else {
+          setDescription(item.description);
+        }
+      }
+      
       // 편집 모드를 끌 때 (Cancel 시) localStorage 클리어 및 원본으로 되돌리기
       if (currentValue && !newValue) {
         // localStorage 클리어하여 Ctrl+Z로 사라진 상태가 복원되지 않도록 함
