@@ -148,10 +148,23 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     // localStorage 우선
     if (name) {
       try {
-        const storedContent = localStorage.getItem(name);
-        if (storedContent) {
-          const storedContentAsJson = useGenerateJSON(storedContent);
-          return replaceSpanWithMention(storedContentAsJson);
+        const storedData = localStorage.getItem(name);
+        if (storedData) {
+          let storedContent: string;
+          
+          // JSON 형식으로 저장된 경우 (타임스탬프 포함)
+          try {
+            const parsed = JSON.parse(storedData);
+            storedContent = parsed.content || storedData;
+          } catch (e) {
+            // 기존 형식 (문자열만 저장된 경우) - 하위 호환성
+            storedContent = storedData;
+          }
+          
+          if (storedContent) {
+            const storedContentAsJson = useGenerateJSON(storedContent);
+            return replaceSpanWithMention(storedContentAsJson);
+          }
         }
       } catch (e) {
         // localStorage 접근 실패 시 content prop 사용
@@ -176,7 +189,12 @@ const RichTextEditor = forwardRef(function RichTextEditor(
       const editorContent = editor.getHTML();
       onChange && onChange(editorContent);
       if (name && typeof window !== 'undefined') {
-        localStorage.setItem(name, editorContent);
+        // 타임스탬프와 함께 저장
+        const dataToStore = JSON.stringify({
+          content: editorContent,
+          timestamp: new Date().toISOString()
+        });
+        localStorage.setItem(name, dataToStore);
       }
     };
     editor && editor.on("update", handleEditorChange);
@@ -522,7 +540,12 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     onChange && onChange(editorContent);
 
     if (name && typeof window !== 'undefined') {
-      localStorage.setItem(name, editorContent);
+      // 타임스탬프와 함께 저장
+      const dataToStore = JSON.stringify({
+        content: editorContent,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem(name, dataToStore);
     }
 
     setIsSourceEnabled(!isSourceEnabled);
