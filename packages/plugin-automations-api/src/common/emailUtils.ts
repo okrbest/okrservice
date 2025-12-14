@@ -313,12 +313,6 @@ export const generateDoc = async ({
 
   replacedContent = await replaceDocuments(subdomain, replacedContent, target);
 
-  // assignAlarm이 true일 때 제목을 동적으로 변경
-  let emailSubject = config.subject;
-  if (target?.assignAlarm === true && triggerType === 'tickets:ticket' && target?.name) {
-    emailSubject = `새로 발급된 ${target.name} 티켓의 담당자로 지정되었습니다`;
-  }
-
   const { subject, content } = await sendCommonMessage({
     subdomain,
     serviceName,
@@ -326,7 +320,7 @@ export const generateDoc = async ({
     data: {
       target,
       config: {
-        subject: emailSubject,  // 변경된 제목 사용
+        subject: config.subject,
         content: replacedContent
       }
     },
