@@ -77,15 +77,14 @@ class SendEmail extends React.Component<Props> {
               
               if (customerInfo) {
                 const customerName = customerInfo.customerName || '';
-                const companyName = customerInfo.companyName;
+                const companyName = customerInfo.companyName || '';
                 
                 const parts = [];
                 if (customerName) {
                   parts.push(`이름: ${customerName}`);
                 }
-                // companyName이 null이어도 표시 (null이면 "없음"으로 표시)
-                if (companyName !== undefined) {
-                  parts.push(`회사: ${companyName || '없음'}`);
+                if (companyName) {
+                  parts.push(`회사: ${companyName}`);
                 }
                 parts.push(`이메일: ${email}`);
                 
