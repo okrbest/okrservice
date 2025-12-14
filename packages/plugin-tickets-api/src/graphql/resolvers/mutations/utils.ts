@@ -299,6 +299,20 @@ export const itemsEdit = async (
     modifiedBy: user._id,
   };
 
+  // description 변경 시 manualEmailRequest는 변경하지 않음 (Send Email 버튼을 눌렀을 때만 변경)
+  // extendedDoc에서 manualEmailRequest를 제거하여 기존 값 유지 (단, Send Email 버튼 클릭 시에는 제외)
+  if (
+    type === "ticket" &&
+    doc.description &&
+    doc.description !== oldItem?.description &&
+    doc.manualEmailRequest !== true  // Send Email 버튼 클릭이 아닌 경우에만 제거
+  ) {
+    // description 변경 시 manualEmailRequest를 제거하여 기존 값 유지
+    if (extendedDoc.manualEmailRequest !== undefined) {
+      delete extendedDoc.manualEmailRequest;
+    }
+  }
+
   const stage = await models.Stages.getStage(oldItem.stageId);
 
   const { canEditMemberIds } = stage;
@@ -324,6 +338,8 @@ export const itemsEdit = async (
   const updatedItem = await modelUpate(_id, extendedDoc);
 
   // 티켓의 description이 수정된 경우 widgetAlarm을 false로, emailSent도 false로 설정 (버튼 활성화)
+  let shouldSkipAutomationTrigger = false; // putUpdateLog에서 자동화 트리거 스킵 플래그
+  
   if (
     type === "ticket" &&
     doc.description &&
@@ -342,7 +358,7 @@ export const itemsEdit = async (
     updateFields.assignAlarm = true;
 
     await models.Tickets.updateOne({ _id }, { $set: updateFields });
-    console.log('📝 Description 변경됨 - emailSent를 false로 설정하여 Send Email 버튼 활성화', updateFields);
+    console.log('📝 Description 변경됨 - assignAlarm true 설정 및 자동화 트리거', updateFields);
     
     // updatedItem 객체에도 즉시 반영 (GraphQL 응답에 포함되도록)
     updatedItem.emailSent = false;
@@ -350,6 +366,46 @@ export const itemsEdit = async (
       updatedItem.widgetAlarm = false;
     }
     updatedItem.assignAlarm = true;
+
+    // assignAlarm이 true로 설정되었으므로 자동화 트리거 전송
+    const ticketForAutomation = updatedItem.toObject ? updatedItem.toObject() : { ...updatedItem };
+    ticketForAutomation.assignAlarm = true;  // 자동화 트리거를 위해 true로 명시적 설정
+    
+    const { sendMessage } = await import("@erxes/api-utils/src/core");
+    try {
+      await sendMessage({
+        subdomain,
+        serviceName: "automations",
+        action: "trigger",
+        data: {
+          type: "tickets:ticket",
+          targets: [ticketForAutomation],  // assignAlarm: true인 데이터 전달
+          triggerSource: "assignAlarm"
+        }
+      });
+      console.log('✅ assignAlarm 자동화 트리거 전송 완료');
+      
+      // description 변경으로 인한 자동화 트리거를 이미 보냈으므로
+      // putUpdateLog에서는 자동화 트리거를 스킵하도록 플래그 설정
+      shouldSkipAutomationTrigger = true;
+      
+      // 자동화 트리거 전송 후 10초 뒤에 assignAlarm을 false로 리셋
+      // 이렇게 해야 description이 다시 변경되면 자동화가 재등록(재실행)될 수 있음
+      setTimeout(async () => {
+        try {
+          await models.Tickets.updateOne(
+            { _id },
+            { $set: { assignAlarm: false } }
+          );
+          console.log('✅ Assign alarm set to false after 10 seconds for ticket:', _id);
+        } catch (error) {
+          console.error(`❌ Failed to reset assignAlarm for ticket ${_id}:`, error);
+        }
+      }, 10000); // 10초 대기
+    } catch (error) {
+      console.error('❌ Failed to send assignAlarm automation trigger:', error);
+      // 에러 발생해도 계속 진행 (assignAlarm은 그대로 유지)
+    }
   }
 
   // manualEmailRequest가 true로 변경된 경우 자동화 트리거 (description 변경과 독립적)
@@ -504,7 +560,8 @@ export const itemsEdit = async (
       newData: extendedDoc,
       updatedDocument: updatedItem,
     },
-    user
+    user,
+    { skipAutomationTrigger: shouldSkipAutomationTrigger }
   );
 
   const updatedStage = await models.Stages.getStage(updatedItem.stageId);

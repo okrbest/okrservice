@@ -590,6 +590,46 @@ export const setupMessageConsumers = async () => {
         );
         console.log('🔔 Assign alarm set to true for ticket:', typeId, 'due to client comment');
         
+        // 티켓 정보를 가져와서 자동화 트리거에 전달할 수 있도록 업데이트된 티켓 사용
+        const updatedTicket = await models.Tickets.findOne({ _id: typeId });
+        
+        // assignAlarm이 true로 설정되었으므로 자동화 트리거 전송
+        if (updatedTicket) {
+          const ticketForAutomation: any = updatedTicket.toObject ? updatedTicket.toObject() : { ...updatedTicket };
+          ticketForAutomation.assignAlarm = true;  // 자동화 트리거를 위해 true로 명시적 설정
+          
+          try {
+            await sendMessage({
+              subdomain,
+              serviceName: "automations",
+              action: "trigger",
+              data: {
+                type: "tickets:ticket",
+                targets: [ticketForAutomation],  // assignAlarm: true인 데이터 전달
+                triggerSource: "assignAlarm"
+              }
+            });
+            console.log('✅ assignAlarm 자동화 트리거 전송 완료 (client comment)');
+            
+            // 자동화 트리거 전송 후 10초 뒤에 assignAlarm을 false로 리셋
+            // 이렇게 해야 고객이 다시 댓글을 달면 자동화가 재등록(재실행)될 수 있음
+            setTimeout(async () => {
+              try {
+                await models.Tickets.updateOne(
+                  { _id: typeId },
+                  { $set: { assignAlarm: false } }
+                );
+                console.log('✅ Assign alarm set to false after 10 seconds for ticket:', typeId, '(client comment)');
+              } catch (error) {
+                console.error(`❌ Failed to reset assignAlarm for ticket ${typeId}:`, error);
+              }
+            }, 10000); // 10초 대기
+          } catch (error) {
+            console.error('❌ Failed to send assignAlarm automation trigger (client comment):', error);
+            // 에러 발생해도 계속 진행 (assignAlarm은 그대로 유지)
+          }
+        }
+        
         // stage와 pipeline 정보 가져오기
         const stage = await models.Stages.findOne({ _id: ticket.stageId });
         let boardId = "";

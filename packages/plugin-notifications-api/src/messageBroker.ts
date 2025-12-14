@@ -190,7 +190,7 @@ const sendNotification = async (
         itemName ||
         (typeof content === "string" ? content.replace(/'/g, "") : "") ||
         title;
-      finalEmailTitle = fallbackTicketTitle ? `담당자 지정 : ${fallbackTicketTitle}` : title || "Notification";
+      finalEmailTitle = fallbackTicketTitle ? `새로 발급된 ${fallbackTicketTitle} 티켓의 담당자로 지정되었습니다` : title || "Notification";
     }
     console.log(`📧 [Email] Ticket assign email title:`, {
       isTicketAssign,
@@ -208,10 +208,24 @@ const sendNotification = async (
     isTicketAssign,
   };
 
+  // 티켓 담당자 지정 이메일일 때 description을 content에 설정
   if (isTicketAssign && (emailContent || itemDescription)) {
-    notificationTemplateData.content =
-      emailContent || itemDescription || notificationTemplateData.content;
+    const descriptionContent = emailContent || itemDescription;
+    console.log(`📧 [Email] Setting ticket description in content:`, {
+      emailContent,
+      itemDescription,
+      descriptionContent,
+      originalContent: notificationTemplateData.content,
+    });
+    notificationTemplateData.content = descriptionContent || notificationTemplateData.content;
   }
+  
+  console.log(`🔍 [Debug] Final notificationTemplateData:`, {
+    title: notificationTemplateData.title,
+    content: notificationTemplateData.content,
+    isTicketAssign,
+    hasDescription: !!(emailContent || itemDescription),
+  });
 
   // 이메일 수신자가 있을 때만 이메일 발송
   if (toEmails.length > 0) {

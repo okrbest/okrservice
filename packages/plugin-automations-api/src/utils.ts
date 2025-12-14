@@ -96,6 +96,62 @@ export const checkSegmentHasManualEmailCondition = async (
   }
 };
 
+/**
+ * Segment가 assignAlarm 조건을 체크하는지 확인
+ */
+export const checkSegmentHasAssignAlarmCondition = async (
+  subdomain: string,
+  segmentId: string
+): Promise<boolean> => {
+  if (!segmentId) {
+    return false;
+  }
+
+  try {
+    // Segment 조회
+    const result = await sendCommonMessage({
+      subdomain,
+      serviceName: 'core',
+      action: 'segmentFindOne',
+      data: { _id: segmentId },
+      isRPC: true
+    });
+
+    const segment = result?.data || result;
+
+    if (!segment) {
+      return false;
+    }
+
+    if (!segment.conditions) {
+      return false;
+    }
+
+    // Conditions를 순회하면서 assignAlarm 조건 찾기
+    for (const condition of segment.conditions) {
+      // Direct property check
+      if (condition.propertyName === 'assignAlarm') {
+        return true;
+      }
+
+      // SubSegment가 있으면 재귀적으로 확인
+      if (condition.type === 'subSegment' && condition.subSegmentId) {
+        const hasInSubSegment = await checkSegmentHasAssignAlarmCondition(
+          subdomain,
+          condition.subSegmentId
+        );
+        if (hasInSubSegment) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  } catch (error) {
+    return false;
+  }
+};
+
 export const isInSegment = async (
   subdomain: string,
   segmentId: string,
@@ -566,6 +622,19 @@ export const receiveTrigger = async ({
           );
           
           if (!hasManualEmailCondition) {
+            continue;
+          }
+        }
+
+        // Assign Alarm 필터링: triggerSource가 "assignAlarm"일 때
+        // 이 트리거의 segment가 assignAlarm 조건을 체크하는지 확인
+        if (triggerSource === 'assignAlarm') {
+          const hasAssignAlarmCondition = await checkSegmentHasAssignAlarmCondition(
+            subdomain,
+            trigger.config.contentId
+          );
+          
+          if (!hasAssignAlarmCondition) {
             continue;
           }
         }
