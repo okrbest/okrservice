@@ -80,11 +80,11 @@ class SendEmail extends React.Component<Props> {
                 const companyName = customerInfo.companyName || '';
                 
                 const parts = [];
-                if (companyName) {
-                  parts.push(`회사명: ${companyName}`);
-                }
                 if (customerName) {
                   parts.push(`이름: ${customerName}`);
+                }
+                if (companyName) {
+                  parts.push(`회사: ${companyName}`);
                 }
                 parts.push(`이메일: ${email}`);
                 
@@ -115,6 +115,16 @@ class SendEmail extends React.Component<Props> {
 
   render() {
     const { action, result, hideTemplate } = this.props;
+    
+    // 디버깅: result 구조 확인
+    console.log('SendEmail result:', result);
+    console.log('SendEmail responses:', result?.responses);
+    if (result?.responses) {
+      result.responses.forEach((r, i) => {
+        console.log(`Response ${i}:`, r);
+        console.log(`Response ${i} customerInfo:`, r?.customerInfo);
+      });
+    }
     
     return (
       <div>

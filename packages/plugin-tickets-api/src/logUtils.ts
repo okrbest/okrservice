@@ -489,7 +489,8 @@ export const putUpdateLog = async (
   models: IModels,
   subdomain: string,
   logDoc,
-  user
+  user,
+  options?: { skipAutomationTrigger?: boolean }
 ) => {
   const { description, extraDesc } = await gatherDescriptions(
     models,
@@ -500,9 +501,31 @@ export const putUpdateLog = async (
     }
   );
 
+  const logParams = { ...logDoc, description, extraDesc, type: `tickets:${logDoc.type}` };
+  
+  // skipAutomationTrigger 옵션이 있으면 자동화 트리거를 스킵하고 로그만 기록
+  if (options?.skipAutomationTrigger) {
+    // 자동화 트리거 없이 로그만 기록 (putLog는 일반 큐 메시지)
+    const { sendMessage } = await import("@erxes/api-utils/src/messageBroker");
+    
+    await sendMessage("putLog", {
+      subdomain,
+      data: {
+        ...logParams,
+        action: LOG_ACTIONS.UPDATE,
+        createdBy: user._id,
+        unicode: user.username || user.email || user._id,
+        object: JSON.stringify(logParams.object),
+        newData: JSON.stringify(logParams.newData),
+        extraDesc: JSON.stringify(logParams.extraDesc),
+      },
+    });
+    return;
+  }
+
   await commonPutUpdateLog(
     subdomain,
-    { ...logDoc, description, extraDesc, type: `tickets:${logDoc.type}` },
+    logParams,
     user
   );
 };
