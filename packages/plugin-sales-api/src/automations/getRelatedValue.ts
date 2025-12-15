@@ -202,8 +202,12 @@ export const getRelatedValue = async (
       'modifiedAt'
     ].includes(targetKey)
   ) {
-    const dateValue = targetKey[targetKey];
-    return moment(dateValue).format('YYYY-MM-DD HH:mm');
+    const dateValue = target[targetKey];
+    if (!dateValue) {
+      return '';
+    }
+    // 한국 시간대로 변환 (UTC+9)
+    return moment(dateValue).utcOffset(9).format('YYYY-MM-DD HH:mm');
   }
 
   return false;
