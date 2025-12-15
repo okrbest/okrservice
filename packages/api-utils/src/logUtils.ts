@@ -147,7 +147,8 @@ export const putCreateLog = async (
 export const putUpdateLog = async (
   subdomain: string,
   params: ILogDataParams,
-  user: IUserDocument
+  user: IUserDocument,
+  options?: { triggerSource?: string }
 ) => {
   const isAutomationsAvailable = await isEnabled("automations");
 
@@ -157,6 +158,7 @@ export const putUpdateLog = async (
       data: {
         type: `${params.type}`,
         targets: [params.updatedDocument],
+        triggerSource: options?.triggerSource,
       },
     });
   }
