@@ -120,6 +120,13 @@ class Uploader extends React.Component<Props, State> {
     limit: 4,
   };
 
+  // 현재 업로드 중인 파일들을 추적하기 위한 인스턴스 변수
+  private currentUpload: {
+    uploadedAttachments: IAttachment[];
+    completed: number;
+    total: number;
+  } | null = null;
+
   constructor(props: Props) {
     super(props);
 
@@ -141,34 +148,91 @@ class Uploader extends React.Component<Props, State> {
   handleFileInput = ({ target }) => {
     const files = target.files;
 
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    const total = files.length;
+
+    // 새로운 업로드 세션 시작
+    this.currentUpload = {
+      uploadedAttachments: [],
+      completed: 0,
+      total: total,
+    };
+
+    this.setState({
+      loading: true,
+    });
+
+    console.log(`[Uploader] ${total}개 파일 업로드 시작`);
+
+    // 모든 파일 업로드가 완료되었는지 확인하는 함수
+    const checkCompletion = () => {
+      if (!this.currentUpload) {
+        return;
+      }
+
+      this.currentUpload.completed++;
+
+      console.log(`[Uploader] 파일 처리 완료, 진행: ${this.currentUpload.completed}/${this.currentUpload.total}, 업로드 성공: ${this.currentUpload.uploadedAttachments.length}`);
+
+      if (this.currentUpload.completed === this.currentUpload.total) {
+        console.log(`[Uploader] 모든 파일 처리 완료! 총 ${this.currentUpload.uploadedAttachments.length}개 파일 업로드 성공`);
+        
+        const uploadedAttachments = [...this.currentUpload.uploadedAttachments];
+        
+        // 업로드 세션 초기화
+        this.currentUpload = null;
+
+        if (uploadedAttachments.length > 0) {
+          Alert.info("Success");
+
+          this.setState((prevState) => {
+            const attachments = [...uploadedAttachments, ...prevState.attachments];
+            console.log(
+              `[Uploader] onChange 호출 준비, 기존 ${prevState.attachments.length} + 신규 ${uploadedAttachments.length} = ${attachments.length}`
+            );
+            this.props.onChange(attachments);
+            
+            return {
+              loading: false,
+              attachments,
+            };
+          });
+        } else {
+          this.setState({ loading: false });
+        }
+      }
+    };
+
     uploadHandler({
       files,
 
       beforeUpload: () => {
-        this.setState({
-          loading: true,
-        });
+        // beforeUpload는 각 파일마다 호출되므로 여기서는 아무것도 하지 않음
       },
 
       afterUpload: ({ status, response, fileInfo }) => {
-        if (status !== "ok") {
-          Alert.error(response.statusText);
-          return this.setState({ loading: false });
+        if (!this.currentUpload) {
+          return;
         }
 
-        Alert.info("Success");
+        if (status !== "ok") {
+          console.log(`[Uploader] 파일 업로드 실패: ${fileInfo.name}, 상태: ${status}`);
+          Alert.error(response?.statusText || "Upload failed");
+          
+          checkCompletion();
+          return;
+        }
 
-        // set attachments
+        // 업로드 성공한 파일을 배열에 추가
         const attachment = { url: response, ...fileInfo };
+        this.currentUpload.uploadedAttachments.push(attachment);
 
-        const attachments = [attachment, ...this.state.attachments];
+        console.log(`[Uploader] 파일 업로드 완료: ${fileInfo.name}, 업로드된 파일 배열 길이: ${this.currentUpload.uploadedAttachments.length}`);
 
-        this.props.onChange(attachments);
-
-        this.setState({
-          loading: false,
-          attachments,
-        });
+        checkCompletion();
       },
     });
 

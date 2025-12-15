@@ -6,8 +6,8 @@ import { sendCoreMessage } from "./messageBroker";
 const checkFilterParam = (param: any) => {
   return param && param.length;
 };
-const NOW = new Date();
 const returnDateRange = (dateRange: string, startDate: Date | string, endDate: Date | string) => {
+  const NOW = new Date();
   const startOfToday = new Date(NOW.setHours(0, 0, 0, 0));
   const endOfToday = new Date(NOW.setHours(23, 59, 59, 999));
   const startOfYesterday = new Date(

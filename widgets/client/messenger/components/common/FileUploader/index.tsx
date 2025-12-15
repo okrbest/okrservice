@@ -93,14 +93,17 @@ const FileUploader = ({
 }) => {
   const [files, setFiles] = React.useState<FileWithUrl[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
+  const uploadedFilesRef = React.useRef<FileWithUrl[]>([]);
+  const completedRef = React.useRef(0);
+  const allFilesRef = React.useRef<FileWithUrl[]>([]);
 
   // 허용된 파일 타입 가져오기
   const getAllowedFileTypes = () => {
     const allowedTypes = connection.data?.messengerData?.allowedFileTypes || [];
 
+    // 설정이 없으면 undefined를 반환하여 모든 파일 타입 허용
     if (!allowedTypes || allowedTypes.length === 0) {
-      // 기본값: 이미지만 허용
-      return { "image/*": [] };
+      return undefined;
     }
 
     // MIME 타입을 react-dropzone accept 형식으로 변환
@@ -150,20 +153,41 @@ const FileUploader = ({
       }
     });
 
-    return Object.keys(acceptTypes).length > 0
-      ? acceptTypes
-      : { "image/*": [] };
+    return Object.keys(acceptTypes).length > 0 ? acceptTypes : undefined;
   };
 
-  const sendFiles = (files: FileList) => {
-    const uploadedFiles: FileWithUrl[] = [];
-    const total = files.length;
-    let completed = 0;
+  const sendFiles = (filesToUpload: FileList) => {
+    const total = filesToUpload.length;
+
+    // 업로드 시작 시 상태 초기화
+    uploadedFilesRef.current = [];
+    completedRef.current = 0;
+    setIsUploading(true);
+
+    console.log(`[FileUploader] ${total}개 파일 업로드 시작`);
+
+    // 모든 파일 처리가 완료되었는지 확인하는 함수
+    const checkCompletion = () => {
+      completedRef.current++;
+
+      console.log(`[FileUploader] 파일 처리 완료, 진행: ${completedRef.current}/${total}, 업로드 성공: ${uploadedFilesRef.current.length}`);
+
+      if (completedRef.current === total) {
+        console.log(`[FileUploader] 모든 파일 처리 완료! ${uploadedFilesRef.current.length}개 파일 업로드 성공`);
+        setIsUploading(false);
+        
+        if (uploadedFilesRef.current.length > 0) {
+          const finalFiles = [...allFilesRef.current];
+          console.log(`[FileUploader] handleFiles 호출, 전달 파일 수: ${finalFiles.length}`);
+          handleFiles(finalFiles);
+        }
+      }
+    };
 
     uploadHandler({
-      files,
+      files: filesToUpload,
       beforeUpload: () => {
-        setIsUploading(true);
+        // beforeUpload는 각 파일마다 호출되므로 여기서는 아무것도 하지 않음
       },
       afterUpload({ response, fileInfo }: { response: any; fileInfo: any }) {
         const updatedFile = {
@@ -171,25 +195,30 @@ const FileUploader = ({
           url: response,
         } as FileWithUrl;
 
-        uploadedFiles.push(updatedFile);
-        setFiles((prev) => [...prev, updatedFile]);
+        // ref를 사용하여 배열 업데이트 (동시 실행 시에도 안전)
+        uploadedFilesRef.current.push(updatedFile);
+        // 전체 목록 ref 및 state 동기화 (setState 비동기 이전에 ref 먼저 세팅)
+        allFilesRef.current = [...allFilesRef.current, updatedFile];
+        setFiles([...allFilesRef.current]);
 
-        completed++;
+        console.log(`[FileUploader] 파일 업로드 완료: ${fileInfo.name}, 업로드된 파일 배열 길이: ${uploadedFilesRef.current.length}`);
 
-        if (completed === total) {
-          setIsUploading(false);
-          handleFiles(uploadedFiles);
-        }
+        checkCompletion();
       },
       onError: (message) => {
+        console.log(`[FileUploader] 파일 업로드 에러: ${message}`);
         alert(message);
-        setIsUploading(false);
+        
+        // 에러가 발생해도 완료 카운트 증가
+        checkCompletion();
       },
     });
   };
 
+  const allowedFileTypes = getAllowedFileTypes();
+
   const { getRootProps, getInputProps } = useDropzone({
-    accept: getAllowedFileTypes(),
+    ...(allowedFileTypes ? { accept: allowedFileTypes } : {}),
     onDrop: (acceptedFiles) => {
       const updatedFiles = acceptedFiles.map((file) =>
         Object.assign(file, {
@@ -209,7 +238,11 @@ const FileUploader = ({
       // 파일이 거부되었을 때 메시지 표시
       const allowedTypes =
         connection.data?.messengerData?.allowedFileTypes || [];
-      alert(`허용된 파일 형식: ${allowedTypes.join(", ")}`);
+      if (allowedTypes.length > 0) {
+        alert(`허용된 파일 형식: ${allowedTypes.join(", ")}`);
+      } else {
+        alert("파일 업로드 중 오류가 발생했습니다.");
+      }
     },
   });
 

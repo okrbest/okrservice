@@ -736,8 +736,10 @@ const Left = (props: Props) => {
   const isMobileDirect = typeof window !== 'undefined' && window.innerWidth <= 768;
   console.log('Left component - isMobileDirect:', isMobileDirect);
 
-  const onChangeAttachment = (files: IAttachment[]) =>
+  const onChangeAttachment = (files: IAttachment[]) => {
+    console.log(`[Left] onChangeAttachment 호출됨, ${files.length}개 파일 전달`);
     saveItem({ attachments: files });
+  };
 
   const attachments =
     (item.attachments && extractAttachment(item.attachments)) || [];

@@ -3758,6 +3758,39 @@ select.form-control:focus,
   font-size: 14px;
 }
 
+.ticket-request-type-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.ticket-request-type-tooltip .ticket-request-type-tooltip-text {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 250px;
+  background-color: #fff;
+  color: #666;
+  text-align: left;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px 12px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -125px;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: normal;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.ticket-request-type-tooltip:hover .ticket-request-type-tooltip-text {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 .ticket-progress-container .ticket-progress-content .ticket-attachments {
   display: flex;
   gap: 10px;

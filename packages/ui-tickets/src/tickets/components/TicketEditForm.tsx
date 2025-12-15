@@ -150,6 +150,9 @@ export default function TicketEditForm(props: Props) {
   }, [item]);
   
   const saveItem = (doc: any, callback?: (item) => void) => {
+    if (doc.attachments) {
+      console.log(`[TicketEditForm] saveItem 호출 - attachments 길이: ${doc.attachments.length}`);
+    }
     props.saveItem(doc, (updatedItem) => {
       console.log('💾 saveItem 완료, 업데이트된 item:', updatedItem);
       console.log('🔍 emailSent:', updatedItem?.emailSent, 'widgetAlarm:', updatedItem?.widgetAlarm, 'manualEmailRequest:', updatedItem?.manualEmailRequest);
@@ -252,11 +255,11 @@ export default function TicketEditForm(props: Props) {
       
       // 담당자가 댓글을 추가한 경우 emailSent를 false로 설정하여 Send Email 버튼 활성화
       console.log('💬 댓글 추가 완료 - emailSent를 false로 업데이트하여 Send Email 버튼 활성화');
-      setLocalItem({
-        ...localItem,
+      setLocalItem((prev: any) => ({
+        ...prev,
         emailSent: false,
         widgetAlarm: false
-      });
+      }));
       
       // UI 새로고침
       setTimeout(() => {
@@ -443,7 +446,8 @@ export default function TicketEditForm(props: Props) {
       { label: "개선요청", value: "improvement" },
       { label: "오류처리", value: "error" },
       { label: "설정변경", value: "config" },
-      { label: "추가개발", value: "additional_development" }
+      { label: "추가개발", value: "additional_development" },
+      { label: "사용안내", value: "usage_guide" }
     ];
 
     const requestTypeValueRenderer = (option: ISelectedOption): React.ReactNode => (

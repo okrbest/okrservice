@@ -2,29 +2,6 @@ import * as _ from "lodash";
 import { isValidURL } from "./commonUtils";
 import { sendRPCMessage } from "./messageBroker";
 
-// 한국 시간대로 날짜 포맷팅 함수
-const formatKSTDate = (date: any): string => {
-  if (!date) return '';
-  
-  const dateObj = date instanceof Date ? date : new Date(date);
-  
-  if (isNaN(dateObj.getTime())) return String(date);
-  
-  // 한국 시간대로 변환 (UTC+9)
-  const kstOffset = 9 * 60; // 한국은 UTC+9
-  const utc = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
-  const kstDate = new Date(utc + (kstOffset * 60000));
-  
-  // YYYY-MM-DD HH:mm 형식으로 포맷팅
-  const year = kstDate.getFullYear();
-  const month = String(kstDate.getMonth() + 1).padStart(2, '0');
-  const day = String(kstDate.getDate()).padStart(2, '0');
-  const hours = String(kstDate.getHours()).padStart(2, '0');
-  const minutes = String(kstDate.getMinutes()).padStart(2, '0');
-  
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
-};
-
 export interface IReplacer {
   key: string;
   value: string;
@@ -320,19 +297,19 @@ export default class EditorAttributeUtil {
       replacers.push({
         key: "{{ itemCloseDate }}",
         value: item.closeDate
-          ? formatKSTDate(item.closeDate)
+          ? new Date(item.closeDate).toLocaleDateString()
           : ""
       });
       replacers.push({
         key: "{{ itemCreatedAt }}",
         value: item.createdAt
-          ? formatKSTDate(item.createdAt)
+          ? new Date(item.createdAt).toLocaleDateString()
           : ""
       });
       replacers.push({
         key: "{{ itemModifiedAt }}",
         value: item.modifiedAt
-          ? formatKSTDate(item.modifiedAt)
+          ? new Date(item.modifiedAt).toLocaleDateString()
           : ""
       });
 
