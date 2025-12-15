@@ -42,11 +42,21 @@ function Attachment({ attachment }: { attachment: IAttachment }) {
     );
   }
 
-  // If name exists, use it. Otherwise extract from URL by removing random ID prefix (21 characters)
-  let downloadName = attachment.name;
+  // 다운로드 파일명 결정: name 우선, 없으면 URL에서 추출하며 임시 prefix 제거
+  const extractNameFromUrl = (url: string) => {
+    const last = url.split("/").pop() || url;
+    // upload_<random>_original.ext 형태의 prefix 제거
+    const cleaned = last.replace(/^upload_[^_]*_/, "");
+    try {
+      return decodeURIComponent(cleaned || last);
+    } catch (e) {
+      return cleaned || last;
+    }
+  };
+
+  let downloadName = attachment.name || "";
   if (!downloadName && attachment.url) {
-    const urlFileName = attachment.url;
-    downloadName = urlFileName.length > 21 ? urlFileName.substring(21) : urlFileName;
+    downloadName = extractNameFromUrl(attachment.url);
   }
   downloadName = downloadName || "file";
   
