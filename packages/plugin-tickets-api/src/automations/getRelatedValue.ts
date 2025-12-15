@@ -253,67 +253,11 @@ export const getRelatedValue = async (
     ].includes(targetKey)
   ) {
     const dateValue = target[targetKey];
-    
-    // TIMEZONE 환경 변수 적용 (시간 단위 오프셋, 예: TIMEZONE=9 for KST)
-    const timezoneOffset = Number(process.env.TIMEZONE || 0);
-    
-    return moment(dateValue)
-      .add(timezoneOffset, 'hours')
-      .format('YYYY-MM-DD HH:mm');
-  }
-
-  // 최신 댓글 관련 변수 처리
-  if (targetKey.includes('latestComment.')) {
-    const [_, fieldName] = targetKey.split('latestComment.');
-    
-    // 최신 댓글 가져오기 (고객이 작성한 댓글만, 최신순)
-    const latestComment = await models.Comments.findOne({
-      typeId: target._id,
-      type: 'ticket',
-      userType: 'client'
-    })
-      .sort({ createdAt: -1 })
-      .lean();
-
-    if (!latestComment) {
-      return '-';
+    if (!dateValue) {
+      return '';
     }
-
-    if (fieldName === 'content') {
-      return latestComment.content || '-';
-    }
-
-    if (fieldName === 'customerName') {
-      // 댓글 작성자(고객) 정보 가져오기
-      if (latestComment.userId) {
-        const customer = await sendCoreMessage({
-          subdomain,
-          action: 'customers.findOne',
-          data: { _id: latestComment.userId },
-          isRPC: true,
-          defaultValue: null
-        });
-
-        if (customer) {
-          const firstName = customer.firstName || '';
-          const lastName = customer.lastName || '';
-          const fullName = `${firstName} ${lastName}`.trim();
-          return fullName || customer.primaryEmail || '고객';
-        }
-      }
-      return '고객';
-    }
-
-    if (fieldName === 'createdAt') {
-      const dateValue = latestComment.createdAt;
-      if (dateValue) {
-        const timezoneOffset = Number(process.env.TIMEZONE || 0);
-        return moment(dateValue)
-          .add(timezoneOffset, 'hours')
-          .format('YYYY-MM-DD HH:mm');
-      }
-      return '-';
-    }
+    // 한국 시간대로 변환 (UTC+9)
+    return moment(dateValue).utcOffset(9).format('YYYY-MM-DD HH:mm');
   }
 
   return false;
@@ -386,12 +330,7 @@ const generateCustomFieldsDataValue = async ({
     ['date', 'datetime'].includes(field.validation) &&
     isISODate
   ) {
-    // TIMEZONE 환경 변수 적용 (시간 단위 오프셋, 예: TIMEZONE=9 for KST)
-    const timezoneOffset = Number(process.env.TIMEZONE || 0);
-    
-    return moment(customFieldData.value)
-      .add(timezoneOffset, 'hours')
-      .format('YYYY-MM-DD HH:mm');
+    return moment(customFieldData.value).format('YYYY-MM-DD HH:mm');
   }
 };
 

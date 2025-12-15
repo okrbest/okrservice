@@ -204,13 +204,11 @@ export const getRelatedValue = async (
     ].includes(targetKey)
   ) {
     const dateValue = target[targetKey];
-    
-    // TIMEZONE 환경 변수 적용 (시간 단위 오프셋, 예: TIMEZONE=9 for KST)
-    const timezoneOffset = Number(process.env.TIMEZONE || 0);
-    
-    return moment(dateValue)
-      .add(timezoneOffset, 'hours')
-      .format('YYYY-MM-DD HH:mm');
+    if (!dateValue) {
+      return '';
+    }
+    // 한국 시간대로 변환 (UTC+9)
+    return moment(dateValue).utcOffset(9).format('YYYY-MM-DD HH:mm');
   }
 
   return false;
@@ -284,12 +282,7 @@ const generateCustomFieldsDataValue = async ({
     ['date', 'datetime'].includes(field.validation) &&
     isISODate
   ) {
-    // TIMEZONE 환경 변수 적용 (시간 단위 오프셋, 예: TIMEZONE=9 for KST)
-    const timezoneOffset = Number(process.env.TIMEZONE || 0);
-    
-    return moment(customFieldData.value)
-      .add(timezoneOffset, 'hours')
-      .format('YYYY-MM-DD HH:mm');
+    return moment(customFieldData.value).format('YYYY-MM-DD HH:mm');
   }
 };
 
