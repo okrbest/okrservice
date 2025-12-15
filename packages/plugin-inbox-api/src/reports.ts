@@ -215,7 +215,7 @@ const calculateAverage = (arr: number[]) => {
   return (sum / arr.length).toFixed();
 };
 
-const returnDateRange = (dateRange: string, startDate: Date, endDate: Date) => {
+const returnDateRange = (dateRange: string, startDate: Date | string, endDate: Date | string) => {
   const startOfToday = new Date(NOW.setHours(0, 0, 0, 0));
   const endOfToday = new Date(NOW.setHours(23, 59, 59, 999));
   const startOfYesterday = new Date(
@@ -233,6 +233,7 @@ const returnDateRange = (dateRange: string, startDate: Date, endDate: Date) => {
     case "yesterday":
       $gte = startOfYesterday;
       $lte = startOfToday;
+      break;
     case "thisWeek":
       $gte = dayjs(NOW).startOf("week").toDate();
       $lte = dayjs(NOW).endOf("week").toDate();
@@ -259,8 +260,13 @@ const returnDateRange = (dateRange: string, startDate: Date, endDate: Date) => {
       $lte = dayjs(NOW).add(-1, "year").endOf("year").toDate();
       break;
     case "customDate":
-      $gte = new Date(startDate);
-      $lte = new Date(endDate);
+      // Convert string dates to Date objects using dayjs for proper timezone handling
+      if (startDate) {
+        $gte = dayjs(startDate).startOf("day").toDate();
+      }
+      if (endDate) {
+        $lte = dayjs(endDate).endOf("day").toDate();
+      }
       break;
     // all
     default:

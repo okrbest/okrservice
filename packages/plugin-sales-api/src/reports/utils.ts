@@ -1559,8 +1559,8 @@ export const buildPipeline = (filter, type, matchFilter) => {
 
 export const returnDateRange = (
   dateRange: string,
-  startDate: Date,
-  endDate: Date
+  startDate: Date | string,
+  endDate: Date | string
 ) => {
   const NOW = new Date();
 
@@ -1613,8 +1613,13 @@ export const returnDateRange = (
       $lte = dayjs(NOW).add(-1, "year").endOf("year").toDate();
       break;
     case "customDate":
-      $gte = new Date(startDate);
-      $lte = new Date(endDate);
+      // Convert string dates to Date objects using dayjs for proper timezone handling
+      if (startDate) {
+        $gte = dayjs(startDate).startOf("day").toDate();
+      }
+      if (endDate) {
+        $lte = dayjs(endDate).endOf("day").toDate();
+      }
       break;
     // all
     default:
