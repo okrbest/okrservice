@@ -257,30 +257,44 @@ export default class Field extends React.Component<Props, State> {
     const self = this;
     const attachments: any[] = [];
     if (files && files.length > 0) {
-      for (const file of Array.from(files)) {
-        uploadHandler({
-          file,
+      const total = files.length;
+      let completed = 0;
 
-          beforeUpload() {
-            self.setState({ isAttachingFile: true });
-          },
+      uploadHandler({
+        files,
 
-          // upload to server
-          afterUpload({ response, fileInfo }: any) {
-            const attachment = { url: response, ...fileInfo };
-            attachments.push(attachment);
+        beforeUpload() {
+          self.setState({ isAttachingFile: true });
+        },
+
+        // upload to server
+        afterUpload({ response, fileInfo }: any) {
+          const attachment = { url: response, ...fileInfo };
+          attachments.push(attachment);
+          completed++;
+
+          // 모든 파일 업로드가 완료된 경우에만 onChange 호출
+          if (completed === total) {
             self.setState({ isAttachingFile: false });
-          },
+            self.onChange(attachments);
+          }
+        },
 
-          onError: (message) => {
-            alert(message);
+        onError: (message) => {
+          alert(message);
+          completed++;
+
+          // 에러가 발생해도 완료 카운트 증가하고, 모든 파일 처리가 끝났는지 확인
+          if (completed === total) {
             self.setState({ isAttachingFile: false });
-          },
-        });
-      }
+            // 에러가 있어도 업로드된 파일들은 전달
+            if (attachments.length > 0) {
+              self.onChange(attachments);
+            }
+          }
+        },
+      });
     }
-
-    self.onChange(attachments);
   };
 
   onDateChange = (date?: any) => {
