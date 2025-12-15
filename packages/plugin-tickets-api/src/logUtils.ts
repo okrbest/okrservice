@@ -490,7 +490,7 @@ export const putUpdateLog = async (
   subdomain: string,
   logDoc,
   user,
-  options?: { skipAutomationTrigger?: boolean }
+  options?: { skipAutomationTrigger?: boolean; triggerSource?: string }
 ) => {
   const { description, extraDesc } = await gatherDescriptions(
     models,
@@ -523,10 +523,20 @@ export const putUpdateLog = async (
     return;
   }
 
+  // widgetAlarm이 true인 티켓인 경우 triggerSource를 "widgetAlarm"으로 설정
+  let triggerSource = options?.triggerSource;
+  if (logDoc.type === 'ticket' && logDoc.updatedDocument) {
+    const ticket = logDoc.updatedDocument;
+    if ((ticket as any).widgetAlarm === true) {
+      triggerSource = 'widgetAlarm';
+    }
+  }
+
   await commonPutUpdateLog(
     subdomain,
     logParams,
-    user
+    user,
+    { triggerSource }
   );
 };
 

@@ -152,6 +152,62 @@ export const checkSegmentHasAssignAlarmCondition = async (
   }
 };
 
+/**
+ * Segment가 widgetAlarm 조건을 체크하는지 확인
+ */
+export const checkSegmentHasWidgetAlarmCondition = async (
+  subdomain: string,
+  segmentId: string
+): Promise<boolean> => {
+  if (!segmentId) {
+    return false;
+  }
+
+  try {
+    // Segment 조회
+    const result = await sendCommonMessage({
+      subdomain,
+      serviceName: 'core',
+      action: 'segmentFindOne',
+      data: { _id: segmentId },
+      isRPC: true
+    });
+
+    const segment = result?.data || result;
+
+    if (!segment) {
+      return false;
+    }
+
+    if (!segment.conditions) {
+      return false;
+    }
+
+    // Conditions를 순회하면서 widgetAlarm 조건 찾기
+    for (const condition of segment.conditions) {
+      // Direct property check
+      if (condition.propertyName === 'widgetAlarm') {
+        return true;
+      }
+
+      // SubSegment가 있으면 재귀적으로 확인
+      if (condition.type === 'subSegment' && condition.subSegmentId) {
+        const hasInSubSegment = await checkSegmentHasWidgetAlarmCondition(
+          subdomain,
+          condition.subSegmentId
+        );
+        if (hasInSubSegment) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  } catch (error) {
+    return false;
+  }
+};
+
 export const isInSegment = async (
   subdomain: string,
   segmentId: string,
@@ -635,6 +691,19 @@ export const receiveTrigger = async ({
           );
           
           if (!hasAssignAlarmCondition) {
+            continue;
+          }
+        }
+
+        // Widget Alarm 필터링: triggerSource가 "widgetAlarm"일 때
+        // 이 트리거의 segment가 widgetAlarm 조건을 체크하는지 확인
+        if (triggerSource === 'widgetAlarm') {
+          const hasWidgetAlarmCondition = await checkSegmentHasWidgetAlarmCondition(
+            subdomain,
+            trigger.config.contentId
+          );
+          
+          if (!hasWidgetAlarmCondition) {
             continue;
           }
         }

@@ -137,10 +137,15 @@ const sendNotification = async (
       // 담당자 지정 이메일은 getNotificationByEmail 설정과 무관하게 발송
       const recipient = recipients.find((r) => r._id === receiverId);
       const isTicketAssignNotification = notifType === NOTIFICATION_TYPES.TICKET_ADD;
+      const isTicketCommentNotification = notifType === NOTIFICATION_TYPES.TICKET_COMMENT;
       
       if (recipient && recipient.email) {
+        // 티켓 댓글 알림은 이메일 발송 제외 (인앱 알림만 유지)
+        if (isTicketCommentNotification) {
+          console.log(`📧 [Email] Skipped (ticket comment - no email): ${recipient.email} (notifType: ${notifType})`);
+        }
         // 담당자 지정 이메일은 항상 발송
-        if (isTicketAssignNotification) {
+        else if (isTicketAssignNotification) {
           console.log(`📧 [Email] Adding to email list (ticket assign): ${recipient.email} (notifType: ${notifType})`);
           toEmails.push(recipient.email);
         } else if (recipient.getNotificationByEmail) {
