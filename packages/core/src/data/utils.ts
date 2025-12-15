@@ -52,81 +52,7 @@ export const readFile = async (filename: string) => {
 const applyTemplate = async (data: any, templateName: string) => {
   let template: any = await readFile(templateName);
 
-  // 한국 시간대로 날짜 포맷팅 헬퍼 등록
-  if (!Handlebars.helpers.formatKSTDate) {
-    Handlebars.registerHelper('formatKSTDate', (date: any) => {
-      if (!date) return '';
-      
-      // Date 객체이거나 날짜 문자열인 경우
-      const dateObj = date instanceof Date ? date : new Date(date);
-      
-      if (isNaN(dateObj.getTime())) return String(date);
-      
-      // 한국 시간대로 변환 (UTC+9)
-      const kstOffset = 9 * 60; // 한국은 UTC+9
-      const utc = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
-      const kstDate = new Date(utc + (kstOffset * 60000));
-      
-      // YYYY-MM-DD HH:mm 형식으로 포맷팅
-      const year = kstDate.getFullYear();
-      const month = String(kstDate.getMonth() + 1).padStart(2, '0');
-      const day = String(kstDate.getDate()).padStart(2, '0');
-      const hours = String(kstDate.getHours()).padStart(2, '0');
-      const minutes = String(kstDate.getMinutes()).padStart(2, '0');
-      
-      return `${year}-${month}-${day} ${hours}:${minutes}`;
-    });
-  }
-
   template = Handlebars.compile(template.toString());
-
-  // 날짜 필드를 한국 시간대로 포맷팅하는 헬퍼 함수
-  const formatKSTDate = (date: any): string => {
-    if (!date) return '';
-    
-    const dateObj = date instanceof Date ? date : new Date(date);
-    
-    if (isNaN(dateObj.getTime())) return String(date);
-    
-    // 한국 시간대로 변환 (UTC+9)
-    const kstOffset = 9 * 60;
-    const utc = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
-    const kstDate = new Date(utc + (kstOffset * 60000));
-    
-    // YYYY-MM-DD HH:mm 형식으로 포맷팅
-    const year = kstDate.getFullYear();
-    const month = String(kstDate.getMonth() + 1).padStart(2, '0');
-    const day = String(kstDate.getDate()).padStart(2, '0');
-    const hours = String(kstDate.getHours()).padStart(2, '0');
-    const minutes = String(kstDate.getMinutes()).padStart(2, '0');
-    
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
-  };
-
-  // notification.date가 있으면 포맷팅된 날짜로 설정
-  if (data?.notification?.date) {
-    data.notification.date = formatKSTDate(data.notification.date);
-  }
-
-  // createdAt 필드가 있으면 포맷팅 (최상위 레벨)
-  if (data?.createdAt) {
-    data.createdAt = formatKSTDate(data.createdAt);
-  }
-
-  // answers 배열 내의 createdAt도 포맷팅
-  if (Array.isArray(data?.answers)) {
-    data.answers = data.answers.map((answer: any) => {
-      if (answer?.createdAt) {
-        answer.createdAt = formatKSTDate(answer.createdAt);
-      }
-      return answer;
-    });
-  }
-
-  // question 객체 내의 createdAt도 포맷팅
-  if (data?.question?.createdAt) {
-    data.question.createdAt = formatKSTDate(data.question.createdAt);
-  }
 
   return template(data);
 };
@@ -246,54 +172,6 @@ export const sendEmail = async (
     }
 
     if (customHtml) {
-      // 날짜 필드를 한국 시간대로 포맷팅하는 헬퍼 함수
-      const formatKSTDate = (date: any): string => {
-        if (!date) return '';
-        
-        const dateObj = date instanceof Date ? date : new Date(date);
-        
-        if (isNaN(dateObj.getTime())) return String(date);
-        
-        // 한국 시간대로 변환 (UTC+9)
-        const kstOffset = 9 * 60;
-        const utc = dateObj.getTime() + (dateObj.getTimezoneOffset() * 60000);
-        const kstDate = new Date(utc + (kstOffset * 60000));
-        
-        // YYYY-MM-DD HH:mm 형식으로 포맷팅
-        const year = kstDate.getFullYear();
-        const month = String(kstDate.getMonth() + 1).padStart(2, '0');
-        const day = String(kstDate.getDate()).padStart(2, '0');
-        const hours = String(kstDate.getHours()).padStart(2, '0');
-        const minutes = String(kstDate.getMinutes()).padStart(2, '0');
-        
-        return `${year}-${month}-${day} ${hours}:${minutes}`;
-      };
-
-      // customHtmlData의 날짜 필드들을 한국 시간대로 포맷팅
-      if (customHtmlData?.notification?.date) {
-        customHtmlData.notification.date = formatKSTDate(customHtmlData.notification.date);
-      }
-
-      // createdAt 필드가 있으면 포맷팅 (최상위 레벨)
-      if (customHtmlData?.createdAt) {
-        customHtmlData.createdAt = formatKSTDate(customHtmlData.createdAt);
-      }
-
-      // answers 배열 내의 createdAt도 포맷팅
-      if (Array.isArray(customHtmlData?.answers)) {
-        customHtmlData.answers = customHtmlData.answers.map((answer: any) => {
-          if (answer?.createdAt) {
-            answer.createdAt = formatKSTDate(answer.createdAt);
-          }
-          return answer;
-        });
-      }
-
-      // question 객체 내의 createdAt도 포맷팅
-      if (customHtmlData?.question?.createdAt) {
-        customHtmlData.question.createdAt = formatKSTDate(customHtmlData.question.createdAt);
-      }
-      
       html = Handlebars.compile(customHtml)(customHtmlData || {});
     }
 
