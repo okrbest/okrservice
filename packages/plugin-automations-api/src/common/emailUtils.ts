@@ -501,7 +501,57 @@ export const handleEmail = async ({
 
     // target에서 고객 ID 목록 가져오기 (티켓, 딜 등의 경우)
     const customerIds = target?.customerIds || [];
+    let targetCompanyIds = target?.companyIds || [];
     let customerMapByEmail: { [email: string]: any } = {};
+    
+    // target.companyIds가 없으면 triggerType에 따라 직접 조회
+    if (!targetCompanyIds || targetCompanyIds.length === 0) {
+      const [serviceName, contentType] = triggerType.split(':');
+      
+      // 티켓의 경우 Conformity를 통해 companyIds 조회
+      if (contentType === 'ticket' && target?._id) {
+        try {
+          targetCompanyIds = await sendCoreMessage({
+            subdomain,
+            action: 'conformities.savedConformity',
+            data: {
+              mainType: 'ticket',
+              mainTypeId: target._id,
+              relTypes: ['company']
+            },
+            isRPC: true,
+            defaultValue: []
+          });
+        } catch (error) {
+          console.error(`📧 [handleEmail] 티켓에서 companyIds 조회 실패:`, error);
+        }
+      }
+    }
+    
+    // target.companyIds가 있으면 먼저 회사 정보 조회하여 맵에 저장
+    let targetCompanyMap: { [companyId: string]: string } = {};
+    if (targetCompanyIds && targetCompanyIds.length > 0) {
+      try {
+        const companies = await sendCoreMessage({
+          subdomain,
+          action: 'companies.find',
+          data: { _id: { $in: targetCompanyIds } },
+          isRPC: true,
+          defaultValue: []
+        });
+        
+        if (companies && companies.length > 0) {
+          companies.forEach(company => {
+            const companyName = company.primaryName || company.names?.[0] || null;
+            if (companyName) {
+              targetCompanyMap[company._id] = companyName;
+            }
+          });
+        }
+      } catch (error) {
+        console.error(`📧 [handleEmail] Error fetching companies from target.companyIds:`, error);
+      }
+    }
     
     // 고객 ID가 있으면 미리 고객 정보 조회하여 이메일 주소로 매핑
     if (customerIds && customerIds.length > 0) {
@@ -524,61 +574,84 @@ export const handleEmail = async ({
               ...(customer.emails || [])
             ].filter(Boolean);
 
-            // 고객의 회사 정보 조회 (Conformity를 통해)
-            let companyName = null;
+            // 고객의 회사 정보 조회
+            let companyName: string | null = null;
             try {
-              // 먼저 customer.companyIds가 있는지 확인
+              // 먼저 target.companyIds에서 회사 정보 확인 (고객이 속한 회사가 target.companyIds에 있는지)
               let companyIds = customer.companyIds || [];
               
-              console.log(`📧 [handleEmail] Checking companyIds for customer ${customer._id}:`, {
-                hasCompanyIds: !!customer.companyIds,
-                companyIds: customer.companyIds
-              });
-              
-              // companyIds가 없으면 Conformity를 통해 조회
-              if (!companyIds || companyIds.length === 0) {
-                console.log(`📧 [handleEmail] Fetching companyIds from Conformity for customer ${customer._id}`);
-                companyIds = await sendCoreMessage({
-                  subdomain,
-                  action: 'conformities.savedConformity',
-                  data: {
-                    mainType: 'customer',
-                    mainTypeId: customer._id,
-                    relTypes: ['company']
-                  },
-                  isRPC: true,
-                  defaultValue: []
-                });
-                console.log(`📧 [handleEmail] Conformity returned companyIds:`, companyIds);
+              // target.companyIds와 고객의 companyIds 교집합 확인
+              if (targetCompanyIds.length > 0 && companyIds.length > 0) {
+                const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
+                if (commonCompanyIds.length > 0) {
+                  // target.companyIds에 있는 회사 정보 우선 사용
+                  companyName = targetCompanyMap[commonCompanyIds[0]] || null;
+                }
               }
               
-              if (companyIds && companyIds.length > 0) {
-                console.log(`📧 [handleEmail] Fetching companies for IDs:`, companyIds);
-                const companies = await sendCoreMessage({
-                  subdomain,
-                  action: 'companies.find',
-                  data: {
-                    query: { _id: { $in: companyIds } },
-                    limit: 1
-                  },
-                  isRPC: true,
-                  defaultValue: []
-                });
-                
-                console.log(`📧 [handleEmail] Companies found:`, companies?.map(c => ({
-                  _id: c._id,
-                  primaryName: c.primaryName,
-                  names: c.names
-                })));
-                
-                if (companies && companies.length > 0) {
-                  companyName = companies[0].primaryName || companies[0].names?.[0] || null;
-                  console.log(`📧 [handleEmail] Selected companyName:`, companyName);
-                } else {
-                  console.log(`📧 [handleEmail] No companies found for IDs:`, companyIds);
+              // target.companyIds에서 찾지 못한 경우 기존 로직 사용
+              if (!companyName) {
+                // companyIds가 없으면 Conformity를 통해 조회
+                if (!companyIds || companyIds.length === 0) {
+                  companyIds = await sendCoreMessage({
+                    subdomain,
+                    action: 'conformities.savedConformity',
+                    data: {
+                      mainType: 'customer',
+                      mainTypeId: customer._id,
+                      relTypes: ['company']
+                    },
+                    isRPC: true,
+                    defaultValue: []
+                  });
                 }
-              } else {
-                console.log(`📧 [handleEmail] No companyIds found for customer ${customer._id}`);
+                
+                if (companyIds && companyIds.length > 0) {
+                  // target.companyIds에 있는 회사 정보 우선 사용
+                  const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
+                  if (commonCompanyIds.length > 0 && targetCompanyMap[commonCompanyIds[0]]) {
+                    companyName = targetCompanyMap[commonCompanyIds[0]] || null;
+                  } else {
+                    // target.companyIds에 없으면 일반 조회
+                    const companiesResult = await sendCoreMessage({
+                      subdomain,
+                      action: 'companies.find',
+                      data: { _id: { $in: companyIds } },
+                      isRPC: true,
+                      defaultValue: []
+                    });
+                    const companies = companiesResult?.slice(0, 1) || [];
+                    
+                    if (companies && companies.length > 0) {
+                      companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                    }
+                  }
+                } else {
+                  // 고객의 companyIds가 없고 targetCompanyIds가 있으면 targetCompanyIds 사용
+                  if (targetCompanyIds.length > 0) {
+                    companyName = targetCompanyMap[targetCompanyIds[0]] || null;
+                    
+                    // targetCompanyMap에 없으면 직접 조회
+                    if (!companyName) {
+                      try {
+                        const companiesResult = await sendCoreMessage({
+                          subdomain,
+                          action: 'companies.find',
+                          data: { _id: targetCompanyIds[0] },
+                          isRPC: true,
+                          defaultValue: []
+                        });
+                        const companies = companiesResult?.slice(0, 1) || [];
+                        
+                        if (companies && companies.length > 0) {
+                          companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                        }
+                      } catch (error) {
+                        console.error(`📧 [handleEmail] 직접 조회 실패:`, error);
+                      }
+                    }
+                  }
+                }
               }
             } catch (companyError) {
               console.error(`📧 [handleEmail] Error fetching company info:`, companyError);
@@ -592,19 +665,10 @@ export const handleEmail = async ({
               companyName: companyName
             };
             
-            console.log(`📧 [handleEmail] Customer info from target.customerIds:`, {
-              customerName: customerInfo.customerName,
-              companyName: customerInfo.companyName,
-              customerId: customer._id,
-              companyIds: customer.companyIds,
-              emails: emails
-            });
-
             // 각 이메일 주소에 대해 매핑 저장
             emails.forEach(email => {
               if (email && !customerMapByEmail[email]) {
                 customerMapByEmail[email] = customerInfo;
-                console.log(`📧 [handleEmail] Added to customerMapByEmail from target for ${email}:`, customerInfo);
               }
             });
           }
@@ -677,61 +741,84 @@ export const handleEmail = async ({
                 ...(customer.emails || [])
               ].filter(Boolean);
 
-            // 고객의 회사 정보 조회 (Conformity를 통해)
-            let companyName = null;
+            // 고객의 회사 정보 조회
+            let companyName: string | null = null;
             try {
-              // 먼저 customer.companyIds가 있는지 확인
+              // 먼저 target.companyIds에서 회사 정보 확인 (고객이 속한 회사가 target.companyIds에 있는지)
               let companyIds = customer.companyIds || [];
               
-              console.log(`📧 [handleEmail] Checking companyIds for customer ${customer._id}:`, {
-                hasCompanyIds: !!customer.companyIds,
-                companyIds: customer.companyIds
-              });
-              
-              // companyIds가 없으면 Conformity를 통해 조회
-              if (!companyIds || companyIds.length === 0) {
-                console.log(`📧 [handleEmail] Fetching companyIds from Conformity for customer ${customer._id}`);
-                companyIds = await sendCoreMessage({
-                  subdomain,
-                  action: 'conformities.savedConformity',
-                  data: {
-                    mainType: 'customer',
-                    mainTypeId: customer._id,
-                    relTypes: ['company']
-                  },
-                  isRPC: true,
-                  defaultValue: []
-                });
-                console.log(`📧 [handleEmail] Conformity returned companyIds:`, companyIds);
+              // target.companyIds와 고객의 companyIds 교집합 확인
+              if (targetCompanyIds.length > 0 && companyIds.length > 0) {
+                const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
+                if (commonCompanyIds.length > 0) {
+                  // target.companyIds에 있는 회사 정보 우선 사용
+                  companyName = targetCompanyMap[commonCompanyIds[0]] || null;
+                }
               }
               
-              if (companyIds && companyIds.length > 0) {
-                console.log(`📧 [handleEmail] Fetching companies for IDs:`, companyIds);
-                const companies = await sendCoreMessage({
-                  subdomain,
-                  action: 'companies.find',
-                  data: {
-                    query: { _id: { $in: companyIds } },
-                    limit: 1
-                  },
-                  isRPC: true,
-                  defaultValue: []
-                });
-                
-                console.log(`📧 [handleEmail] Companies found:`, companies?.map(c => ({
-                  _id: c._id,
-                  primaryName: c.primaryName,
-                  names: c.names
-                })));
-                
-                if (companies && companies.length > 0) {
-                  companyName = companies[0].primaryName || companies[0].names?.[0] || null;
-                  console.log(`📧 [handleEmail] Selected companyName:`, companyName);
-                } else {
-                  console.log(`📧 [handleEmail] No companies found for IDs:`, companyIds);
+              // target.companyIds에서 찾지 못한 경우 기존 로직 사용
+              if (!companyName) {
+                // companyIds가 없으면 Conformity를 통해 조회
+                if (!companyIds || companyIds.length === 0) {
+                  companyIds = await sendCoreMessage({
+                    subdomain,
+                    action: 'conformities.savedConformity',
+                    data: {
+                      mainType: 'customer',
+                      mainTypeId: customer._id,
+                      relTypes: ['company']
+                    },
+                    isRPC: true,
+                    defaultValue: []
+                  });
                 }
-              } else {
-                console.log(`📧 [handleEmail] No companyIds found for customer ${customer._id}`);
+                
+                if (companyIds && companyIds.length > 0) {
+                  // target.companyIds에 있는 회사 정보 우선 사용
+                  const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
+                  if (commonCompanyIds.length > 0 && targetCompanyMap[commonCompanyIds[0]]) {
+                    companyName = targetCompanyMap[commonCompanyIds[0]] || null;
+                  } else {
+                    // target.companyIds에 없으면 일반 조회
+                    const companiesResult = await sendCoreMessage({
+                      subdomain,
+                      action: 'companies.find',
+                      data: { _id: { $in: companyIds } },
+                      isRPC: true,
+                      defaultValue: []
+                    });
+                    const companies = companiesResult?.slice(0, 1) || [];
+                    
+                    if (companies && companies.length > 0) {
+                      companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                    }
+                  }
+                } else {
+                  // 고객의 companyIds가 없고 targetCompanyIds가 있으면 targetCompanyIds 사용
+                  if (targetCompanyIds.length > 0) {
+                    companyName = targetCompanyMap[targetCompanyIds[0]] || null;
+                    
+                    // targetCompanyMap에 없으면 직접 조회
+                    if (!companyName) {
+                      try {
+                        const companiesResult = await sendCoreMessage({
+                          subdomain,
+                          action: 'companies.find',
+                          data: { _id: targetCompanyIds[0] },
+                          isRPC: true,
+                          defaultValue: []
+                        });
+                        const companies = companiesResult?.slice(0, 1) || [];
+                        
+                        if (companies && companies.length > 0) {
+                          companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                        }
+                      } catch (error) {
+                        console.error(`📧 [handleEmail] 직접 조회 실패:`, error);
+                      }
+                    }
+                  }
+                }
               }
             } catch (companyError) {
               console.error(`📧 [handleEmail] Error fetching company info:`, companyError);
@@ -744,28 +831,12 @@ export const handleEmail = async ({
                 .join(' ') || customer.primaryEmail || emails[0],
               companyName: companyName
             };
-            
-            console.log(`📧 [handleEmail] Customer info from email query:`, {
-              customerName: customerInfo.customerName,
-              companyName: customerInfo.companyName,
-              customerId: customer._id,
-              companyIds: customer.companyIds,
-              emails: emails
-            });
 
               // 각 이메일 주소에 대해 매핑 저장
               // emailsToQuery에 있는 이메일만 매핑 (이미 조회한 이메일은 제외)
               emails.forEach(email => {
-                if (email) {
-                  // emailsToQuery에 포함된 이메일이거나, 아직 매핑되지 않은 이메일인 경우 매핑
-                  if (emailsToQuery.includes(email) && !customerMapByEmail[email]) {
-                    customerMapByEmail[email] = customerInfo;
-                    console.log(`📧 [handleEmail] Added to customerMapByEmail for ${email}:`, customerInfo);
-                  } else if (!customerMapByEmail[email]) {
-                    // emailsToQuery에 없지만 매핑되지 않은 경우에도 매핑 (모든 이메일 주소에 대해)
-                    customerMapByEmail[email] = customerInfo;
-                    console.log(`📧 [handleEmail] Added to customerMapByEmail (not in query) for ${email}:`, customerInfo);
-                  }
+                if (email && !customerMapByEmail[email]) {
+                  customerMapByEmail[email] = customerInfo;
                 }
               });
             }
@@ -776,23 +847,14 @@ export const handleEmail = async ({
       }
     }
 
-    console.log(`📧 [handleEmail] Calling sendEmails with customerMapByEmail:`, Object.keys(customerMapByEmail).map(email => ({
-      email,
-      customerInfo: customerMapByEmail[email]
-    })));
-    
     const responses = await sendEmails({
       subdomain,
       params,
-      customerMapByEmail // 미리 조회한 고객 정보 맵 전달
+      customerMapByEmail, // 미리 조회한 고객 정보 맵 전달
+      targetCompanyMap, // target.companyIds에서 조회한 회사 정보 맵 전달
+      targetCompanyIds // target.companyIds 전달
     });
     
-    console.log(`📧 [handleEmail] sendEmails responses:`, responses.map(r => ({
-      toEmail: r.toEmail,
-      hasCustomerInfo: !!r.customerInfo,
-      customerInfo: r.customerInfo
-    })));
-
     await setActivityLog({
       subdomain,
       triggerType,
@@ -894,11 +956,15 @@ const createTransporter = async ({ ses }, configs) => {
 const sendEmails = async ({
   subdomain,
   params,
-  customerMapByEmail = {}
+  customerMapByEmail = {},
+  targetCompanyMap = {},
+  targetCompanyIds = []
 }: {
   subdomain: string;
   params: any;
   customerMapByEmail?: { [email: string]: any };
+  targetCompanyMap?: { [companyId: string]: string };
+  targetCompanyIds?: string[];
 }) => {
   const { toEmails = [], fromEmail, title, customHtml, attachments } = params;
 
@@ -991,12 +1057,6 @@ const sendEmails = async ({
       // 먼저 미리 조회한 고객 정보 맵에서 확인
       let customerInfo = customerMapByEmail[toEmail] || null;
       
-      if (customerInfo) {
-        console.log(`📧 [sendEmails] Found customerInfo in map for ${toEmail}:`, customerInfo);
-      } else {
-        console.log(`📧 [sendEmails] No customerInfo in map for ${toEmail}, will query`);
-      }
-      
       // 맵에 없으면 이메일 주소로 고객 정보 조회
       if (!customerInfo) {
         try {
@@ -1031,64 +1091,87 @@ const sendEmails = async ({
           }
 
           if (customer) {
-            // 고객의 회사 정보 조회 (Conformity를 통해)
-            let companyName = null;
+            // 고객의 회사 정보 조회
+            let companyName: string | null = null;
             try {
-              // 먼저 customer.companyIds가 있는지 확인
+              // 먼저 target.companyIds에서 회사 정보 확인 (고객이 속한 회사가 target.companyIds에 있는지)
               let companyIds = customer.companyIds || [];
               
-              console.log(`📧 [handleEmail] Checking companyIds for customer ${customer._id}:`, {
-                hasCompanyIds: !!customer.companyIds,
-                companyIds: customer.companyIds
-              });
-              
-              // companyIds가 없으면 Conformity를 통해 조회
-              if (!companyIds || companyIds.length === 0) {
-                console.log(`📧 [handleEmail] Fetching companyIds from Conformity for customer ${customer._id}`);
-                companyIds = await sendCoreMessage({
-                  subdomain,
-                  action: 'conformities.savedConformity',
-                  data: {
-                    mainType: 'customer',
-                    mainTypeId: customer._id,
-                    relTypes: ['company']
-                  },
-                  isRPC: true,
-                  defaultValue: []
-                });
-                console.log(`📧 [handleEmail] Conformity returned companyIds:`, companyIds);
+              // target.companyIds와 고객의 companyIds 교집합 확인
+              if (targetCompanyIds.length > 0 && companyIds.length > 0) {
+                const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
+                if (commonCompanyIds.length > 0) {
+                  // target.companyIds에 있는 회사 정보 우선 사용
+                  companyName = targetCompanyMap[commonCompanyIds[0]] || null;
+                }
               }
               
-              if (companyIds && companyIds.length > 0) {
-                console.log(`📧 [handleEmail] Fetching companies for IDs:`, companyIds);
-                const companies = await sendCoreMessage({
-                  subdomain,
-                  action: 'companies.find',
-                  data: {
-                    query: { _id: { $in: companyIds } },
-                    limit: 1
-                  },
-                  isRPC: true,
-                  defaultValue: []
-                });
-                
-                console.log(`📧 [handleEmail] Companies found:`, companies?.map(c => ({
-                  _id: c._id,
-                  primaryName: c.primaryName,
-                  names: c.names
-                })));
-                
-                if (companies && companies.length > 0) {
-                  companyName = companies[0].primaryName || companies[0].names?.[0] || null;
-                  console.log(`📧 [handleEmail] Selected companyName:`, companyName);
-                } else {
-                  console.log(`📧 [handleEmail] No companies found for IDs:`, companyIds);
+              // target.companyIds에서 찾지 못한 경우 기존 로직 사용
+              if (!companyName) {
+                // companyIds가 없으면 Conformity를 통해 조회
+                if (!companyIds || companyIds.length === 0) {
+                  companyIds = await sendCoreMessage({
+                    subdomain,
+                    action: 'conformities.savedConformity',
+                    data: {
+                      mainType: 'customer',
+                      mainTypeId: customer._id,
+                      relTypes: ['company']
+                    },
+                    isRPC: true,
+                    defaultValue: []
+                  });
                 }
-              } else {
-                console.log(`📧 [handleEmail] No companyIds found for customer ${customer._id}`);
+                
+                if (companyIds && companyIds.length > 0) {
+                  // target.companyIds에 있는 회사 정보 우선 사용
+                  const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
+                  if (commonCompanyIds.length > 0 && targetCompanyMap[commonCompanyIds[0]]) {
+                    companyName = targetCompanyMap[commonCompanyIds[0]] || null;
+                  } else {
+                    // target.companyIds에 없으면 일반 조회
+                    const companiesResult = await sendCoreMessage({
+                      subdomain,
+                      action: 'companies.find',
+                      data: { _id: { $in: companyIds } },
+                      isRPC: true,
+                      defaultValue: []
+                    });
+                    const companies = companiesResult?.slice(0, 1) || [];
+                    
+                    if (companies && companies.length > 0) {
+                      companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                    }
+                  }
+                } else {
+                  // 고객의 companyIds가 없고 targetCompanyIds가 있으면 targetCompanyIds 사용
+                  if (targetCompanyIds.length > 0) {
+                    companyName = targetCompanyMap[targetCompanyIds[0]] || null;
+                    
+                    // targetCompanyMap에 없으면 직접 조회
+                    if (!companyName) {
+                      try {
+                        const companiesResult = await sendCoreMessage({
+                          subdomain,
+                          action: 'companies.find',
+                          data: { _id: targetCompanyIds[0] },
+                          isRPC: true,
+                          defaultValue: []
+                        });
+                        const companies = companiesResult?.slice(0, 1) || [];
+                        
+                        if (companies && companies.length > 0) {
+                          companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                        }
+                      } catch (error) {
+                        console.error(`📧 [sendEmails] 직접 조회 실패:`, error);
+                      }
+                    }
+                  }
+                }
               }
             } catch (companyError) {
-              console.error(`📧 [handleEmail] Error fetching company info:`, companyError);
+              console.error(`📧 [sendEmails] Error fetching company info:`, companyError);
               debugError(`Failed to fetch company info for customer ${customer._id}:`, companyError);
             }
 
@@ -1098,13 +1181,6 @@ const sendEmails = async ({
                 .join(' ') || toEmail,
               companyName: companyName
             };
-            
-            console.log(`📧 [sendEmails] Customer info for ${toEmail}:`, {
-              customerName: customerInfo.customerName,
-              companyName: customerInfo.companyName,
-              customerId: customer._id,
-              companyIds: customer.companyIds
-            });
           }
         } catch (customerError) {
           // 고객 정보 조회 실패해도 이메일 전송은 계속 진행
@@ -1119,9 +1195,6 @@ const sendEmails = async ({
       
       if (customerInfo) {
         responseItem.customerInfo = customerInfo;
-        console.log(`📧 [sendEmails] Response item with customerInfo for ${toEmail}:`, responseItem);
-      } else {
-        console.log(`📧 [sendEmails] No customerInfo for ${toEmail}`);
       }
       
       responses.push(responseItem);
