@@ -8,6 +8,7 @@ type Props = {
   result: any;
   action: any;
   hideTemplate?: boolean;
+  history?: any;
 };
 
 class SendEmail extends React.Component<Props> {
@@ -114,15 +115,24 @@ class SendEmail extends React.Component<Props> {
   }
 
   render() {
-    const { action, result, hideTemplate } = this.props;
+    const { action, result, hideTemplate, history } = this.props;
     
     // 디버깅: result 구조 확인
     console.log('SendEmail result:', result);
     console.log('SendEmail responses:', result?.responses);
+    
+    // companyIds 로그 출력
+    const targetCompanyIds = history?.target?.companyIds || [];
+    const targetCustomerIds = history?.target?.customerIds || [];
+    console.log('📧 [SendEmail] History target companyIds:', targetCompanyIds);
+    console.log('📧 [SendEmail] History target customerIds:', targetCustomerIds);
+    console.log('📧 [SendEmail] History target:', history?.target);
+    
     if (result?.responses) {
       result.responses.forEach((r, i) => {
         console.log(`Response ${i}:`, r);
         console.log(`Response ${i} customerInfo:`, r?.customerInfo);
+        console.log(`Response ${i} customerInfo companyName:`, r?.customerInfo?.companyName);
       });
     }
     
