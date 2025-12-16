@@ -144,7 +144,7 @@ export const sendNotifications = async (
       user_id: user._id,
       filteredReceivers,
       filteredReceiversCount: filteredReceivers.length,
-      emailTitle: `새로 발급된 ${item.name} 티켓의 담당자로 지정되었습니다`,
+      emailTitle: `새로 발급된 '${item.name}' 티켓의 담당자로 지정되었습니다`,
     });
     
     sendNotification(subdomain, {
@@ -152,7 +152,7 @@ export const sendNotifications = async (
       notifType: NOTIFICATION_TYPES[`${contentType.toUpperCase()}_ADD`],
       action: `invited you to the ${contentType}: `,
       content: `'${item.name}'`,
-      emailTitle: `새로 발급된 ${item.name} 티켓의 담당자로 지정되었습니다`,
+      emailTitle: `새로 발급된 '${item.name}' 티켓의 담당자로 지정되었습니다`,
       emailContent: item.description,
       receivers: filteredReceivers,
     });
