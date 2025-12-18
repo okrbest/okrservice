@@ -162,7 +162,8 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     { label: __("오류처리"), value: "error" },
     { label: __("설정변경"), value: "config" },
     { label: __("추가개발"), value: "additional_development" },
-    { label: __("사용안내"), value: "usage_guide" }
+    { label: __("사용안내"), value: "usage_guide" },
+    { label: __("데이터작업"), value: "data_work" }
   ];
 
   const onRequestTypeSelect = (ops: OnChangeValue<IOption, true>) => {
