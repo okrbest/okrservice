@@ -123,7 +123,8 @@ const TicketSubmitForm: React.FC<Props> = ({
                       오류처리: 버그나 오류 신고<br />
                       설정변경: 시스템 설정 변경 요청<br />
                       추가개발: 새로운 기능 개발 요청<br />
-                      사용안내: 시스템 사용 방법 안내
+                      사용안내: 시스템 사용 방법 안내<br />
+                      데이터작업: 데이터 관련 작업 요청
                     </span>
                   )}
                 </span>
@@ -141,6 +142,7 @@ const TicketSubmitForm: React.FC<Props> = ({
                 <option value="config">{__("설정변경")}</option>
                 <option value="additional_development">{__("추가개발")}</option>
                 <option value="usage_guide">{__("사용안내")}</option>
+                <option value="data_work">{__("데이터작업")}</option>
               </select>
             </div>
           </div>

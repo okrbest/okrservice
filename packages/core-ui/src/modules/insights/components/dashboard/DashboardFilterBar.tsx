@@ -23,7 +23,7 @@ const FilterBarContainer = styled.div`
   border-radius: 4px;
   position: relative;
   z-index: 1;
-  overflow: visible;
+  overflow: visible !important;
 `;
 
 const FilterRow = styled.div`
@@ -60,7 +60,7 @@ const CollapsibleFilters = styled.div<{ isExpanded: boolean }>`
   transition: max-height 0.3s ease-in-out;
   background: ${colors.colorWhite};
   position: relative;
-  z-index: 1;
+  z-index: 0;
 `;
 
 type Props = {
@@ -90,11 +90,11 @@ const DashboardFilterBar = (props: Props) => {
   const selectStyles = {
     menuPortal: (base: any) => ({ 
       ...base, 
-      zIndex: 99999 
+      zIndex: 999999 
     }),
     menu: (base: any) => ({ 
       ...base, 
-      zIndex: 99999,
+      zIndex: 999999,
       position: 'absolute',
       backgroundColor: colors.colorWhite,
       boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
@@ -177,6 +177,60 @@ const DashboardFilterBar = (props: Props) => {
     return DATE_RANGE_OPTIONS.find(opt => opt.value === value) || DATE_RANGE_OPTIONS[0];
   };
 
+  const calculateDateRange = (dateRange: string) => {
+    const NOW = new Date();
+    let startDate: Date | null = null;
+    let endDate: Date | null = null;
+
+    switch (dateRange) {
+      case 'today':
+        startDate = dayjs().startOf('day').toDate();
+        endDate = dayjs().endOf('day').toDate();
+        break;
+      case 'yesterday':
+        startDate = dayjs().subtract(1, 'day').startOf('day').toDate();
+        endDate = dayjs().subtract(1, 'day').endOf('day').toDate();
+        break;
+      case 'thisWeek':
+        startDate = dayjs().startOf('week').toDate();
+        endDate = dayjs().endOf('week').toDate();
+        break;
+      case 'lastWeek':
+        startDate = dayjs().subtract(1, 'week').startOf('week').toDate();
+        endDate = dayjs().subtract(1, 'week').endOf('week').toDate();
+        break;
+      case 'thisMonth':
+        startDate = dayjs().startOf('month').toDate();
+        endDate = dayjs().endOf('month').toDate();
+        break;
+      case 'lastMonth':
+        startDate = dayjs().subtract(1, 'month').startOf('month').toDate();
+        endDate = dayjs().subtract(1, 'month').endOf('month').toDate();
+        break;
+      case 'thisYear':
+        startDate = dayjs().startOf('year').toDate();
+        endDate = dayjs().endOf('year').toDate();
+        break;
+      case 'lastYear':
+        startDate = dayjs().subtract(1, 'year').startOf('year').toDate();
+        endDate = dayjs().subtract(1, 'year').endOf('year').toDate();
+        break;
+      case 'customDate':
+        // customDate인 경우 기존 startDate와 endDate 유지
+        return null;
+      case 'all':
+      default:
+        // all인 경우 날짜 필터 제거
+        return { dateRange: 'all', startDate: null, endDate: null };
+    }
+
+    return {
+      dateRange,
+      startDate: startDate ? dayjs(startDate).format('YYYY-MM-DD') : null,
+      endDate: endDate ? dayjs(endDate).format('YYYY-MM-DD') : null
+    };
+  };
+
   return (
     <FilterBarContainer>
       <FilterRow>
@@ -212,7 +266,25 @@ const DashboardFilterBar = (props: Props) => {
               placeholder={__('Select date range')}
               value={getSelectedDateRange()}
               onChange={(selected: any) => {
-                updateFilter('dateRange', selected?.value);
+                const dateRangeValue = selected?.value || 'all';
+                const calculatedDates = calculateDateRange(dateRangeValue);
+                
+                if (calculatedDates === null) {
+                  // customDate인 경우 dateRange만 업데이트
+                  updateFilter('dateRange', dateRangeValue);
+                } else {
+                  // 날짜 범위가 계산된 경우 모든 필터를 한번에 업데이트
+                  if (calculatedDates.startDate && calculatedDates.endDate) {
+                    router.setParams(navigate, location, {
+                      dateRange: calculatedDates.dateRange,
+                      startDate: calculatedDates.startDate,
+                      endDate: calculatedDates.endDate
+                    });
+                  } else {
+                    // all인 경우 날짜 관련 파라미터 모두 제거
+                    router.removeParams(navigate, location, 'dateRange', 'startDate', 'endDate');
+                  }
+                }
               }}
               options={DATE_RANGE_OPTIONS}
               isClearable={false}

@@ -27,7 +27,8 @@ type State = {
 
 export const generateActionResult = (
   action: IAutomationHistoryAction,
-  hideTemplate?: boolean
+  hideTemplate?: boolean,
+  history?: IAutomationHistory
 ) => {
   if (!action.result) {
     return 'Result has not been recorded yet';
@@ -53,7 +54,7 @@ export const generateActionResult = (
 
   if (action.actionType === 'sendEmail') {
     return (
-      <SendEmail result={result} action={action} hideTemplate={hideTemplate} />
+      <SendEmail result={result} action={action} hideTemplate={hideTemplate} history={history} />
     );
   }
 
@@ -135,7 +136,7 @@ class HistoryRow extends React.Component<Props, State> {
             <td>{}</td>
             <td>{dayjs(action.createdAt).format('lll')}</td>
             <td>{__(actionsByType[action.actionType])}</td>
-            <td colSpan={3}>{generateActionResult(action, true)}</td>
+            <td colSpan={3}>{generateActionResult(action, true, history)}</td>
           </tr>
         ))}
       </>
