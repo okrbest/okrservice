@@ -55,6 +55,7 @@ const commonEnvs = (configs) => {
     RELEASE: configs.image_tag || "",
     VERSION: configs.version || "os",
     MESSAGE_BROKER_PREFIX: rabbitmq.prefix || "",
+    TIMEZONE: be_env.TIMEZONE || "9",
   };
 };
 
