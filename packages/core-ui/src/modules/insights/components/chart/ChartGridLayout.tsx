@@ -36,10 +36,10 @@ const ChartGridLayout = (props: Props) => {
     globalFilters = {}
   } = props;
 
-  // Merge global filters with chart-specific filters (chart filters take precedence)
+  // Merge global filters with chart-specific filters (global filters take precedence)
   const mergedFilters = {
-    ...globalFilters,
-    ...(chart.filter || {})
+    ...(chart.filter || {}),
+    ...globalFilters
   };
 
   const [filters, setFilters] = useState<any>(mergedFilters);
@@ -48,8 +48,8 @@ const ChartGridLayout = (props: Props) => {
   useEffect(() => {
     // Re-merge filters when chart filter or global filters change
     const mergedFilters = {
-      ...globalFilters,
-      ...(chart.filter || {})
+      ...(chart.filter || {}),
+      ...globalFilters
     };
     setFilters(mergedFilters);
   }, [chart.filter, globalFilters]);
