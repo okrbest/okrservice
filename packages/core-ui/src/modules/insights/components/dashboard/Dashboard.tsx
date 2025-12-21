@@ -1,6 +1,9 @@
 import { ChartTitle, ContentContainer, DragField } from "../../styles";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { defaultLayout, deserializeItem } from "../../utils";
+import { useNavigate, useLocation } from "react-router-dom";
+import { router } from "@erxes/ui/src/utils";
+import dayjs from "dayjs";
 
 import { BarItems } from "@erxes/ui/src";
 import Button from "@erxes/ui/src/components/Button";
@@ -50,10 +53,26 @@ const Dashboard = (props: Props) => {
 
   const { charts = [] } = dashboard;
   const wrapperRef = useRef<any>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [showDrawer, setShowDrawer] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [currentChart, setCurrentChart] = useState<any | undefined>(undefined);
+
+  // Set default dateRange to 'thisMonth' if not present
+  useEffect(() => {
+    if (!queryParams.dateRange) {
+      const startDate = dayjs().startOf('month').format('YYYY-MM-DD');
+      const endDate = dayjs().endOf('month').format('YYYY-MM-DD');
+      
+      router.setParams(navigate, location, {
+        dateRange: 'thisMonth',
+        startDate,
+        endDate
+      });
+    }
+  }, []);
 
   // Extract global filters from queryParams
   const assignedUserIds = queryParams.assignedUserIds?.split(',').filter(Boolean);
