@@ -36,15 +36,34 @@ const sendNotificationOfItems = async (
 
   notifDocItems.action = `added note in ${contentType}`;
 
-  notifDocItems.receivers = relatedReceivers.filter(id => {
-    return excludeUserIds.indexOf(id) < 0;
+  // relatedReceivers가 배열인지 확인하고 필터링
+  const receiversArray = Array.isArray(relatedReceivers) ? relatedReceivers : [];
+  notifDocItems.receivers = receiversArray.filter(id => {
+    return id && excludeUserIds.indexOf(id) < 0;
   });
 
-  sendNotificationsMessage({
-    subdomain,
-    action: "send",
-    data: notifDocItems
-  });
+  // receivers가 비어있지 않을 때만 알림 전송
+  if (notifDocItems.receivers.length > 0) {
+    console.log(`[InternalNote] Sending notification to ticket members:`, {
+      contentType,
+      itemId: item?._id,
+      receiversCount: notifDocItems.receivers.length,
+      receivers: notifDocItems.receivers
+    });
+
+    sendNotificationsMessage({
+      subdomain,
+      action: "send",
+      data: notifDocItems
+    });
+  } else {
+    console.log(`[InternalNote] No receivers to notify for ticket note:`, {
+      contentType,
+      itemId: item?._id,
+      relatedReceiversCount: receiversArray.length,
+      excludeUserIds
+    });
+  }
 
   graphqlPubsub.publish("activityLogsChanged", {});
 };
@@ -105,11 +124,66 @@ const internalNoteMutations = {
       );
     }
 
-    if (updatedNotifDoc.contentType) {
-      await sendNotificationsMessage({
-        subdomain,
-        action: "send",
-        data: updatedNotifDoc
+    // 멘션 알림 전송 - mentionedUserIds가 있을 때만
+    console.log(`[InternalNote] Checking mention notification conditions:`, {
+      userId: user._id,
+      hasUpdatedNotifDoc: !!updatedNotifDoc,
+      hasContentType: !!(updatedNotifDoc && updatedNotifDoc.contentType),
+      contentType: updatedNotifDoc?.contentType,
+      mentionedUserIds,
+      mentionedUserIdsLength: mentionedUserIds?.length || 0,
+      mentionedUserIdsArray: Array.isArray(mentionedUserIds)
+    });
+
+    if (updatedNotifDoc && updatedNotifDoc.contentType && mentionedUserIds && Array.isArray(mentionedUserIds) && mentionedUserIds.length > 0) {
+      // mentionedUserIds에서 유효한 ID만 필터링
+      const validMentionedIds = mentionedUserIds.filter(id => id && typeof id === 'string');
+      
+      if (validMentionedIds.length > 0) {
+        // 멘션 알림은 ticketComment 타입 사용 (ticketDelete는 차단될 수 있음)
+        const mentionNotifType = type === 'ticket' ? 'ticketComment' : (updatedNotifDoc.notifType || `${type}Mention`);
+        
+        const mentionNotifDoc = {
+          ...updatedNotifDoc,
+          receivers: validMentionedIds,
+          action: `mentioned you in ${updatedNotifDoc.contentType}`,
+          notifType: mentionNotifType,
+          title: updatedNotifDoc.title || `${type.toUpperCase()} updated`
+        };
+
+        console.log(`[InternalNote] Sending mention notification:`, {
+          createdUserId: user._id,
+          receivers: mentionNotifDoc.receivers,
+          receiversCount: mentionNotifDoc.receivers.length,
+          contentType: mentionNotifDoc.contentType,
+          notifType: mentionNotifDoc.notifType,
+          title: mentionNotifDoc.title,
+          link: mentionNotifDoc.link
+        });
+
+        try {
+          await sendNotificationsMessage({
+            subdomain,
+            action: "send",
+            data: mentionNotifDoc
+          });
+          console.log(`[InternalNote] Mention notification sent successfully`);
+        } catch (error) {
+          console.error(`[InternalNote] Error sending mention notification:`, error);
+        }
+      } else {
+        console.log(`[InternalNote] No valid mentioned user IDs after filtering:`, {
+          mentionedUserIds,
+          validMentionedIds
+        });
+      }
+    } else {
+      console.log(`[InternalNote] Mention notification NOT sent - conditions not met:`, {
+        hasUpdatedNotifDoc: !!updatedNotifDoc,
+        hasContentType: !!(updatedNotifDoc && updatedNotifDoc.contentType),
+        hasMentionedUserIds: !!mentionedUserIds,
+        isMentionedUserIdsArray: Array.isArray(mentionedUserIds),
+        mentionedUserIdsLength: mentionedUserIds?.length || 0
       });
     }
 
