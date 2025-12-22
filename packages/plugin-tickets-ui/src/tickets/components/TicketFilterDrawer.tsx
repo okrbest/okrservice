@@ -3,6 +3,7 @@ import { __ } from "coreui/utils";
 import Button from "@erxes/ui/src/components/Button";
 import SelectCompanies from "@erxes/ui-contacts/src/companies/containers/SelectCompanies";
 import SelectCustomers from "@erxes/ui-contacts/src/customers/containers/SelectCustomers";
+import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
 import Select, { OnChangeValue } from "react-select";
 import { IOption } from "@erxes/ui/src/types";
 import { Transition } from "@headlessui/react";
@@ -32,6 +33,7 @@ const ScrolledContent = styled.div`
   flex: 1;
   overflow: auto;
   padding: ${dimensions.coreSpacing}px;
+  padding-bottom: ${dimensions.coreSpacing * 2}px;
 `;
 
 const FilterHeader = styled.div`
@@ -74,6 +76,9 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
   );
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>(
     queryParams?.customerIds ? (typeof queryParams.customerIds === 'string' ? queryParams.customerIds.split(",") : queryParams.customerIds) : []
+  );
+  const [selectedAssignedUserIds, setSelectedAssignedUserIds] = useState<string[]>(
+    queryParams?.assignedUserIds ? (typeof queryParams.assignedUserIds === 'string' ? queryParams.assignedUserIds.split(",") : queryParams.assignedUserIds) : []
   );
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>(
     queryParams?.priority
@@ -217,6 +222,11 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     setSelectedCustomers(customerIds);
   };
 
+  const onAssignedUserSelect = (values: string[] | string, name: string) => {
+    const assignedUserIds = Array.isArray(values) ? values : values ? [values] : [];
+    setSelectedAssignedUserIds(assignedUserIds);
+  };
+
   const applyFilter = () => {
     // 먼저 제거할 파라미터들을 제거
     const paramsToRemove: string[] = [];
@@ -226,6 +236,9 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     }
     if (selectedCustomers.length === 0 && queryParams.customerIds) {
       paramsToRemove.push("customerIds");
+    }
+    if (selectedAssignedUserIds.length === 0 && queryParams.assignedUserIds) {
+      paramsToRemove.push("assignedUserIds");
     }
     if (selectedPriorities.length === 0 && queryParams.priority) {
       paramsToRemove.push("priority");
@@ -253,6 +266,9 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     if (selectedCustomers.length > 0) {
       paramsToSet.customerIds = selectedCustomers;
     }
+    if (selectedAssignedUserIds.length > 0) {
+      paramsToSet.assignedUserIds = selectedAssignedUserIds;
+    }
     if (selectedPriorities.length > 0) {
       paramsToSet.priority = selectedPriorities;
     }
@@ -276,6 +292,7 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
   const clearFilter = () => {
     setSelectedCompanies([]);
     setSelectedCustomers([]);
+    setSelectedAssignedUserIds([]);
     setSelectedPriorities([]);
     setSelectedRequestTypes([]);
     setSelectedQualityImpacts([]);
@@ -285,6 +302,7 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
       location,
       "companyIds",
       "customerIds",
+      "assignedUserIds",
       "priority",
       "requestType",
       "qualityImpact",
@@ -344,6 +362,21 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
           </FormGroup>
 
           <FormGroup>
+            <ControlLabel>{__("담당자")}</ControlLabel>
+            <SelectTeamMembers
+              label={__("담당자를 선택하세요")}
+              name="assignedUserIds"
+              queryParams={queryParams}
+              onSelect={onAssignedUserSelect}
+              multi={true}
+              initialValue={selectedAssignedUserIds}
+            />
+            <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
+              {__("선택한 담당자가 배정된 티켓만 표시됩니다")}
+            </p>
+          </FormGroup>
+
+          <FormGroup>
             <ControlLabel>{__("우선순위")}</ControlLabel>
             <Select
               placeholder={__("우선순위를 선택하세요")}
@@ -354,6 +387,10 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
               name="priority"
               onChange={onPrioritySelect}
               isMulti={true}
+              menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+              styles={{
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
             />
             <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
               {`${__("Critical")}, ${__("High")}, ${__("Medium")}, ${__("Low")}`}
@@ -371,6 +408,10 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
               name="qualityImpact"
               onChange={onQualityImpactSelect}
               isMulti={true}
+              menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+              styles={{
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
             />
             <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
               {__("치명적, 중대, 경미, 시각적")}
@@ -388,6 +429,10 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
               name="functionCategory"
               onChange={onFunctionCategorySelect}
               isMulti={true}
+              menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+              styles={{
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
             />
             <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
               {__("인사, 조직, 근태, 급여, 평가, 교육, 채용, 복리후생, PCOFF, 전자결재, 시스템")}
@@ -406,9 +451,13 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
               onChange={onRequestTypeSelect}
               isMulti={true}
               onMenuOpen={handleRequestTypeMenuOpen}
+              menuPortalTarget={typeof document !== 'undefined' ? document.body : undefined}
+              styles={{
+                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+              }}
             />
             <p style={{ fontSize: "12px", color: colors.colorCoreGray, marginTop: "5px" }}>
-              {__("단순문의, 개선요청, 오류처리, 설정변경, 추가개발")}
+              {__("단순문의, 개선요청, 오류처리, 설정변경, 추가개발, 사용안내, 데이터작업")}
             </p>
           </FormGroup>
         </ScrolledContent>
