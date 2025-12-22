@@ -1013,8 +1013,14 @@ const sendEmails = async ({
 
   const responses: any[] = [];
   for (const toEmail of toEmails) {
+    // fromEmail이 있으면 그대로 사용, 없으면 COMPANY_EMAIL_FROM을 "no-reply" 이름과 함께 사용
+    let fromAddress = fromEmail;
+    if (!fromAddress && COMPANY_EMAIL_FROM) {
+      fromAddress = `no-reply <${COMPANY_EMAIL_FROM}>`;
+    }
+    
     const mailOptions: any = {
-      from: fromEmail || COMPANY_EMAIL_FROM,
+      from: fromAddress,
       to: toEmail,
       subject: title,
       html: customHtml,
