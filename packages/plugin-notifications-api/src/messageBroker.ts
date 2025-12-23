@@ -140,16 +140,29 @@ const sendNotification = async (
       const isTicketCommentNotification = notifType === NOTIFICATION_TYPES.TICKET_COMMENT;
       
       if (recipient && recipient.email) {
-        // 티켓 댓글 알림은 이메일 발송 제외 (인앱 알림만 유지)
-        if (isTicketCommentNotification) {
-          console.log(`📧 [Email] Skipped (ticket comment - no email): ${recipient.email} (notifType: ${notifType})`);
-        }
+        // 멘션 알림 확인 (action에 "mentioned you"가 포함된 경우)
+        const isMentionNotification = action && typeof action === 'string' && action.includes('mentioned you');
+        
         // 담당자 지정 이메일은 항상 발송
-        else if (isTicketAssignNotification) {
+        if (isTicketAssignNotification) {
           console.log(`📧 [Email] Adding to email list (ticket assign): ${recipient.email} (notifType: ${notifType})`);
           toEmails.push(recipient.email);
-        } else if (recipient.getNotificationByEmail) {
-          // 다른 알림은 getNotificationByEmail 설정 확인
+        }
+        // 멘션 알림은 getNotificationByEmail 설정 확인 후 이메일 발송
+        else if (isTicketCommentNotification && isMentionNotification) {
+          if (recipient.getNotificationByEmail) {
+            console.log(`📧 [Email] Adding to email list (ticket mention): ${recipient.email} (notifType: ${notifType}, action: ${action})`);
+            toEmails.push(recipient.email);
+          } else {
+            console.log(`⚠️ [Email] Skipped (ticket mention, getNotificationByEmail=false): ${recipient.email}`);
+          }
+        }
+        // 일반 티켓 댓글 알림은 이메일 발송 제외 (인앱 알림만 유지)
+        else if (isTicketCommentNotification) {
+          console.log(`📧 [Email] Skipped (ticket comment - no email): ${recipient.email} (notifType: ${notifType})`);
+        }
+        // 다른 알림은 getNotificationByEmail 설정 확인
+        else if (recipient.getNotificationByEmail) {
           console.log(`📧 [Email] Adding to email list: ${recipient.email} (notifType: ${notifType})`);
           toEmails.push(recipient.email);
         } else {
