@@ -112,21 +112,6 @@ export const replacePlaceHolders = async ({
               `{{ ${fieldKey} }}`,
               replaceValue
             );
-          } else if (fieldKey.startsWith('companies.')) {
-            // companies.primaryName 등 회사 필드 처리
-            const replaceValue =
-              (await getRelatedValue(
-                models,
-                subdomain,
-                target,
-                fieldKey,
-                relatedValueProps
-              )) || '-';
-
-            actionData[actionDataKey] = actionData[actionDataKey].replace(
-              new RegExp(`\\{\\{\\s*${fieldKey.replace(/\./g, '\\.')}\\s*\\}\\}`, 'g'),
-              replaceValue
-            );
           } else {
             for (const complexFieldKey of [
               'customFieldsData',
@@ -135,8 +120,8 @@ export const replacePlaceHolders = async ({
               if (fieldKey.includes(`${complexFieldKey}.`)) {
                 const [_, fieldId] = fieldKey.split('.');
                 
-                const complexFieldData = (target[complexFieldKey] || []).find(
-                  (cfd: any) => String(cfd?.field) === String(fieldId) || cfd?.field === fieldId
+                const complexFieldData = target[complexFieldKey].find(
+                  (cfd) => cfd.field === fieldId
                 );
 
                 const replaceValue =
@@ -148,7 +133,6 @@ export const replacePlaceHolders = async ({
                     relatedValueProps
                   )) ||
                   complexFieldData?.value ||
-                  complexFieldData?.stringValue ||
                   '-';
 
                 actionData[actionDataKey] = actionData[actionDataKey].replace(
