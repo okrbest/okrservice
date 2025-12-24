@@ -175,9 +175,15 @@ export const sendNotifications = async (
     });
   }
 
-  sendNotification(subdomain, {
-    ...notificationDoc,
-  });
+  // invitedUsers가 없고 type이 ${contentType}Add일 때는 알림을 보내지 않음
+  // (담당자가 없으면 "담당자로 지정되었습니다" 알림을 보낼 필요가 없음)
+  // 다른 타입의 알림(Edit, Change 등)은 정상적으로 전송
+  const isAddType = type === `${contentType}Add`;
+  if (!isAddType || (invitedUsers && invitedUsers.length > 0)) {
+    sendNotification(subdomain, {
+      ...notificationDoc,
+    });
+  }
 };
 
 export const boardId = async (models: IModels, item: any) => {
