@@ -77,7 +77,7 @@ const internalNoteMutations = {
     args: IInternalNote,
     { user, models, subdomain }: IContext
   ) {
-    const { contentType, contentTypeId, mentionedUserIds = [] } = args;
+    const { contentType, contentTypeId, mentionedUserIds = [], content: noteContent } = args;
 
     const [serviceName, type] = contentType.split(":");
 
@@ -143,12 +143,17 @@ const internalNoteMutations = {
         // 멘션 알림은 ticketComment 타입 사용 (ticketDelete는 차단될 수 있음)
         const mentionNotifType = type === 'ticket' ? 'ticketComment' : (updatedNotifDoc.notifType || `${type}Mention`);
         
+        // 멘션 알림 전송 - 담당자 지정 알림과 동일한 템플릿 사용
+        const { item } = updatedNotifDoc;
         const mentionNotifDoc = {
           ...updatedNotifDoc,
           receivers: validMentionedIds,
-          action: `mentioned you in ${updatedNotifDoc.contentType}`,
+          action: `님이 ${updatedNotifDoc.contentType}에서 @멘션했습니다.`,
           notifType: mentionNotifType,
-          title: updatedNotifDoc.title || `${type.toUpperCase()} updated`
+          title: item?.name || "새로운 댓글 알림",
+          content: noteContent || "",
+          itemName: item?.name,
+          emailContent: noteContent
         };
 
         console.log(`[InternalNote] Sending mention notification:`, {

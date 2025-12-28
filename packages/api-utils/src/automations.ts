@@ -97,32 +97,49 @@ export const replacePlaceHolders = async ({
             );
           }
         } else {
-          for (const complexFieldKey of [
-            'customFieldsData',
-            'trackedData'
-          ].concat(complexFields || [])) {
-            if (fieldKey.includes(`${complexFieldKey}.`)) {
-              const [_, fieldId] = fieldKey.split('.');
+          // latestComment. 변수 처리
+          if (fieldKey.includes('latestComment.')) {
+            const replaceValue =
+              (await getRelatedValue(
+                models,
+                subdomain,
+                target,
+                fieldKey,
+                relatedValueProps
+              )) || '-';
 
-              const complexFieldData = target[complexFieldKey].find(
-                (cfd) => cfd.field === fieldId
-              );
+            actionData[actionDataKey] = actionData[actionDataKey].replace(
+              `{{ ${fieldKey} }}`,
+              replaceValue
+            );
+          } else {
+            for (const complexFieldKey of [
+              'customFieldsData',
+              'trackedData'
+            ].concat(complexFields || [])) {
+              if (fieldKey.includes(`${complexFieldKey}.`)) {
+                const [_, fieldId] = fieldKey.split('.');
+                
+                const complexFieldData = target[complexFieldKey].find(
+                  (cfd) => cfd.field === fieldId
+                );
 
-              const replaceValue =
-                (await getRelatedValue(
-                  models,
-                  subdomain,
-                  target,
-                  `${complexFieldKey}.${fieldId}`,
-                  relatedValueProps
-                )) ||
-                complexFieldData?.value ||
-                '-';
+                const replaceValue =
+                  (await getRelatedValue(
+                    models,
+                    subdomain,
+                    target,
+                    `${complexFieldKey}.${fieldId}`,
+                    relatedValueProps
+                  )) ||
+                  complexFieldData?.value ||
+                  '-';
 
-              actionData[actionDataKey] = actionData[actionDataKey].replace(
-                `{{ ${complexFieldKey}.${fieldId} }}`,
-                replaceValue
-              );
+                actionData[actionDataKey] = actionData[actionDataKey].replace(
+                  `{{ ${complexFieldKey}.${fieldId} }}`,
+                  replaceValue
+                );
+              }
             }
           }
         }

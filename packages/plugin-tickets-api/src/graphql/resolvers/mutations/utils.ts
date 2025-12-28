@@ -167,6 +167,12 @@ export const itemsAdd = async (
   if (user) {
     const pipeline = await models.Pipelines.getPipeline(stage.pipelineId);
 
+    // assignedUserIds가 있을 때만 invitedUsers로 전달
+    // 이렇게 하면 실제 담당자에게만 "담당자로 지정되었습니다" 알림이 전송됨
+    const invitedUsers = item.assignedUserIds && item.assignedUserIds.length > 0 
+      ? item.assignedUserIds.filter(id => id !== user._id)
+      : undefined;
+
     sendNotifications(models, subdomain, {
       item,
       user,
@@ -174,6 +180,7 @@ export const itemsAdd = async (
       action: `invited you to the ${pipeline.name}`,
       content: `'${item.name}'.`,
       contentType: type,
+      invitedUsers, // assignedUserIds가 있을 때만 전달
     });
 
     await putCreateLog(

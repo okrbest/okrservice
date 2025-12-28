@@ -392,6 +392,12 @@ export const ticketCharts = [
         models
       );
 
+      // 날짜 필터 제거 - 항상 전체 기간 적용
+      const { dateRangeType: filterDateRangeType = "createdAt" } = filter;
+      delete (matchFilter as any)[filterDateRangeType];
+      // closeDate도 제거 (dueDateRange 필터가 있을 수 있음)
+      delete (matchFilter as any).closeDate;
+
       const dateFormat = frequencyType || "%m";
 
       let projectStage: any = [
