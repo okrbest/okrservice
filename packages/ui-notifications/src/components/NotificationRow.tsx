@@ -70,17 +70,41 @@ const NotificationRow = (props: Props) => {
     );
   };
 
-  const renderContent = (content: string, type: string) => {
-    if (!type?.includes("conversation")) {
-      return <b> {content}</b>;
+  const stripHtmlTags = (html: string): string => {
+    if (!html) return "";
+    // HTML 태그 제거 및 HTML 엔티티 디코딩
+    return html
+      .replace(/<[^>]*>/g, "") // HTML 태그 제거
+      .replace(/&nbsp;/g, " ") // &nbsp;를 공백으로
+      .replace(/&amp;/g, "&") // &amp;를 &로
+      .replace(/&lt;/g, "<") // &lt;를 <로
+      .replace(/&gt;/g, ">") // &gt;를 >로
+      .replace(/&quot;/g, '"') // &quot;를 "로
+      .replace(/&#39;/g, "'") // &#39;를 '로
+      .trim();
+  };
+
+  const renderContent = (content: string, type: string, action?: string) => {
+    // conversation 타입인 경우 HTML 렌더링
+    if (type?.includes("conversation")) {
+      return (
+        <Content
+          dangerouslySetInnerHTML={{ __html: xss(content) }}
+          isList={isList}
+        />
+      );
     }
 
-    return (
-      <Content
-        dangerouslySetInnerHTML={{ __html: xss(content) }}
-        isList={isList}
-      />
-    );
+    // 멘션 알림이거나 HTML이 포함된 경우 HTML 태그 제거
+    const hasHtmlTags = content && /<[^>]+>/.test(content);
+    const isMentionNotification = action?.includes("멘션");
+    
+    if (hasHtmlTags || isMentionNotification) {
+      const plainText = stripHtmlTags(content);
+      return <b> {plainText}</b>;
+    }
+
+    return <b> {content}</b>;
   };
 
   const renderCreatedUser = () => {
@@ -97,7 +121,7 @@ const NotificationRow = (props: Props) => {
         {name}
         <span>
           {notification.action}
-          {renderContent(notification.content, notification.notifType)}
+          {renderContent(notification.content, notification.notifType, notification.action)}
         </span>
       </CreatedUser>
     );
