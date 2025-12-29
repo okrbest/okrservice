@@ -43,9 +43,10 @@ const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
   const { setRoute } = useRouter();
   const { setTicketData } = useTicket();
   const customerId = connection.data.customerId;
+  const [includeCompanyTickets, setIncludeCompanyTickets] = React.useState(false);
 
   const { data, loading, error } = useQuery(TICKET_LIST, {
-    variables: { customerId },
+    variables: { customerId, includeCompanyTickets },
     skip: !customerId,
     fetchPolicy: "cache-and-network",
   });
@@ -102,6 +103,8 @@ const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
       tickets={tickets}
       loading={loading || !!externalLoading}
       onTicketClick={handleTicketClick}
+      includeCompanyTickets={includeCompanyTickets}
+      onToggleCompanyTickets={() => setIncludeCompanyTickets(!includeCompanyTickets)}
     />
   );
 };

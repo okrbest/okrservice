@@ -120,15 +120,15 @@ export default {
 
   async widgetsTicketList(
     _root,
-    args: { customerId: string },
+    args: { customerId: string; includeCompanyTickets?: boolean },
     { subdomain }: IContext
   ) {
-    const { customerId } = args;
+    const { customerId, includeCompanyTickets } = args;
 
     const data = await sendTicketsMessage({
       subdomain,
       action: 'widgets.ticketList.find',
-      data: { customerId },
+      data: { customerId, includeCompanyTickets: includeCompanyTickets || false },
       isRPC: true,
       defaultValue: []
     });
