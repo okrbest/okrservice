@@ -44,6 +44,8 @@ const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
   const { setTicketData } = useTicket();
   const customerId = connection.data.customerId;
   const [includeCompanyTickets, setIncludeCompanyTickets] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchOption, setSearchOption] = React.useState<'all' | 'title' | 'number' | 'description'>('all');
 
   const { data, loading, error } = useQuery(TICKET_LIST, {
     variables: { customerId, includeCompanyTickets },
@@ -105,6 +107,10 @@ const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
       onTicketClick={handleTicketClick}
       includeCompanyTickets={includeCompanyTickets}
       onToggleCompanyTickets={() => setIncludeCompanyTickets(!includeCompanyTickets)}
+      searchTerm={searchTerm}
+      onSearchChange={setSearchTerm}
+      searchOption={searchOption}
+      onSearchOptionChange={setSearchOption}
     />
   );
 };
