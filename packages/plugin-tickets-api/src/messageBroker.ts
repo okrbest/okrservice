@@ -799,7 +799,7 @@ export const setupMessageConsumers = async () => {
   consumeRPCQueue("widgets.ticketList.find", async ({ subdomain, data }) => {
     console.log('🔔 widgets.ticketList.find called with:', { subdomain, data });
     const models = await generateModels(subdomain);
-    const { customerId } = data;
+    const { customerId, includeCompanyTickets } = data;
 
     if (!customerId) {
       return {
@@ -808,12 +808,70 @@ export const setupMessageConsumers = async () => {
       };
     }
 
-    // 고객이 생성한 티켓들을 가져오기
-    const tickets = await models.Tickets.find({
+    // 티켓 조회 조건 설정
+    let ticketQuery: any = {
       customerIds: { $in: [customerId] }
-    }).sort({ createdAt: -1 });
+    };
+
+    // 회사 티켓 포함 옵션이 활성화된 경우
+    if (includeCompanyTickets) {
+      try {
+        let companyIds: string[] = [];
+
+        // 먼저 customer.companyIds 확인
+        const customer = await sendCoreMessage({
+          subdomain,
+          action: 'customers.findOne',
+          data: { _id: customerId },
+          isRPC: true,
+          defaultValue: null
+        });
+
+        if (customer && customer.companyIds && customer.companyIds.length > 0) {
+          companyIds = customer.companyIds;
+          console.log('🔔 Using customer.companyIds:', companyIds);
+        } else {
+          // customer.companyIds가 없으면 conformities 테이블을 통해 조회
+          const customerCompanyIds = await sendCoreMessage({
+            subdomain,
+            action: "conformities.savedConformity",
+            data: {
+              mainType: "customer",
+              mainTypeId: customerId,
+              relTypes: ["company"],
+            },
+            isRPC: true,
+            defaultValue: [],
+          });
+
+          if (customerCompanyIds && customerCompanyIds.length > 0) {
+            companyIds = customerCompanyIds;
+            console.log('🔔 Using conformities.savedConformity:', companyIds);
+          }
+        }
+
+        if (companyIds.length > 0) {
+          // 같은 회사의 모든 티켓 조회
+          ticketQuery = {
+            $or: [
+              { customerIds: { $in: [customerId] } },
+              { companyIds: { $in: companyIds } }
+            ]
+          };
+          console.log('🔔 Including company tickets for companyIds:', companyIds);
+        }
+      } catch (error) {
+        console.error(
+          `Failed to get companies for customer ${customerId}:`,
+          error
+        );
+      }
+    }
+
+    // 고객이 생성한 티켓들을 가져오기
+    const tickets = await models.Tickets.find(ticketQuery).sort({ createdAt: -1 });
     
-    console.log('🔔 Found tickets:', tickets.length, 'for customerId:', customerId);
+    console.log('🔔 Found tickets:', tickets.length, 'for customerId:', customerId, 'includeCompanyTickets:', includeCompanyTickets);
     console.log('🔔 Raw ticket data:', tickets.map(t => ({ _id: t._id, hasNotified: (t as any).hasNotified, type: typeof (t as any).hasNotified })));
 
     // Populate stage information
@@ -836,6 +894,7 @@ export const setupMessageConsumers = async () => {
           requestType: ticket.requestType,
           createdAt: ticket.createdAt,
           priority: ticket.priority,
+          widgetAlarm: (ticket as any).widgetAlarm,
           hasNotified: hasNotified,
           attachments: ticket.attachments || []
         };

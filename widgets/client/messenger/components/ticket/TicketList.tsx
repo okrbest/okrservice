@@ -27,9 +27,11 @@ type Props = {
   loading: boolean;
   onTicketClick: (ticket: TicketItem) => void;
   onRefresh?: () => void;
+  includeCompanyTickets?: boolean;
+  onToggleCompanyTickets?: () => void;
 };
 
-const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick }) => {
+const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeCompanyTickets = false, onToggleCompanyTickets }) => {
   const descriptionRefs = React.useRef<Map<string, HTMLDivElement>>(new Map());
 
   // description 내 이미지 처리
@@ -236,8 +238,36 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick }) => {
 
     return (
       <div className="ticket-list-container">
-        <div className="ticket-list-header">
-          <h3>{__("My Tickets")} ({tickets.length})</h3>
+        <div className="ticket-list-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h3>{includeCompanyTickets ? __("Company Tickets") : __("My Tickets")} ({tickets.length})</h3>
+          {onToggleCompanyTickets && (
+            <button
+              onClick={onToggleCompanyTickets}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: includeCompanyTickets ? '#6f80ff ' : '#f5f5f5',
+                color: includeCompanyTickets ? '#fff' : '#333',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => {
+                if (!includeCompanyTickets) {
+                  e.currentTarget.style.backgroundColor = '#e8e8e8';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!includeCompanyTickets) {
+                  e.currentTarget.style.backgroundColor = '#f5f5f5';
+                }
+              }}
+            >
+              {includeCompanyTickets ? __("내 티켓 보기") : __("회사 티켓보기")}
+            </button>
+          )}
         </div>
         <div className="ticket-list-content">
           {tickets.map(renderTicketItem)}
