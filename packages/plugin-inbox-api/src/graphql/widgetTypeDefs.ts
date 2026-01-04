@@ -24,6 +24,7 @@ export const types = ({
       ? `
   extend type Ticket @key(fields: "_id") {
     _id: String! @external
+    customerName: String
   }
   extend type TicketComment @key(fields: "_id") {
     _id: String! @external

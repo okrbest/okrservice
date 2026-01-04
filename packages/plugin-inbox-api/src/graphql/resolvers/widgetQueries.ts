@@ -125,7 +125,11 @@ export default {
   ) {
     const { customerId, includeCompanyTickets } = args;
 
-    const data = await sendTicketsMessage({
+    console.log('🔔 widgetsTicketList resolver called with:', { customerId, includeCompanyTickets, subdomain });
+    
+    // sendTicketsMessage는 RPC 응답에서 자동으로 data를 추출하여 반환합니다
+    console.log('🔔 Sending RPC message to tickets-api with action: widgets.ticketList.find');
+    const tickets = await sendTicketsMessage({
       subdomain,
       action: 'widgets.ticketList.find',
       data: { customerId, includeCompanyTickets: includeCompanyTickets || false },
@@ -133,7 +137,12 @@ export default {
       defaultValue: []
     });
     
-    return data;
+    console.log('🔔 widgetsTicketList resolver received response, tickets count:', tickets?.length || 0);
+    if (tickets && tickets.length > 0) {
+      console.log('🔔 First ticket customerName:', tickets[0]?.customerName);
+    }
+    
+    return tickets || [];
   },
 
   async widgetsGetMessengerIntegration(

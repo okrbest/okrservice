@@ -84,6 +84,7 @@ export const commonTypes = `
   customProperties: JSON
   type: String
   isCheckUserTicket: Boolean
+  customerName: String
 `;
 
 export const commonMutationParams = `

@@ -24,6 +24,7 @@ import Script from './script';
 import ScriptMutations from './scriptMutations';
 import ScriptQueries from './scriptQueries';
 import MessengerConnectResponse from './widget';
+import Ticket from './ticket';
 
 const resolvers: any = {
   ...customScalars,
@@ -35,6 +36,7 @@ const resolvers: any = {
   Script,
   ResponseTemplate,
   MessengerConnectResponse,
+  Ticket,
   Mutation: {
     ...ConversationMutations,
     ...IntegrationMutations,

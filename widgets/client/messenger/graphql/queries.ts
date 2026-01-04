@@ -132,6 +132,7 @@ const TICKET_LIST = gql`
       createdAt
       priority
       widgetAlarm
+      customerName
       attachments {
         url
         name
