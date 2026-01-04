@@ -98,7 +98,12 @@ const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
   const tickets = data?.widgetsTicketList || [];
   
   // 디버깅 로그 추가
-        console.log('🔔 TicketListContainer tickets:', tickets.map((t: TicketItem) => ({ _id: t._id, widgetAlarm: t.widgetAlarm })));
+  console.log('🔔 TicketListContainer tickets:', tickets.map((t: TicketItem) => ({ 
+    _id: t._id, 
+    widgetAlarm: t.widgetAlarm,
+    customerName: t.customerName,
+    includeCompanyTickets: includeCompanyTickets
+  })));
 
   return (
     <TicketList

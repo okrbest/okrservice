@@ -21,6 +21,7 @@ type TicketItem = {
   createdAt: string;
   priority?: string;
   widgetAlarm?: boolean;
+  customerName?: string;
 };
 
 type SearchOption = 'all' | 'title' | 'number' | 'description';
@@ -170,9 +171,95 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeC
   };
 
   const renderTicketItem = (ticket: TicketItem) => {
-    // 디버깅 로그 추가
-          console.log('🔔 Widget Ticket widgetAlarm:', ticket._id, 'widgetAlarm:', ticket.widgetAlarm, 'type:', typeof ticket.widgetAlarm);
+    // 디버깅 로그
+    if (includeCompanyTickets) {
+      console.log('🔔 Rendering ticket:', ticket._id, 'customerName:', ticket.customerName, 'hasCustomerName:', !!ticket.customerName);
+    }
     
+    // 회사 티켓보기 모드일 때는 컴팩트한 리스트 형태로 표시
+    if (includeCompanyTickets) {
+      return (
+        <div
+          key={ticket._id}
+          className="ticket-list-item"
+          onClick={() => onTicketClick(ticket)}
+          style={{
+            padding: '12px 16px',
+            borderBottom: '1px solid #e8e8e8',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s',
+            backgroundColor: '#fff'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#f5f5f5';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#fff';
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <span style={{ 
+                  fontSize: '13px', 
+                  fontWeight: '600', 
+                  color: '#333',
+                  whiteSpace: 'nowrap'
+                }}>
+                  #{ticket.number}
+                </span>
+                <span style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '500', 
+                  color: '#333',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  flex: 1
+                }}>
+                  {ticket.name}
+                </span>
+                {ticket.widgetAlarm === false && (
+                  <span style={{
+                    fontSize: '12px',
+                    color: '#ff6b6b',
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    🔔
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#666' }}>
+                <span className={`ticket-status ${getStatusClass(ticket.status)}`} style={{ fontSize: '12px', padding: '2px 6px' }}>
+                  {ticket.stage?.name || ticket.status}
+                </span>
+                <span className="ticket-type" style={{ fontSize: '12px' }}>
+                  {__(ticket.requestType || ticket.type)}
+                </span>
+                {ticket.customerName ? (
+                  <span className="ticket-customer-name" style={{ 
+                    color: '#666',
+                    fontWeight: '500',
+                    fontSize: '12px',
+                    padding: '2px 6px',
+                    backgroundColor: '#f0f0f0',
+                    borderRadius: '20px'
+                  }}>
+                    {ticket.customerName}
+                  </span>
+                ) : null}
+                <span style={{ color: '#999' }}>
+                  {dayjs(ticket.createdAt).format("YYYY-MM-DD")}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // 내 티켓보기 모드일 때는 기존 카드 형태로 표시
     return (
       <div
         key={ticket._id}
