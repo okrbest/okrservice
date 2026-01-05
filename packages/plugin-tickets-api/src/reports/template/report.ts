@@ -11,6 +11,8 @@ const reportTemplates = [
       'TicketClosedTotalsByTags',
       'TicketClosedTotalsByLabel',
       'TicketClosedTotalsByRep',
+      'TicketClosedTotalsByRepAllTime',
+      'TicketClosedTotalsByRepMonthly',
       'TicketTotalsByFrequency',
       'TicketAverageTimeToCloseByRep',
       'TicketTotalsBySource',
