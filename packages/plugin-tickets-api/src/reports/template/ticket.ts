@@ -81,7 +81,7 @@ export const ticketCharts = [
         models
       );
 
-      const pipeline = [
+      const pipeline: any[] = [
         {
           $unwind: "$customFieldsData",
         },
@@ -113,7 +113,7 @@ export const ticketCharts = [
         },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountByCustomProperties = (tickets || []).reduce(
         (acc, { field, fieldType, fieldOptions, selectedOptions, count }) => {
@@ -500,7 +500,7 @@ export const ticketCharts = [
         ];
       }
 
-      const pipeline = [
+      const pipeline: any[] = [
         {
           $match: {
             [dateRangeType]: { $ne: null },
@@ -523,7 +523,7 @@ export const ticketCharts = [
         ...projectStage,
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountAndAmountByFrequency = (tickets || []).reduce(
         (acc, { count, _id }) => {
@@ -788,7 +788,7 @@ export const ticketCharts = [
         models
       );
 
-      const pipeline = [
+      const pipeline: any[] = [
         {
           $unwind: "$tagIds",
         },
@@ -823,7 +823,7 @@ export const ticketCharts = [
         },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountByTag = (tickets || []).reduce(
         (acc, { measure, tag }) => {
@@ -1078,7 +1078,7 @@ export const ticketCharts = [
         models
       );
 
-      const pipeline = [
+      const pipeline: any[] = [
         {
           $unwind: "$labelIds",
         },
@@ -1113,7 +1113,7 @@ export const ticketCharts = [
         },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountByLabel = (tickets || []).reduce(
         (acc, { count, label }) => {
@@ -1370,7 +1370,7 @@ export const ticketCharts = [
         models
       );
 
-      const pipeline = [
+      const pipeline: any[] = [
         {
           $match: {
             [userType]: { $exists: true },
@@ -1419,7 +1419,7 @@ export const ticketCharts = [
         },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountByRep = (tickets || []).reduce((acc, { count, user }) => {
         if (user) {
@@ -1646,6 +1646,632 @@ export const ticketCharts = [
       },
     ],
   },
+  // TicketClosedTotalsByRepAllTime
+  {
+    templateType: "TicketClosedTotalsByRepAllTime",
+    serviceType: "tickets",
+    name: "Total Ticket Count By Rep (All Time)",
+    chartTypes: [
+      "bar",
+      "line",
+      "pie",
+      "doughnut",
+      "radar",
+      "polarArea",
+      "table",
+    ],
+    getChartResult: async (
+      models: IModels,
+      filter: any,
+      chartType: string,
+      subdomain: string
+    ) => {
+      const { userType = "userId" } = filter;
+
+      const matchFilter = await buildMatchFilter(
+        filter,
+        "ticket",
+        subdomain,
+        models
+      );
+
+      // 날짜 필터 제거 - 항상 전체 기간 적용
+      delete (matchFilter as any).createdAt;
+      delete (matchFilter as any).closeDate;
+      delete (matchFilter as any).modifiedAt;
+
+      const pipeline: any[] = [
+        {
+          $match: {
+            [userType]: { $exists: true },
+            ...matchFilter,
+          },
+        },
+        ...(userType === "assignedUserIds"
+          ? [{ $unwind: "$assignedUserIds" }]
+          : []),
+        {
+          $group: {
+            _id: `$${userType}`,
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: {
+              userId: "$_id",
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$_id", "$$userId"] },
+                      { $eq: ["$isActive", true] },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: "user",
+          },
+        },
+        {
+          $unwind: "$user",
+        },
+        {
+          $project: {
+            _id: 0,
+            user: "$user",
+            count: 1,
+          },
+        },
+      ];
+
+      const tickets = await models.Tickets.aggregate(pipeline as any);
+
+      const totalCountByRep = (tickets || []).reduce((acc, { count, user }) => {
+        if (user) {
+          acc[user.details.fullName || user.email] = count;
+        }
+        return acc;
+      }, {});
+
+      const data = Object.values(totalCountByRep);
+      const labels = Object.keys(totalCountByRep);
+      const title = "Total Ticket Count By Rep (All Time)";
+
+      return { title, data, labels };
+    },
+    filterTypes: [
+      // USER TYPE FILTER
+      {
+        fieldName: "userType",
+        fieldType: "select",
+        multi: false,
+        fieldDefaultValue: "userId",
+        fieldOptions: USER_TYPES,
+        fieldLabel: "Select user type",
+      },
+      // USER FILTER
+      {
+        fieldName: "userIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "users",
+        fieldLabel: "Select users",
+      },
+      // BRANCH FILTER
+      {
+        fieldName: "branchIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "branches",
+        fieldLabel: "Select branches",
+      },
+      // DEPARTMENT FILTER
+      {
+        fieldName: "departmentIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "departments",
+        fieldLabel: "Select departments",
+      },
+      // COMPANY FILTER
+      {
+        fieldName: "companyIds",
+        fieldType: "select",
+        fieldQuery: "companies",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "primaryName",
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "company"}`,
+        fieldLabel: "Select companies",
+      },
+      // CUSTOMER FILTER
+      {
+        fieldName: "customerIds",
+        fieldType: "select",
+        fieldQuery: "customers",
+        multi: true,
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "customer"}`,
+        fieldLabel: "Select customers",
+      },
+      // TAG FILTER
+      {
+        fieldName: "tagIds",
+        fieldType: "select",
+        fieldQuery: "tags",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "tickets:ticket", "perPage": 1000}`,
+        multi: true,
+        fieldLabel: "Select tags",
+      },
+      // BOARD FILTER
+      {
+        fieldName: "boardId",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "ticketsBoards",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldRequiredQueryParams: ["type"],
+        fieldQueryVariables: `{"type": "ticket"}`,
+        fieldLabel: "Select board",
+      },
+      // PIPELINE FILTER
+      {
+        fieldName: "pipelineIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "ticketsPipelines",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "ticket"}`,
+        logics: [
+          {
+            logicFieldName: "boardId",
+            logicFieldVariable: "boardId",
+          },
+        ],
+        fieldLabel: "Select pipelines",
+      },
+      // STAGE PROBABILITY FILTER
+      {
+        fieldName: "stageProbability",
+        fieldType: "select",
+        fieldOptions: PROBABILITY_TICKET,
+        fieldLabel: "Select Probability",
+      },
+      // STAGE FILTER
+      {
+        fieldName: "stageIds",
+        fieldType: "select",
+        fieldQuery: "ticketsStages",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldParentVariable: "pipelineId",
+        fieldParentQuery: "ticketsPipelines",
+        logics: [
+          {
+            logicFieldName: "pipelineIds",
+            logicFieldVariable: "pipelineIds",
+          },
+        ],
+        fieldLabel: "Select stages",
+      },
+      // LABEL FILTER
+      {
+        fieldName: "labelIds",
+        fieldType: "select",
+        fieldQuery: "salesPipelineLabels",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldParentVariable: "pipelineId",
+        fieldParentQuery: "salesPipelines",
+        logics: [
+          {
+            logicFieldName: "pipelineIds",
+            logicFieldVariable: "pipelineIds",
+          },
+        ],
+        fieldLabel: "Select labels",
+      },
+      // PRIORITY FILTER
+      {
+        fieldName: "status",
+        fieldType: "select",
+        fieldOptions: STATUS_TYPES,
+        fieldLabel: "Select status",
+      },
+      // PRIORITY FILTER
+      {
+        fieldName: "priority",
+        fieldType: "select",
+        fieldOptions: PRIORITY,
+        fieldLabel: "Select priority",
+      },
+      // ATTACHMENT FILTER
+      {
+        fieldName: "attachment",
+        fieldType: "select",
+        fieldOptions: ATTACHMENT_TYPES,
+        fieldLabel: "Select attachment",
+      },
+      // CUSTOM PROPERTIES FILTER
+      {
+        fieldName: "groupIds",
+        fieldType: "select",
+        fieldQuery: "fieldsGroups",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"contentType": "tickets:ticket"}`,
+        multi: true,
+        fieldLabel: "Select field group",
+      },
+      // CUSTOM PROPERTIES FIELD FILTER
+      {
+        fieldName: "fieldIds",
+        fieldType: "select",
+        fieldQuery: "fields",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "text",
+        fieldParentVariable: "groupId",
+        fieldParentQuery: "fieldsGroups",
+        fieldRequiredQueryParams: ["contentType"],
+        fieldQueryVariables: `{"contentType": "tickets:ticket"}`,
+        logics: [
+          {
+            logicFieldName: "groupIds",
+            logicFieldVariable: "groupIds",
+            logicFieldExtraVariable: `{"contentType": "tickets:ticket"}`,
+          },
+        ],
+        multi: true,
+        fieldLabel: "Select field",
+      },
+    ],
+  },
+  // TicketClosedTotalsByRepMonthly
+  {
+    templateType: "TicketClosedTotalsByRepMonthly",
+    serviceType: "tickets",
+    name: "Total Ticket Count By Rep (Monthly)",
+    chartTypes: [
+      "bar",
+      "line",
+      "pie",
+      "doughnut",
+      "radar",
+      "polarArea",
+      "table",
+    ],
+    getChartResult: async (
+      models: IModels,
+      filter: any,
+      chartType: string,
+      subdomain: string
+    ) => {
+      const { userType = "userId", dateRangeType = "createdAt" } = filter;
+
+      const matchFilter = await buildMatchFilter(
+        filter,
+        "ticket",
+        subdomain,
+        models
+      );
+
+      // 날짜 필터 제거 - 이번 달만 적용
+      delete (matchFilter as any).createdAt;
+      delete (matchFilter as any).closeDate;
+      delete (matchFilter as any).modifiedAt;
+
+      // 이번 달의 시작일과 종료일 계산
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+      const pipeline: any[] = [
+        {
+          $match: {
+            [userType]: { $exists: true },
+            [dateRangeType]: { 
+              $ne: null,
+              $gte: startOfMonth,
+              $lte: endOfMonth
+            },
+            ...matchFilter,
+          },
+        },
+        ...(userType === "assignedUserIds"
+          ? [{ $unwind: "$assignedUserIds" }]
+          : []),
+        {
+          $group: {
+            _id: {
+              userId: `$${userType}`,
+              month: {
+                $dateToString: {
+                  format: "%m",
+                  date: `$${dateRangeType}`,
+                },
+              },
+              year: {
+                $dateToString: {
+                  format: "%Y",
+                  date: `$${dateRangeType}`,
+                },
+              },
+            },
+            count: { $sum: 1 },
+            createdAt: { $first: `$${dateRangeType}` },
+          },
+        },
+        {
+          $sort: { createdAt: 1 },
+        },
+        {
+          $lookup: {
+            from: "users",
+            let: {
+              userId: "$_id.userId",
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$_id", "$$userId"] },
+                      { $eq: ["$isActive", true] },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: "user",
+          },
+        },
+        {
+          $unwind: "$user",
+        },
+        {
+          $project: {
+            _id: 0,
+            user: "$user",
+            month: "$_id.month",
+            year: "$_id.year",
+            count: 1,
+          },
+        },
+      ];
+
+      const tickets = await models.Tickets.aggregate(pipeline as any);
+
+      // 사용자별 데이터를 레이블-값 형태로 변환 (이번 달만 표시)
+      const totalCountByRepAndMonth = (tickets || []).reduce(
+        (acc, { user, month, year, count }) => {
+          if (user) {
+            const userName = user.details.fullName || user.email;
+            // 이번 달만 표시되므로 사용자 이름만 레이블로 사용
+            acc[userName] = count;
+          }
+          return acc;
+        },
+        {} as { [key: string]: number }
+      );
+
+      const data = Object.values(totalCountByRepAndMonth);
+      const labels = Object.keys(totalCountByRepAndMonth);
+      const title = "Total Ticket Count By Rep (Monthly)";
+
+      return { title, data, labels };
+    },
+    filterTypes: [
+      // USER TYPE FILTER
+      {
+        fieldName: "userType",
+        fieldType: "select",
+        multi: false,
+        fieldDefaultValue: "userId",
+        fieldOptions: USER_TYPES,
+        fieldLabel: "Select user type",
+      },
+      // USER FILTER
+      {
+        fieldName: "userIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "users",
+        fieldLabel: "Select users",
+      },
+      // BRANCH FILTER
+      {
+        fieldName: "branchIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "branches",
+        fieldLabel: "Select branches",
+      },
+      // DEPARTMENT FILTER
+      {
+        fieldName: "departmentIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "departments",
+        fieldLabel: "Select departments",
+      },
+      // COMPANY FILTER
+      {
+        fieldName: "companyIds",
+        fieldType: "select",
+        fieldQuery: "companies",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "primaryName",
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "company"}`,
+        fieldLabel: "Select companies",
+      },
+      // CUSTOMER FILTER
+      {
+        fieldName: "customerIds",
+        fieldType: "select",
+        fieldQuery: "customers",
+        multi: true,
+        fieldQueryVariables: `{"conformityMainType": "ticket", "conformityRelType": "customer"}`,
+        fieldLabel: "Select customers",
+      },
+      // TAG FILTER
+      {
+        fieldName: "tagIds",
+        fieldType: "select",
+        fieldQuery: "tags",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "tickets:ticket", "perPage": 1000}`,
+        multi: true,
+        fieldLabel: "Select tags",
+      },
+      // BOARD FILTER
+      {
+        fieldName: "boardId",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "ticketsBoards",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldRequiredQueryParams: ["type"],
+        fieldQueryVariables: `{"type": "ticket"}`,
+        fieldLabel: "Select board",
+      },
+      // PIPELINE FILTER
+      {
+        fieldName: "pipelineIds",
+        fieldType: "select",
+        multi: true,
+        fieldQuery: "ticketsPipelines",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"type": "ticket"}`,
+        logics: [
+          {
+            logicFieldName: "boardId",
+            logicFieldVariable: "boardId",
+          },
+        ],
+        fieldLabel: "Select pipelines",
+      },
+      // STAGE PROBABILITY FILTER
+      {
+        fieldName: "stageProbability",
+        fieldType: "select",
+        fieldOptions: PROBABILITY_TICKET,
+        fieldLabel: "Select Probability",
+      },
+      // STAGE FILTER
+      {
+        fieldName: "stageIds",
+        fieldType: "select",
+        fieldQuery: "ticketsStages",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldParentVariable: "pipelineId",
+        fieldParentQuery: "ticketsPipelines",
+        logics: [
+          {
+            logicFieldName: "pipelineIds",
+            logicFieldVariable: "pipelineIds",
+          },
+        ],
+        fieldLabel: "Select stages",
+      },
+      // LABEL FILTER
+      {
+        fieldName: "labelIds",
+        fieldType: "select",
+        fieldQuery: "salesPipelineLabels",
+        multi: true,
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldParentVariable: "pipelineId",
+        fieldParentQuery: "salesPipelines",
+        logics: [
+          {
+            logicFieldName: "pipelineIds",
+            logicFieldVariable: "pipelineIds",
+          },
+        ],
+        fieldLabel: "Select labels",
+      },
+      // PRIORITY FILTER
+      {
+        fieldName: "status",
+        fieldType: "select",
+        fieldOptions: STATUS_TYPES,
+        fieldLabel: "Select status",
+      },
+      // PRIORITY FILTER
+      {
+        fieldName: "priority",
+        fieldType: "select",
+        fieldOptions: PRIORITY,
+        fieldLabel: "Select priority",
+      },
+      // ATTACHMENT FILTER
+      {
+        fieldName: "attachment",
+        fieldType: "select",
+        fieldOptions: ATTACHMENT_TYPES,
+        fieldLabel: "Select attachment",
+      },
+      // CUSTOM PROPERTIES FILTER
+      {
+        fieldName: "groupIds",
+        fieldType: "select",
+        fieldQuery: "fieldsGroups",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "name",
+        fieldQueryVariables: `{"contentType": "tickets:ticket"}`,
+        multi: true,
+        fieldLabel: "Select field group",
+      },
+      // CUSTOM PROPERTIES FIELD FILTER
+      {
+        fieldName: "fieldIds",
+        fieldType: "select",
+        fieldQuery: "fields",
+        fieldValueVariable: "_id",
+        fieldLabelVariable: "text",
+        fieldParentVariable: "groupId",
+        fieldParentQuery: "fieldsGroups",
+        fieldRequiredQueryParams: ["contentType"],
+        fieldQueryVariables: `{"contentType": "tickets:ticket"}`,
+        logics: [
+          {
+            logicFieldName: "groupIds",
+            logicFieldVariable: "groupIds",
+            logicFieldExtraVariable: `{"contentType": "tickets:ticket"}`,
+          },
+        ],
+        multi: true,
+        fieldLabel: "Select field",
+      },
+      // DATERANGE TYPE FILTER
+      {
+        fieldName: "dateRangeType",
+        fieldType: "select",
+        multi: false,
+        fieldQuery: "date",
+        fieldOptions: DATERANGE_BY_TYPES,
+        fieldLabel: "Select date range type",
+        fieldDefaultValue: "createdAt",
+      },
+    ],
+  },
   // TicketClosedTotalsBySource
   {
     templateType: "TicketTotalsBySource",
@@ -1673,7 +2299,7 @@ export const ticketCharts = [
         models
       );
 
-      const pipeline = [
+      const pipeline: any[] = [
         {
           $unwind: "$sourceConversationIds",
         },
@@ -1735,7 +2361,7 @@ export const ticketCharts = [
         },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const kindMap = await getIntegrationsKinds();
 
@@ -2008,7 +2634,7 @@ export const ticketCharts = [
         models
       );
 
-      const pipeline = [
+      const pipeline: any[] = [
         {
           $match: {
             stageId: { $in: stageIds },
@@ -2064,7 +2690,7 @@ export const ticketCharts = [
         },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountByRep = (tickets || []).reduce(
         (acc, { measure, user }) => {
@@ -2321,7 +2947,7 @@ export const ticketCharts = [
         models
       );
 
-      const pipeline = [
+      const pipeline: any[] = [
         {
           $match: {
             stageChangedDate: { $exists: true },
@@ -2371,7 +2997,7 @@ export const ticketCharts = [
         },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountByStage = (tickets || []).reduce(
         (acc, { averageTime, stage }) => {
@@ -2620,7 +3246,7 @@ export const ticketCharts = [
       );
 
       const pipeline = buildPipeline(filter, "ticket", matchFilter);
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const title = "Total Tickets Count";
 
@@ -2976,7 +3602,7 @@ export const ticketCharts = [
         { $sort: { _id: 1 } },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountByPriority = (tickets || []).reduce(
         (acc, { _id, count }) => {
@@ -3177,7 +3803,7 @@ export const ticketCharts = [
         { $sort: { _id: 1 } },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountByImportance = (tickets || []).reduce(
         (acc, { _id, count }) => {
@@ -3378,7 +4004,7 @@ export const ticketCharts = [
         { $sort: { _id: 1 } },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountByRequestType = (tickets || []).reduce(
         (acc, { _id, count }) => {
@@ -3579,7 +4205,7 @@ export const ticketCharts = [
         { $sort: { _id: 1 } },
       ];
 
-      const tickets = await models.Tickets.aggregate(pipeline);
+      const tickets = await models.Tickets.aggregate(pipeline as any);
 
       const totalCountByFeature = (tickets || []).reduce(
         (acc, { _id, count }) => {

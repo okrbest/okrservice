@@ -77,7 +77,7 @@ const ChartRenderer = (props: IChartProps) => {
     return <Spinner />;
   }
 
-  const formatType = templateType.toLowerCase().includes('time') || (filter?.measure || []).some((measure) => measure?.toLowerCase().includes('time') || measure?.toLowerCase().includes('duration')) ? 'time' : undefined
+  const formatType = (templateType.toLowerCase().includes('time') && !templateType.toLowerCase().includes('alltime')) || (filter?.measure || []).some((measure) => measure?.toLowerCase().includes('time') || measure?.toLowerCase().includes('duration')) ? 'time' : undefined
 
   const datalabelsConfig = DATALABELS_CONFIGS[chartType];
 

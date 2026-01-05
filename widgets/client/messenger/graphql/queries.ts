@@ -116,8 +116,8 @@ const TICKET_ACTIVITY_LOGS = gql`
 `;
 
 const TICKET_LIST = gql`
-  query widgetsTicketList($customerId: String!) {
-    widgetsTicketList(customerId: $customerId) {
+  query widgetsTicketList($customerId: String!, $includeCompanyTickets: Boolean) {
+    widgetsTicketList(customerId: $customerId, includeCompanyTickets: $includeCompanyTickets) {
       _id
       name
       number
@@ -132,6 +132,7 @@ const TICKET_LIST = gql`
       createdAt
       priority
       widgetAlarm
+      customerName
       attachments {
         url
         name

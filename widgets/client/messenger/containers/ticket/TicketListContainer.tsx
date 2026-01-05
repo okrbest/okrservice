@@ -43,9 +43,12 @@ const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
   const { setRoute } = useRouter();
   const { setTicketData } = useTicket();
   const customerId = connection.data.customerId;
+  const [includeCompanyTickets, setIncludeCompanyTickets] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchOption, setSearchOption] = React.useState<'all' | 'title' | 'number' | 'description'>('all');
 
   const { data, loading, error } = useQuery(TICKET_LIST, {
-    variables: { customerId },
+    variables: { customerId, includeCompanyTickets },
     skip: !customerId,
     fetchPolicy: "cache-and-network",
   });
@@ -95,13 +98,24 @@ const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
   const tickets = data?.widgetsTicketList || [];
   
   // 디버깅 로그 추가
-        console.log('🔔 TicketListContainer tickets:', tickets.map((t: TicketItem) => ({ _id: t._id, widgetAlarm: t.widgetAlarm })));
+  console.log('🔔 TicketListContainer tickets:', tickets.map((t: TicketItem) => ({ 
+    _id: t._id, 
+    widgetAlarm: t.widgetAlarm,
+    customerName: t.customerName,
+    includeCompanyTickets: includeCompanyTickets
+  })));
 
   return (
     <TicketList
       tickets={tickets}
       loading={loading || !!externalLoading}
       onTicketClick={handleTicketClick}
+      includeCompanyTickets={includeCompanyTickets}
+      onToggleCompanyTickets={() => setIncludeCompanyTickets(!includeCompanyTickets)}
+      searchTerm={searchTerm}
+      onSearchChange={setSearchTerm}
+      searchOption={searchOption}
+      onSearchOptionChange={setSearchOption}
     />
   );
 };

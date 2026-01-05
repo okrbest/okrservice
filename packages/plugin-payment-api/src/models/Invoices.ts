@@ -150,7 +150,7 @@ export const loadInvoiceClass = (models: IModels) => {
 
       const invoice = await models.Invoices.getInvoice({ _id });
 
-      const totalAmount = await models.Transactions.aggregate([
+      const pipeline: any[] = [
         {
           $match: {
             invoiceId: _id,
@@ -163,7 +163,9 @@ export const loadInvoiceClass = (models: IModels) => {
             total: { $sum: '$amount' },
           },
         },
-      ]);
+      ];
+
+      const totalAmount = await models.Transactions.aggregate(pipeline as any);
 
       if (totalAmount.length === 0) {
         return PAYMENT_STATUS.PENDING;

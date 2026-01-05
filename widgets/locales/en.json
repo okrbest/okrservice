@@ -68,5 +68,14 @@
   "Next": "Next",
   "Back": "Back",
   "Please fill out required fields": "Please fill out required fields",
-  "add more": "add more"
+  "add more": "add more",
+  "Ticket List": "Ticket List",
+  "My Tickets": "My Tickets",
+  "Company Tickets": "Company Tickets",
+  "Search by ticket title": "Search by ticket title, number, or description",
+  "No tickets match your search.": "No tickets match your search.",
+  "전체": "All",
+  "제목": "Title",
+  "번호": "Number",
+  "내용": "Description"
 }
