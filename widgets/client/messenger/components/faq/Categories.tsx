@@ -91,9 +91,6 @@ const Categories: React.FC<Props> = ({
 
   return (
     <div className="faq-collection-container">
-      <div className="collection-count">
-        {`${parents.length || 0} ${__('collections')}`}
-      </div>
       {parents.map((category) => {
         const childrens = group[category._id] || [];
 

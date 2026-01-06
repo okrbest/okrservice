@@ -39,9 +39,10 @@ const Category: React.FC<Props> = ({
   return (
     <div className="category-item-container" onClick={handleOnClick}>
       <div className="category-detail">
-        <h6>{category.title}</h6>
+        <h6>
+          {category.title} <span>({renderCount()})</span>
+        </h6>
         <p>{category.description}</p>
-        <div className="description">{`${renderCount()} ${__(isParent ? 'categories' : 'articles')}`}</div>
       </div>
       <IconChevronRight />
     </div>

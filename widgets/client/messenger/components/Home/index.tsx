@@ -179,7 +179,7 @@ const Home: React.FC<Props> = ({
   };
 
   return (
-    <Container>
+    <Container showZoomButton={true} showBackButton={false}>
       <div className="home-container">
         <div className="gradient-bg" style={style}>
           <div className="absorbed" />

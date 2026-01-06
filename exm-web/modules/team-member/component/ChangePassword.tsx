@@ -1,6 +1,8 @@
 "use client"
 
 import * as z from "zod"
+import { useState } from "react"
+import { Eye, EyeOff } from "lucide-react"
 
 import {
   Form,
@@ -45,6 +47,10 @@ const ChangePassword = ({
     resolver: zodResolver(FormSchema),
   })
 
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmation, setShowConfirmation] = useState(false)
+
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
     changePassword(data)
   }
@@ -59,7 +65,26 @@ const ChangePassword = ({
             <FormItem>
               <FormLabel>Current Password</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <div className="relative">
+                  <Input
+                    type={showCurrentPassword ? "text" : "password"}
+                    {...field}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none z-10 cursor-pointer flex items-center justify-center"
+                    aria-label={showCurrentPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
+                    tabIndex={0}
+                  >
+                    {showCurrentPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -72,7 +97,26 @@ const ChangePassword = ({
             <FormItem>
               <FormLabel>New password</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <div className="relative">
+                  <Input
+                    type={showNewPassword ? "text" : "password"}
+                    {...field}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none z-10 cursor-pointer flex items-center justify-center"
+                    aria-label={showNewPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
+                    tabIndex={0}
+                  >
+                    {showNewPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -85,7 +129,26 @@ const ChangePassword = ({
             <FormItem>
               <FormLabel>Re-type Password to confirm</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <div className="relative">
+                  <Input
+                    type={showConfirmation ? "text" : "password"}
+                    {...field}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmation(!showConfirmation)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none z-10 cursor-pointer flex items-center justify-center"
+                    aria-label={showConfirmation ? "비밀번호 숨기기" : "비밀번호 보기"}
+                    tabIndex={0}
+                  >
+                    {showConfirmation ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
