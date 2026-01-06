@@ -4,7 +4,6 @@ import { getLocalStorageItem } from "../../common";
 import { connection } from "../connection";
 import { IFaqArticle, IFaqCategory } from "../types";
 import { useConfig } from "./Config";
-import { getDealData } from "../utils/util";
 
 const RouterContext = createContext<any>(null);
 
@@ -17,30 +16,9 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeFaqCategory, setActiveFaqCategory] =
     useState<IFaqCategory | null>(null);
   const [currentWebsiteApp, setCurrentWebsiteApp] = useState("");
-  // Deal mode: always expanded, no zoom button
-  const isDealMode =
-    getDealData()?.dealToggle === true && !!getDealData()?.dealStageId;
-  const [isZoomed, setIsZoomed] = useState(isDealMode);
-  const [initialRouteSet, setInitialRouteSet] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   const { setIsInputDisabled, setSelectedSkill, isLoggedIn } = useConfig();
-
-  // Extract integrationId to avoid object reference in dependency array
-  const integrationId = connection.data?.integrationId;
-
-  // Set initial route based on deal configuration when connection.data is available
-  // Deal mode: show the form (문의&데모신청) directly instead of the button screen
-  useEffect(() => {
-    if (!initialRouteSet && connection.data && integrationId) {
-      const dealData = getDealData();
-      const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
-
-      if (showDeal) {
-        setActiveRoute("deal-submit");
-      }
-      setInitialRouteSet(true);
-    }
-  }, [integrationId, initialRouteSet]);
 
   useEffect(() => {
     const { messengerData } = connection.data;
@@ -61,17 +39,13 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   const handleAuthentication = (requireAuth: boolean) => {
     if (!isLoggedIn() && requireAuth) {
       // setActiveRoute('acquireInformation');
-      const dealData = getDealData();
-      const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
-      setActiveRoute(showDeal ? "deal-submit" : "home");
+      setActiveRoute("home");
     }
   };
 
   const handleChatVisibility = (requireAuth: boolean, showChat: boolean) => {
     if ((!requireAuth && !getLocalStorageItem("hasNotified")) || !showChat) {
-      const dealData = getDealData();
-      const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
-      setActiveRoute(showDeal ? "deal-submit" : "home");
+      setActiveRoute("home");
     }
   };
 
