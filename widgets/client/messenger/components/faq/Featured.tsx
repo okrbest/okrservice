@@ -41,51 +41,6 @@ const LeadConnect = asyncComponent(
 );
 
 const Featured: React.FC = () => {
-  const renderHardcodedArticles = () => {
-    const hardcodedArticles = [
-      {
-        title: "총무관리 10편: 🎉하나의 신청서로 더 간편하게! 경조신청서(통합)",
-        summary:
-          "하나의 신청서만 작성하면 휴가와 경조금을 한 번에 신청할 수 있는 새로운 「경조신청서」 기능이 오픈되었습니다.",
-        link: "https://blog.naver.com/5240hr/224009825250",
-      },
-    ];
-
-    return (
-      <ul className="featured-list-container">
-        {hardcodedArticles.map((article, index) => (
-          <li key={index} style={{ listStyle: "none", marginBottom: "1rem" }}>
-            <a
-              href={article.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-                display: "block",
-                padding: "0.3rem",
-                borderRadius: "8px",
-                transition: "background 0.2s",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "1.1rem",
-                  fontWeight: "bold",
-                  marginBottom: "0.5rem",
-                }}
-              >
-                {article.title}
-              </div>
-              <div style={{ color: "#888", fontSize: "0.95rem" }}>
-                {article.summary}
-              </div>
-            </a>
-          </li>
-        ))}
-      </ul>
-    );
-  };
   const { knowledgeBaseTopicId, formCodes } = getMessengerData();
   const topicId = knowledgeBaseTopicId;
   const brandCode = connection.setting.brand_id;
@@ -228,9 +183,6 @@ const Featured: React.FC = () => {
           </button>
           <ul className="featured-list-container">{renderRecentArticles()}</ul>
         </div>
-      </Card>
-      <Card p="0.5rem">
-        <div className="featured-container">{renderHardcodedArticles()}</div>
       </Card>
       {renderLead()}
     </>

@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useState } from "react";
 import { postMessage } from "../../../../utils";
 import BottomNavBar from "../../BottomNavBar";
 import { IconChevronLeft, IconZoomIn, IconZoomOut } from "../../../../icons/Icons";
@@ -16,6 +15,8 @@ type Props = {
   backRoute?: string;
   persistentFooter?: React.ReactNode;
   onBackButton?: () => void;
+  showBackButton?: boolean;
+  showZoomButton?: boolean;
 };
 
 const Container: React.FC<Props> = ({
@@ -28,9 +29,11 @@ const Container: React.FC<Props> = ({
   backRoute,
   persistentFooter,
   onBackButton,
+  showBackButton = true,
+  showZoomButton = true,
 }) => {
   const color = getColor();
-  const { setActiveRoute } = useRouter();
+  const { setActiveRoute, isZoomed, setIsZoomed } = useRouter();
 
   const style = color
     ? {
@@ -55,31 +58,34 @@ const Container: React.FC<Props> = ({
     setActiveRoute("home");
   };
 
-  const [isZoomed, setIsZoomed] = useState(false);
-
   const handleZoomToggle = () => {
-    setIsZoomed((prev) => {
-      postMessage("fromMessenger", "ERXES_MESSENGER_ZOOM", { zoom: !prev });
-      return !prev;
-    });
+    const newZoomState = !isZoomed;
+    setIsZoomed(newZoomState);
+    postMessage("fromMessenger", "ERXES_MESSENGER_ZOOM", { zoom: newZoomState });
   };
+
+  const shouldShowTopBar = withTopBar || title || showZoomButton;
 
   return (
     <div className="container">
-      {(withTopBar || title) && (
+      {shouldShowTopBar && (
         <div className="top-nav-container" style={style}>
           <div className="top-nav" style={containerStyle}>
-            <div className="icon" onClick={handleBackClick}>
-              <IconChevronLeft />
-            </div>
+            {showBackButton && (
+              <div className="icon" onClick={handleBackClick}>
+                <IconChevronLeft />
+              </div>
+            )}
             {typeof title === "string" ? (
               <div className="title">{title}</div>
             ) : (
               title
             )}
-            <div className="icon" onClick={handleZoomToggle} style={{ marginLeft: 'auto' }}>
-              {isZoomed ? <IconZoomOut /> : <IconZoomIn />}
-            </div>
+            {showZoomButton && (
+              <div className="icon" onClick={handleZoomToggle} style={{ marginLeft: 'auto' }}>
+                {isZoomed ? <IconZoomOut /> : <IconZoomIn />}
+              </div>
+            )}
           </div>
           {extra && <div className="extra-content">{extra}</div>}
         </div>

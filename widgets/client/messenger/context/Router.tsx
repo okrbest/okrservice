@@ -16,6 +16,7 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeFaqCategory, setActiveFaqCategory] =
     useState<IFaqCategory | null>(null);
   const [currentWebsiteApp, setCurrentWebsiteApp] = useState("");
+  const [isZoomed, setIsZoomed] = useState(false);
 
   const { setIsInputDisabled, setSelectedSkill, isLoggedIn } = useConfig();
 
@@ -112,6 +113,8 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
         goToHome,
         goToFaqCategory,
         goToWebsiteApp,
+        isZoomed,
+        setIsZoomed,
       }}
     >
       {children}

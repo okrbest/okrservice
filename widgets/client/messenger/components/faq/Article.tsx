@@ -1,37 +1,38 @@
 import * as React from "react";
 import { IFaqArticle } from "../../types";
+import { useRouter } from "../../context/Router";
 
 type Props = {
   article: IFaqArticle;
   onClick: (article: IFaqArticle) => void;
 };
 
-export default class Article extends React.PureComponent<Props> {
-  handleOnClick = (event: React.FormEvent<HTMLDivElement>) => {
+const Article: React.FC<Props> = ({ article, onClick }) => {
+  const { isZoomed } = useRouter();
+
+  const handleOnClick = (event: React.FormEvent<HTMLDivElement>) => {
     event.preventDefault();
-
-    const { article, onClick } = this.props;
-
     onClick(article);
   };
 
-  render() {
-    const { article } = this.props;
+  // 확대 상태일 때는 더 많은 텍스트를 표시
+  const maxLength = isZoomed ? 130 : 30;
 
-    return (
-      <div className="erxes-list-item faq-item" onClick={this.handleOnClick}>
-        <div className="erxes-left-side">
-          <i className="erxes-icon-clipboard" />
-        </div>
-        <div className="erxes-right-side">
-          <div className="erxes-name">{article.title}</div>
-          <div className="description">
-            {article.summary.length > 30
-              ? article.summary.substring(0, 30) + "..."
-              : article.summary}
-          </div>
+  return (
+    <div className="erxes-list-item faq-item" onClick={handleOnClick}>
+      <div className="erxes-left-side">
+        <i className="erxes-icon-clipboard" />
+      </div>
+      <div className="erxes-right-side">
+        <div className="erxes-name">{article.title}</div>
+        <div className="description">
+          {article.summary.length > maxLength
+            ? article.summary.substring(0, maxLength) + "..."
+            : article.summary}
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+
+export default React.memo(Article);
