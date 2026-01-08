@@ -399,6 +399,122 @@ const engageMutations = {
         createdBy: user._id,
         title: doc.subject,
       });
+
+      // 이메일 발송 성공 후 고객 필드 업데이트
+      if (customer && customer._id) {
+        try {
+          // 현재 고객 정보 다시 가져오기 (customFieldsData 포함)
+          const updatedCustomer = await sendCoreMessage({
+            subdomain,
+            action: "customers.findOne",
+            data: { _id: customer._id },
+            isRPC: true,
+          });
+
+          if (updatedCustomer) {
+            // 필드 ID 찾기 (메일 발송일, 직전소통일)
+            const fieldsGroups = await sendCoreMessage({
+              subdomain,
+              action: "fieldsGroups.find",
+              data: {
+                query: { contentType: "core:customer" },
+              },
+              isRPC: true,
+              defaultValue: [],
+            });
+
+            let mailSentDateFieldId: string | null = null;
+            let lastContactDateFieldId: string | null = null;
+
+            // 모든 필드 그룹에서 필드 찾기
+            for (const group of fieldsGroups) {
+              const fields = await sendCoreMessage({
+                subdomain,
+                action: "fields.find",
+                data: {
+                  query: { groupId: group._id, type: "date" },
+                },
+                isRPC: true,
+                defaultValue: [],
+              });
+
+              for (const field of fields) {
+                const fieldName = (field.text || field.name || "").toLowerCase();
+                
+                if (
+                  fieldName.includes("메일") &&
+                  (fieldName.includes("발송") || fieldName.includes("보낸"))
+                ) {
+                  mailSentDateFieldId = field._id;
+                }
+                if (fieldName.includes("직전") && fieldName.includes("소통")) {
+                  lastContactDateFieldId = field._id;
+                }
+              }
+            }
+
+            // customFieldsData 업데이트
+            const currentDate = new Date().toISOString();
+            const currentCustomFieldsData = Array.isArray(
+              updatedCustomer.customFieldsData
+            )
+              ? [...updatedCustomer.customFieldsData]
+              : [];
+
+            // 메일 발송일 업데이트
+            if (mailSentDateFieldId) {
+              const existingIndex = currentCustomFieldsData.findIndex(
+                (data: any) => data.field === mailSentDateFieldId
+              );
+
+              if (existingIndex >= 0) {
+                currentCustomFieldsData[existingIndex].value = currentDate;
+              } else {
+                currentCustomFieldsData.push({
+                  field: mailSentDateFieldId,
+                  value: currentDate,
+                });
+              }
+            }
+
+            // 직전소통일 업데이트
+            if (lastContactDateFieldId) {
+              const existingIndex = currentCustomFieldsData.findIndex(
+                (data: any) => data.field === lastContactDateFieldId
+              );
+
+              if (existingIndex >= 0) {
+                currentCustomFieldsData[existingIndex].value = currentDate;
+              } else {
+                currentCustomFieldsData.push({
+                  field: lastContactDateFieldId,
+                  value: currentDate,
+                });
+              }
+            }
+
+            // 고객 정보 업데이트
+            if (mailSentDateFieldId || lastContactDateFieldId) {
+              await sendCoreMessage({
+                subdomain,
+                action: "customers.updateCustomer",
+                data: {
+                  _id: customer._id,
+                  doc: {
+                    customFieldsData: currentCustomFieldsData,
+                  },
+                },
+                isRPC: true,
+              });
+            }
+          }
+        } catch (fieldUpdateError) {
+          // 필드 업데이트 실패해도 이메일 발송은 성공한 것으로 처리
+          debugError(
+            `Failed to update customer date fields: ${fieldUpdateError.message}`
+          );
+        }
+      }
     } catch (e) {
       debugError(e);
       throw e;
