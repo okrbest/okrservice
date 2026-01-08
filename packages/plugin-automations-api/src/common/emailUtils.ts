@@ -98,12 +98,8 @@ const getAttributionEmails = async ({
   const relatedValueProps = {};
 
   if (!attributes?.length) {
-    console.log('⚠️ [getAttributionEmails] No attributes found in value:', value);
     return [];
   }
-
-  console.log('🔍 [getAttributionEmails] Attributes found:', attributes);
-  console.log('🔍 [getAttributionEmails] Target assignedUserIds:', target?.assignedUserIds);
 
   for (const attribute of attributes) {
     if (attribute === 'triggerExecutors') {
@@ -132,8 +128,6 @@ const getAttributionEmails = async ({
     }
   }
 
-  console.log('🔍 [getAttributionEmails] Calling replacePlaceHolders with relatedValueProps:', relatedValueProps);
-
   const replacedContent = await sendCommonMessage({
     subdomain,
     serviceName,
@@ -148,14 +142,8 @@ const getAttributionEmails = async ({
     isRPC: true,
     defaultValue: {}
   });
-  
-  console.log('🔍 [getAttributionEmails] Replaced content result:', replacedContent);
-
-  console.log('🔍 [getAttributionEmails] Replaced content:', replacedContent[key]);
 
   const generatedEmails = generateEmails(replacedContent[key]);
-
-  console.log('🔍 [getAttributionEmails] Generated emails:', generatedEmails);
 
   return [...emails, ...generatedEmails];
 };
@@ -380,10 +368,6 @@ export const getRecipientEmails = async ({
 
   const reciepentTypeKeys = reciepentTypes.map((rT) => rT.name);
 
-  console.log('🔍 [getRecipientEmails] Config keys:', Object.keys(config));
-  console.log('🔍 [getRecipientEmails] Trigger type:', triggerType);
-  console.log('🔍 [getRecipientEmails] Target assignedUserIds:', target?.assignedUserIds);
-
   for (const key of Object.keys(config)) {
     if (reciepentTypeKeys.includes(key) && !!config[key]) {
       const [serviceName, contentType] = triggerType
@@ -394,8 +378,6 @@ export const getRecipientEmails = async ({
         (rT) => rT.name === key
       );
 
-      console.log(`🔍 [getRecipientEmails] Processing recipient type: ${type}, key: ${key}, value:`, config[key]);
-
       if (type === 'teamMember') {
         const emails = await getTeamMemberEmails({
           subdomain,
@@ -404,7 +386,6 @@ export const getRecipientEmails = async ({
           }
         });
 
-        console.log(`🔍 [getRecipientEmails] Team member emails:`, emails);
         toEmails = [...toEmails, ...emails];
         continue;
       }
@@ -420,7 +401,6 @@ export const getRecipientEmails = async ({
           key: type
         });
 
-        console.log(`🔍 [getRecipientEmails] Attribution emails:`, emails);
         toEmails = [...toEmails, ...emails];
         continue;
       }
@@ -428,7 +408,6 @@ export const getRecipientEmails = async ({
       if (type === 'customMail') {
         const emails = config[key] || [];
 
-        console.log(`🔍 [getRecipientEmails] Custom emails:`, emails);
         toEmails = [...toEmails, ...emails];
         continue;
       }
@@ -445,7 +424,6 @@ export const getRecipientEmails = async ({
           isRPC: true
         });
 
-        console.log(`🔍 [getRecipientEmails] Service emails:`, emails);
         toEmails = [...toEmails, ...emails];
         continue;
       }
@@ -453,7 +431,6 @@ export const getRecipientEmails = async ({
   }
 
   const uniqueEmails = [...new Set(toEmails)];
-  console.log('🔍 [getRecipientEmails] Final unique emails:', uniqueEmails);
 
   return uniqueEmails;
 };
@@ -886,7 +863,6 @@ export const handleEmail = async ({
             isRPC: true,
             defaultValue: null
           });
-          console.log('✅ Assign alarm set to false after 10 seconds for ticket:', target._id);
         } catch (error) {
           debugError(`Failed to reset assignAlarm for ticket ${target._id}:`, error);
         }
