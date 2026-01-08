@@ -120,9 +120,6 @@ export const itemsAdd = async (
     // 수집된 Company IDs를 doc에 추가
     if (companyIds.size > 0) {
       doc.companyIds = Array.from(companyIds);
-      console.log(
-        `[Auto-set] Added ${doc.companyIds.length} companies for ticket from ${doc.customerIds.length} customers`
-      );
     }
   }
 
@@ -365,7 +362,6 @@ export const itemsEdit = async (
     updateFields.assignAlarm = true;
 
     await models.Tickets.updateOne({ _id }, { $set: updateFields });
-    console.log('📝 Description 변경됨 - assignAlarm true 설정 및 자동화 트리거', updateFields);
     
     // updatedItem 객체에도 즉시 반영 (GraphQL 응답에 포함되도록)
     updatedItem.emailSent = false;
@@ -390,7 +386,6 @@ export const itemsEdit = async (
           triggerSource: "assignAlarm"
         }
       });
-      console.log('✅ assignAlarm 자동화 트리거 전송 완료');
       
       // description 변경으로 인한 자동화 트리거를 이미 보냈으므로
       // putUpdateLog에서는 자동화 트리거를 스킵하도록 플래그 설정
@@ -404,7 +399,6 @@ export const itemsEdit = async (
             { _id },
             { $set: { assignAlarm: false } }
           );
-          console.log('✅ Assign alarm set to false after 10 seconds for ticket:', _id);
         } catch (error) {
           console.error(`❌ Failed to reset assignAlarm for ticket ${_id}:`, error);
         }
@@ -416,31 +410,12 @@ export const itemsEdit = async (
   }
 
   // manualEmailRequest가 true로 변경된 경우 자동화 트리거 (description 변경과 독립적)
-  console.log('🔍 manualEmailRequest 체크:', {
-    newValue: doc.manualEmailRequest,
-    oldValue: (oldItem as any).manualEmailRequest,
-    shouldTrigger: doc.manualEmailRequest === true && !(oldItem as any).manualEmailRequest
-  });
-  
   if (doc.manualEmailRequest === true && !(oldItem as any).manualEmailRequest) {
-    console.log('🚀 manualEmailRequest 트리거 발동!');
-    
     // 자동화 트리거에 전달할 데이터 준비 (manualEmailRequest: true 상태 유지)
     // oldItem을 사용하여 manualEmailRequest: true 상태의 데이터를 전달
     const ticketForAutomation = oldItem.toObject ? oldItem.toObject() : { ...oldItem };
     ticketForAutomation.manualEmailRequest = true;  // 자동화 트리거를 위해 true로 명시적 설정
     ticketForAutomation.emailSent = false;  // 아직 발송 전 상태
-    
-    console.log('🎯 [manualEmailRequest] Ticket data for automation:', {
-      _id: ticketForAutomation._id,
-      name: ticketForAutomation.name,
-      description: ticketForAutomation.description?.substring(0, 100),
-      stageId: ticketForAutomation.stageId,
-      status: ticketForAutomation.status,
-      manualEmailRequest: ticketForAutomation.manualEmailRequest,  // true
-      emailSent: ticketForAutomation.emailSent,  // false
-      hasAllFields: !!(ticketForAutomation.name && ticketForAutomation.description)
-    });
 
     // 자동화 트리거를 먼저 보냄 (manualEmailRequest: true 상태로)
     // 이렇게 하면 세그먼트 조건이 정상적으로 매칭됨
@@ -456,7 +431,6 @@ export const itemsEdit = async (
           triggerSource: "manualEmailRequest"
         }
       });
-      console.log('✅ manualEmailRequest 자동화 트리거 전송 완료');
     } catch (error) {
       console.error('❌ Failed to send manual email automation trigger:', error);
       // 에러 발생 시에도 DB 업데이트는 진행 (버튼 비활성화)
@@ -464,7 +438,6 @@ export const itemsEdit = async (
     
     // 자동화 트리거 전송 후 DB 업데이트 (버튼 비활성화)
     await models.Tickets.updateOne({ _id }, { $set: { manualEmailRequest: false, emailSent: true } });
-    console.log('🔄 manualEmailRequest를 false로, emailSent를 true로 설정 완료 (Send Email 버튼 비활성화)');
     
     // updatedItem 객체에도 반영하여 GraphQL 응답에 포함
     updatedItem.manualEmailRequest = false;

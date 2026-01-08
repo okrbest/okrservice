@@ -139,13 +139,6 @@ export const sendNotifications = async (
 
   if (invitedUsers && invitedUsers.length > 0) {
     const filteredReceivers = invitedUsers.filter((id) => id !== user._id);
-    console.log(`🔍 [Debug] sendNotification for ticketAdd:`, {
-      invitedUsers,
-      user_id: user._id,
-      filteredReceivers,
-      filteredReceiversCount: filteredReceivers.length,
-      emailTitle: `새로 발급된 '${item.name}' 티켓의 담당자로 지정되었습니다`,
-    });
     
     sendNotification(subdomain, {
       ...notificationDoc,

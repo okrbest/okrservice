@@ -93,8 +93,6 @@ export default {
         return res.send(result.response);
       })
     );
-
-    console.log("Debug ....");
   },
   setupMessageConsumers
 };
