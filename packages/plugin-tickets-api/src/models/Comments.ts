@@ -29,10 +29,13 @@ export const loadCommentClass = (models: IModels) => {
         }
 
         public static async createComment(doc: ICommentDocument) {
-            return models.Comments.create({
+            // Optimize: ensure createdAt is set and return the created document
+            const comment = await models.Comments.create({
                 ...doc,
                 createdAt: new Date()
             });
+            // Return the created document to ensure it's properly saved
+            return comment;
         }
 
         public static async deleteComment(_id: string) {

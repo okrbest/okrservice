@@ -49,8 +49,13 @@ export default {
       defaultValue: [],
     });
 
+    // Optimize: use Map for O(1) lookup instead of O(n) find()
+    const fieldsMap = new Map<string, any>(
+      fields.map((field: any): [string, any] => [field._id, field])
+    );
+
     for (const customFieldData of customFieldsData) {
-      const field = fields.find(field => field._id === customFieldData.field);
+      const field = fieldsMap.get(customFieldData.field);
       if (field) {
         customFieldData.type = field.type;
       }
