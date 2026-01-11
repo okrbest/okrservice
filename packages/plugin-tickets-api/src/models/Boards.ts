@@ -485,7 +485,8 @@ export const loadStageClass = (models: IModels, subdomain: string) => {
      * Get a stage
      */
     public static async getStage(_id: string) {
-      const stage = await models.Stages.findOne({ _id });
+      // Optimize: use lean() to reduce Mongoose document overhead
+      const stage = await models.Stages.findOne({ _id }).lean();
 
       if (!stage) {
         throw new Error("Stage not found");

@@ -120,9 +120,6 @@ export const itemsAdd = async (
     // 수집된 Company IDs를 doc에 추가
     if (companyIds.size > 0) {
       doc.companyIds = Array.from(companyIds);
-      console.log(
-        `[Auto-set] Added ${doc.companyIds.length} companies for ticket from ${doc.customerIds.length} customers`
-      );
     }
   }
 
@@ -272,16 +269,15 @@ export const changeItemStatus = async (
     }
   );
 
+  // For subscriptions, only include minimal item data to avoid unnecessary queries
+  // itemResolver is expensive and will be called when client actually needs the data
   graphqlPubsub.publish(`ticketsPipelinesChanged:${stage.pipelineId}`, {
     ticketsPipelinesChanged: {
       _id: stage.pipelineId,
       proccessId,
       action: "itemAdd",
       data: {
-        item: {
-          ...item._doc,
-          ...(await itemResolver(models, subdomain, user, type, item)),
-        },
+        item: item._doc || item,
         aboveItemId,
         destinationStageId: item.stageId,
       },
@@ -320,7 +316,14 @@ export const itemsEdit = async (
     }
   }
 
-  const stage = await models.Stages.getStage(oldItem.stageId);
+  // Optimize: fetch needed fields (canEditMemberIds, pipelineId) for permission check and pipeline operations
+  const stage = await models.Stages.findOne({ _id: oldItem.stageId })
+    .select("canEditMemberIds pipelineId")
+    .lean();
+
+  if (!stage) {
+    throw new Error("Stage not found");
+  }
 
   const { canEditMemberIds } = stage;
 
@@ -342,133 +345,131 @@ export const itemsEdit = async (
     });
   }
 
-  const updatedItem = await modelUpate(_id, extendedDoc);
+  // Optimize: manualEmailRequest가 true인 경우 emailSent를 extendedDoc에 먼저 포함
+  // description 변경보다 먼저 처리하여 manualEmailRequest가 true일 때 emailSent = true가 유지되도록 함
+  // manualEmailRequest는 true로 설정된 후 false로 리셋되므로, 이미 true였어도 다시 처리 가능
+  if (
+    type === "ticket" &&
+    doc.manualEmailRequest === true
+  ) {
+    // manualEmailRequest가 true인 경우, emailSent를 true로 설정하여 버튼 비활성화
+    // extendedDoc에 포함하여 modelUpate에서 한 번에 처리되도록 함
+    extendedDoc.emailSent = true;
+    // manualEmailRequest는 자동화 트리거 후 false로 리셋되도록 설정
+    // 이렇게 하면 다음에 다시 Send Email 버튼을 클릭할 수 있음
+    extendedDoc.manualEmailRequest = false;
+  }
 
-  // 티켓의 description이 수정된 경우 widgetAlarm을 false로, emailSent도 false로 설정 (버튼 활성화)
-  let shouldSkipAutomationTrigger = false; // putUpdateLog에서 자동화 트리거 스킵 플래그
-  
+  // Optimize: description 변경 시 필요한 필드를 미리 extendedDoc에 포함하여 한 번의 업데이트로 처리
+  // 단, manualEmailRequest가 동시에 true인 경우 emailSent = true를 유지해야 함
   if (
     type === "ticket" &&
     doc.description &&
     doc.description !== oldItem.description
   ) {
-    // widgetAlarm이 true에서 false로 바뀌는지 확인
-    const wasWidgetAlarmTrue = (oldItem as any).widgetAlarm === true;
-    const updateFields: any = { emailSent: false }; // emailSent는 항상 false로 리셋
+    // description 변경 시 필요한 필드들을 extendedDoc에 추가
+    // manualEmailRequest가 동시에 true인 경우 emailSent는 이미 true로 설정되었으므로 덮어쓰지 않음
+    if (doc.manualEmailRequest !== true) {
+      extendedDoc.emailSent = false; // emailSent는 항상 false로 리셋 (단, manualEmailRequest가 true인 경우 제외)
+    }
+    extendedDoc.assignAlarm = true; // assignAlarm을 true로 설정
 
     // widgetAlarm이 true인 경우에만 false로 업데이트
-    if (wasWidgetAlarmTrue) {
-      updateFields.widgetAlarm = false;
-    }
-
-    // assignAlarm을 true로 설정 (description 변경 시)
-    updateFields.assignAlarm = true;
-
-    await models.Tickets.updateOne({ _id }, { $set: updateFields });
-    console.log('📝 Description 변경됨 - assignAlarm true 설정 및 자동화 트리거', updateFields);
-    
-    // updatedItem 객체에도 즉시 반영 (GraphQL 응답에 포함되도록)
-    updatedItem.emailSent = false;
-    if (wasWidgetAlarmTrue) {
-      updatedItem.widgetAlarm = false;
-    }
-    updatedItem.assignAlarm = true;
-
-    // assignAlarm이 true로 설정되었으므로 자동화 트리거 전송
-    const ticketForAutomation = updatedItem.toObject ? updatedItem.toObject() : { ...updatedItem };
-    ticketForAutomation.assignAlarm = true;  // 자동화 트리거를 위해 true로 명시적 설정
-    
-    const { sendMessage } = await import("@erxes/api-utils/src/core");
-    try {
-      await sendMessage({
-        subdomain,
-        serviceName: "automations",
-        action: "trigger",
-        data: {
-          type: "tickets:ticket",
-          targets: [ticketForAutomation],  // assignAlarm: true인 데이터 전달
-          triggerSource: "assignAlarm"
-        }
-      });
-      console.log('✅ assignAlarm 자동화 트리거 전송 완료');
-      
-      // description 변경으로 인한 자동화 트리거를 이미 보냈으므로
-      // putUpdateLog에서는 자동화 트리거를 스킵하도록 플래그 설정
-      shouldSkipAutomationTrigger = true;
-      
-      // 자동화 트리거 전송 후 10초 뒤에 assignAlarm을 false로 리셋
-      // 이렇게 해야 description이 다시 변경되면 자동화가 재등록(재실행)될 수 있음
-      setTimeout(async () => {
-        try {
-          await models.Tickets.updateOne(
-            { _id },
-            { $set: { assignAlarm: false } }
-          );
-          console.log('✅ Assign alarm set to false after 10 seconds for ticket:', _id);
-        } catch (error) {
-          console.error(`❌ Failed to reset assignAlarm for ticket ${_id}:`, error);
-        }
-      }, 10000); // 10초 대기
-    } catch (error) {
-      console.error('❌ Failed to send assignAlarm automation trigger:', error);
-      // 에러 발생해도 계속 진행 (assignAlarm은 그대로 유지)
+    if ((oldItem as any).widgetAlarm === true) {
+      extendedDoc.widgetAlarm = false;
     }
   }
 
-  // manualEmailRequest가 true로 변경된 경우 자동화 트리거 (description 변경과 독립적)
-  console.log('🔍 manualEmailRequest 체크:', {
-    newValue: doc.manualEmailRequest,
-    oldValue: (oldItem as any).manualEmailRequest,
-    shouldTrigger: doc.manualEmailRequest === true && !(oldItem as any).manualEmailRequest
-  });
-  
-  if (doc.manualEmailRequest === true && !(oldItem as any).manualEmailRequest) {
-    console.log('🚀 manualEmailRequest 트리거 발동!');
-    
-    // 자동화 트리거에 전달할 데이터 준비 (manualEmailRequest: true 상태 유지)
-    // oldItem을 사용하여 manualEmailRequest: true 상태의 데이터를 전달
-    const ticketForAutomation = oldItem.toObject ? oldItem.toObject() : { ...oldItem };
-    ticketForAutomation.manualEmailRequest = true;  // 자동화 트리거를 위해 true로 명시적 설정
-    ticketForAutomation.emailSent = false;  // 아직 발송 전 상태
-    
-    console.log('🎯 [manualEmailRequest] Ticket data for automation:', {
-      _id: ticketForAutomation._id,
-      name: ticketForAutomation.name,
-      description: ticketForAutomation.description?.substring(0, 100),
-      stageId: ticketForAutomation.stageId,
-      status: ticketForAutomation.status,
-      manualEmailRequest: ticketForAutomation.manualEmailRequest,  // true
-      emailSent: ticketForAutomation.emailSent,  // false
-      hasAllFields: !!(ticketForAutomation.name && ticketForAutomation.description)
-    });
+  const updatedItem = await modelUpate(_id, extendedDoc);
 
+  // 티켓의 description이 수정된 경우 자동화 트리거 처리
+  let shouldSkipAutomationTrigger = false; // putUpdateLog에서 자동화 트리거 스킵 플래그
+  
+  // Optimize: description 변경 시 자동화 트리거를 비동기로 처리하여 응답 지연 방지
+  if (
+    type === "ticket" &&
+    doc.description &&
+    doc.description !== oldItem.description
+  ) {
+    // description 변경으로 인한 자동화 트리거를 이미 보낼 예정이므로
+    // putUpdateLog에서는 자동화 트리거를 스킵하도록 플래그 설정
+    shouldSkipAutomationTrigger = true;
+
+    // Optimize: use lean object directly (already lean from updateTicket)
+    const ticketForAutomation = { ...updatedItem, assignAlarm: true };
+    
+    // Optimize: 자동화 트리거를 비동기로 처리하여 응답 지연 방지
+    const { sendMessage } = await import("@erxes/api-utils/src/core");
+    sendMessage({
+      subdomain,
+      serviceName: "automations",
+      action: "trigger",
+      data: {
+        type: "tickets:ticket",
+        targets: [ticketForAutomation],  // assignAlarm: true인 데이터 전달
+        triggerSource: "assignAlarm"
+      }
+    }).catch(error => {
+      console.error('❌ Failed to send assignAlarm automation trigger:', error);
+      // 에러 발생해도 계속 진행 (assignAlarm은 그대로 유지)
+    });
+    
+    // 자동화 트리거 전송 후 10초 뒤에 assignAlarm을 false로 리셋
+    // 이렇게 해야 description이 다시 변경되면 자동화가 재등록(재실행)될 수 있음
+    setTimeout(async () => {
+      try {
+        await models.Tickets.updateOne(
+          { _id },
+          { $set: { assignAlarm: false } }
+        );
+      } catch (error) {
+        console.error(`❌ Failed to reset assignAlarm for ticket ${_id}:`, error);
+      }
+    }, 10000); // 10초 대기
+  }
+
+  // manualEmailRequest가 true인 경우 자동화 트리거 (description 변경과 독립적)
+  // 이미 true였어도 다시 클릭한 경우이므로 항상 처리해야 함
+  if (doc.manualEmailRequest === true) {
+    // Ensure updatedItem has emailSent = true for GraphQL response
+    // This is critical for button disable functionality on the client side
+    updatedItem.emailSent = true;
+    // manualEmailRequest는 false로 리셋되었으므로 반영
+    updatedItem.manualEmailRequest = false;
+    
+    // Optimize: use lean object directly (already lean from updateTicket)
+    // 자동화 트리거에는 emailSent: false로 보냄 (아직 이메일 발송 전 상태)
+    // oldItem에서 manualEmailRequest가 이미 true였는지 확인
+    const wasAlreadyTrue = !!(oldItem as any).manualEmailRequest;
+    const ticketForAutomation = { 
+      ...updatedItem, 
+      manualEmailRequest: true, 
+      emailSent: false,
+      // oldItem의 다른 필드들도 포함 (자동화 세그먼트 매칭을 위해)
+      ...(wasAlreadyTrue ? oldItem : {})
+    };
+
+    // Optimize: 자동화 트리거를 비동기로 처리하여 응답 지연 방지
     // 자동화 트리거를 먼저 보냄 (manualEmailRequest: true 상태로)
     // 이렇게 하면 세그먼트 조건이 정상적으로 매칭됨
     const { sendMessage } = await import("@erxes/api-utils/src/core");
-    try {
-      await sendMessage({
-        subdomain,
-        serviceName: "automations",
-        action: "trigger",
-        data: {
-          type: "tickets:ticket",
-          targets: [ticketForAutomation],  // manualEmailRequest: true인 데이터 전달
-          triggerSource: "manualEmailRequest"
-        }
-      });
-      console.log('✅ manualEmailRequest 자동화 트리거 전송 완료');
-    } catch (error) {
+    sendMessage({
+      subdomain,
+      serviceName: "automations",
+      action: "trigger",
+      data: {
+        type: "tickets:ticket",
+        targets: [ticketForAutomation],  // manualEmailRequest: true인 데이터 전달
+        triggerSource: "manualEmailRequest"
+      }
+    }).catch(error => {
       console.error('❌ Failed to send manual email automation trigger:', error);
       // 에러 발생 시에도 DB 업데이트는 진행 (버튼 비활성화)
-    }
+    });
     
-    // 자동화 트리거 전송 후 DB 업데이트 (버튼 비활성화)
-    await models.Tickets.updateOne({ _id }, { $set: { manualEmailRequest: false, emailSent: true } });
-    console.log('🔄 manualEmailRequest를 false로, emailSent를 true로 설정 완료 (Send Email 버튼 비활성화)');
-    
-    // updatedItem 객체에도 반영하여 GraphQL 응답에 포함
-    updatedItem.manualEmailRequest = false;
-    updatedItem.emailSent = true;
+    // Note: emailSent는 이미 extendedDoc에 포함되어 modelUpate에서 처리되었고,
+    // updatedItem에도 명시적으로 설정했으므로 GraphQL 응답에 정확히 반영됨
+    // manualEmailRequest도 false로 리셋되어 다음 클릭을 위해 준비됨
   }
 
   // labels should be copied to newly moved pipeline
@@ -533,9 +534,15 @@ export const itemsEdit = async (
     notificationDoc.removedUsers = removedUserIds;
   }
 
-  await sendNotifications(models, subdomain, notificationDoc);
+  // Optimize: send notifications asynchronously to avoid blocking response
+  // But for critical updates (assigned users, status), wait for completion
+  const notificationPromise = sendNotifications(models, subdomain, notificationDoc)
+    .catch(error => {
+      console.error('Failed to send notifications:', error);
+    });
 
   if (!notificationDoc.invitedUsers && !notificationDoc.removedUsers) {
+    // Optimize: mobile notification can be sent asynchronously
     sendCoreMessage({
       subdomain: "os",
       action: "sendMobileNotification",
@@ -550,6 +557,8 @@ export const itemsEdit = async (
           id: _id,
         },
       },
+    }).catch(error => {
+      console.error('Failed to send mobile notification:', error);
     });
   }
 
@@ -558,7 +567,9 @@ export const itemsEdit = async (
     doc.tagIds = doc.tagIds.filter((ti) => ti);
   }
 
-  putUpdateLog(
+  // Optimize: putUpdateLog can be async for description-only updates
+  // But wait for it if there are assigned user changes (critical notification)
+  const updateLogPromise = putUpdateLog(
     models,
     subdomain,
     {
@@ -569,19 +580,48 @@ export const itemsEdit = async (
     },
     user,
     { skipAutomationTrigger: shouldSkipAutomationTrigger }
-  );
+  ).catch(error => {
+    console.error('Failed to put update log:', error);
+  });
 
-  const updatedStage = await models.Stages.getStage(updatedItem.stageId);
+  // Optimize: only fetch stage if needed for pipeline change check
+  // For description-only updates, we already have the stage info
+  let updatedStage: any = stage; // Use existing stage by default (lean object)
+  const needsStageUpdate = updatedItem.stageId !== oldItem.stageId;
+  
+  if (needsStageUpdate) {
+    // Only fetch new stage if stage actually changed (use lean for consistency)
+    updatedStage = await models.Stages.findOne({ _id: updatedItem.stageId })
+      .select("pipelineId")
+      .lean();
+    
+    if (!updatedStage) {
+      throw new Error("Updated stage not found");
+    }
+  }
+  
+  // Wait for critical operations only (assigned users or status changes)
+  // Description-only updates don't need to wait for these
+  const hasCriticalChanges = doc.assignedUserIds || (doc.status && oldItem.status !== doc.status);
+  if (hasCriticalChanges) {
+    await Promise.all([notificationPromise, updateLogPromise]);
+  }
 
-  if (doc.tagIds || doc.startDate || doc.closeDate || doc.name) {
+  // Optimize: only publish subscription if there are significant changes
+  // Description-only updates may not need immediate subscription updates
+  if (doc.tagIds || doc.startDate || doc.closeDate || doc.name || doc.assignedUserIds) {
+    // Optimize: only publish minimal data for simple updates
     graphqlPubsub.publish(`ticketsPipelinesChanged:${stage.pipelineId}`, {
       ticketsPipelinesChanged: {
         _id: stage.pipelineId,
+        proccessId,
+        action: "itemUpdate",
       },
     });
   }
 
-  if (updatedStage.pipelineId !== stage.pipelineId) {
+  // Optimize: check if stage changed using already-fetched stage info
+  if (needsStageUpdate && updatedStage.pipelineId !== stage.pipelineId) {
     graphqlPubsub.publish(`ticketsPipelinesChanged:${stage.pipelineId}`, {
       ticketsPipelinesChanged: {
         _id: stage.pipelineId,
@@ -593,42 +633,41 @@ export const itemsEdit = async (
         },
       },
     });
+    // Optimize: avoid expensive itemResolver for subscriptions
     graphqlPubsub.publish(`ticketsPipelinesChanged:${stage.pipelineId}`, {
       ticketsPipelinesChanged: {
         _id: updatedStage.pipelineId,
         proccessId,
         action: "itemAdd",
         data: {
-          item: {
-            ...updatedItem._doc,
-            ...(await itemResolver(models, subdomain, user, type, updatedItem)),
-          },
+          item: updatedItem, // Already lean object, no need for _doc check
           aboveItemId: "",
           destinationStageId: updatedStage._id,
         },
       },
     });
   } else {
+    // Optimize: avoid expensive itemResolver for subscriptions
     graphqlPubsub.publish(`ticketsPipelinesChanged:${stage.pipelineId}`, {
       ticketsPipelinesChanged: {
         _id: stage.pipelineId,
         proccessId,
         action: "itemUpdate",
         data: {
-          item: {
-            ...updatedItem._doc,
-            ...(await itemResolver(models, subdomain, user, type, updatedItem)),
-          },
+          item: updatedItem, // Already lean object, no need for _doc check
         },
       },
     });
   }
 
+  // Optimize: return early for description-only updates (no stage change)
+  // This avoids unnecessary processing and improves response time
   if (oldItem.stageId === updatedItem.stageId) {
+    // For description-only updates, return immediately without waiting for background tasks
     return updatedItem;
   }
 
-  // if task moves between stages
+  // if task moves between stages (only happens if stageId changed)
   const { content, action } = await itemMover(
     models,
     subdomain,
@@ -638,13 +677,16 @@ export const itemsEdit = async (
     updatedItem.stageId
   );
 
-  await sendNotifications(models, subdomain, {
+  // Optimize: stage change notifications can be async (non-blocking)
+  sendNotifications(models, subdomain, {
     item: updatedItem,
     user,
     type: `${type}Change`,
     content,
     action,
     contentType: type,
+  }).catch(error => {
+    console.error('Failed to send stage change notifications:', error);
   });
 
   return updatedItem;
@@ -825,8 +867,7 @@ export const itemsChange = async (
       action: "orderUpdated",
       data: {
         item: {
-          ...item._doc,
-          ...(await itemResolver(models, subdomain, user, type, item)),
+          ...(item._doc || item),
           labels,
         },
         aboveItemId,
@@ -933,10 +974,7 @@ export const itemsCopy = async (
       proccessId,
       action: "itemAdd",
       data: {
-        item: {
-          ...clone._doc,
-          ...(await itemResolver(models, subdomain, user, type, clone)),
-        },
+        item: clone._doc || clone,
         aboveItemId: _id,
         destinationStageId: stage._id,
       },

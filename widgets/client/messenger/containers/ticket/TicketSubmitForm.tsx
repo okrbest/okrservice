@@ -60,7 +60,7 @@ const TicketSubmitContainer = (props: Props) => {
     }
   }, [customer]);
 
-  const [ticketAdd, { loading }] = useMutation(TICKET_ADD, {
+  const [ticketAdd, { loading: ticketAddLoading }] = useMutation(TICKET_ADD, {
     onCompleted(data) {
       console.log("[디버그] ticketAdd onCompleted data:", data);
 
@@ -69,53 +69,58 @@ const TicketSubmitContainer = (props: Props) => {
       console.log("[디버그] 티켓 생성 응답 data:", data);
       console.log("[디버그] 발급된 ticketNumber:", widgetTicketCreated?.number);
 
-      return (
-        <>
-          {setTicketNumber(widgetTicketCreated.number || "")}
-          {setIsSubmitted(true)}
-        </>
-      );
+      setTicketNumber(widgetTicketCreated.number || "");
+      setIsSubmitted(true);
+      customerRefetch();
     },
     onError(error) {
-      return alert(error.message);
+      console.error("[디버그] ticketAdd 에러:", error);
+      alert(error.message);
     },
   });
 
-  const [customerEdit] = useMutation(CUSTOMER_EDIT, {
+  const [customerEdit, { loading: customerEditLoading }] = useMutation(CUSTOMER_EDIT, {
     fetchPolicy: "no-cache",
     onCompleted: async () => {
-      const transformedFiles = files.map((file) => ({
-        url: readFile(file.url || ""),
-        name: file.name,
-        type: "image",
-      }));
+      try {
+        const transformedFiles = files.map((file) => ({
+          url: readFile(file.url || ""),
+          name: file.name,
+          type: "image",
+        }));
 
-      console.log("[디버그] 티켓 생성 요청 직전", {
-        title: formData.title,
-        description: formData.description,
-        attachments: transformedFiles,
-        stageId: ticketData.ticketStageId,
-        type: formData.ticketType,
-        customerIds: [customerId],
-      });
-
-      await ticketAdd({
-        variables: {
-          name: formData.title,
+        console.log("[디버그] 티켓 생성 요청 직전", {
+          title: formData.title,
           description: formData.description,
           attachments: transformedFiles,
           stageId: ticketData.ticketStageId,
           type: formData.ticketType,
           customerIds: [customerId],
-        },
-      });
+        });
 
-      customerRefetch();
+        await ticketAdd({
+          variables: {
+            name: formData.title,
+            description: formData.description,
+            attachments: transformedFiles,
+            stageId: ticketData.ticketStageId,
+            type: formData.ticketType,
+            customerIds: [customerId],
+          },
+        });
+      } catch (error) {
+        console.error("[디버그] customerEdit onCompleted 내부 에러:", error);
+        alert(error.message || "티켓 생성 중 오류가 발생했습니다.");
+      }
     },
     onError(error) {
-      return alert(error.message);
+      console.error("[디버그] customerEdit 에러:", error);
+      alert(error.message);
     },
   });
+
+  // 전체 로딩 상태 (customerEdit 또는 ticketAdd 중 하나라도 로딩 중이면 true)
+  const loading = customerEditLoading || ticketAddLoading;
 
   const handleChange = (e: any) => {
     const { id, value } = e.target;
@@ -129,7 +134,18 @@ const TicketSubmitContainer = (props: Props) => {
   const onSubmit = (e: any) => {
     e.preventDefault();
 
-    return customerEdit({
+    // 이미 제출 중이면 중복 제출 방지
+    if (loading || isSubmitted) {
+      return;
+    }
+
+    // 필수 필드 검증
+    if (!formData.title || !formData.description || !formData.ticketType) {
+      alert("제목, 내용, 요청구분은 필수 항목입니다.");
+      return;
+    }
+
+    customerEdit({
       variables: {
         customerId,
         firstName: formData.firstName,
