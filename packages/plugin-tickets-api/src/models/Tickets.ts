@@ -32,8 +32,7 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
      * Retreives Ticket
      */
     public static async getTicket(_id: string) {
-      // Optimize: use lean() to reduce Mongoose document overhead
-      const ticket = await models.Tickets.findOne({ _id }).lean();
+      const ticket = await models.Tickets.findOne({ _id });
 
       if (!ticket) {
         throw new Error("Ticket not found");
@@ -86,24 +85,14 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
      * Update Ticket
      */
     public static async updateTicket(_id: string, doc: ITicket) {
-      // Optimize: only fetch name and description for searchText generation
-      const existingTicket = await models.Tickets.findOne({ _id })
-        .select("name description")
-        .lean();
-
       const searchText = fillSearchTextItem(
         doc,
-        existingTicket || undefined
+        await models.Tickets.getTicket(_id)
       );
 
-      // Optimize: use findOneAndUpdate to return updated document in one query
-      const updated = await models.Tickets.findOneAndUpdate(
-        { _id },
-        { $set: { ...doc, searchText } },
-        { new: true }
-      ).lean();
+      await models.Tickets.updateOne({ _id }, { $set: doc, searchText });
 
-      return updated;
+      return models.Tickets.findOne({ _id });
     }
 
     /**

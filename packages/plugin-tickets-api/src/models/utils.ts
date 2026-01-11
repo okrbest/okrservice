@@ -613,6 +613,7 @@ export const updateName = async (
     const stage = await models.Stages.findOne({ _id: item.stageId });
     const pipeline = await models.Pipelines.findOne({ _id: stage?.pipelineId });
 
+    console.log('item: ', item);
     if (pipeline?.nameConfig) {
       const originalTitle = item.name || '';
       let replacedName = pipeline.nameConfig;
@@ -745,7 +746,7 @@ export const updateName = async (
 
                 replacedName = replacedName?.replace(match, result || '');
               } catch (e) {
-                // Error handling
+                console.log(e);
               }
             }
           }
