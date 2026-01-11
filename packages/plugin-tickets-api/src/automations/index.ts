@@ -67,6 +67,18 @@ export default {
     const plainTarget = target && typeof target.toObject === 'function' 
       ? target.toObject() 
       : target;
+
+    console.log('🔍 [replacePlaceHolders] Original target type:', target?.constructor?.name);
+    console.log('🔍 [replacePlaceHolders] Plain target fields:', Object.keys(plainTarget || {}));
+    console.log('🔍 [replacePlaceHolders] Target data:', {
+      _id: plainTarget?._id,
+      name: plainTarget?.name,
+      description: plainTarget?.description?.substring(0, 100),
+      stageId: plainTarget?.stageId,
+      status: plainTarget?.status
+    });
+
+    console.log('🔍 [replacePlaceHolders] relatedValueProps:', relatedValueProps);
     
     return await replacePlaceHolders({
       models,

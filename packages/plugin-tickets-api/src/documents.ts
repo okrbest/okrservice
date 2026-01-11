@@ -206,6 +206,7 @@ export default {
       const customerRows: string[] = [];
 
       for (const item of activeCustomers) {
+        console.log('item', item);
         const name = await sendCoreMessage({
           subdomain,
           action: 'customers.getCustomerName',

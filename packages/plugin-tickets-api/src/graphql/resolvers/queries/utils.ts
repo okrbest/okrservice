@@ -428,23 +428,19 @@ export const generateCommonFilters = async (
       filterPipeline = { $in: pipelineIds };
     }
 
-    // Optimize: use lean() and select only _id for better performance with large datasets
-    const stages = await models.Stages.find({
+    const stageIds = await models.Stages.find({
       pipelineId: filterPipeline,
       status: { $ne: BOARD_STATUSES.ARCHIVED },
-    }).select("_id").lean();
-    const stageIds = stages.map((s: any) => s._id);
+    }).distinct("_id");
 
     filter.stageId = { $in: stageIds };
   }
 
   if (boardIds) {
-    // Optimize: use lean() for better performance
-    const pipelines = await models.Pipelines.find({
+    const pipelineIds = await models.Pipelines.find({
       boardId: { $in: boardIds },
       status: { $ne: BOARD_STATUSES.ARCHIVED },
-    }).select("_id").lean();
-    const pipelineIds = pipelines.map((p: any) => p._id);
+    }).distinct("_id");
 
     const filterStages: any = {
       pipelineId: { $in: pipelineIds },
@@ -455,8 +451,7 @@ export const generateCommonFilters = async (
       filterStages._id = { $in: filter?.stageId?.$in };
     }
 
-    const stages = await models.Stages.find(filterStages).select("_id").lean();
-    const stageIds = stages.map((s: any) => s._id);
+    const stageIds = await models.Stages.find(filterStages).distinct("_id");
 
     filter.stageId = { $in: stageIds };
   }
@@ -468,9 +463,7 @@ export const generateCommonFilters = async (
       filterStages._id = { $in: filter?.stageId?.$in };
     }
 
-    // Optimize: use lean() for better performance
-    const stages = await models.Stages.find(filterStages).select("_id").lean();
-    const stageIds = stages.map((s: any) => s._id);
+    const stageIds = await models.Stages.find(filterStages).distinct("_id");
 
     filter.stageId = { $in: stageIds };
   }
@@ -727,9 +720,7 @@ export const calendarFilters = async (models: IModels, filter, args) => {
   } = args;
 
   if (date) {
-    // Optimize: use lean() and only select _id field for better performance
-    const stages = await models.Stages.find({ pipelineId }).select("_id").lean();
-    const stageIds = stages.map((s: any) => s._id);
+    const stageIds = await models.Stages.find({ pipelineId }).distinct("_id");
 
     filter.closeDate = dateSelector(date);
     filter.stageId = { $in: stageIds };
@@ -863,9 +854,7 @@ export const generateGrowthHackCommonFilters = async (
   }
 
   if (!stageId && pipelineId) {
-    // Optimize: use lean() and select only _id for better performance
-    const stages = await models.Stages.find({ pipelineId }).select("_id").lean();
-    const stageIds = stages.map((s: any) => s._id);
+    const stageIds = await models.Stages.find({ pipelineId }).distinct("_id");
 
     filter.stageId = { $in: stageIds };
   }
@@ -914,38 +903,7 @@ export const checkItemPermByUser = async (
   user: any,
   item: IItemCommonFields
 ) => {
-  // Optimize: fetch stage with pipeline in one query using aggregation
-  const stageWithPipeline = await models.Stages.aggregate([
-    { $match: { _id: item.stageId } },
-    {
-      $lookup: {
-        from: "tickets_pipelines",
-        localField: "pipelineId",
-        foreignField: "_id",
-        as: "pipeline",
-        pipeline: [
-          {
-            $project: {
-              visibility: 1,
-              memberIds: 1,
-              departmentIds: 1,
-              branchIds: 1,
-              isCheckUser: 1,
-              _id: 1,
-              pipelineId: 1,
-            },
-          },
-        ],
-      },
-    },
-    { $unwind: { path: "$pipeline", preserveNullAndEmptyArrays: true } },
-    { $limit: 1 },
-  ]);
-
-  const stage = stageWithPipeline[0];
-  if (!stage) {
-    throw new Error("Stage not found");
-  }
+  const stage = await models.Stages.getStage(item.stageId);
 
   const {
     visibility,
@@ -953,7 +911,7 @@ export const checkItemPermByUser = async (
     departmentIds = [],
     branchIds = [],
     isCheckUser,
-  } = stage.pipeline || {};
+  } = await models.Pipelines.getPipeline(stage.pipelineId);
 
   const supervisorDepartments =
     (await sendCoreMessage({
@@ -1012,8 +970,7 @@ export const archivedItems = async (
 
   const { page = 0, perPage = 0 } = listArgs;
 
-  // Optimize: use lean() and select only needed fields for better performance
-  const stages = await models.Stages.find({ pipelineId }).select("_id pipelineId").lean();
+  const stages = await models.Stages.find({ pipelineId }).lean();
 
   if (stages.length > 0) {
     const filter = generateArhivedItemsFilter(params, stages);
@@ -1038,13 +995,11 @@ export const archivedItemsCount = async (
 ) => {
   const { pipelineId } = params;
 
-  // Optimize: use lean() and select only needed fields for better performance
-  const stages = await models.Stages.find({ pipelineId }).select("_id pipelineId").lean();
+  const stages = await models.Stages.find({ pipelineId });
 
   if (stages.length > 0) {
     const filter = generateArhivedItemsFilter(params, stages);
 
-    // Optimize: use hint to leverage index if available
     return collection.find(filter).countDocuments();
   }
 
@@ -1149,28 +1104,12 @@ export const getItemList = async (
     {
       $skip: args.skip || 0,
     },
-    // Apply limit early to reduce data processing
-    ...(limit > 0 ? [{ $limit: limit }] : []),
     {
       $lookup: {
         from: "users",
         localField: "assignedUserIds",
         foreignField: "_id",
         as: "users_doc",
-        pipeline: [
-          {
-            $project: {
-              _id: 1,
-              email: 1,
-              details: {
-                fullName: 1,
-                shortName: 1,
-                firstName: 1,
-                lastName: 1,
-              },
-            },
-          },
-        ],
       },
     },
     {
@@ -1179,16 +1118,6 @@ export const getItemList = async (
         localField: "stageId",
         foreignField: "_id",
         as: "stages_doc",
-        pipeline: [
-          {
-            $project: {
-              _id: 1,
-              name: 1,
-              pipelineId: 1,
-              order: 1,
-            },
-          },
-        ],
       },
     },
     {
@@ -1197,15 +1126,6 @@ export const getItemList = async (
         localField: "labelIds",
         foreignField: "_id",
         as: "labels_doc",
-        pipeline: [
-          {
-            $project: {
-              _id: 1,
-              name: 1,
-              colorCode: 1,
-            },
-          },
-        ],
       },
     },
     {
@@ -1242,33 +1162,21 @@ export const getItemList = async (
   ];
 
   if (page && perPage) {
-    // Update skip position (index 2)
-    for (let i = 0; i < pipelines.length; i++) {
-      if (pipelines[i].$skip !== undefined) {
-        pipelines[i] = {
-          $skip: (page - 1) * perPage,
-        };
-        break;
-      }
-    }
+    pipelines[2] = {
+      $skip: (page - 1) * perPage,
+    };
     limit = perPage;
-    // Update limit position
-    for (let i = 0; i < pipelines.length; i++) {
-      if (pipelines[i].$limit !== undefined) {
-        pipelines[i] = { $limit: limit };
-        break;
-      }
-    }
+  }
+
+  if (limit > 0) {
+    pipelines.splice(3, 0, { $limit: limit });
   }
 
   if (serverTiming) {
     serverTiming.startTime("getItemsPipelineAggregate");
   }
 
-  // Optimize: use allowDiskUse for large datasets to prevent memory issues
-  const list = await collection.aggregate(pipelines as any, {
-    allowDiskUse: true,
-  });
+  const list = await collection.aggregate(pipelines as any);
 
   if (serverTiming) {
     serverTiming.endTime("getItemsPipelineAggregate");
@@ -1422,24 +1330,18 @@ export const getItemList = async (
     serverTiming.endTime("getItemsCustomers");
   }
 
-  // Optimize: use Map for O(1) lookup instead of O(n) find()
-  const companiesMap = new Map<string, any>(
-    companies.map((c: any): [string, any] => [c._id, c])
-  );
-  const customersMap = new Map<string, any>(
-    customers.map((c: any): [string, any] => [c._id, c])
-  );
-
   const getCocsByItemId = (
     itemId: string,
     cocIdsByItemId: any,
-    cocsMap: Map<string, any>
+    cocs: any[]
   ) => {
     const cocIds = cocIdsByItemId[itemId] || [];
 
-    return cocIds
-      .map((cocId: string) => cocsMap.get(cocId))
-      .filter((coc: any) => coc !== undefined);
+    return cocIds.flatMap((cocId: string) => {
+      const found = cocs.find((coc) => cocId === coc._id);
+
+      return found || [];
+    });
   };
 
   const updatedList: any[] = [];
@@ -1490,65 +1392,6 @@ export const getItemList = async (
     serverTiming.endTime("getItemsFields");
   }
 
-  // Batch fetch all user IDs from customFieldsData to avoid N+1 queries
-  const allUserIdsForCustomFields = new Set<string>();
-  const itemFieldUserMap: { [itemId: string]: { [fieldId: string]: string[] } } = {};
-
-  for (const item of list) {
-    if (
-      item.customFieldsData &&
-      item.customFieldsData.length > 0 &&
-      fields.length > 0
-    ) {
-      itemFieldUserMap[item._id] = {};
-
-      // Optimize: create fieldData map once per item for O(1) lookup
-      const itemFieldDataMap = new Map<string, any>(
-        item.customFieldsData.map((f: any) => [f.field, f])
-      );
-
-      for (const field of fields) {
-        if (field.type !== "users") continue;
-
-        const fieldData: any = itemFieldDataMap.get(field._id);
-
-        if (!fieldData) continue;
-
-        const valueIds = Array.isArray(fieldData.value)
-          ? fieldData.value.filter((id: any) => id)
-          : [fieldData.value].filter((id: any) => id);
-
-        if (valueIds.length > 0) {
-          itemFieldUserMap[item._id][field._id] = valueIds;
-          valueIds.forEach((id: string) => allUserIdsForCustomFields.add(id));
-        }
-      }
-    }
-  }
-
-  // Batch fetch all users in one query
-  const allUsers = allUserIdsForCustomFields.size > 0
-    ? await sendCoreMessage({
-        subdomain,
-        action: "users.find",
-        data: {
-          query: { _id: { $in: Array.from(allUserIdsForCustomFields) } },
-        },
-        isRPC: true,
-        defaultValue: [],
-      })
-    : [];
-
-  const usersMap = new Map(allUsers.map((u: any) => [u._id, u]));
-
-  // Optimize: create notification lookup map once outside loop for O(1) access
-  const notificationsMap = new Map<string, any>(
-    notifications.map((n: any) => [n.contentTypeId, n])
-  );
-
-  // Optimize: create field lookup map for O(1) access
-  const fieldsMap = new Map(fields.map((f: any) => [f._id, f]));
-
   // add just incremented order to each item in list, not from db
   let order = 0;
 
@@ -1560,24 +1403,30 @@ export const getItemList = async (
     ) {
       item.customProperties = [];
 
-      // Optimize: create fieldData map once per item for O(1) lookup (reuse if already created above)
-      const itemFieldDataMap = new Map<string, any>(
-        item.customFieldsData.map((f: any) => [f.field, f])
-      );
-
       for (const field of fields) {
-        const fieldData: any = itemFieldDataMap.get(field._id);
+        const fieldData = item.customFieldsData.find(
+          (f) => f.field === field._id
+        );
 
         if (!fieldData) continue;
 
         if (field.type === "users") {
-          const valueIds = itemFieldUserMap[item._id]?.[field._id] || [];
-          const users = valueIds
-            .map((id: string) => usersMap.get(id))
-            .filter((u: any) => u);
+          const valueIds = Array.isArray(fieldData.value)
+            ? fieldData.value
+            : [fieldData.value];
+
+          const users = await sendCoreMessage({
+            subdomain,
+            action: "users.find",
+            data: {
+              query: { _id: { $in: valueIds } },
+            },
+            isRPC: true,
+            defaultValue: [],
+          });
 
           const userNames = users
-            .map((u: any) => u.details?.fullName || u.email || u._id)
+            .map((u) => u.details?.fullName || u.email || u._id)
             .join(", ");
 
           item.customProperties.push({
@@ -1598,16 +1447,17 @@ export const getItemList = async (
       continue;
     }
 
-    // Optimize: use pre-created Map for O(1) lookup
-    const notification = notificationsMap.get(item._id);
+    const notification = notifications.find(
+      (n) => n.contentTypeId === item._id
+    );
 
     updatedList.push({
       ...item,
       order: order++,
       isWatched: (item.watchedUserIds || []).includes(user._id),
       hasNotified: notification ? false : true,
-      customers: getCocsByItemId(item._id, customerIdsByItemId, customersMap),
-      companies: getCocsByItemId(item._id, companyIdsByItemId, companiesMap),
+      customers: getCocsByItemId(item._id, customerIdsByItemId, customers),
+      companies: getCocsByItemId(item._id, companyIdsByItemId, companies),
       ...(getExtraFields ? await getExtraFields(item) : {}),
     });
   }
