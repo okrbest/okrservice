@@ -177,6 +177,7 @@ const TICKET_ADD = gql`
     $stageId: String!
     $customerIds: [String!]!
     $type: String!
+    $visibility: String
   ) {
     widgetTicketCreated(
       name: $name
@@ -185,6 +186,7 @@ const TICKET_ADD = gql`
       stageId: $stageId
       customerIds: $customerIds
       type: $type
+      visibility: $visibility
     ) {
       _id
       name
@@ -195,6 +197,7 @@ const TICKET_ADD = gql`
         url
       }
       type
+      visibility
     }
   }
 `;

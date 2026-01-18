@@ -1,6 +1,7 @@
 import { Document, Schema } from "mongoose";
 import { commonItemFieldsSchema, IItemCommonFields } from "./boards";
 import { field } from "./utils";
+import { VISIBLITIES } from "./constants";
 
 export interface ITicket extends IItemCommonFields {
   source?: string;
@@ -11,6 +12,7 @@ export interface ITicket extends IItemCommonFields {
   widgetAlarm?: boolean;
   manualEmailRequest?: boolean;
   emailSent?: boolean;
+  visibility?: string;
 }
 
 export interface ITicketDocument extends ITicket, Document {
@@ -28,5 +30,11 @@ export const ticketSchema = new Schema({
   hasNotified: field({ type: Boolean, default: true, label: "Has Notified" }),
   widgetAlarm: field({ type: Boolean, default: true, label: "Widget Alarm" }),
   manualEmailRequest: field({ type: Boolean, default: false, label: "Manual Email Request" }),
-  emailSent: field({ type: Boolean, default: false, label: "Email Sent" })
+  emailSent: field({ type: Boolean, default: false, label: "Email Sent" }),
+  visibility: field({
+    type: String,
+    enum: VISIBLITIES.ALL,
+    default: VISIBLITIES.PUBLIC,
+    label: "Visibility"
+  })
 });
