@@ -35,6 +35,7 @@ const TicketSubmitContainer = (props: Props) => {
     ticketType: "inquiry",
     title: "",
     description: "",
+    visibility: "public",
   });
 
   const {
@@ -98,20 +99,19 @@ const TicketSubmitContainer = (props: Props) => {
           customerIds: [customerId],
         });
 
-        await ticketAdd({
-          variables: {
-            name: formData.title,
-            description: formData.description,
-            attachments: transformedFiles,
-            stageId: ticketData.ticketStageId,
-            type: formData.ticketType,
-            customerIds: [customerId],
-          },
-        });
-      } catch (error) {
-        console.error("[디버그] customerEdit onCompleted 내부 에러:", error);
-        alert(error.message || "티켓 생성 중 오류가 발생했습니다.");
-      }
+      await ticketAdd({
+        variables: {
+          name: formData.title,
+          description: formData.description,
+          attachments: transformedFiles,
+          stageId: ticketData.ticketStageId,
+          type: formData.ticketType,
+          customerIds: [customerId],
+          visibility: formData.visibility,
+        },
+      });
+
+      customerRefetch();
     },
     onError(error) {
       console.error("[디버그] customerEdit 에러:", error);

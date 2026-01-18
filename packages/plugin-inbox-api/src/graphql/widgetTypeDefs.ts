@@ -213,6 +213,7 @@ export const mutations = ({ tickets }) => `
     stageId: String!
     type: String!
     customerIds: [String!]!
+    visibility: String
   ): Ticket`
       : ``
   }
