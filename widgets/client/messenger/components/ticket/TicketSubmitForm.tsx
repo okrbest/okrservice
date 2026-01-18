@@ -241,12 +241,7 @@ const TicketSubmitForm: React.FC<Props> = ({
       backRoute="ticket"
       persistentFooter={
         !isSubmitted ? (
-          <Button 
-            form="ticket-form" 
-            type="submit" 
-            full
-            disabled={loading || customerLoading}
-          >
+          <Button form="ticket-form" type="submit" full>
             {loading ? (
               <div className="loader" />
             ) : (
