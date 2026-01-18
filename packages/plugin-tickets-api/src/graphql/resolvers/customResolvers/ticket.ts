@@ -9,8 +9,7 @@ import { boardId } from "../../utils";
 
 export default {
   async __resolveReference({ _id }, { models }: IContext) {
-    // Optimize: use lean() to reduce Mongoose document overhead
-    return models.Tickets.findOne({ _id }).lean();
+    return models.Tickets.findOne({ _id });
   },
 
   async companies(
@@ -118,16 +117,9 @@ export default {
     _args,
     { models: { Stages, Pipelines } }: IContext
   ) {
-    // Optimize: fetch pipeline directly with lean()
-    const stage = await Stages.findOne({ _id: ticket.stageId })
-      .select("pipelineId")
-      .lean();
+    const stage = await Stages.getStage(ticket.stageId);
 
-    if (!stage?.pipelineId) {
-      return null;
-    }
-
-    return Pipelines.findOne({ _id: stage.pipelineId }).lean();
+    return Pipelines.findOne({ _id: stage.pipelineId });
   },
 
   async boardId(ticket: ITicketDocument, _args, { models }: IContext) {
@@ -139,8 +131,7 @@ export default {
     _args,
     { models: { Stages } }: IContext
   ) {
-    // Optimize: use lean() to reduce Mongoose document overhead
-    return Stages.findOne({ _id: ticket.stageId }).lean();
+    return Stages.getStage(ticket.stageId);
   },
 
   async isWatched(ticket: ITicketDocument, _args, { user }: IContext) {
@@ -175,13 +166,7 @@ export default {
     _args,
     { models: { PipelineLabels } }: IContext
   ) {
-    // Optimize: use lean() and select only needed fields
-    if (!ticket.labelIds || ticket.labelIds.length === 0) {
-      return [];
-    }
-    return PipelineLabels.find({ _id: { $in: ticket.labelIds } })
-      .select("_id name colorCode pipelineId")
-      .lean();
+    return PipelineLabels.find({ _id: { $in: ticket.labelIds || [] } });
   },
 
   async tags(ticket: ITicketDocument) {

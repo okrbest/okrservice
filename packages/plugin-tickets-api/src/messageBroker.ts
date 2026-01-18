@@ -517,61 +517,29 @@ export const setupMessageConsumers = async () => {
     const models = await generateModels(subdomain);
     const { type, typeId, content, userType, customerId } = data;
     
-    try {
-      // Optimize: validate inputs early
-      if (!typeId || !content) {
-        throw new Error("typeId or content is required");
+    // 댓글 생성
+    const comment = await models.Tickets.createTicketComment(type, typeId, content, userType, customerId);
+    
+    // 티켓 정보 가져오기
+    const ticket = await models.Tickets.findOne({ _id: typeId });
+    if (ticket) {
+      // 고객 정보 가져오기
+      let customerName = "고객";
+      if (customerId) {
+        const customer = await sendCoreMessage({
+          subdomain,
+          action: "customers.findOne",
+          data: { _id: customerId },
+          isRPC: true,
+          defaultValue: null
+        });
+        if (customer) {
+          customerName = customer.firstName || customer.lastName || customer.primaryEmail || "고객";
+        }
       }
       
-      // Optimize: fetch ticket with stage and pipeline in one query using aggregation
-      // Note: MongoDB collection names are auto-generated from model names
-      const ticketWithPipeline = await models.Tickets.aggregate([
-        { $match: { _id: typeId } },
-        {
-          $lookup: {
-            from: models.Stages.collection.name,
-            localField: "stageId",
-            foreignField: "_id",
-            as: "stage",
-            pipeline: [
-              {
-                $lookup: {
-                  from: models.Pipelines.collection.name,
-                  localField: "pipelineId",
-                  foreignField: "_id",
-                  as: "pipeline",
-                  pipeline: [
-                    {
-                      $project: {
-                        _id: 1,
-                        boardId: 1,
-                      },
-                    },
-                  ],
-                },
-              },
-              { $unwind: { path: "$pipeline", preserveNullAndEmptyArrays: true } },
-              {
-                $project: {
-                  _id: 1,
-                  pipelineId: 1,
-                  boardId: "$pipeline.boardId",
-                },
-              },
-            ],
-          },
-        },
-        { $unwind: { path: "$stage", preserveNullAndEmptyArrays: true } },
-        { $limit: 1 },
-      ]);
-
-      const ticket = ticketWithPipeline[0];
-      if (!ticket) {
-        throw new Error("Ticket not found");
-      }
-
-      // 댓글 생성 (최적화: 실패 시 빠른 에러 반환)
-      const comment = await models.Tickets.createTicketComment(type, typeId, content, userType, customerId);
+      // 티켓 담당자들에게 알림 보내기 (고객이 댓글을 남긴 경우에만)
+      const assignedUserIds = ticket.assignedUserIds || [];
       
       // userType이 "client"가 아닌 경우 (담당자 등이 댓글을 단 경우)
       // 해당 티켓의 widgetAlarm을 false로, emailSent도 false로 설정하여 Send Email 버튼 활성화
@@ -580,74 +548,89 @@ export const setupMessageConsumers = async () => {
           { _id: typeId },
           { $set: { widgetAlarm: false, emailSent: false } }
         );
+        
+        // 🔥 자동 이메일 발송 비활성화 - 수동 버튼으로만 발송
+        // if (wasWidgetAlarmTrue) {
+        //   try {
+        //     const updatedTicket = await models.Tickets.findOne({ _id: typeId });
+        //     if (updatedTicket) {
+        //       await sendMessage({
+        //         subdomain,
+        //         serviceName: "automations",
+        //         action: "trigger",
+        //         data: {
+        //           type: "tickets:ticket",
+        //           targets: [updatedTicket]
+        //         }
+        //       });
+        //     }
+        //   } catch (error) {
+        //     console.error('Failed to send automation trigger for comment:', error);
+        //   }
+        // }
       }
-
-      // userType이 "client"인 경우에만 알림 및 자동화 처리
-      if (ticket.assignedUserIds && ticket.assignedUserIds.length > 0 && userType === "client") {
+      
+      // userType이 "client"인 경우에만 알림 보내기 (담당자 댓글은 제외)
+      if (assignedUserIds.length > 0 && userType === "client") {
         // assignAlarm을 true로 설정 (client가 댓글을 단 경우)
-        // 이 업데이트는 자동화 트리거 전에 실행되어야 함
         await models.Tickets.updateOne(
           { _id: typeId },
           { $set: { assignAlarm: true } }
         );
-        // Optimize: get customer name (only if needed)
-        let customerName = "고객";
-        if (customerId) {
+        
+        // 티켓 정보를 가져와서 자동화 트리거에 전달할 수 있도록 업데이트된 티켓 사용
+        const updatedTicket = await models.Tickets.findOne({ _id: typeId });
+        
+        // assignAlarm이 true로 설정되었으므로 자동화 트리거 전송
+        if (updatedTicket) {
+          const ticketForAutomation: any = updatedTicket.toObject ? updatedTicket.toObject() : { ...updatedTicket };
+          ticketForAutomation.assignAlarm = true;  // 자동화 트리거를 위해 true로 명시적 설정
+          
           try {
-            const customer = await sendCoreMessage({
+            await sendMessage({
               subdomain,
-              action: "customers.findOne",
-              data: { _id: customerId },
-              isRPC: true,
-              defaultValue: null
+              serviceName: "automations",
+              action: "trigger",
+              data: {
+                type: "tickets:ticket",
+                targets: [ticketForAutomation],  // assignAlarm: true인 데이터 전달
+                triggerSource: "assignAlarm"
+              }
             });
-            if (customer) {
-              customerName = customer.firstName || customer.lastName || customer.primaryEmail || "고객";
-            }
+            
+            // 자동화 트리거 전송 후 10초 뒤에 assignAlarm을 false로 리셋
+            // 이렇게 해야 고객이 다시 댓글을 달면 자동화가 재등록(재실행)될 수 있음
+            setTimeout(async () => {
+              try {
+                await models.Tickets.updateOne(
+                  { _id: typeId },
+                  { $set: { assignAlarm: false } }
+                );
+              } catch (error) {
+                console.error(`❌ Failed to reset assignAlarm for ticket ${typeId}:`, error);
+              }
+            }, 10000); // 10초 대기
           } catch (error) {
-            console.error('Failed to fetch customer:', error);
-            // Continue with default name
+            console.error('❌ Failed to send assignAlarm automation trigger (client comment):', error);
+            // 에러 발생해도 계속 진행 (assignAlarm은 그대로 유지)
           }
         }
-
-        // Optimize: prepare ticket for automation (use existing ticket data)
-        const ticketForAutomation = { 
-          ...ticket, 
-          assignAlarm: true 
-        };
         
-        // 자동화 트리거 전송 (비동기로 처리하여 응답 지연 방지)
-        sendMessage({
-          subdomain,
-          serviceName: "automations",
-          action: "trigger",
-          data: {
-            type: "tickets:ticket",
-            targets: [ticketForAutomation],
-            triggerSource: "assignAlarm"
+        // stage와 pipeline 정보 가져오기
+        const stage = await models.Stages.findOne({ _id: ticket.stageId });
+        let boardId = "";
+        let pipelineId = "";
+        
+        if (stage) {
+          pipelineId = stage.pipelineId;
+          const pipeline = await models.Pipelines.findOne({ _id: stage.pipelineId });
+          if (pipeline) {
+            boardId = pipeline.boardId;
           }
-        }).catch(error => {
-          console.error('❌ Failed to send assignAlarm automation trigger (client comment):', error);
-        });
+        }
         
-        // Optimize: assignAlarm 리셋도 비동기로 처리
-        setTimeout(async () => {
-          try {
-            await models.Tickets.updateOne(
-              { _id: typeId },
-              { $set: { assignAlarm: false } }
-            );
-          } catch (error) {
-            console.error(`❌ Failed to reset assignAlarm for ticket ${typeId}:`, error);
-          }
-        }, 10000);
-
-        // Optimize: extract boardId and pipelineId from aggregation result
-        const boardId = ticket.stage?.boardId || "";
-        const pipelineId = ticket.stage?.pipelineId || "";
-        
-        // notifications 서비스에 알림 요청 (비동기로 처리)
-        sendMessage({
+        // notifications 서비스에 알림 요청
+        await sendMessage({
           subdomain,
           serviceName: "notifications",
           action: "send",
@@ -660,24 +643,16 @@ export const setupMessageConsumers = async () => {
             createdUser: { _id: customerId, details: { fullName: customerName } },
             contentType: "ticket",
             contentTypeId: ticket._id,
-            receivers: ticket.assignedUserIds || []
+            receivers: assignedUserIds
           }
-        }).catch(error => {
-          console.error('Failed to send notification:', error);
         });
       }
-
-      return {
-        status: "success",
-        data: comment
-      };
-    } catch (error) {
-      console.error('❌ Error in tickets:widgets.commentAdd:', error);
-      return {
-        status: "error",
-        errorMessage: error.message || "Failed to add comment"
-      };
     }
+    
+    return {
+      status: "success",
+      data: comment
+    };
   });
   consumeRPCQueue("tickets:widgets.comment.remove", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
