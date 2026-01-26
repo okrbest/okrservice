@@ -118,6 +118,14 @@ const integrationsSaveMessengerTicketData = `
     }
   }
 `;
+
+const integrationsSaveMessengerDealData = `
+  mutation integrationsSaveMessengerDealData($_id: String!, $dealData: DealData) {
+    integrationsSaveMessengerDealData(_id: $_id, dealData: $dealData) {
+      _id
+    }
+  }
+`;
 const integrationsSaveMessengerAppearance = `
   mutation integrationsSaveMessengerAppearanceData($_id: String!, $uiOptions: MessengerUiOptions) {
     integrationsSaveMessengerAppearanceData(
@@ -194,5 +202,6 @@ export default {
   imapSendMail,
   integrationsSendSms,
   messengerAppSave,
-  integrationsSaveMessengerTicketData
+  integrationsSaveMessengerTicketData,
+  integrationsSaveMessengerDealData
 };

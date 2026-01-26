@@ -100,6 +100,9 @@ const EditMessenger = (props: Props) => {
   const [saveTicketData] = useMutation<SaveMessengerTicketMutationResponse>(
     gql(mutations.integrationsSaveMessengerTicketData)
   );
+  const [saveDealData] = useMutation<any>(
+    gql(mutations.integrationsSaveMessengerDealData)
+  );
   const [saveAppearanceMutation] =
     useMutation<SaveMessengerAppearanceMutationResponse>(
       gql(mutations.integrationsSaveMessengerAppearance),
@@ -159,6 +162,7 @@ const EditMessenger = (props: Props) => {
       uiOptions,
       messengerApps,
       ticketData,
+      dealData,
       callData
     } = doc;
 
@@ -184,10 +188,13 @@ const EditMessenger = (props: Props) => {
           }
         });
       })
-      .then(({ data = {} as any }) => {
+      .then(async ({ data = {} as any }) => {
         const id = data.integrationsSaveMessengerConfigs._id;
-        saveTicketData({
+        await saveTicketData({
           variables: { _id: integrationId, ticketData }
+        });
+        await saveDealData({
+          variables: { _id: integrationId, dealData }
         });
         return saveAppearanceMutation({
           variables: { _id: id, uiOptions }

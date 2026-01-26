@@ -8,7 +8,8 @@ import {
   IIntegrationDocument,
   IMessengerData,
   IUiOptions,
-  ITicketData
+  ITicketData,
+  IDealData
 } from "../../models/definitions/integrations";
 
 import { IExternalIntegrationParams } from "../../models/Integrations";
@@ -822,6 +823,16 @@ const integrationMutations = {
     return models.Integrations.integrationsSaveMessengerTicketData(
       _id,
       ticketData
+    );
+  },
+  async integrationsSaveMessengerDealData(
+    _root,
+    { _id, dealData }: { _id: string; dealData: IDealData },
+    { models }: IContext
+  ) {
+    return (models.Integrations as any).integrationsSaveMessengerDealData(
+      _id,
+      dealData
     );
   }
 };

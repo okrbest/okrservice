@@ -11,6 +11,7 @@ import {
   IMessengerData,
   integrationSchema,
   ITicketData,
+  IDealData,
   IUiOptions
 } from "./definitions/integrations";
 
@@ -110,6 +111,10 @@ export interface IIntegrationModel extends Model<IIntegrationDocument> {
   integrationsSaveMessengerTicketData(
     _id: string,
     doc: ITicketData
+  ): Promise<IIntegrationDocument>;
+  integrationsSaveMessengerDealData(
+    _id: string,
+    doc: IDealData
   ): Promise<IIntegrationDocument>;
   saveMessengerConfigs(
     _id: string,
@@ -336,21 +341,37 @@ export const loadClass = (models: IModels, subdomain: string) => {
         },
         { runValdatiors: true }
       );
-      // await models.Integrations.updateOne(
-      //   { _id },
-      //   {
-      //     $set: {
-      //       ticketData: {
-      //         ticketLabel,
-      //         ticketToggle,
-      //         ticketStageId,
-      //         ticketPipelineId,
-      //         ticketBoardId
-      //       }
-      //     }
-      //   },
-      //   { runValdatiors: true }
-      // );
+
+      return models.Integrations.findOne({ _id });
+    }
+
+    public static async integrationsSaveMessengerDealData(
+      _id: string,
+      {
+        dealLabel,
+        dealToggle,
+        dealStageId,
+        dealPipelineId,
+        dealBoardId,
+        dealCustomFieldIds
+      }: IDealData
+    ) {
+      await models.Integrations.updateOne(
+        { _id },
+        {
+          $set: {
+            dealData: {
+              dealLabel,
+              dealToggle,
+              dealStageId,
+              dealPipelineId,
+              dealBoardId,
+              dealCustomFieldIds
+            }
+          }
+        },
+        { runValdatiors: true }
+      );
 
       return models.Integrations.findOne({ _id });
     }

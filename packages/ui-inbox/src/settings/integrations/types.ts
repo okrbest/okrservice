@@ -322,6 +322,15 @@ export interface ITicketTypeMessenger {
   ticketBoardId?: string;
 }
 
+export interface IDealTypeMessenger {
+  dealLabel?: string;
+  dealToggle?: boolean;
+  dealStageId?: string;
+  dealPipelineId?: string;
+  dealBoardId?: string;
+  dealCustomFieldIds?: string[];
+}
+
 export interface IIntegration {
   _id: string;
   kind: string;
@@ -333,6 +342,7 @@ export interface IIntegration {
   createUrl: string;
   messengerData?: IMessengerData;
   ticketData?: ITicketTypeMessenger;
+  dealData?: IDealTypeMessenger;
   form: IForm;
   uiOptions?: IUiOptions;
   leadData: ILeadData;

@@ -21,6 +21,7 @@ import {
   IMessengerData,
   ISkillData,
   ITicketTypeMessenger,
+  IDealTypeMessenger,
   IUiOptions,
 } from "@erxes/ui-inbox/src/settings/integrations/types";
 import { Step, Steps } from "@erxes/ui/src/components/step";
@@ -51,6 +52,7 @@ type Props = {
     channelIds?: string[];
     messengerData: IMessengerData;
     ticketData: ITicketTypeMessenger;
+    dealData?: IDealTypeMessenger;
     uiOptions: IUiOptions;
     messengerApps: IMessengerApps;
     callData: ICallData;
@@ -70,6 +72,11 @@ type State = {
   ticketPipelineId?: string;
   ticketBoardId?: string;
   ticketToggle?: boolean;
+  dealStageId?: string;
+  dealPipelineId?: string;
+  dealBoardId?: string;
+  dealToggle?: boolean;
+  dealCustomFieldIds?: string[];
   title: string;
   botEndpointUrl?: string;
   botShowInitialMessage?: boolean;
@@ -142,6 +149,7 @@ class CreateMessenger extends React.Component<Props, State> {
     const messages = configData.messages || {};
     const uiOptions = integration.uiOptions || {};
     const ticketData = integration.ticketData || {};
+    const dealData = (integration as any).dealData || {};
     const channels = integration.channels || [];
     const messengerApps = props.messengerApps || {};
 
@@ -159,6 +167,11 @@ class CreateMessenger extends React.Component<Props, State> {
       ticketPipelineId: ticketData.ticketPipelineId || "",
       ticketBoardId: ticketData.ticketBoardId || "",
       ticketToggle: ticketData.ticketToggle || false,
+      dealStageId: dealData.dealStageId || "",
+      dealPipelineId: dealData.dealPipelineId || "",
+      dealBoardId: dealData.dealBoardId || "",
+      dealToggle: dealData.dealToggle || false,
+      dealCustomFieldIds: dealData.dealCustomFieldIds || [],
       channelIds: channels.map((item) => item._id) || [],
       color: uiOptions.color || "#6569DF",
       textColor: uiOptions.textColor || "#fff",
@@ -269,6 +282,11 @@ class CreateMessenger extends React.Component<Props, State> {
       ticketPipelineId,
       ticketBoardId,
       ticketToggle,
+      dealStageId,
+      dealPipelineId,
+      dealBoardId,
+      dealToggle,
+      dealCustomFieldIds,
     } = this.state;
 
     if (!languageCode) {
@@ -366,6 +384,14 @@ class CreateMessenger extends React.Component<Props, State> {
         ticketBoardId: ticketBoardId,
         ticketToggle: ticketToggle,
       },
+      dealData: {
+        dealLabel: "Deal",
+        dealStageId: dealStageId || "",
+        dealPipelineId: dealPipelineId || "",
+        dealBoardId: dealBoardId || "",
+        dealToggle: !!dealToggle,
+        dealCustomFieldIds: dealCustomFieldIds || [],
+      },
       uiOptions: {
         color: this.state.color,
         textColor: this.state.textColor,
@@ -460,6 +486,11 @@ class CreateMessenger extends React.Component<Props, State> {
       ticketPipelineId,
       ticketBoardId,
       ticketToggle,
+      dealStageId = "",
+      dealPipelineId = "",
+      dealBoardId = "",
+      dealToggle = false,
+      dealCustomFieldIds = [],
     } = this.state;
 
     const { integration } = this.props;
@@ -577,6 +608,12 @@ class CreateMessenger extends React.Component<Props, State> {
                   ticketPipelineId={ticketPipelineId || ""}
                   ticketBoardId={ticketBoardId || ""}
                   ticketStageId={ticketStageId || ""}
+                  ticketToggle={ticketToggle}
+                  dealPipelineId={(dealPipelineId || "") as string}
+                  dealBoardId={(dealBoardId || "") as string}
+                  dealStageId={(dealStageId || "") as string}
+                  dealToggle={dealToggle}
+                  dealCustomFieldIds={dealCustomFieldIds || []}
                 />
               </Step>
               <Step

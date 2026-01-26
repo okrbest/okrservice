@@ -99,6 +99,18 @@ const CreateMessenger = (props: Props) => {
       ]
     }
   );
+  const [saveDealData] = useMutation<any>(
+    gql(mutations.integrationsSaveMessengerDealData),
+    {
+      refetchQueries: [
+        {
+          query: gql(queries.integrationDetail),
+          variables: { _id: integrationId || "" },
+          fetchPolicy: "network-only"
+        }
+      ]
+    }
+  );
   const [messengerAppSaveMutation] =
     useMutation<SaveMessengerAppsMutationResponse>(
       gql(mutations.messengerAppSave),
@@ -130,6 +142,7 @@ const CreateMessenger = (props: Props) => {
       languageCode,
       messengerData,
       ticketData,
+      dealData,
       uiOptions,
       channelIds,
       messengerApps,
@@ -149,11 +162,14 @@ const CreateMessenger = (props: Props) => {
           variables: { _id: integrationId, messengerData, callData }
         });
       })
-      .then(({ data = {} as any }) => {
+      .then(async ({ data = {} as any }) => {
         const integrationId = data.integrationsSaveMessengerConfigs._id;
 
-        saveTicketData({
+        await saveTicketData({
           variables: { _id: integrationId, ticketData }
+        });
+        await saveDealData({
+          variables: { _id: integrationId, dealData }
         });
         return saveAppearanceMutation({
           variables: { _id: integrationId, uiOptions }

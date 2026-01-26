@@ -202,6 +202,39 @@ const TICKET_ADD = gql`
   }
 `;
 
+const DEAL_ADD = gql`
+  mutation widgetDealCreated(
+    $name: String!
+    $description: String
+    $attachments: [AttachmentInput]
+    $stageId: String!
+    $customerIds: [String!]!
+    $amount: Float
+    $closeDate: Date
+    $customFieldsData: JSON
+  ) {
+    widgetDealCreated(
+      name: $name
+      description: $description
+      attachments: $attachments
+      stageId: $stageId
+      customerIds: $customerIds
+      amount: $amount
+      closeDate: $closeDate
+      customFieldsData: $customFieldsData
+    ) {
+      _id
+      name
+      description
+      amount
+      attachments {
+        name
+        url
+      }
+    }
+  }
+`;
+
 const CUSTOMER_EDIT = gql`
   mutation WidgetsTicketCustomersEdit($customerId: String, $firstName: String, $lastName: String, $emails: [String], $phones: [String]) {
     widgetsTicketCustomersEdit(customerId: $customerId, firstName: $firstName, lastName: $lastName, emails: $emails, phones: $phones) {
@@ -304,6 +337,7 @@ const connect = (isCloudFlareEnabled?: boolean, isTicketEnabled?: boolean) => `
       `
     : ``
   }
+      dealData
       languageCode,
       uiOptions,
       customerId,
@@ -342,6 +376,7 @@ export {
   CLOUDFLARE_CALL,
   CLOUDFLARE_LEAVE_CALL,
   TICKET_ADD,
+  DEAL_ADD,
   CUSTOMER_EDIT,
   TICKET_COMMENTS_ADD,
   TICKET_CHECK_PROGRESS,

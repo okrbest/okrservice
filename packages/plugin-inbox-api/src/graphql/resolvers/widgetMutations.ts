@@ -19,6 +19,7 @@ import {
   sendCoreMessage,
   sendIntegrationsMessage,
   sendTicketsMessage,
+  sendSalesMessage,
 } from "../../messageBroker";
 import { getConfig } from "../../utils";
 
@@ -51,6 +52,17 @@ interface ITicketWidget {
   stageId: string;
   type: string; // consider narrowing this down to specific ticket types, e.g., "request" | "issue"
   customerIds: string[];
+}
+
+interface IDealWidget {
+  name: string;
+  description?: string;
+  attachments?: IAttachment[];
+  stageId: string;
+  customerIds: string[];
+  amount?: number;
+  closeDate?: Date;
+  customFieldsData?: Array<{ field: string; value: any }>;
 }
 
 export const pConversationClientMessageInserted = async (
@@ -261,6 +273,20 @@ const widgetMutations = {
     return await sendTicketsMessage({
       subdomain,
       action: "widgets.createTicket",
+      data: {
+        doc,
+      },
+      isRPC: true,
+    });
+  },
+  async widgetDealCreated(
+    _root,
+    doc: IDealWidget,
+    { subdomain }: IContext
+  ) {
+    return await sendSalesMessage({
+      subdomain,
+      action: "widgets.createDeal",
       data: {
         doc,
       },
@@ -620,6 +646,7 @@ const widgetMutations = {
       uiOptions: integration.uiOptions,
       languageCode: integration.languageCode,
       ticketData: integration.ticketData,
+      dealData: (integration as any).dealData,
       messengerData: await getMessengerData(models, integration, subdomain),
       customerId: customer && customer._id,
       visitorId: customer ? null : visitorId,

@@ -9,7 +9,7 @@ import {
   generateAmounts,
   generateProducts
 } from "./graphql/resolvers/customResolvers/deal";
-import { itemsEdit, publishHelper } from "./graphql/resolvers/mutations/utils";
+import { itemsAdd, itemsEdit, publishHelper } from "./graphql/resolvers/mutations/utils";
 import {
   createConformity,
   notifiedUserIds,
@@ -187,6 +187,56 @@ export const setupMessageConsumers = async () => {
       };
     }
   );
+
+  consumeRPCQueue("sales:widgets.createDeal", async ({ subdomain, data }) => {
+    const models = await generateModels(subdomain);
+    const { doc } = data;
+    const customerIds = doc.customerIds || [];
+
+    const customer = await sendCoreMessage({
+      subdomain,
+      action: "customers.find",
+      data: {
+        _id: { $in: customerIds },
+      },
+      isRPC: true,
+      defaultValue: null
+    });
+
+    // Widget에서 description의 엔터키(\n)를 HTML <p> 태그로 변환
+    let description = doc.description;
+    if (description && typeof description === 'string') {
+      // 이미 HTML 태그가 있는지 확인 (일반 텍스트인 경우만 변환)
+      const hasHtmlTags = /<[^>]+>/.test(description);
+      if (!hasHtmlTags) {
+        // 일반 텍스트인 경우 \n을 <p> 태그로 변환
+        description = description
+          .split(/\r\n|\r|\n/) // 줄바꿈 문자로 분리
+          .filter(line => line.trim() !== '') // 빈 줄 제거
+          .map(line => `<p>${line}</p>`) // 각 줄을 <p> 태그로 감싸기
+          .join('') || description; // 빈 배열인 경우 원본 반환
+      }
+    }
+
+    const modifiedDoc = {
+      ...doc,
+      description: description,
+      proccessId: Math.random().toString(),
+      aboveItemId: "",
+    };
+
+    return {
+      status: "success",
+      data: await itemsAdd(
+        models,
+        subdomain,
+        modifiedDoc,
+        "deal",
+        models.Deals.createDeal,
+        undefined // user는 위젯에서 null
+      )
+    };
+  });
 
   consumeRPCQueue("sales:stages.find", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);

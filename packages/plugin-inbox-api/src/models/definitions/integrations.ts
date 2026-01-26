@@ -92,6 +92,15 @@ export interface ITicketData {
   ticketBoardId?: String;
 }
 
+export interface IDealData {
+  dealLabel?: String;
+  dealToggle?: Boolean;
+  dealStageId?: String;
+  dealPipelineId?: String;
+  dealBoardId?: String;
+  dealCustomFieldIds?: string[];
+}
+
 export interface IMessengerDataDocument extends IMessengerData, Document {}
 // export interface ITicketDataDocument extends ITicketData, Document {}
 
@@ -176,6 +185,7 @@ export interface IIntegration {
   leadData?: ILeadData;
   messengerData?: IMessengerData;
   ticketData?: ITicketData;
+  dealData?: IDealData;
   uiOptions?: IUiOptions;
   isActive?: boolean;
   isConnected?: boolean;
@@ -188,6 +198,14 @@ export interface IExternalLink {
   url: String;
 }
 
+export interface IDealDataDocument extends Document {
+  dealLabel?: String;
+  dealToggle?: Boolean;
+  dealStageId?: String;
+  dealPipelineId?: String;
+  dealBoardId?: String;
+}
+
 export interface IIntegrationDocument extends IIntegration, Document {
   _id: string;
   createdUserId: string;
@@ -196,6 +214,7 @@ export interface IIntegrationDocument extends IIntegration, Document {
   leadData?: ILeadDataDocument;
   messengerData?: IMessengerDataDocument;
   ticketData?: ITicketDataDocument;
+  dealData?: IDealDataDocument;
   webhookData?: IWebhookData;
   uiOptions?: IUiOptionsDocument;
 }
@@ -300,6 +319,18 @@ const ticketSchema = new Schema(
     ticketStageId: { type: String, required: true },
     ticketPipelineId: { type: String, required: true },
     ticketBoardId: { type: String, required: true }
+  },
+  { _id: false }
+);
+
+const dealSchema = new Schema(
+  {
+    dealLabel: { type: String, required: true },
+    dealToggle: { type: Boolean, required: true },
+    dealStageId: { type: String, required: true },
+    dealPipelineId: { type: String, required: true },
+    dealBoardId: { type: String, required: true },
+    dealCustomFieldIds: { type: [String] }
   },
   { _id: false }
 );
@@ -498,6 +529,7 @@ export const integrationSchema = schemaHooksWrapper(
     messengerData: field({ type: messengerDataSchema }),
 
     ticketData: field({ type: ticketSchema }),
+    dealData: field({ type: dealSchema }),
     uiOptions: field({ type: uiOptionsSchema })
 
   }),

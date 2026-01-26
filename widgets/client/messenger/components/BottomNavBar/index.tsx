@@ -6,8 +6,9 @@ import {
   IconPhone,
   IconQuestionMark,
   IconTicket,
+  IconDeal,
 } from "./Icons";
-import { getCallData, getTicketData, getMessengerData } from "../../utils/util";
+import { getCallData, getTicketData, getDealData, getMessengerData } from "../../utils/util";
 
 import Item from "./Item";
 import { useRouter } from "../../context/Router";
@@ -21,6 +22,7 @@ const items = [
   { label: "Conversations", icon: IconChat, route: "allConversations" },
   { label: "Call", icon: IconPhone, route: "call" },
   { label: "Ticket", icon: IconTicket, route: "ticket" },
+  { label: "Deal", icon: IconDeal, route: "deal" },
   {
     label: "Help",
     icon: IconQuestionMark,
@@ -33,6 +35,7 @@ function BottomNavBar() {
   const { setActiveRoute, activeRoute } = useRouter();
   const callData = getCallData();
   const ticketData = getTicketData();
+  const dealData = getDealData();
   const messengerData = getMessengerData();
 
   const handleItemClick = (route: string) => (e: React.MouseEvent) => {
@@ -50,6 +53,9 @@ function BottomNavBar() {
     return activeRoute === route;
   };
 
+  const showDeal =
+    dealData?.dealToggle === true && !!dealData?.dealStageId;
+
   return (
     <ul className="nav-container nav-list">
       {items.map((item) => {
@@ -63,8 +69,23 @@ function BottomNavBar() {
           return null;
         }
 
+        // Deal: hide unless dealToggle is true AND dealStageId is set
+        if (route === "deal") {
+          if (!showDeal) {
+            return null;
+          }
+        }
+
         if (route === "allConversations" && messengerData.showChat === false) {
           return null;
+        }
+
+        // When Deal is on: hide Home, Conversations, Ticket, Help
+        if (showDeal) {
+          const hideWhenDealOn = ["home", "allConversations", "ticket", "faqCategories"];
+          if (hideWhenDealOn.includes(route)) {
+            return null;
+          }
         }
 
         return (

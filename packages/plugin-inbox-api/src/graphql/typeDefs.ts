@@ -50,6 +50,7 @@ const typeDefs = async () => {
   const isCallsEnabled = await isEnabled('calls');
   const isCloudflareCallsEnabled = await isEnabled('cloudflarecalls');
   const isTicketsEnabled = await isEnabled('tickets');
+  const isSalesEnabled = await isEnabled('sales');
 
   const isEnabledTable = {
     products: isProductsEnabled,
@@ -59,6 +60,7 @@ const typeDefs = async () => {
     calls: isCallsEnabled,
     cloudflareCalls: isCloudflareCallsEnabled,
     tickets: isTicketsEnabled,
+    sales: isSalesEnabled,
   };
 
   return gql`

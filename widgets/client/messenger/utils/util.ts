@@ -46,6 +46,10 @@ export const getTicketData = (): any => {
   return connection.data.ticketData || {};
 };
 
+export const getDealData = (): any => {
+  return connection.data.dealData || {};
+};
+
 export const isOnline = () => {
   return getMessengerData().isOnline;
 };

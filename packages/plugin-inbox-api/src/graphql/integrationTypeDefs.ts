@@ -38,7 +38,8 @@ export const types = `
   
     leadData: JSON
     messengerData: JSON
-    ticketData :JSON
+    ticketData: JSON
+    dealData: JSON
     uiOptions: JSON
     isActive: Boolean
     isConnected: Boolean
@@ -106,6 +107,15 @@ export const types = `
       ticketStageId: String
       ticketPipelineId: String
       ticketBoardId: String
+  }
+
+  input DealData {
+    dealLabel: String
+    dealToggle: Boolean
+    dealStageId: String
+    dealPipelineId: String
+    dealBoardId: String
+    dealCustomFieldIds: [String]
   }
 
   input IntegrationMessengerData {
@@ -235,6 +245,9 @@ export const mutations = `
   integrationsSaveMessengerTicketData(
     _id: String!,
     ticketData: TicketData): Integration
+  integrationsSaveMessengerDealData(
+    _id: String!,
+    dealData: DealData): Integration
     
   integrationsCreateExternalIntegration(
     kind: String!,
