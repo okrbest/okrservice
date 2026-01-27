@@ -301,14 +301,43 @@ const widgetMutations = {
       lastName?: string;
       emails?: string[];
       phones?: string[];
+      companyName?: string;
     },
     { models, subdomain }: IContext
   ) {
-    const { customerId, firstName, lastName, emails, phones } = args;
+    const { customerId, firstName, lastName, emails, phones, companyName } = args;
     if (!customerId) {
       throw new Error("Customer ID not found");
     }
-    return await sendCoreMessage({
+
+    // Get customer to find integration and brand
+    const existingCustomer = await sendCoreMessage({
+      subdomain,
+      action: "customers.findOne",
+      data: { _id: customerId },
+      isRPC: true,
+      defaultValue: null,
+    });
+
+    if (!existingCustomer) {
+      throw new Error("Customer not found");
+    }
+
+    // Get integration to find brand
+    let brandId: string | null = null;
+    if (existingCustomer.integrationId) {
+      const integration = await models.Integrations.findOne({
+        _id: existingCustomer.integrationId,
+        kind: "messenger",
+      }).lean();
+
+      if (integration && integration.brandId) {
+        brandId = integration.brandId;
+      }
+    }
+
+    // Update customer
+    const customer = await sendCoreMessage({
       subdomain,
       action: "customers.updateCustomer",
       data: {
@@ -323,6 +352,110 @@ const widgetMutations = {
       isRPC: true,
       defaultValue: null,
     });
+
+    // Handle company if companyName is provided
+    let companyLinkWarning: string | null = null;
+
+    if (companyName && companyName.trim()) {
+      const trimmedCompanyName = companyName.trim();
+
+      try {
+        // Find company by primaryName or names array
+        let company = await sendCoreMessage({
+          subdomain,
+          action: "companies.findOne",
+          data: {
+            $or: [
+              { primaryName: trimmedCompanyName },
+              { names: { $in: [trimmedCompanyName] } }
+            ],
+            status: { $ne: "deleted" }
+          },
+          isRPC: true,
+          defaultValue: null,
+        });
+
+        if (!company) {
+          // Create new company
+          const companyData: {
+            primaryName: string;
+            names: string[];
+            scopeBrandIds?: string[];
+          } = {
+            primaryName: trimmedCompanyName,
+            names: [trimmedCompanyName],
+          };
+
+          if (brandId) {
+            companyData.scopeBrandIds = [brandId];
+          }
+
+          company = await sendCoreMessage({
+            subdomain,
+            action: "companies.createCompany",
+            data: companyData,
+            isRPC: true,
+            defaultValue: null,
+          });
+
+          if (!company) {
+            companyLinkWarning = `Company "${trimmedCompanyName}" could not be created`;
+          }
+        } else if (brandId && company.scopeBrandIds && !company.scopeBrandIds.includes(brandId)) {
+          // Update company to add brand if not already included
+          await sendCoreMessage({
+            subdomain,
+            action: "companies.updateCompany",
+            data: {
+              _id: company._id,
+              doc: {
+                scopeBrandIds: [...(company.scopeBrandIds || []), brandId],
+              },
+            },
+            isRPC: true,
+            defaultValue: null,
+          });
+        }
+
+        // Link company to customer using addConformity (handles duplicates)
+        if (customer && company?._id) {
+          const conformityResult = await sendCoreMessage({
+            subdomain,
+            action: "conformities.addConformity",
+            data: {
+              mainType: "customer",
+              mainTypeId: customerId,
+              relType: "company",
+              relTypeId: company._id,
+            },
+            isRPC: true,
+            defaultValue: null,
+          });
+
+          if (!conformityResult && !companyLinkWarning) {
+            companyLinkWarning = `Company "${trimmedCompanyName}" could not be linked to customer`;
+          }
+        }
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        companyLinkWarning = `Failed to process company "${trimmedCompanyName}": ${errorMessage}`;
+
+        // Log only in development environment
+        if (process.env.NODE_ENV !== "production") {
+          console.debug("[widgetsTicketCustomersEdit] Company handling error:", errorMessage);
+        }
+      }
+    }
+
+    // Return customer with optional warning about company linking
+    if (customer && companyLinkWarning) {
+      return {
+        ...customer,
+        _warning: companyLinkWarning,
+      };
+    }
+
+    return customer;
   },
   async widgetsTicketCheckProgressForget(
     _root,

@@ -211,7 +211,7 @@ export const mutations = ({ tickets, sales }) => `
 
   ${
     tickets
-      ? `widgetsTicketCustomersEdit (customerId: String, firstName: String, lastName: String, emails: [String], phones: [String]): Customer
+      ? `widgetsTicketCustomersEdit (customerId: String, firstName: String, lastName: String, emails: [String], phones: [String], companyName: String): Customer
   widgetsTicketCheckProgressForget(email: String, phoneNumber: String): JSON
   widgetsTicketCheckProgress(number: String!): Ticket
   widgetsTicketCommentAdd(

@@ -41,7 +41,7 @@ const DealSubmitForm: React.FC<Props> = ({
   handleButtonClick,
 }) => {
   const submitText = __("Submit");
-  const { email, firstName, lastName, phone } = formData;
+  const { email, firstName, companyName, phone } = formData;
 
   const { isAuthFieldsVisible } = useConfig();
 
@@ -60,7 +60,7 @@ const DealSubmitForm: React.FC<Props> = ({
             onChange={onCustomChange}
             value={value ?? ""}
             rows={4}
-            required={false}
+            required={true}
           />
         </div>
       );
@@ -69,24 +69,28 @@ const DealSubmitForm: React.FC<Props> = ({
       const opts = f.options || [];
       return (
         <div key={f._id} className="ticket-form-item">
-          <label>{label}</label>
-          <select
-            id={`custom_${f._id}`}
-            value={value ?? ""}
-            onChange={(e) => handleCustomFieldChange?.(f._id, e.target.value)}
-            style={{ width: "100%", padding: "8px", marginTop: "4px" }}
-          >
-            <option value="">{__("Select")}</option>
-            {opts.map((o: any, idx: number) => {
-              const val = o.value != null ? String(o.value) : "";
-              const text = (o.label != null && o.label !== "") ? String(o.label) : val;
-              return (
-                <option key={val || `opt-${idx}`} value={val}>
-                  {text}
-                </option>
-              );
-            })}
-          </select>
+          <div className="input-container">
+            <label htmlFor={`custom_${f._id}`} style={{ whiteSpace: "nowrap" }}>
+              {label} <span className="required" style={{ color: "red", marginLeft: "2px" }}>*</span>
+            </label>
+            <select
+              id={`custom_${f._id}`}
+              value={value ?? ""}
+              onChange={(e) => handleCustomFieldChange?.(f._id, e.target.value)}
+              required
+            >
+              <option value="">{__("Select")}</option>
+              {opts.map((o: any, idx: number) => {
+                const val = o.value != null ? String(o.value) : "";
+                const text = (o.label != null && o.label !== "") ? String(o.label) : val;
+                return (
+                  <option key={val || `opt-${idx}`} value={val}>
+                    {text}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
         </div>
       );
     }
@@ -99,7 +103,7 @@ const DealSubmitForm: React.FC<Props> = ({
             type="date"
             onChange={onCustomChange}
             value={value ?? ""}
-            required={false}
+            required={true}
           />
         </div>
       );
@@ -113,7 +117,7 @@ const DealSubmitForm: React.FC<Props> = ({
             type="number"
             onChange={onCustomChange}
             value={value ?? ""}
-            required={false}
+            required={true}
           />
         </div>
       );
@@ -125,7 +129,7 @@ const DealSubmitForm: React.FC<Props> = ({
           label={String(label)}
           onChange={onCustomChange}
           value={value ?? ""}
-          required={false}
+          required={true}
         />
       </div>
     );
@@ -139,6 +143,14 @@ const DealSubmitForm: React.FC<Props> = ({
         <div className="form-container">
           {isAuthFieldsVisible && (
             <>
+              <div style={{ marginBottom: "24px", textAlign: "center" }}>
+                <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px", color: "#1e40af" }}>
+                  데모 사이트를 통해 직접 확인해보세요
+                </h2>
+                <h2 style={{ fontSize: "16px", fontWeight: "400", color: "#666", lineHeight: "1.6" }}>
+                  문의를 남겨주시면 데모 사이트 오픈과 함께 <br /> 도입 방안을 안내해드립니다.
+                </h2>
+              </div>
               <div className="ticket-form-item">
                 <Input
                   id="firstName"
@@ -146,14 +158,14 @@ const DealSubmitForm: React.FC<Props> = ({
                   onChange={handleChange}
                   placeholder={String(__("First name"))}
                   value={firstName || ""}
-                  required={false}
+                  required={true}
                 />
                 <Input
-                  id="lastName"
-                  placeholder={String(__("Last name"))}
+                  id="companyName"
+                  label={String(__("회사명"))}
                   onChange={handleChange}
-                  value={lastName || ""}
-                  required={false}
+                  value={companyName || ""}
+                  required={true}
                 />
               </div>
               <div className="ticket-form-item">
@@ -164,27 +176,21 @@ const DealSubmitForm: React.FC<Props> = ({
                   onChange={handleChange}
                   type="number"
                   value={phone}
-                  required={false}
+                  required={true}
                 />
                 <Input
                   id="email"
                   label={String(__("Email"))}
                   placeholder={String(__("Email"))}
                   type="email"
-                  required={false}
+                  required={true}
                   value={email}
                   onChange={handleChange}
                 />
               </div>
+              {useCustomFields && customFields.map((f) => renderCustomField(f))}
             </>
           )}
-          <div className="input-container">
-            <p className="deal-attachment-tip" style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#888" }}>
-              ✼ {__("회사 URL 또는 소개서 파일을 첨부해 주시면 더욱 정확한 답변이 가능합니다.")}
-            </p>
-            <label htmlFor="attachments">{__("Attachments")} </label>
-            <FileUploader handleFiles={handleFiles} />
-          </div>
           <div className="ticket-form-item">
             <Input
               id="name"
@@ -200,12 +206,17 @@ const DealSubmitForm: React.FC<Props> = ({
               label={String(__("Deal description"))}
               onChange={handleChange}
               rows={10}
-              required={false}
+              required={true}
             />
           </div>
-          {useCustomFields ? (
-            customFields.map((f) => renderCustomField(f))
-          ) : (
+          <div className="input-container">
+            <p className="deal-attachment-tip" style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#888" }}>
+              ✼ {__("회사 URL 또는 소개서 파일을 첨부해 주시면 더욱 정확한 답변이 가능합니다.")}
+            </p>
+            <label htmlFor="attachments">{__("Attachments")} </label>
+            <FileUploader handleFiles={handleFiles} />
+          </div>
+          {!useCustomFields && (
             <>
               <div className="ticket-form-item">
                 <Input

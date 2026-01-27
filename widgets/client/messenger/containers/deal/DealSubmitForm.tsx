@@ -32,7 +32,7 @@ const DealSubmitContainer = (props: Props) => {
   const [error, setError] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState({
     firstName: "",
-    lastName: "",
+    companyName: "",
     phone: 0,
     email: "",
     name: "",
@@ -71,7 +71,7 @@ const DealSubmitContainer = (props: Props) => {
       setFormData((prev) => ({
         ...prev,
         firstName,
-        lastName,
+        companyName: lastName || "",
         phone: phones?.[0]?.replace(/\D/g, "") || "",
         email: emails?.[0] || "",
       }));
@@ -152,9 +152,10 @@ const DealSubmitContainer = (props: Props) => {
       variables: {
         customerId,
         firstName: formData.firstName,
-        lastName: formData.lastName,
+        lastName: "",
         emails: [formData.email],
         phones: [formData.phone],
+        companyName: formData.companyName,
       },
     });
   };

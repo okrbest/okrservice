@@ -236,8 +236,8 @@ const DEAL_ADD = gql`
 `;
 
 const CUSTOMER_EDIT = gql`
-  mutation WidgetsTicketCustomersEdit($customerId: String, $firstName: String, $lastName: String, $emails: [String], $phones: [String]) {
-    widgetsTicketCustomersEdit(customerId: $customerId, firstName: $firstName, lastName: $lastName, emails: $emails, phones: $phones) {
+  mutation WidgetsTicketCustomersEdit($customerId: String, $firstName: String, $lastName: String, $emails: [String], $phones: [String], $companyName: String) {
+    widgetsTicketCustomersEdit(customerId: $customerId, firstName: $firstName, lastName: $lastName, emails: $emails, phones: $phones, companyName: $companyName) {
       _id
       firstName
       email
