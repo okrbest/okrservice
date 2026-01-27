@@ -22,18 +22,21 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { setIsInputDisabled, setSelectedSkill, isLoggedIn } = useConfig();
 
+  // Extract integrationId to avoid object reference in dependency array
+  const integrationId = connection.data?.integrationId;
+
   // Set initial route based on deal configuration when connection.data is available
   useEffect(() => {
-    if (!initialRouteSet && connection.data && connection.data.integrationId) {
+    if (!initialRouteSet && connection.data && integrationId) {
       const dealData = getDealData();
       const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
-      
+
       if (showDeal) {
         setActiveRoute("deal");
       }
       setInitialRouteSet(true);
     }
-  }, [connection.data?.integrationId, initialRouteSet]);
+  }, [integrationId, initialRouteSet]);
 
   useEffect(() => {
     const { messengerData } = connection.data;

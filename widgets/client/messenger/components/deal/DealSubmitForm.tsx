@@ -17,6 +17,7 @@ type Props = {
   customFields?: CustomField[];
   customFieldsData?: Record<string, any>;
   customerLoading: boolean;
+  error?: string | null;
   handleSubmit: (e: any) => void;
   handleChange: (e: any) => void;
   handleCustomFieldChange?: (fieldId: string, value: any) => void;
@@ -33,6 +34,7 @@ const DealSubmitForm: React.FC<Props> = ({
   formData,
   customFields = [],
   customFieldsData = {},
+  error,
   handleChange,
   handleCustomFieldChange,
   handleFiles,
@@ -254,6 +256,22 @@ const DealSubmitForm: React.FC<Props> = ({
       }
     >
       <div className="ticket-container">
+        {error && (
+          <div
+            className="error-message"
+            style={{
+              padding: "12px 16px",
+              marginBottom: "16px",
+              backgroundColor: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: "8px",
+              color: "#dc2626",
+              fontSize: "14px",
+            }}
+          >
+            {error}
+          </div>
+        )}
         {loading || customerLoading ? (
           <div className="loader" />
         ) : isSubmitted ? (

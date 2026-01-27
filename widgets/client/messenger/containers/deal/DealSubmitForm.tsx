@@ -29,6 +29,7 @@ const DealSubmitContainer = (props: Props) => {
   const { customerId } = connection.data;
   const [isSubmitted, setIsSubmitted] = React.useState(false);
   const [dealId, setDealId] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState({
     firstName: "",
     lastName: "",
@@ -84,10 +85,12 @@ const DealSubmitContainer = (props: Props) => {
       if (widgetDealCreated?._id) {
         setDealId(widgetDealCreated._id);
         setIsSubmitted(true);
+        setError(null);
       }
     },
-    onError(error) {
-      return alert(error.message);
+    onError(err) {
+      console.error("[Deal] Failed to create deal:", err.message);
+      setError(err.message || "Failed to create deal. Please try again.");
     },
   });
 
@@ -119,8 +122,9 @@ const DealSubmitContainer = (props: Props) => {
 
       customerRefetch();
     },
-    onError(error) {
-      return alert(error.message);
+    onError(err) {
+      console.error("[Deal] Failed to update customer:", err.message);
+      setError(err.message || "Failed to save customer information. Please try again.");
     },
   });
 
@@ -142,6 +146,7 @@ const DealSubmitContainer = (props: Props) => {
 
   const onSubmit = (e: any) => {
     e.preventDefault();
+    setError(null); // Clear previous error on new submission
 
     return customerEdit({
       variables: {
@@ -166,6 +171,7 @@ const DealSubmitContainer = (props: Props) => {
       dealId={dealId}
       customFields={customFields}
       customFieldsData={customFieldsData}
+      error={error}
       handleSubmit={onSubmit}
       handleChange={handleChange}
       handleCustomFieldChange={handleCustomFieldChange}

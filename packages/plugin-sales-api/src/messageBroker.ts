@@ -203,17 +203,29 @@ export const setupMessageConsumers = async () => {
       defaultValue: null
     });
 
+    // XSS 방지를 위한 HTML 이스케이프 함수
+    const escapeHtml = (text: string): string => {
+      const htmlEscapes: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return text.replace(/[&<>"']/g, (char) => htmlEscapes[char] || char);
+    };
+
     // Widget에서 description의 엔터키(\n)를 HTML <p> 태그로 변환
     let description = doc.description;
     if (description && typeof description === 'string') {
       // 이미 HTML 태그가 있는지 확인 (일반 텍스트인 경우만 변환)
       const hasHtmlTags = /<[^>]+>/.test(description);
       if (!hasHtmlTags) {
-        // 일반 텍스트인 경우 \n을 <p> 태그로 변환
+        // 일반 텍스트인 경우 \n을 <p> 태그로 변환 (XSS 방지를 위해 이스케이프 적용)
         description = description
           .split(/\r\n|\r|\n/) // 줄바꿈 문자로 분리
           .filter(line => line.trim() !== '') // 빈 줄 제거
-          .map(line => `<p>${line}</p>`) // 각 줄을 <p> 태그로 감싸기
+          .map(line => `<p>${escapeHtml(line)}</p>`) // XSS 방지 후 <p> 태그로 감싸기
           .join('') || description; // 빈 배열인 경우 원본 반환
       }
     }
