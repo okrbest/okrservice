@@ -80,6 +80,7 @@ export const ticketFields = `
   emailSent
   widgetAlarm
   manualEmailRequest
+  visibility
 `;
 
 const tickets = `

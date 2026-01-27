@@ -35,6 +35,7 @@ const TicketSubmitContainer = (props: Props) => {
     ticketType: "inquiry",
     title: "",
     description: "",
+    visibility: "public",
   });
 
   const {
@@ -107,6 +108,7 @@ const TicketSubmitContainer = (props: Props) => {
           stageId: ticketData.ticketStageId,
           type: formData.ticketType,
           customerIds: [customerId],
+          visibility: formData.visibility,
         },
       });
 

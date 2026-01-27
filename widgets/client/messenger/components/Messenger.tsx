@@ -16,6 +16,8 @@ import TicketForget from "./ticket/TicketForget";
 import TicketListContainer from "../containers/ticket/TicketListContainer";
 import TicketShowProgressContainer from "../containers/ticket/TicketShowProgress";
 import TicketSubmitContainer from "../containers/ticket/TicketSubmitForm";
+import DealContainer from "../containers/deal/DealContainer";
+import DealSubmitContainer from "../containers/deal/DealSubmitForm";
 import WebsiteAppDetailContainer from "../containers/websiteApp/WebsiteAppDetail";
 
 type Props = {
@@ -77,6 +79,11 @@ function Messenger({
         return <TicketShowProgressContainer loading={loading} />;
       case "ticket-list":
         return <TicketListContainer loading={loading} />;
+
+      case "deal":
+        return <DealContainer loading={loading} />;
+      case "deal-submit":
+        return <DealSubmitContainer loading={loading} />;
 
       case "call":
         const callData = getCallData();

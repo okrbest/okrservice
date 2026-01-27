@@ -439,5 +439,49 @@ export default {
     }
 
     return topic;
-  }
+  },
+
+  async widgetsGetDealFields(
+    _root,
+    args: { boardId: string; pipelineId: string },
+    { subdomain }: IContext
+  ) {
+    const { boardId, pipelineId } = args;
+    const fields = await sendCoreMessage({
+      subdomain,
+      action: "fields.fieldsCombinedByContentType",
+      data: {
+        contentType: "sales:deal",
+        config: { boardId, pipelineId },
+      },
+      isRPC: true,
+      defaultValue: [],
+    });
+
+    const customFields = (fields || []).filter(
+      (f: any) =>
+        f.name && String(f.name).startsWith("customFieldsData.")
+    );
+
+    return customFields.map((f: any) => {
+      const fieldId = String(f.name).replace(/^customFieldsData\./, "");
+      const raw = f.options || f.selectOptions || [];
+      const opts = (Array.isArray(raw) ? raw : []).map((o: any) => {
+        if (typeof o === "string") {
+          return { value: o, label: o };
+        }
+        return {
+          value: o.value != null ? String(o.value) : "",
+          label: o.label != null ? String(o.label) : o.value != null ? String(o.value) : "",
+        };
+      });
+      return {
+        _id: fieldId,
+        name: f.name,
+        label: f.label || f.name,
+        type: (f.type || "input").toLowerCase(),
+        options: opts,
+      };
+    });
+  },
 };

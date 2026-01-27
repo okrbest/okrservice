@@ -92,6 +92,11 @@ export interface IConnectResponse {
   languageCode: string;
   messengerData: IIntegrationMessengerData;
   uiOptions: IIntegrationUiOptions;
+  ticketData?: { ticketStageId?: string; ticketToggle?: boolean; [k: string]: any };
+  dealData?: { dealStageId?: string; dealToggle?: boolean; [k: string]: any };
+  visitorId?: string;
+  brand?: { name?: string; description?: string };
+  callData?: any;
 }
 
 // faq

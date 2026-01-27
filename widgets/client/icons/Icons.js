@@ -743,6 +743,34 @@ const IconTicket = ({ size }) => (
   </svg>
 );
 
+const IconDeal = ({ size }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="28"
+    height="28"
+    viewBox="0 0 28 28"
+    fill="none"
+    style={{
+      height: size,
+      width: size,
+    }}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M3.5 6C3.5 4.61929 4.61929 3.5 6 3.5H22C23.3807 3.5 24.5 4.61929 24.5 6V10C24.5 10.8284 23.8284 11.5 23 11.5C22.1716 11.5 21.5 10.8284 21.5 10V6C21.5 5.72386 21.2761 5.5 21 5.5H7C6.72386 5.5 6.5 5.72386 6.5 6V22C6.5 22.2761 6.72386 22.5 7 22.5H21C21.2761 22.5 21.5 22.2761 21.5 22V18C21.5 17.1716 22.1716 16.5 23 16.5C23.8284 16.5 24.5 17.1716 24.5 18V22C24.5 23.3807 23.3807 24.5 22 24.5H6C4.61929 24.5 3.5 23.3807 3.5 22V6Z"
+      fill="black"
+    />
+    <path
+      d="M8.75 10.5H19.25M8.75 14.5H14"
+      stroke="white"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const IconCheckTicket = ({ size }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -984,6 +1012,7 @@ export {
   IconSend,
   IconCallEnd,
   IconTicket,
+  IconDeal,
   IconCheckTicket,
   IconZoomIn,
   IconZoomOut,

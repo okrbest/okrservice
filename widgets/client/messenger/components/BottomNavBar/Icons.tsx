@@ -76,6 +76,27 @@ export function IconTicket({ filled }: IconProps) {
   );
 }
 
+export function IconDeal({ filled }: IconProps) {
+  return (
+    <IconBase filled={filled}>
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        shapeRendering="auto"
+        d="M3 6C3 4.89543 3.89543 4 5 4H19C20.1046 4 21 4.89543 21 6V18C21 19.1046 20.1046 20 19 20H5C3.89543 20 3 19.1046 3 18V6ZM5 6V18H19V6H5Z"
+      />
+      <path
+        d="M7 10H17M7 14H13"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </IconBase>
+  );
+}
+
 export function IconQuestionMark({ filled }: IconProps) {
   return (
     <IconBase filled={filled}>

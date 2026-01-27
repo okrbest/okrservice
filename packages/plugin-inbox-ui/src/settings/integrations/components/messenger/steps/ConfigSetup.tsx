@@ -9,6 +9,7 @@ import { ICallData } from "@erxes/ui-inbox/src/settings/integrations/types";
 import Icon from "@erxes/ui/src/components/Icon";
 import React from "react";
 import TicketSelect from "../../../containers/messenger/Ticket";
+import DealSelect from "../../../containers/messenger/Deal";
 
 type BotPersistentMenuTypeMessenger = {
   _id: string;
@@ -28,10 +29,16 @@ type Props = {
   channelIds?: string[];
   botGreetMessage?: string;
   persistentMenus?: BotPersistentMenuTypeMessenger[];
-  handleFormChange: (name: string, value: string | boolean) => void;
+  handleFormChange: (name: string, value: string | boolean | string[]) => void;
   ticketPipelineId: string;
   ticketBoardId: string;
   ticketStageId: string;
+  ticketToggle?: boolean;
+  dealPipelineId: string;
+  dealBoardId: string;
+  dealStageId: string;
+  dealToggle?: boolean;
+  dealCustomFieldIds?: string[];
 };
 
 const ConfigSetup: React.FC<Props> = ({
@@ -49,6 +56,12 @@ const ConfigSetup: React.FC<Props> = ({
   ticketBoardId,
   ticketPipelineId,
   ticketStageId,
+  ticketToggle,
+  dealBoardId,
+  dealPipelineId,
+  dealStageId,
+  dealToggle,
+  dealCustomFieldIds,
 }) => {
   return (
     <FlexItem>
@@ -104,6 +117,22 @@ const ConfigSetup: React.FC<Props> = ({
               ticketPipelineId={ticketPipelineId || ""}
               ticketBoardId={ticketBoardId || ""}
               ticketStageId={ticketStageId || ""}
+              ticketToggle={ticketToggle}
+            />
+          </CollapseContent>
+          <CollapseContent
+            full={true}
+            beforeTitle={<Icon icon="briefcase" />}
+            transparent={true}
+            title="Deal Setup"
+          >
+            <DealSelect
+              handleFormChange={handleFormChange}
+              dealPipelineId={dealPipelineId || ""}
+              dealBoardId={dealBoardId || ""}
+              dealStageId={dealStageId || ""}
+              dealToggle={dealToggle}
+              dealCustomFieldIds={dealCustomFieldIds || []}
             />
           </CollapseContent>
         </ContentBox>

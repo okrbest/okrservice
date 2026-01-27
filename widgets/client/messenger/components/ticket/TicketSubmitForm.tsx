@@ -36,6 +36,7 @@ const TicketSubmitForm: React.FC<Props> = ({
   const continueText = __("Continue");
   const { email, firstName, lastName, phone } = formData;
   const [showTooltip, setShowTooltip] = React.useState(false);
+  const [showVisibilityTooltip, setShowVisibilityTooltip] = React.useState(false);
 
   const { isAuthFieldsVisible } = useConfig();
 
@@ -144,6 +145,58 @@ const TicketSubmitForm: React.FC<Props> = ({
                 <option value="additional_development">{__("추가개발")}</option>
                 <option value="usage_guide">{__("사용안내")}</option>
                 <option value="data_work">{__("데이터작업")}</option>
+              </select>
+            </div>
+          </div>
+          <div className="ticket-form-item">
+            <div className="input-container">
+              <label htmlFor="visibility" style={{ position: "relative" }}>
+                {__("공개 설정")} <span className="required">*</span>
+                <span 
+                  className="ticket-visibility-tooltip" 
+                  style={{ marginLeft: "5px", cursor: "pointer", fontSize: "14px", display: "inline-block" }}
+                  onMouseEnter={() => setShowVisibilityTooltip(true)}
+                  onMouseLeave={() => setShowVisibilityTooltip(false)}
+                >
+                  ℹ️
+                  {showVisibilityTooltip && (
+                    <span 
+                      className="ticket-visibility-tooltip-text"
+                      style={{
+                        width: '280px',
+                        backgroundColor: '#fff',
+                        color: '#666',
+                        textAlign: 'left',
+                        border: '1px solid #ddd',
+                        borderRadius: '4px',
+                        padding: '10px 12px',
+                        position: 'absolute',
+                        zIndex: 1000,
+                        top: '100%',
+                        marginTop: '5px',
+                        left: '50%',
+                        marginLeft: '-140px',
+                        fontSize: '11px',
+                        lineHeight: '1.5',
+                        whiteSpace: 'normal',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      공개: 회사 내 동료들이 회사 티켓보기에서 볼 수 있습니다<br />
+                      비공개: 민감한 내용일 경우 비공개로 설정하세요
+                    </span>
+                  )}
+                </span>
+              </label>
+              <select
+                id="visibility"
+                onChange={handleChange}
+                value={formData.visibility}
+                required
+              >
+                <option value="public">{__("공개")}</option>
+                <option value="private">{__("비공개")}</option>
               </select>
             </div>
           </div>

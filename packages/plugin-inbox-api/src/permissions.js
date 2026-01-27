@@ -49,6 +49,7 @@ module.exports = {
           "integrationsEditMessengerIntegration",
           "integrationsSaveMessengerAppearanceData",
           "integrationsSaveMessengerTicketData",
+          "integrationsSaveMessengerDealData",
           "integrationsSaveMessengerConfigs",
           "integrationsCreateLeadIntegration",
           "integrationsEditLeadIntegration",
@@ -76,6 +77,10 @@ module.exports = {
       {
         name: "integrationsSaveMessengerTicketData",
         description: "Save messenger ticket data"
+      },
+      {
+        name: "integrationsSaveMessengerDealData",
+        description: "Save messenger deal data"
       },
       {
         name: "integrationsSaveMessengerConfigs",

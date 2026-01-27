@@ -3,6 +3,7 @@ export const types = ({
   knowledgeBase,
   cloudflareCalls,
   tickets,
+  sales,
 }) => `
   ${
     products
@@ -27,6 +28,14 @@ export const types = ({
     customerName: String
   }
   extend type TicketComment @key(fields: "_id") {
+    _id: String! @external
+  }`
+      : ``
+  }
+  ${
+    sales
+      ? `
+  extend type Deal @key(fields: "_id") {
     _id: String! @external
   }`
       : ``
@@ -58,6 +67,7 @@ export const types = ({
     languageCode: String
     messengerData: JSON
     ticketData: JSON
+    dealData: JSON
     customerId: String
     visitorId: String
     brand: Brand
@@ -97,7 +107,7 @@ export const types = ({
   }
 `;
 
-export const queries = ({ products, knowledgeBase, tickets }) => `
+export const queries = ({ products, knowledgeBase, tickets, sales }) => `
   widgetsConversations(integrationId: String!, customerId: String, visitorId: String): [Conversation]
   widgetsConversationDetail(_id: String, integrationId: String!): ConversationDetailResponse
   widgetsGetMessengerIntegration(brandCode: String!): Integration
@@ -128,9 +138,16 @@ export const queries = ({ products, knowledgeBase, tickets }) => `
 
 
   widgetsProductCategory(_id: String!): ProductCategory
+  ${
+    sales
+      ? `
+  widgetsGetDealFields(boardId: String!, pipelineId: String!): JSON
+  `
+      : ``
+  }
 `;
 
-export const mutations = ({ tickets }) => `
+export const mutations = ({ tickets, sales }) => `
   widgetsMessengerConnect(
     brandCode: String!
     email: String
@@ -194,7 +211,7 @@ export const mutations = ({ tickets }) => `
 
   ${
     tickets
-      ? `widgetsTicketCustomersEdit (customerId: String, firstName: String, lastName: String, emails: [String], phones: [String]): Customer
+      ? `widgetsTicketCustomersEdit (customerId: String, firstName: String, lastName: String, emails: [String], phones: [String], companyName: String): Customer
   widgetsTicketCheckProgressForget(email: String, phoneNumber: String): JSON
   widgetsTicketCheckProgress(number: String!): Ticket
   widgetsTicketCommentAdd(
@@ -213,7 +230,22 @@ export const mutations = ({ tickets }) => `
     stageId: String!
     type: String!
     customerIds: [String!]!
+    visibility: String
   ): Ticket`
+      : ``
+  }
+  ${
+    sales
+      ? `widgetDealCreated(
+    name: String!
+    description: String
+    attachments: [AttachmentInput]
+    stageId: String!
+    customerIds: [String!]!
+    amount: Float
+    closeDate: Date
+    customFieldsData: JSON
+  ): Deal`
       : ``
   }
 `;
