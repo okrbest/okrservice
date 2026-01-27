@@ -133,6 +133,7 @@ const TICKET_LIST = gql`
       priority
       widgetAlarm
       customerName
+      visibility
       attachments {
         url
         name
@@ -347,6 +348,12 @@ const integrationsFetchApi = `
   }
 `;
 
+const widgetsGetDealFields = `
+  query widgetsGetDealFields($boardId: String!, $pipelineId: String!) {
+    widgetsGetDealFields(boardId: $boardId, pipelineId: $pipelineId)
+  }
+`;
+
 export {
   GET_UNREAD_COUNT,
   GET_CONVERSATION_DETAIL,
@@ -368,5 +375,6 @@ export {
   integrationsFetchApi,
   getEngageMessage,
   customerDetail,
+  widgetsGetDealFields,
   MESSAGE_FIELDS,
 };

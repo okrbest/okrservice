@@ -4,6 +4,7 @@ import { getLocalStorageItem } from "../../common";
 import { connection } from "../connection";
 import { IFaqArticle, IFaqCategory } from "../types";
 import { useConfig } from "./Config";
+import { getDealData } from "../utils/util";
 
 const RouterContext = createContext<any>(null);
 
@@ -17,8 +18,25 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
     useState<IFaqCategory | null>(null);
   const [currentWebsiteApp, setCurrentWebsiteApp] = useState("");
   const [isZoomed, setIsZoomed] = useState(false);
+  const [initialRouteSet, setInitialRouteSet] = useState(false);
 
   const { setIsInputDisabled, setSelectedSkill, isLoggedIn } = useConfig();
+
+  // Extract integrationId to avoid object reference in dependency array
+  const integrationId = connection.data?.integrationId;
+
+  // Set initial route based on deal configuration when connection.data is available
+  useEffect(() => {
+    if (!initialRouteSet && connection.data && integrationId) {
+      const dealData = getDealData();
+      const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
+
+      if (showDeal) {
+        setActiveRoute("deal");
+      }
+      setInitialRouteSet(true);
+    }
+  }, [integrationId, initialRouteSet]);
 
   useEffect(() => {
     const { messengerData } = connection.data;
@@ -39,13 +57,17 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   const handleAuthentication = (requireAuth: boolean) => {
     if (!isLoggedIn() && requireAuth) {
       // setActiveRoute('acquireInformation');
-      setActiveRoute("home");
+      const dealData = getDealData();
+      const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
+      setActiveRoute(showDeal ? "deal" : "home");
     }
   };
 
   const handleChatVisibility = (requireAuth: boolean, showChat: boolean) => {
     if ((!requireAuth && !getLocalStorageItem("hasNotified")) || !showChat) {
-      setActiveRoute("home");
+      const dealData = getDealData();
+      const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
+      setActiveRoute(showDeal ? "deal" : "home");
     }
   };
 

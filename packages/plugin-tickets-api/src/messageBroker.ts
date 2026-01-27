@@ -815,15 +815,17 @@ export const setupMessageConsumers = async () => {
         }
 
         if (companyIds.length > 0) {
-          // 같은 회사의 모든 티켓 조회
+          // 같은 회사의 모든 티켓 조회 (공개 티켓만)
           // customerIds로 직접 조회
           const companyTicketsByCustomerIds = await models.Tickets.find({
-            customerIds: { $in: [customerId] }
+            customerIds: { $in: [customerId] },
+            visibility: { $in: ["public", null, undefined] } // 공개 티켓만 (기본값도 포함)
           }).sort({ createdAt: -1 });
           
           // companyIds로 조회
           const companyTicketsByCompanyIds = await models.Tickets.find({
-            companyIds: { $in: companyIds }
+            companyIds: { $in: companyIds },
+            visibility: { $in: ["public", null, undefined] } // 공개 티켓만
           }).sort({ createdAt: -1 });
 
           // conformities를 통해 회사 티켓 조회
@@ -841,7 +843,8 @@ export const setupMessageConsumers = async () => {
           const companyTicketIds = companyMainTypeIds.map((mainType) => mainType.mainTypeId);
           const companyTicketsByConformities = companyTicketIds.length > 0 
             ? await models.Tickets.find({
-                _id: { $in: companyTicketIds }
+                _id: { $in: companyTicketIds },
+                visibility: { $in: ["public", null, undefined] } // 공개 티켓만
               }).sort({ createdAt: -1 })
             : [];
 
@@ -851,7 +854,12 @@ export const setupMessageConsumers = async () => {
           
           if (allTicketIds.size > 0) {
             tickets = await models.Tickets.find({
-              _id: { $in: Array.from(allTicketIds) }
+              _id: { $in: Array.from(allTicketIds) },
+              $or: [
+                { visibility: "public" },
+                { visibility: { $exists: false } },
+                { visibility: null }
+              ]
             }).sort({ createdAt: -1 });
             console.log('🔔 Including company tickets, total:', tickets.length);
           }
@@ -1049,11 +1057,18 @@ export const setupMessageConsumers = async () => {
         }
 
         if (companyIds.length > 0) {
-          // 같은 회사의 모든 티켓 조회
+          // 같은 회사의 공개 티켓만 조회
           ticketQuery = {
             $or: [
-              { customerIds: { $in: [customerId] } },
-              { companyIds: { $in: companyIds } }
+              { customerIds: { $in: [customerId] } }, // 자신의 티켓은 모두 조회 (visibility 무관)
+              {
+                companyIds: { $in: companyIds },
+                $or: [
+                  { visibility: "public" },
+                  { visibility: { $exists: false } },
+                  { visibility: null }
+                ]
+              }
             ]
           };
           console.log('🔔 Including company tickets for companyIds:', companyIds);

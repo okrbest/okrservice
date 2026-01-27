@@ -116,11 +116,6 @@ export const types = `
     dealPipelineId: String
     dealBoardId: String
     dealCustomFieldIds: [String]
-    dealRequiredCustomFieldIds: [String]
-    dealShowPrivacyConsent: Boolean
-    dealFormTitle: String
-    dealFormIntro: String
-    dealPrivacyPolicyUrl: String
   }
 
   input IntegrationMessengerData {
@@ -157,7 +152,6 @@ export const types = `
     wallpaper: String
     logo: String
     textColor: String
-    panelWidth: Int
   }
 
   input OperatorInput {

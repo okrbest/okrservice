@@ -10,7 +10,6 @@ import { customerDetail, widgetsGetDealFields } from "../../graphql/queries";
 import { getDealData } from "../../utils/util";
 import { readFile } from "../../../utils";
 import { useRouter } from "../../context/Router";
-import { useConversation } from "../../context/Conversation";
 
 interface FileWithUrl extends File {
   url?: string;
@@ -24,7 +23,6 @@ type Props = {
 
 const DealSubmitContainer = (props: Props) => {
   const { setRoute } = useRouter();
-  const { toggle, saveGetNotified } = useConversation();
 
   const [files, setFiles] = React.useState<FileWithUrl[]>([]);
   const dealData = getDealData();
@@ -35,7 +33,7 @@ const DealSubmitContainer = (props: Props) => {
   const [formData, setFormData] = React.useState({
     firstName: "",
     companyName: "",
-    phone: "",
+    phone: 0,
     email: "",
     name: "",
     description: "",
@@ -43,30 +41,6 @@ const DealSubmitContainer = (props: Props) => {
     closeDate: "",
   });
   const [customFieldsData, setCustomFieldsData] = React.useState<Record<string, any>>({});
-  const [agreePrivacy, setAgreePrivacy] = React.useState(false);
-
-  const trackDealSubmitConversion = React.useCallback(() => {
-    const w = window as any;
-
-    if (typeof w.gtag === "function") {
-      w.gtag("event", "conversion", {
-        send_to: "AW-11002647279/0Y4xCIqat5McEO-lvP4o",
-        value: 1.0,
-        currency: "KRW",
-      });
-      return;
-    }
-
-    // gtag가 아직 준비되지 않은 경우를 대비해 dataLayer에도 동일 이벤트를 적재
-    if (Array.isArray(w.dataLayer)) {
-      w.dataLayer.push({
-        event: "conversion",
-        send_to: "AW-11002647279/0Y4xCIqat5McEO-lvP4o",
-        value: 1.0,
-        currency: "KRW",
-      });
-    }
-  }, []);
 
   const {
     data: customer,
@@ -80,11 +54,6 @@ const DealSubmitContainer = (props: Props) => {
   const boardId = dealData?.dealBoardId || "";
   const pipelineId = dealData?.dealPipelineId || "";
   const selectedIds = dealData?.dealCustomFieldIds || [];
-  const requiredCustomFieldIds = dealData?.dealRequiredCustomFieldIds || [];
-  const showPrivacyConsent = dealData?.dealShowPrivacyConsent !== false;
-  const formTitle = dealData?.dealFormTitle;
-  const formIntro = dealData?.dealFormIntro;
-  const privacyPolicyUrl = dealData?.dealPrivacyPolicyUrl;
   const { data: dealFieldsData } = useQuery(gql(widgetsGetDealFields), {
     variables: { boardId, pipelineId },
     skip: !boardId || !pipelineId,
@@ -114,11 +83,9 @@ const DealSubmitContainer = (props: Props) => {
       const { widgetDealCreated } = data || {};
 
       if (widgetDealCreated?._id) {
+        setDealId(widgetDealCreated._id);
+        setIsSubmitted(true);
         setError(null);
-        trackDealSubmitConversion();
-        // 제출 완료 알림 후 위젯만 닫기 (성공 화면·문의&데모신청 화면 없이)
-        window.alert("제출이 완료되었습니다. 감사합니다.");
-        toggle();
       }
     },
     onError(err) {
@@ -129,13 +96,7 @@ const DealSubmitContainer = (props: Props) => {
 
   const [customerEdit] = useMutation(CUSTOMER_EDIT, {
     fetchPolicy: "no-cache",
-    onCompleted: async (data) => {
-      const edited = data?.widgetsTicketCustomersEdit;
-      const idForDeal =
-        edited?._id != null && String(edited._id) !== ""
-          ? String(edited._id)
-          : connection.data.customerId;
-
+    onCompleted: async () => {
       const transformedFiles = files.map((file) => ({
         url: readFile(file.url || ""),
         name: file.name,
@@ -146,16 +107,13 @@ const DealSubmitContainer = (props: Props) => {
         .filter(([, v]) => v != null && v !== "")
         .map(([field, value]) => ({ field, value }));
 
-      // 중복 이메일/전화 시 서버가 기존 고객 _id를 반환하므로 뮤테이션 결과를 우선 사용
-      const validCustomerIds = idForDeal ? [idForDeal] : [];
-
       await dealAdd({
         variables: {
           name: formData.name,
           description: formData.description || undefined,
           attachments: transformedFiles,
           stageId: dealData.dealStageId,
-          customerIds: validCustomerIds,
+          customerIds: [customerId],
           amount: formData.amount ? parseFloat(String(formData.amount)) : undefined,
           closeDate: formData.closeDate || undefined,
           customFieldsData: customFieldsDataArr.length ? customFieldsDataArr : undefined,
@@ -166,12 +124,7 @@ const DealSubmitContainer = (props: Props) => {
     },
     onError(err) {
       console.error("[Deal] Failed to update customer:", err.message);
-      const message = err.message || "Failed to save customer information. Please try again.";
-      const friendlyMessage =
-        message.includes("Customer ID not found") || message.includes("custom id not found")
-          ? "고객 정보를 찾을 수 없습니다. 이메일 또는 전화번호를 입력한 뒤 다시 제출해 주세요."
-          : message;
-      setError(friendlyMessage);
+      setError(err.message || "Failed to save customer information. Please try again.");
     },
   });
 
@@ -195,66 +148,14 @@ const DealSubmitContainer = (props: Props) => {
     e.preventDefault();
     setError(null); // Clear previous error on new submission
 
-    if (showPrivacyConsent && !agreePrivacy) {
-      setError("개인정보 수집/제공에 동의해 주세요.");
-      return;
-    }
-
-    // 필수 커스텀 필드 검증
-    if (requiredCustomFieldIds.length > 0 && customFields.length > 0) {
-      const missing = requiredCustomFieldIds.filter((fieldId: string) => {
-        const val = customFieldsData[fieldId];
-        return val == null || (typeof val === "string" && val.trim() === "") || (Array.isArray(val) && val.length === 0);
-      });
-      if (missing.length > 0) {
-        const fieldLabels = missing
-          .map((id: string) => customFields.find((f) => f._id === id)?.label || id)
-          .join(", ");
-        setError(`필수 항목을 입력해 주세요: ${fieldLabels}`);
-        return;
-      }
-    }
-
-    // GraphQL [String] 타입에 맞게 문자열 배열로 전달
-    const emails = formData.email != null && formData.email !== "" ? [String(formData.email)] : [];
-    const phones = formData.phone != null && formData.phone !== "" ? [String(formData.phone)] : [];
-
-    // custom id(고객 ID)가 없는 경우: 먼저 이메일/전화번호로 고객 생성 후 제출
-    if (!customerId) {
-      const type = formData.email ? "email" : "phone";
-      const value = (formData.email || formData.phone || "").trim();
-      if (!value) {
-        setError("제출하려면 이메일 또는 전화번호를 입력해 주세요.");
-        return;
-      }
-      saveGetNotified(
-        { type, value },
-        () => {},
-        () => {
-          // saveGetNotified 완료 후 connection.data.customerId가 설정됨 → 고객 정보 갱신 후 딜 생성
-          customerEdit({
-            variables: {
-              customerId: connection.data.customerId,
-              firstName: formData.firstName ?? "",
-              lastName: "",
-              emails,
-              phones,
-              companyName: formData.companyName ?? "",
-            },
-          });
-        }
-      );
-      return;
-    }
-
     return customerEdit({
       variables: {
         customerId,
-        firstName: formData.firstName ?? "",
+        firstName: formData.firstName,
         lastName: "",
-        emails,
-        phones,
-        companyName: formData.companyName ?? "",
+        emails: [formData.email],
+        phones: [formData.phone],
+        companyName: formData.companyName,
       },
     });
   };
@@ -271,7 +172,6 @@ const DealSubmitContainer = (props: Props) => {
       dealId={dealId}
       customFields={customFields}
       customFieldsData={customFieldsData}
-      requiredCustomFieldIds={requiredCustomFieldIds}
       error={error}
       handleSubmit={onSubmit}
       handleChange={handleChange}
@@ -279,12 +179,6 @@ const DealSubmitContainer = (props: Props) => {
       handleButtonClick={onButtonClick}
       handleFiles={setFiles}
       customerLoading={customerId ? customerLoading : false}
-      agreePrivacy={agreePrivacy}
-      onAgreePrivacyChange={setAgreePrivacy}
-      showPrivacyConsent={showPrivacyConsent}
-      formTitle={formTitle}
-      formIntro={formIntro}
-      privacyPolicyUrl={privacyPolicyUrl}
     />
   );
 };

@@ -78,6 +78,7 @@ const DealContainer = (props: Props) => {
         activeRoute={activeRoute}
         loading={props.loading}
         handleSubmit={onSubmit}
+        handleButtonClick={onButtonClick}
       />
       <div
         className="ticket-overlay"

@@ -21,12 +21,6 @@ type Props = {
   dealStageId: string;
   dealToggle?: boolean;
   dealCustomFieldIds?: string[];
-  dealRequiredCustomFieldIds?: string[];
-  dealShowPrivacyConsent?: boolean;
-  dealFormTitle?: string;
-  /** Subtitle / intro below title on widget deal form */
-  dealFormIntro?: string;
-  dealPrivacyPolicyUrl?: string;
 };
 
 function GeneralContainer(props: Props) {
@@ -98,8 +92,6 @@ function GeneralContainer(props: Props) {
     fetchPipelines,
     dealToggle: props.dealToggle,
     dealCustomFieldIds: props.dealCustomFieldIds || [],
-    dealRequiredCustomFieldIds: props.dealRequiredCustomFieldIds || [],
-    dealShowPrivacyConsent: props.dealShowPrivacyConsent,
     dealFields,
   };
   return <General {...updatedProps} />;

@@ -99,14 +99,6 @@ export interface IDealData {
   dealPipelineId?: String;
   dealBoardId?: String;
   dealCustomFieldIds?: string[];
-  dealRequiredCustomFieldIds?: string[];
-  dealShowPrivacyConsent?: Boolean;
-  /** Messenger deal form header; empty uses default i18n title */
-  dealFormTitle?: String;
-  /** Optional subtitle / intro below title in widget deal form; empty uses widget default */
-  dealFormIntro?: String;
-  /** Privacy policy URL for deal form consent links; empty keeps widget default */
-  dealPrivacyPolicyUrl?: String;
 }
 
 export interface IMessengerDataDocument extends IMessengerData, Document {}
@@ -178,8 +170,6 @@ export interface IUiOptions {
   wallpaper?: string;
   logo?: string;
   textColor?: string;
-  /** Embedded messenger panel width in pixels (desktop) */
-  panelWidth?: number;
 }
 
 // subdocument schema for messenger UiOptions
@@ -214,9 +204,6 @@ export interface IDealDataDocument extends Document {
   dealStageId?: String;
   dealPipelineId?: String;
   dealBoardId?: String;
-  dealFormTitle?: String;
-  dealFormIntro?: String;
-  dealPrivacyPolicyUrl?: String;
 }
 
 export interface IIntegrationDocument extends IIntegration, Document {
@@ -343,12 +330,7 @@ const dealSchema = new Schema(
     dealStageId: { type: String, required: true },
     dealPipelineId: { type: String, required: true },
     dealBoardId: { type: String, required: true },
-    dealCustomFieldIds: { type: [String] },
-    dealRequiredCustomFieldIds: { type: [String] },
-    dealShowPrivacyConsent: { type: Boolean },
-    dealFormTitle: { type: String, optional: true },
-    dealFormIntro: { type: String, optional: true },
-    dealPrivacyPolicyUrl: { type: String, optional: true },
+    dealCustomFieldIds: { type: [String] }
   },
   { _id: false }
 );
@@ -494,7 +476,6 @@ const uiOptionsSchema = new Schema(
     textColor: field({ type: String }),
     wallpaper: field({ type: String }),
     logo: field({ type: String }),
-    panelWidth: field({ type: Number, optional: true }),
   },
   { _id: false },
 );

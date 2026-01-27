@@ -18,6 +18,7 @@ export const types = ({ contacts, clientPortal }) => `
     requestType: String,
     qualityImpact: String,
     functionCategory: String,
+    visibility: String,
     ${commonListTypes}
   }
 
@@ -30,6 +31,7 @@ export const types = ({ contacts, clientPortal }) => `
     requestType: String
     qualityImpact: String
     functionCategory: String
+    visibility: String
     ${contacts
     ? `
       companies: [Company]

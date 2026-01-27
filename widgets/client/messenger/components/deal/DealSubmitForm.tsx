@@ -7,43 +7,6 @@ import Input from "../common/Input";
 import { __ } from "../../../utils";
 import { useConfig } from "../../context/Config";
 
-/** Used when integration has no dealPrivacyPolicyUrl */
-const DEFAULT_DEAL_PRIVACY_POLICY_URL =
-  "https://5240.cloud/%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%ec%b2%98%eb%a6%ac%eb%b0%a9%ec%b9%a8/";
-
-function resolvePrivacyPolicyHref(raw?: string): string {
-  const t = raw != null ? String(raw).trim() : "";
-  if (t === "") {
-    return DEFAULT_DEAL_PRIVACY_POLICY_URL;
-  }
-  const lower = t.toLowerCase();
-  if (lower.startsWith("https://") || lower.startsWith("http://")) {
-    return t;
-  }
-  return DEFAULT_DEAL_PRIVACY_POLICY_URL;
-}
-
-/** Default subtitle when integration `dealFormIntro` is empty */
-const DEFAULT_DEAL_FORM_INTRO =
-  "편하게 문의하여 주십시오. 상담을 통해 데모사이트를 개설해 드립니다.\n빠른 검토가 필요하실 경우 010-5940-5240으로 전화해 주셔도 됩니다.";
-
-const DEAL_FORM_INTRO_PHONE_HIGHLIGHT = "010-5940-5240";
-
-function renderFormIntroWithPhoneHighlight(text: string): React.ReactNode {
-  const phone = DEAL_FORM_INTRO_PHONE_HIGHLIGHT;
-  const i = text.indexOf(phone);
-  if (i === -1) {
-    return text;
-  }
-  return (
-    <>
-      {text.slice(0, i)}
-      <span style={{ color: "#1e40af", fontWeight: 600 }}>{phone}</span>
-      {text.slice(i + phone.length)}
-    </>
-  );
-}
-
 type CustomField = { _id: string; name: string; label: string; type: string; options?: Array<{ value: string; label: string }> };
 
 type Props = {
@@ -53,7 +16,6 @@ type Props = {
   formData: any;
   customFields?: CustomField[];
   customFieldsData?: Record<string, any>;
-  requiredCustomFieldIds?: string[];
   customerLoading: boolean;
   error?: string | null;
   handleSubmit: (e: any) => void;
@@ -61,15 +23,6 @@ type Props = {
   handleCustomFieldChange?: (fieldId: string, value: any) => void;
   handleButtonClick: () => void;
   handleFiles: (files: any) => void;
-  agreePrivacy?: boolean;
-  onAgreePrivacyChange?: (checked: boolean) => void;
-  showPrivacyConsent?: boolean;
-  /** Integration-specific header; falls back to i18n "Create a deal" */
-  formTitle?: string;
-  /** Subtitle under blue heading; empty uses default Korean copy (line breaks OK) */
-  formIntro?: string;
-  /** Privacy policy link; invalid/non-http(s) values fall back to default URL */
-  privacyPolicyUrl?: string;
 };
 
 const DealSubmitForm: React.FC<Props> = ({
@@ -81,38 +34,21 @@ const DealSubmitForm: React.FC<Props> = ({
   formData,
   customFields = [],
   customFieldsData = {},
-  requiredCustomFieldIds = [],
   error,
   handleChange,
   handleCustomFieldChange,
   handleFiles,
   handleButtonClick,
-  agreePrivacy = false,
-  onAgreePrivacyChange,
-  showPrivacyConsent = true,
-  formTitle,
-  formIntro,
-  privacyPolicyUrl,
 }) => {
   const submitText = __("Submit");
   const { email, firstName, companyName, phone } = formData;
 
   const { isAuthFieldsVisible } = useConfig();
 
-  const isRequired = (fieldId: string) => requiredCustomFieldIds.includes(fieldId);
-
   const renderCustomField = (f: CustomField) => {
     const value = customFieldsData[f._id];
     const onCustomChange = (e: any) => handleCustomFieldChange?.(f._id, e.target.value);
     const label = f.label || f._id;
-    const required = isRequired(f._id);
-    const labelNode = required ? (
-      <>
-        {label} <span className="required" style={{ color: "red", marginLeft: "2px" }}>*</span>
-      </>
-    ) : (
-      label
-    );
 
     if (f.type === "textarea" || f.type === "note") {
       return (
@@ -120,11 +56,11 @@ const DealSubmitForm: React.FC<Props> = ({
           <Input
             id={`custom_${f._id}`}
             textArea
-            label={required ? `${label} *` : String(label)}
+            label={String(label)}
             onChange={onCustomChange}
             value={value ?? ""}
             rows={4}
-            required={required}
+            required={true}
           />
         </div>
       );
@@ -135,13 +71,13 @@ const DealSubmitForm: React.FC<Props> = ({
         <div key={f._id} className="ticket-form-item">
           <div className="input-container">
             <label htmlFor={`custom_${f._id}`} style={{ whiteSpace: "nowrap" }}>
-              {labelNode}
+              {label} <span className="required" style={{ color: "red", marginLeft: "2px" }}>*</span>
             </label>
             <select
               id={`custom_${f._id}`}
               value={value ?? ""}
               onChange={(e) => handleCustomFieldChange?.(f._id, e.target.value)}
-              required={required}
+              required
             >
               <option value="">{__("Select")}</option>
               {opts.map((o: any, idx: number) => {
@@ -163,11 +99,11 @@ const DealSubmitForm: React.FC<Props> = ({
         <div key={f._id} className="ticket-form-item">
           <Input
             id={`custom_${f._id}`}
-            label={required ? `${label} *` : String(label)}
+            label={String(label)}
             type="date"
             onChange={onCustomChange}
             value={value ?? ""}
-            required={required}
+            required={true}
           />
         </div>
       );
@@ -177,11 +113,11 @@ const DealSubmitForm: React.FC<Props> = ({
         <div key={f._id} className="ticket-form-item">
           <Input
             id={`custom_${f._id}`}
-            label={required ? `${label} *` : String(label)}
+            label={String(label)}
             type="number"
             onChange={onCustomChange}
             value={value ?? ""}
-            required={required}
+            required={true}
           />
         </div>
       );
@@ -190,10 +126,10 @@ const DealSubmitForm: React.FC<Props> = ({
       <div key={f._id} className="ticket-form-item">
         <Input
           id={`custom_${f._id}`}
-          label={required ? `${label} *` : String(label)}
+          label={String(label)}
           onChange={onCustomChange}
           value={value ?? ""}
-          required={required}
+          required={true}
         />
       </div>
     );
@@ -201,30 +137,18 @@ const DealSubmitForm: React.FC<Props> = ({
 
   const useCustomFields = customFields.length > 0;
 
-  const resolvedFormIntro =
-    formIntro != null && String(formIntro).trim() !== ""
-      ? String(formIntro).trim()
-      : DEFAULT_DEAL_FORM_INTRO;
-
   const renderForm = () => {
     return (
       <form id="deal-form" onSubmit={handleSubmit}>
         <div className="form-container">
           {isAuthFieldsVisible && (
             <>
-              <div
-                style={{
-                  marginBottom: "24px",
-                  textAlign: "center",
-                  width: "100%",
-                  alignSelf: "stretch",
-                }}
-              >
-                <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px", color: "#1e40af", textAlign: "center" }}>
+              <div style={{ marginBottom: "24px", textAlign: "center" }}>
+                <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px", color: "#1e40af" }}>
                   데모 사이트를 통해 직접 확인해보세요
                 </h2>
-                <h2 style={{ fontSize: "16px", fontWeight: "400", color: "#666", lineHeight: "1.6", textAlign: "center", whiteSpace: "pre-line" }}>
-                  {renderFormIntroWithPhoneHighlight(resolvedFormIntro)}
+                <h2 style={{ fontSize: "16px", fontWeight: "400", color: "#666", lineHeight: "1.6" }}>
+                  문의를 남겨주시면 데모 사이트 오픈과 함께 <br /> 도입 방안을 안내해드립니다.
                 </h2>
               </div>
               <div className="ticket-form-item">
@@ -325,17 +249,22 @@ const DealSubmitForm: React.FC<Props> = ({
     }
   }, [isSubmitted, dealId, handleButtonClick]);
 
-  const trimmedTitle = formTitle != null ? String(formTitle).trim() : "";
-  const headerTitle =
-    trimmedTitle !== "" ? trimmedTitle : __("Create a deal");
-  const privacyPolicyHref = resolvePrivacyPolicyHref(privacyPolicyUrl);
-
   return (
     <Container
-      withBottomNavBar={false}
-      title={headerTitle}
+      withBottomNavBar={true}
+      title={__("Create a deal")}
       showBackButton={false}
-      showZoomButton={false}
+      persistentFooter={
+        !isSubmitted ? (
+          <Button form="deal-form" type="submit" full>
+            {loading ? (
+              <div className="loader" />
+            ) : (
+              <span className="font-semibold">{submitText}</span>
+            )}
+          </Button>
+        ) : null
+      }
     >
       <div className="ticket-container">
         {error && (
@@ -367,123 +296,7 @@ const DealSubmitForm: React.FC<Props> = ({
             </div>
           </div>
         ) : (
-          <>
-            {renderForm()}
-            {showPrivacyConsent && (
-              <div
-                style={{
-                  marginTop: "20px",
-                  width: "100%",
-                  marginBottom: "12px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    id="agree-privacy"
-                    checked={agreePrivacy}
-                    onChange={(e) => onAgreePrivacyChange?.(e.target.checked)}
-                    style={{ width: "18px", height: "18px", cursor: "pointer", flexShrink: 0 }}
-                  />
-                  <label
-                    htmlFor="agree-privacy"
-                    style={{
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      color: "#334155",
-                      userSelect: "none",
-                    }}
-                  >
-                    (필수){" "}
-                    <a
-                      href={privacyPolicyHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      style={{ color: "#4f33af", textDecoration: "underline" }}
-                    >
-                      개인정보 처리방침
-                    </a>
-                    에 동의합니다.
-                  </label>
-                </div>
-              </div>
-            )}
-            {error && (
-              <div
-                className="error-message"
-                style={{
-                  width: "90%",
-                  padding: "12px 16px",
-                  marginBottom: "12px",
-                  backgroundColor: "#fef2f2",
-                  border: "1px solid #fecaca",
-                  borderRadius: "8px",
-                  color: "#dc2626",
-                  fontSize: "14px",
-                }}
-              >
-                {error}
-              </div>
-            )}
-            {showPrivacyConsent && (
-              <p
-                style={{
-                  marginTop: 0,
-                  marginBottom: "14px",
-                  fontSize: "12px",
-                  color: "#94a3b8",
-                  lineHeight: 1.5,
-                  textAlign: "left",
-                  width: "100%",
-                }}
-              >
-                ✼ 본 양식을 제출하실 경우,{" "}
-                <a
-                  href={privacyPolicyHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: "#4f33af", textDecoration: "underline" }}
-                >
-                  개인정보 처리방침
-                </a>
-                에 모두 동의하신 것으로 간주됩니다.
-              </p>
-            )}
-            <div
-              style={{
-                width: "calc(100% + 24px)",
-                maxWidth: "calc(100% + 24px)",
-                margin: "0 -12px",
-              }}
-            >
-              <Button
-                form="deal-form"
-                type="submit"
-                full
-                style={{
-                  padding: "14px 24px",
-                  fontSize: "16px",
-                  minHeight: "52px",
-                  maxWidth: "100%",
-                  fontWeight: 600,
-                }}
-              >
-                {loading ? (
-                  <div className="loader" />
-                ) : (
-                  <span className="font-semibold">{submitText}</span>
-                )}
-              </Button>
-            </div>
-          </>
+          renderForm()
         )}
       </div>
     </Container>

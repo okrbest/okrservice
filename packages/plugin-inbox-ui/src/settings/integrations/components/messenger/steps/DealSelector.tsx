@@ -6,7 +6,6 @@ import { FlexItem, LeftItem } from "@erxes/ui/src/components/step/styles";
 import { IMessengerData } from "@erxes/ui-inbox/src/settings/integrations/types";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
-import FormControl from "@erxes/ui/src/components/form/Control";
 import Toggle from "@erxes/ui/src/components/Toggle";
 import { ToggleWrapper } from "../widgetPreview/styles";
 
@@ -21,11 +20,6 @@ type Props = {
   handleFormChange: (name: string, value: string | boolean | string[]) => void;
   dealToggle?: boolean;
   dealCustomFieldIds?: string[];
-  dealRequiredCustomFieldIds?: string[];
-  dealShowPrivacyConsent?: boolean;
-  dealFormTitle?: string;
-  dealFormIntro?: string;
-  dealPrivacyPolicyUrl?: string;
   dealFields?: DealField[];
   kind?: "client" | "vendor";
 } & IMessengerData;
@@ -38,11 +32,6 @@ function General({
   handleFormChange,
   dealToggle = false,
   dealCustomFieldIds = [],
-  dealRequiredCustomFieldIds = [],
-  dealShowPrivacyConsent = true,
-  dealFormTitle = "",
-  dealFormIntro = "",
-  dealPrivacyPolicyUrl = "",
   dealFields = [],
 }: Props) {
   const [show, setShow] = useState<boolean>(false);
@@ -51,10 +40,6 @@ function General({
 
   const handleDealToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFormChange("dealToggle", e.target.checked);
-  };
-
-  const handlePrivacyConsentToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFormChange("dealShowPrivacyConsent", e.target.checked);
   };
 
   const allIds = dealFields.map((f) => f._id);
@@ -70,13 +55,6 @@ function General({
       next = [...dealCustomFieldIds, fieldId];
     }
     handleFormChange("dealCustomFieldIds", next);
-  };
-
-  const toggleRequiredCustomField = (fieldId: string) => {
-    const next = dealRequiredCustomFieldIds.includes(fieldId)
-      ? dealRequiredCustomFieldIds.filter((id) => id !== fieldId)
-      : [...dealRequiredCustomFieldIds, fieldId];
-    handleFormChange("dealRequiredCustomFieldIds", next);
   };
 
   const BoardSelect: React.FC<any> = ({
@@ -139,117 +117,26 @@ function General({
               />
             )}
           </FormGroup>
-          {dealToggle && (
-            <FormGroup>
-              <ControlLabel>
-                {__("Deal form title in widget")}
-              </ControlLabel>
-              <p style={{ margin: "4px 0 8px 0", color: "#888", fontSize: "12px" }}>
-                {__(
-                  "Shown at the top of the deal form. Leave empty to use the default translated title."
-                )}
-              </p>
-              <FormControl
-                value={dealFormTitle}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleFormChange("dealFormTitle", e.target.value)
-                }
-                placeholder={__("e.g. General inquiry & demo request")}
-              />
-            </FormGroup>
-          )}
-          {dealToggle && (
-            <FormGroup>
-              <ControlLabel>
-                {__("Deal form intro in widget")}
-              </ControlLabel>
-              <p style={{ margin: "4px 0 8px 0", color: "#888", fontSize: "12px" }}>
-                {__(
-                  "Shown below the deal form title. Line breaks are preserved. Leave empty to use the default widget text."
-                )}
-              </p>
-              <FormControl
-                componentClass="textarea"
-                rows={4}
-                value={dealFormIntro}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  handleFormChange("dealFormIntro", e.target.value)
-                }
-              />
-            </FormGroup>
-          )}
-          {dealToggle && (
-            <FormGroup>
-              <ControlLabel>
-                {__("Show privacy consent checkbox and notice on deal form")}
-              </ControlLabel>
-              <ToggleWrapper>
-                <Toggle
-                  checked={dealShowPrivacyConsent}
-                  onChange={handlePrivacyConsentToggle}
-                  icons={{
-                    checked: <span>{__("Yes")}</span>,
-                    unchecked: <span>{__("No")}</span>,
-                  }}
-                />
-              </ToggleWrapper>
-            </FormGroup>
-          )}
-          {dealToggle && dealShowPrivacyConsent && (
-            <FormGroup>
-              <ControlLabel>
-                {__("Privacy policy URL (deal form)")}
-              </ControlLabel>
-              <p style={{ margin: "4px 0 8px 0", color: "#888", fontSize: "12px" }}>
-                {__(
-                  "URL opened when users click the privacy policy link. Use https://. Leave empty to use the default link."
-                )}
-              </p>
-              <FormControl
-                value={dealPrivacyPolicyUrl}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleFormChange("dealPrivacyPolicyUrl", e.target.value)
-                }
-                placeholder="https://"
-              />
-            </FormGroup>
-          )}
           {dealToggle && dealFields.length > 0 && (
             <FormGroup>
               <ControlLabel>{__("Show these custom fields in widget (Create a deal)")}</ControlLabel>
               <p style={{ margin: "4px 0 8px 0", color: "#888", fontSize: "12px" }}>
-                {__("Select which custom fields to display. If none selected, all are shown. Check \"Required\" to make the field mandatory.")}
+                {__("Select which custom fields to display. If none selected, all are shown.")}
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                {dealFields.map((f) => {
-                  const isShown = showAll || dealCustomFieldIds.includes(f._id);
-                  const isRequired = dealRequiredCustomFieldIds.includes(f._id);
-                  return (
-                    <div
-                      key={f._id}
-                      style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}
-                    >
-                      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-                        <input
-                          type="checkbox"
-                          checked={isShown}
-                          onChange={() => toggleCustomField(f._id)}
-                        />
-                        <span>{f.label || f._id}</span>
-                      </label>
-                      {isShown && (
-                        <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "12px", color: "#666" }}>
-                          <input
-                            type="checkbox"
-                            checked={isRequired}
-                            onChange={() => toggleRequiredCustomField(f._id)}
-                          />
-                          <span>{__("Required")}</span>
-                        </label>
-                      )}
-                    </div>
-                  );
-                })}
+                {dealFields.map((f) => (
+                  <label
+                    key={f._id}
+                    style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={showAll || dealCustomFieldIds.includes(f._id)}
+                      onChange={() => toggleCustomField(f._id)}
+                    />
+                    <span>{f.label || f._id}</span>
+                  </label>
+                ))}
               </div>
             </FormGroup>
           )}

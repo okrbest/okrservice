@@ -77,11 +77,6 @@ type State = {
   dealBoardId?: string;
   dealToggle?: boolean;
   dealCustomFieldIds?: string[];
-  dealRequiredCustomFieldIds?: string[];
-  dealShowPrivacyConsent?: boolean;
-  dealFormTitle?: string;
-  dealFormIntro?: string;
-  dealPrivacyPolicyUrl?: string;
   title: string;
   botEndpointUrl?: string;
   botShowInitialMessage?: boolean;
@@ -106,8 +101,6 @@ type State = {
   logo: string;
   logoPreviewStyle: any;
   logoPreviewUrl: string;
-  /** Desktop embed panel width (px) */
-  panelWidth: number;
   facebook: string;
   instagram: string;
   twitter: string;
@@ -179,11 +172,6 @@ class CreateMessenger extends React.Component<Props, State> {
       dealBoardId: dealData.dealBoardId || "",
       dealToggle: dealData.dealToggle || false,
       dealCustomFieldIds: dealData.dealCustomFieldIds || [],
-      dealRequiredCustomFieldIds: dealData.dealRequiredCustomFieldIds || [],
-      dealShowPrivacyConsent: dealData.dealShowPrivacyConsent !== false,
-      dealFormTitle: dealData.dealFormTitle || "",
-      dealFormIntro: dealData.dealFormIntro || "",
-      dealPrivacyPolicyUrl: dealData.dealPrivacyPolicyUrl || "",
       channelIds: channels.map((item) => item._id) || [],
       color: uiOptions.color || "#6569DF",
       textColor: uiOptions.textColor || "#fff",
@@ -208,7 +196,6 @@ class CreateMessenger extends React.Component<Props, State> {
       logo: uiOptions.logo || "",
       logoPreviewStyle: {},
       logoPreviewUrl: uiOptions.logo || "/images/erxes.png",
-      panelWidth: uiOptions.panelWidth || 408,
       facebook: links.facebook || "",
       instagram: links.instagram || "",
       twitter: links.twitter || "",
@@ -300,11 +287,6 @@ class CreateMessenger extends React.Component<Props, State> {
       dealBoardId,
       dealToggle,
       dealCustomFieldIds,
-      dealRequiredCustomFieldIds,
-      dealShowPrivacyConsent,
-      dealFormTitle,
-      dealFormIntro,
-      dealPrivacyPolicyUrl,
     } = this.state;
 
     if (!languageCode) {
@@ -321,17 +303,6 @@ class CreateMessenger extends React.Component<Props, State> {
 
     if (channelIds.length < 1) {
       return Alert.error("Choose a channel");
-    }
-
-    const panelWidthNum = Number(this.state.panelWidth);
-    if (
-      !Number.isFinite(panelWidthNum) ||
-      panelWidthNum < 320 ||
-      panelWidthNum > 1200
-    ) {
-      return Alert.error(
-        __("Messenger panel width must be between 320 and 1200 pixels")
-      );
     }
 
     if (messengerApps.websites && messengerApps.websites.length > 0) {
@@ -420,18 +391,12 @@ class CreateMessenger extends React.Component<Props, State> {
         dealBoardId: dealBoardId || "",
         dealToggle: !!dealToggle,
         dealCustomFieldIds: dealCustomFieldIds || [],
-        dealRequiredCustomFieldIds: dealRequiredCustomFieldIds || [],
-        dealShowPrivacyConsent: dealShowPrivacyConsent !== false,
-        dealFormTitle: (dealFormTitle || "").trim(),
-        dealFormIntro: (dealFormIntro || "").trim(),
-        dealPrivacyPolicyUrl: (dealPrivacyPolicyUrl || "").trim(),
       },
       uiOptions: {
         color: this.state.color,
         textColor: this.state.textColor,
         wallpaper: this.state.wallpaper,
         logo: this.state.logo,
-        panelWidth: Math.round(panelWidthNum),
       },
       messengerApps,
       callData: callData || {},
@@ -526,12 +491,6 @@ class CreateMessenger extends React.Component<Props, State> {
       dealBoardId = "",
       dealToggle = false,
       dealCustomFieldIds = [],
-      dealRequiredCustomFieldIds = [],
-      dealShowPrivacyConsent = true,
-      dealFormTitle = "",
-      dealFormIntro = "",
-      dealPrivacyPolicyUrl = "",
-      panelWidth,
     } = this.state;
 
     const { integration } = this.props;
@@ -560,7 +519,6 @@ class CreateMessenger extends React.Component<Props, State> {
                   textColor={textColor}
                   logoPreviewUrl={logoPreviewUrl}
                   wallpaper={wallpaper}
-                  panelWidth={panelWidth}
                 />
               </Step>
 
@@ -656,11 +614,6 @@ class CreateMessenger extends React.Component<Props, State> {
                   dealStageId={(dealStageId || "") as string}
                   dealToggle={dealToggle}
                   dealCustomFieldIds={dealCustomFieldIds || []}
-                  dealRequiredCustomFieldIds={dealRequiredCustomFieldIds || []}
-                  dealShowPrivacyConsent={dealShowPrivacyConsent}
-                  dealFormTitle={dealFormTitle}
-                  dealFormIntro={dealFormIntro}
-                  dealPrivacyPolicyUrl={dealPrivacyPolicyUrl}
                 />
               </Step>
               <Step

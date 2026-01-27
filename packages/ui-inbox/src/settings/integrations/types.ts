@@ -281,8 +281,6 @@ export interface IUiOptions {
   wallpaper?: string;
   logo?: string;
   logoPreviewUrl?: string;
-  /** Desktop messenger widget panel width (px) */
-  panelWidth?: number;
 }
 
 export interface ITopic {
@@ -331,14 +329,6 @@ export interface IDealTypeMessenger {
   dealPipelineId?: string;
   dealBoardId?: string;
   dealCustomFieldIds?: string[];
-  dealRequiredCustomFieldIds?: string[];
-  dealShowPrivacyConsent?: boolean;
-  /** Custom header on messenger deal form; omit or empty for default */
-  dealFormTitle?: string;
-  /** Optional intro / subtitle below the title in messenger deal form */
-  dealFormIntro?: string;
-  /** Privacy policy URL for consent links in deal widget */
-  dealPrivacyPolicyUrl?: string;
 }
 
 export interface IIntegration {

@@ -39,11 +39,6 @@ type Props = {
   dealStageId: string;
   dealToggle?: boolean;
   dealCustomFieldIds?: string[];
-  dealRequiredCustomFieldIds?: string[];
-  dealShowPrivacyConsent?: boolean;
-  dealFormTitle?: string;
-  dealFormIntro?: string;
-  dealPrivacyPolicyUrl?: string;
 };
 
 const ConfigSetup: React.FC<Props> = ({
@@ -67,11 +62,6 @@ const ConfigSetup: React.FC<Props> = ({
   dealStageId,
   dealToggle,
   dealCustomFieldIds,
-  dealRequiredCustomFieldIds,
-  dealShowPrivacyConsent,
-  dealFormTitle,
-  dealFormIntro,
-  dealPrivacyPolicyUrl,
 }) => {
   return (
     <FlexItem>
@@ -143,11 +133,6 @@ const ConfigSetup: React.FC<Props> = ({
               dealStageId={dealStageId || ""}
               dealToggle={dealToggle}
               dealCustomFieldIds={dealCustomFieldIds || []}
-              dealRequiredCustomFieldIds={dealRequiredCustomFieldIds || []}
-              dealShowPrivacyConsent={dealShowPrivacyConsent}
-              dealFormTitle={dealFormTitle}
-              dealFormIntro={dealFormIntro}
-              dealPrivacyPolicyUrl={dealPrivacyPolicyUrl}
             />
           </CollapseContent>
         </ContentBox>

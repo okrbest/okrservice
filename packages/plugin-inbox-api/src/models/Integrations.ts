@@ -305,15 +305,11 @@ export const loadClass = (models: IModels, subdomain: string) => {
      */
     public static async saveMessengerAppearanceData(
       _id: string,
-      { color, wallpaper, logo, textColor, panelWidth }: IUiOptions
+      { color, wallpaper, logo, textColor }: IUiOptions
     ) {
       await models.Integrations.updateOne(
         { _id },
-        {
-          $set: {
-            uiOptions: { color, wallpaper, logo, textColor, panelWidth },
-          },
-        },
+        { $set: { uiOptions: { color, wallpaper, logo, textColor } } },
         { runValdatiors: true }
       );
 
@@ -357,12 +353,7 @@ export const loadClass = (models: IModels, subdomain: string) => {
         dealStageId,
         dealPipelineId,
         dealBoardId,
-        dealCustomFieldIds,
-        dealRequiredCustomFieldIds,
-        dealShowPrivacyConsent,
-        dealFormTitle,
-        dealFormIntro,
-        dealPrivacyPolicyUrl
+        dealCustomFieldIds
       }: IDealData
     ) {
       await models.Integrations.updateOne(
@@ -375,12 +366,7 @@ export const loadClass = (models: IModels, subdomain: string) => {
               dealStageId,
               dealPipelineId,
               dealBoardId,
-              dealCustomFieldIds,
-              dealRequiredCustomFieldIds,
-              dealShowPrivacyConsent,
-              dealFormTitle,
-              dealFormIntro,
-              dealPrivacyPolicyUrl
+              dealCustomFieldIds
             }
           }
         },

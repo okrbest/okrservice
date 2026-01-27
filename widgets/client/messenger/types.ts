@@ -93,12 +93,7 @@ export interface IConnectResponse {
   messengerData: IIntegrationMessengerData;
   uiOptions: IIntegrationUiOptions;
   ticketData?: { ticketStageId?: string; ticketToggle?: boolean; [k: string]: any };
-  dealData?: {
-    dealStageId?: string;
-    dealToggle?: boolean;
-    dealFormIntro?: string;
-    [k: string]: any;
-  };
+  dealData?: { dealStageId?: string; dealToggle?: boolean; [k: string]: any };
   visitorId?: string;
   brand?: { name?: string; description?: string };
   callData?: any;
@@ -198,7 +193,6 @@ export interface ITicketComment {
   customerId: string;
   type: string;
   content: any;
-  attachments?: Array<{ name?: string; url?: string; type?: string; size?: number }>;
   createdAt: string;
   createdUser: {
     _id: string;
