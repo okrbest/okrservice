@@ -343,12 +343,22 @@ export default class EditorAttributeUtil {
           c => c.field === fieldMetaData._id
         );
 
-        const key = `{{ itemCustomField.${fieldMetaData._id} }}`;
+        // Support both fieldId and code
+        const keyById = `{{ itemCustomField.${fieldMetaData._id} }}`;
+        const keyByCode = fieldMetaData.code 
+          ? `{{ itemCustomField.${fieldMetaData.code} }}`
+          : null;
 
         if (!customFieldsDataItem) {
-          if (content.includes(key)) {
+          if (content.includes(keyById)) {
             replacers.push({
-              key,
+              key: keyById,
+              value: ""
+            });
+          }
+          if (keyByCode && content.includes(keyByCode)) {
+            replacers.push({
+              key: keyByCode,
               value: ""
             });
           }
@@ -363,9 +373,17 @@ export default class EditorAttributeUtil {
               "";
 
         replacers.push({
-          key,
+          key: keyById,
           value: replaceValue
         });
+
+        // Also add replacer for code if field has code
+        if (keyByCode) {
+          replacers.push({
+            key: keyByCode,
+            value: replaceValue
+          });
+        }
       }
     }
 

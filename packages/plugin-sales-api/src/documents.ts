@@ -489,11 +489,44 @@ export default {
       toMoney(replaceProductsResult.discount + replaceServicesResult.discount)
     );
 
+    // Replace custom fields by fieldId
     for (const customFieldData of item.customFieldsData || []) {
       replacedContent = replacedContent.replace(
         new RegExp(`{{ customFieldsData.${customFieldData.field} }}`, 'g'),
-        customFieldData.stringValue
+        customFieldData.stringValue || ''
       );
+    }
+
+    // Replace custom fields by code (if field has code)
+    const fieldIds = (item.customFieldsData || []).map(cfd => cfd.field);
+    if (fieldIds.length > 0) {
+      const fields = await sendCoreMessage({
+        subdomain,
+        action: 'fields.find',
+        data: {
+          query: {
+            _id: { $in: fieldIds },
+            code: { $exists: true, $ne: '' }
+          }
+        },
+        isRPC: true,
+        defaultValue: []
+      });
+
+      const fieldCodeMap: Record<string, string> = {};
+      for (const field of fields) {
+        fieldCodeMap[field._id] = field.code;
+      }
+
+      for (const customFieldData of item.customFieldsData || []) {
+        const fieldCode = fieldCodeMap[customFieldData.field];
+        if (fieldCode) {
+          replacedContent = replacedContent.replace(
+            new RegExp(`{{ customFieldsData.${fieldCode} }}`, 'g'),
+            customFieldData.stringValue || ''
+          );
+        }
+      }
     }
 
     const fileds = (await getCustomFields({ subdomain })).filter(

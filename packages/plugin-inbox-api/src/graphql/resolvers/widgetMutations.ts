@@ -331,8 +331,8 @@ const widgetMutations = {
         kind: "messenger",
       }).lean();
 
-      if (integration && integration.brandId) {
-        brandId = integration.brandId;
+      if (integration?.brandId != null) {
+        brandId = String(integration.brandId);
       }
     }
 
