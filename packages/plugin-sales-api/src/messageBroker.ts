@@ -237,16 +237,34 @@ export const setupMessageConsumers = async () => {
       aboveItemId: "",
     };
 
+    const deal = await itemsAdd(
+      models,
+      subdomain,
+      modifiedDoc,
+      "deal",
+      models.Deals.createDeal,
+      undefined // user는 위젯에서 null
+    );
+
+    // 위젯에서 생성한 Deal도 자동화 트리거(sales:deal, 단계와 같음) 발동
+    const isAutomationsAvailable = await isEnabled("automations");
+    if (isAutomationsAvailable && deal) {
+      await sendCommonMessage({
+        serviceName: "automations",
+        subdomain,
+        action: "trigger",
+        data: {
+          type: "sales:deal",
+          targets: [deal],
+        },
+        isRPC: true,
+        defaultValue: null,
+      });
+    }
+
     return {
       status: "success",
-      data: await itemsAdd(
-        models,
-        subdomain,
-        modifiedDoc,
-        "deal",
-        models.Deals.createDeal,
-        undefined // user는 위젯에서 null
-      )
+      data: deal,
     };
   });
 

@@ -82,6 +82,8 @@ export default {
         ['customers.email']: '-',
         ['customers.phone']: '-',
         ['customers.fullName']: '-',
+        ['companies.primaryName']: '-',
+        ['companies.name']: '-',
         link: '-',
         pipelineLabels: '-'
       },

@@ -235,20 +235,23 @@ const generateCustomFieldsDataValue = async ({
   let fieldId = fieldIdentifier;
   let field: any = null;
   
-  // 먼저 필드 ID로 직접 찾기
-  let customFieldData = (target?.customFieldsData || []).find(
-    ({ field }: any) => field === fieldId
+  // 먼저 필드 ID로 직접 찾기 (ObjectId/string 비교를 위해 String으로 통일)
+  const customFieldsList = target?.customFieldsData || [];
+  let customFieldData = customFieldsList.find(
+    (cfd: any) => String(cfd?.field) === String(fieldId)
   );
   
-  // 필드 ID로 찾지 못했으면 코드로 찾기
+  // 필드 ID로 찾지 못했으면 코드로 찾기 (Deal 필드는 contentType이 'sales:deal')
   if (!customFieldData) {
     field = await sendCoreMessage({
       subdomain,
       action: 'fields.findOne',
       data: {
         query: {
-          contentType: 'deal',
-          code: fieldIdentifier
+          $or: [
+            { contentType: 'sales:deal', code: fieldIdentifier },
+            { contentType: 'deal', code: fieldIdentifier }
+          ]
         }
       },
       isRPC: true,
@@ -257,8 +260,8 @@ const generateCustomFieldsDataValue = async ({
     
     if (field && field._id) {
       fieldId = field._id;
-      customFieldData = (target?.customFieldsData || []).find(
-        ({ field }: any) => field === fieldId
+      customFieldData = customFieldsList.find(
+        (cfd: any) => String(cfd?.field) === String(fieldId)
       );
     }
   }
