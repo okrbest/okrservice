@@ -33,7 +33,7 @@ const DealSubmitContainer = (props: Props) => {
   const [formData, setFormData] = React.useState({
     firstName: "",
     companyName: "",
-    phone: 0,
+    phone: "",
     email: "",
     name: "",
     description: "",
@@ -148,14 +148,18 @@ const DealSubmitContainer = (props: Props) => {
     e.preventDefault();
     setError(null); // Clear previous error on new submission
 
+    // GraphQL [String] 타입에 맞게 문자열 배열로 전달
+    const emails = formData.email != null && formData.email !== "" ? [String(formData.email)] : [];
+    const phones = formData.phone != null && formData.phone !== "" ? [String(formData.phone)] : [];
+
     return customerEdit({
       variables: {
         customerId,
-        firstName: formData.firstName,
+        firstName: formData.firstName ?? "",
         lastName: "",
-        emails: [formData.email],
-        phones: [formData.phone],
-        companyName: formData.companyName,
+        emails,
+        phones,
+        companyName: formData.companyName ?? "",
       },
     });
   };

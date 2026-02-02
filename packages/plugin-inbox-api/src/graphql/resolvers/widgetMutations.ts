@@ -332,7 +332,7 @@ const widgetMutations = {
       }).lean();
 
       if (integration?.brandId != null) {
-        brandId = String(integration.brandId);
+        brandId = integration.brandId as string;
       }
     }
 

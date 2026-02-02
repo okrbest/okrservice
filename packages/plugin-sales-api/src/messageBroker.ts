@@ -247,9 +247,10 @@ export const setupMessageConsumers = async () => {
     );
 
     // 위젯에서 생성한 Deal도 자동화 트리거(sales:deal, 단계와 같음) 발동
+    // await 없이 비동기 처리 → 응답 속도 개선 (이메일 발송 등은 백그라운드에서 진행)
     const isAutomationsAvailable = await isEnabled("automations");
     if (isAutomationsAvailable && deal) {
-      await sendCommonMessage({
+      sendCommonMessage({
         serviceName: "automations",
         subdomain,
         action: "trigger",
