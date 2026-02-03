@@ -332,22 +332,29 @@ const widgetMutations = {
       }).lean();
 
       if (integration?.brandId != null) {
-        brandId = String(integration.brandId);
+        brandId = integration.brandId as string;
       }
     }
 
-    // Update customer
+    // Update customer: primaryEmail/primaryPhone 포함해 연락처에 이메일·전화번호 저장
+    const doc: Record<string, any> = {};
+    if (firstName !== undefined && firstName !== null) doc.firstName = firstName;
+    if (lastName !== undefined && lastName !== null) doc.lastName = lastName;
+    if (emails !== undefined && Array.isArray(emails)) {
+      doc.emails = emails;
+      doc.primaryEmail = emails[0] ?? undefined;
+    }
+    if (phones !== undefined && Array.isArray(phones)) {
+      doc.phones = phones;
+      doc.primaryPhone = phones[0] ?? undefined;
+    }
+
     const customer = await sendCoreMessage({
       subdomain,
       action: "customers.updateCustomer",
       data: {
         _id: customerId,
-        doc: {
-          firstName,
-          lastName,
-          emails,
-          phones,
-        },
+        doc,
       },
       isRPC: true,
       defaultValue: null,
