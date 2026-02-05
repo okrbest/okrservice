@@ -67,10 +67,6 @@ const SingleArticle = ({ articleId }: Props) => {
             <h3 className="w-full text-[18px] font-semibold leading-5 text-gray-900">
               {article.title}
             </h3>
-
-            <p className="mt-5 prose max-w-none text-[14px]">
-              {article.summary}
-            </p>
           </div>
           <div className="my-5">
             <div
