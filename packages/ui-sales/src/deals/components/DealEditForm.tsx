@@ -1,4 +1,12 @@
-import { EditFormContent, LeftSide, RightSide } from "../styles";
+import {
+  EditFormContent,
+  LeftSide,
+  RightSide,
+  MobileEditFormWrapper,
+  MobileTabBar,
+  MobileTab,
+  MobileContent,
+} from "../styles";
 import { IDeal, IDealParams } from "../types";
 import { IEditFormContent, IItem, IOptions } from "../../boards/types";
 import { TabTitle, Tabs } from "@erxes/ui/src/components/tabs";
@@ -27,6 +35,7 @@ import React from "react";
 import SidebarConformity from "../../boards/components/editForm/SidebarConformity";
 import Top from "../../boards/components/editForm/Top";
 import { isEnabled } from "@erxes/ui/src/utils/core";
+import { useIsMobile } from "../../boards/utils/mobile";
 
 type Props = {
   options: IOptions;
@@ -49,6 +58,7 @@ type Props = {
   ) => void;
   isPopupVisible?: boolean;
   currentUser: IUser;
+  isMobile?: boolean;
 };
 
 type State = {
@@ -60,7 +70,7 @@ type State = {
   currentTab: string;
 };
 
-export default class DealEditForm extends React.Component<Props, State> {
+class DealEditForm extends React.Component<Props, State> {
   constructor(props) {
     super(props);
 
@@ -288,6 +298,7 @@ export default class DealEditForm extends React.Component<Props, State> {
       addItem,
       sendToBoard,
       updateTimeTrack,
+      isMobile,
     } = this.props;
     const { currentTab } = this.state;
     const isFullQueryParam = routerUtils.getParam(location, "isFull");
@@ -310,6 +321,36 @@ export default class DealEditForm extends React.Component<Props, State> {
           renderItems={this.renderItems}
           currentUser={currentUser}
         />
+      );
+    }
+
+    if (isMobile) {
+      const tabs = [
+        { id: "overview", label: __("Overview"), icon: "newspaper" },
+        { id: "detail", label: __("Details"), icon: "file-info-alt" },
+        { id: "product", label: __("Products"), icon: "bar-chart" },
+        { id: "properties", label: __("Properties"), icon: "settings" },
+        { id: "activity", label: __("Activity"), icon: "graph-bar" },
+      ];
+      return (
+        <MobileEditFormWrapper>
+          <MobileTabBar>
+            {tabs.map((tab) => (
+              <MobileTab
+                key={tab.id}
+                $active={currentTab === tab.id}
+                onClick={() => this.tabOnClick(tab.id)}
+              >
+                <Icon size={14} icon={tab.icon} />
+                {" "}
+                {tab.label}
+              </MobileTab>
+            ))}
+          </MobileTabBar>
+          <MobileContent>
+            {this.renderTabContent({ saveItem, onChangeStage, copy, remove })}
+          </MobileContent>
+        </MobileEditFormWrapper>
       );
     }
 
@@ -378,3 +419,11 @@ export default class DealEditForm extends React.Component<Props, State> {
     return <EditForm {...extendedProps} />;
   }
 }
+
+function DealEditFormWithMobile(props: Omit<Props, "isMobile">) {
+  const isMobile = useIsMobile();
+  return <DealEditForm {...props} isMobile={isMobile} />;
+}
+
+export { DealEditForm, DealEditFormWithMobile };
+export default DealEditFormWithMobile;

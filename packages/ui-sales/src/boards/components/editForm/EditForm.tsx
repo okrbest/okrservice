@@ -1,6 +1,8 @@
 import { ArchiveStatus, HeaderContentSmall } from "../../styles/item";
 import {
   EditFormContent,
+  EditFormHeaderBar,
+  EditFormBody,
   RightDrawerContainer,
   TopHeader,
   TopHeaderButton,
@@ -225,10 +227,10 @@ function EditForm(props: Props) {
     }
 
     return (
-      <h3>
-        {__("Edit")}
+      <EditFormHeaderBar>
+        <h3>{__("Edit")}</h3>
         <Icon icon="times" size={24} onClick={onHideModal} />
-      </h3>
+      </EditFormHeaderBar>
     );
   };
 
@@ -246,16 +248,17 @@ function EditForm(props: Props) {
             ref={wrapperRef}
           >
             <EditFormContent>
-              {renderArchiveStatus()}
-
               {renderHeader()}
-              {props.formContent({
-                state: { stageId, updatedItem, prevStageId },
-                saveItem: saveItemHandler,
-                onChangeStage,
-                copy,
-                remove,
-              })}
+              <EditFormBody>
+                {renderArchiveStatus()}
+                {props.formContent({
+                  state: { stageId, updatedItem, prevStageId },
+                  saveItem: saveItemHandler,
+                  onChangeStage,
+                  copy,
+                  remove,
+                })}
+              </EditFormBody>
             </EditFormContent>
           </RightDrawerContainer>
         </CSSTransition>

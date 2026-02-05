@@ -322,6 +322,62 @@ const EditFormContent = styled.div`
   height: 100%;
 `;
 
+// 모바일: 세로 배치, 전체 너비
+const MobileEditFormWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+`;
+
+const MobileTabBar = styled.div`
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 4px;
+  padding: 8px ${dimensions.unitSpacing}px;
+  border-bottom: 1px solid ${colors.borderPrimary};
+  background: ${colors.bgLight};
+  flex-shrink: 0;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+`;
+
+const MobileTab = styled.button<{ $active?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  background: ${(props) =>
+    props.$active ? colors.colorPrimary : colors.colorWhite};
+  color: ${(props) =>
+    props.$active ? colors.colorWhite : colors.textPrimary};
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: ${(props) =>
+      props.$active ? colors.colorPrimaryDark : colors.bgActive};
+  }
+`;
+
+const MobileContent = styled.div`
+  flex: 1;
+  overflow: auto;
+  padding: ${dimensions.unitSpacing}px ${dimensions.coreSpacing}px;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+`;
+
 const FullContainer = styled.div`
   display: flex;
   height: 100%;
@@ -383,6 +439,10 @@ export {
   LeftSide,
   RightSide,
   EditFormContent,
+  MobileEditFormWrapper,
+  MobileTabBar,
+  MobileTab,
+  MobileContent,
   FullContainer,
   FullLeftSide,
   FullRightSide,
