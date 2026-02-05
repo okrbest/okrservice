@@ -244,7 +244,7 @@ function EditForm(props: Props) {
           unmountOnExit={true}
         >
           <RightDrawerContainer
-            width={isFullMode ? "calc(100% - 100px)" : "45%"}
+            width={isFullMode ? "calc(100% - 100px)" : "80%"}
             ref={wrapperRef}
           >
             <EditFormContent>

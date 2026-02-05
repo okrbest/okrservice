@@ -94,14 +94,19 @@ const RightDrawerContainer = styledTS<{ width?: string } & any>(
   background: ${colors.colorWhite};
   width: ${(props) =>
     props.width ? props.width : '500px'};
+  max-width: 95vw;
   z-index: 10;
   top: 0;
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
 
   @media (max-width: 768px) {
     width: 100% !important;
+    max-width: 100%;
     left: 0;
     right: 0;
-    max-width: 100%;
+    transform: none;
     z-index: 999;
   }
 `;

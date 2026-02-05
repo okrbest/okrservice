@@ -1,6 +1,8 @@
 import {
   EditFormContent,
+  FormScrollBody,
   LeftSide,
+  RightDetailSide,
   RightSide,
   MobileEditFormWrapper,
   MobileTabBar,
@@ -10,7 +12,6 @@ import {
 import { IDeal, IDealParams } from "../types";
 import { IEditFormContent, IItem, IOptions } from "../../boards/types";
 import { TabTitle, Tabs } from "@erxes/ui/src/components/tabs";
-import TaskTimer, { STATUS_TYPES } from "@erxes/ui/src/components/Timer";
 import {
   __,
   loadDynamicComponent,
@@ -20,6 +21,10 @@ import {
 import ActivityLogs from "@erxes/ui-log/src/activityLogs/containers/ActivityLogs";
 import CommonActions from "../../boards/components/editForm/CommonActions";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
+import FormGroup from "@erxes/ui/src/components/form/Group";
+import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
+import SelectDepartments from "@erxes/ui/src/team/containers/SelectDepartments";
+import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
 import CustomFieldsSection from "../../boards/containers/editForm/CustomFieldsSection";
 import CustomerDateFields from "./CustomerDateFields";
 import EditForm from "../../boards/components/editForm/EditForm";
@@ -168,28 +173,52 @@ class DealEditForm extends React.Component<Props, State> {
   };
 
   renderDetail = saveItem => {
-    const { item, options, updateTimeTrack } = this.props;
-
-    const timeTrack = item.timeTrack || {
-      timeSpent: 0,
-      status: STATUS_TYPES.STOPPED,
-    };
+    const { item, options, currentUser } = this.props;
+    const userOnChange = usrs => saveItem({ assignedUserIds: usrs });
+    const onChangeStructure = (values, name) => saveItem({ [name]: values });
+    const assignedUserIds = (item.assignedUsers || []).map(user => user._id);
+    const branchIds = currentUser?.branchIds;
+    const departmentIds = currentUser?.departmentIds;
 
     return (
       <>
+        <FormGroup>
+          <ControlLabel uppercase={true}>{__("Assigned to")}</ControlLabel>
+          <SelectTeamMembers
+            label={__("Choose users")}
+            name="assignedUserIds"
+            initialValue={assignedUserIds}
+            onSelect={userOnChange}
+            filterParams={{
+              isAssignee: true,
+              departmentIds,
+              branchIds,
+            }}
+          />
+        </FormGroup>
+        <FormGroup>
+          <ControlLabel uppercase={true}>{__("Branches")}</ControlLabel>
+          <SelectBranches
+            name="branchIds"
+            label={__("Choose branches")}
+            initialValue={item?.branchIds}
+            onSelect={onChangeStructure}
+          />
+        </FormGroup>
+        <FormGroup>
+          <ControlLabel uppercase={true}>{__("Departments")}</ControlLabel>
+          <SelectDepartments
+            name="departmentIds"
+            label={__("Choose departments")}
+            onSelect={onChangeStructure}
+            initialValue={item?.departmentIds}
+          />
+        </FormGroup>
         <SidebarConformity
           options={options}
           item={item}
           saveItem={saveItem}
           renderItems={this.renderItems}
-        />
-
-        <TaskTimer
-          taskId={item._id}
-          status={timeTrack.status}
-          timeSpent={timeTrack.timeSpent}
-          startDate={timeTrack.startDate}
-          update={updateTimeTrack}
         />
 
         {loadDynamicComponent(
@@ -251,7 +280,7 @@ class DealEditForm extends React.Component<Props, State> {
   };
 
   renderOverview = ({ saveItem, onChangeStage, copy, remove }) => {
-    const { item, options, onUpdate, sendToBoard, addItem, currentUser } =
+    const { item, options, onUpdate, sendToBoard, addItem, currentUser, isMobile } =
       this.props;
 
     return (
@@ -279,7 +308,10 @@ class DealEditForm extends React.Component<Props, State> {
           onChangeStage={onChangeStage}
           onChangeRefresh={this.onChangeRefresh}
           currentUser={currentUser}
+          hideAssignmentFields={true}
         />
+        {/* 모바일은 오른쪽 사이드바 없음 → 한 스크롤에 Detail까지 포함 */}
+        {isMobile && this.renderDetail(saveItem)}
       </>
     );
   };
@@ -327,7 +359,6 @@ class DealEditForm extends React.Component<Props, State> {
     if (isMobile) {
       const tabs = [
         { id: "overview", label: __("Overview"), icon: "newspaper" },
-        { id: "detail", label: __("Details"), icon: "file-info-alt" },
         { id: "product", label: __("Products"), icon: "bar-chart" },
         { id: "properties", label: __("Properties"), icon: "settings" },
         { id: "activity", label: __("Activity"), icon: "graph-bar" },
@@ -356,9 +387,14 @@ class DealEditForm extends React.Component<Props, State> {
 
     return (
       <EditFormContent>
-        <LeftSide>
-          {this.renderTabContent({ saveItem, onChangeStage, copy, remove })}
-        </LeftSide>
+        <FormScrollBody>
+          <LeftSide>
+            {this.renderTabContent({ saveItem, onChangeStage, copy, remove })}
+          </LeftSide>
+          <RightDetailSide>
+            {this.renderDetail(saveItem)}
+          </RightDetailSide>
+        </FormScrollBody>
         <RightSide>
           <Tabs direction="vertical">
             <TabTitle
@@ -368,14 +404,6 @@ class DealEditForm extends React.Component<Props, State> {
             >
               <Icon size={16} icon={"newspaper"} />
               {__("Overview")}
-            </TabTitle>
-            <TabTitle
-              direction="vertical"
-              className={currentTab === "detail" ? "active" : ""}
-              onClick={this.tabOnClick.bind(this, "detail")}
-            >
-              <Icon size={16} icon={"file-info-alt"} />
-              {__("Details")}
             </TabTitle>
             <TabTitle
               direction="vertical"

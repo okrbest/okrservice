@@ -304,22 +304,43 @@ const PaymentTypeScoreCampaign = styled.div`
   flex-direction: column;
   padding: 6px 12px;
 }`;
+/* 티켓처럼 왼쪽·오른쪽이 한 스크롤로 같이 움직이도록 하는 영역 */
+const FormScrollBody = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+`;
+
 const LeftSide = styled.div`
   flex: 1;
+  min-width: 0;
+  min-height: min-content;
   padding: ${dimensions.unitSpacing}px ${dimensions.coreSpacing}px;
-  width: 80%;
-  overflow: auto;
-  height: calc(100% - 70px);
+  background: ${colors.colorWhite};
+`;
+
+const RightDetailSide = styled.div`
+  width: 240px;
+  flex-shrink: 0;
+  min-height: min-content;
+  border-left: 1px solid ${colors.borderPrimary};
+  padding: ${dimensions.unitSpacing}px ${dimensions.coreSpacing}px;
+  background: ${colors.bgLight};
 `;
 
 const RightSide = styled.div`
   width: 80px;
+  flex-shrink: 0;
   border-left: 1px solid ${colors.borderPrimary};
 `;
 
 const EditFormContent = styled.div`
   display: flex;
   height: 100%;
+  overflow: hidden;
 `;
 
 // 모바일: 세로 배치, 전체 너비
@@ -436,7 +457,9 @@ export {
   VoucherContainer,
   FlexRowGap,
   PaymentTypeScoreCampaign,
+  FormScrollBody,
   LeftSide,
+  RightDetailSide,
   RightSide,
   EditFormContent,
   MobileEditFormWrapper,
