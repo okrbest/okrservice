@@ -94,12 +94,59 @@ const RightDrawerContainer = styledTS<{ width?: string } & any>(
   background: ${colors.colorWhite};
   width: ${(props) =>
     props.width ? props.width : '500px'};
+  max-width: 95vw;
   z-index: 10;
   top: 0;
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+
+  @media (max-width: 768px) {
+    width: 100% !important;
+    max-width: 100%;
+    left: 0;
+    right: 0;
+    transform: none;
+    z-index: 999;
+  }
 `;
 
 const EditFormContent = styled.div`
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+const EditFormHeaderBar = styled.div`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${dimensions.unitSpacing}px ${dimensions.coreSpacing}px;
+  border-bottom: 1px solid ${colors.borderPrimary};
+  background: ${colors.colorWhite};
+
+  @media (max-width: 768px) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-height: 48px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: ${dimensions.unitSpacing}px;
+  }
+`;
+
+const EditFormBody = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 `;
 
 export const TabContent = styled.div`
@@ -227,6 +274,8 @@ export {
   ArchiveWrapper,
   RightDrawerContainer,
   EditFormContent,
+  EditFormHeaderBar,
+  EditFormBody,
   TopHeader,
   TopHeaderButton,
 };

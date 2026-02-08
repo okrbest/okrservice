@@ -86,7 +86,6 @@ export default class ArticleDetail extends React.PureComponent<
       modifiedDate,
       createdDate,
       title,
-      summary,
       content
     } = article;
 
@@ -126,7 +125,6 @@ export default class ArticleDetail extends React.PureComponent<
             </div>
           </div>
           <div className="erxes-article-content">
-            <p>{summary}</p>
             <p dangerouslySetInnerHTML={{ __html: content }} />
           </div>
 

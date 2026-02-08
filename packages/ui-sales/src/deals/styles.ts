@@ -304,22 +304,99 @@ const PaymentTypeScoreCampaign = styled.div`
   flex-direction: column;
   padding: 6px 12px;
 }`;
+/* 티켓처럼 왼쪽·오른쪽이 한 스크롤로 같이 움직이도록 하는 영역 */
+const FormScrollBody = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+`;
+
 const LeftSide = styled.div`
   flex: 1;
+  min-width: 0;
+  min-height: min-content;
   padding: ${dimensions.unitSpacing}px ${dimensions.coreSpacing}px;
-  width: 80%;
-  overflow: auto;
-  height: calc(100% - 70px);
+  background: ${colors.colorWhite};
+`;
+
+const RightDetailSide = styled.div`
+  width: 240px;
+  flex-shrink: 0;
+  min-height: min-content;
+  border-left: 1px solid ${colors.borderPrimary};
+  padding: ${dimensions.unitSpacing}px ${dimensions.coreSpacing}px;
+  background: ${colors.bgLight};
 `;
 
 const RightSide = styled.div`
   width: 80px;
+  flex-shrink: 0;
   border-left: 1px solid ${colors.borderPrimary};
 `;
 
 const EditFormContent = styled.div`
   display: flex;
   height: 100%;
+  overflow: hidden;
+`;
+
+// 모바일: 세로 배치, 전체 너비
+const MobileEditFormWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+`;
+
+const MobileTabBar = styled.div`
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 4px;
+  padding: 8px ${dimensions.unitSpacing}px;
+  border-bottom: 1px solid ${colors.borderPrimary};
+  background: ${colors.bgLight};
+  flex-shrink: 0;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+`;
+
+const MobileTab = styled.button<{ $active?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  background: ${(props) =>
+    props.$active ? colors.colorPrimary : colors.colorWhite};
+  color: ${(props) =>
+    props.$active ? colors.colorWhite : colors.textPrimary};
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: ${(props) =>
+      props.$active ? colors.colorPrimaryDark : colors.bgActive};
+  }
+`;
+
+const MobileContent = styled.div`
+  flex: 1;
+  overflow: auto;
+  padding: ${dimensions.unitSpacing}px ${dimensions.coreSpacing}px;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
 `;
 
 const FullContainer = styled.div`
@@ -380,9 +457,15 @@ export {
   VoucherContainer,
   FlexRowGap,
   PaymentTypeScoreCampaign,
+  FormScrollBody,
   LeftSide,
+  RightDetailSide,
   RightSide,
   EditFormContent,
+  MobileEditFormWrapper,
+  MobileTabBar,
+  MobileTab,
+  MobileContent,
   FullContainer,
   FullLeftSide,
   FullRightSide,

@@ -26,7 +26,7 @@ const ArticleDetail: React.FC<Props> = (props) => {
     return <div className="loader bigger" />;
   }
 
-  const { createdDate, title, summary, content, attachments } = article;
+  const { createdDate, title, content, attachments } = article;
 
   const onClick = () => {
     goToCategory();
@@ -41,7 +41,6 @@ const ArticleDetail: React.FC<Props> = (props) => {
             <div className="date">
               {__("Created ")}: <span>{dayjs(createdDate).format("lll")}</span>
             </div>
-            <p>{summary}</p>
             <p dangerouslySetInnerHTML={{ __html: content }} />
             {attachments && attachments.length > 0 && (
               <div className="attachments">

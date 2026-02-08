@@ -1,10 +1,10 @@
 import { toArray } from '../boards/utils';
-import DealEditForm from './components/DealEditForm';
+import DealEditFormWithMobile from './components/DealEditForm';
 import DealItem from './components/DealItem';
 import { mutations, queries } from './graphql';
 
 const options = {
-  EditForm: DealEditForm,
+  EditForm: DealEditFormWithMobile,
   Item: DealItem,
   title: 'Deal',
   type: 'deal',

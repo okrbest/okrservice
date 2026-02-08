@@ -39,6 +39,8 @@ type Props = {
   currentUser: IUser;
   isFullView?: boolean;
   synchSingleCard?: (itemId: string) => void;
+  /** true면 담당자/사업부/부서는 오른쪽에 별도 표시(Deal 등) */
+  hideAssignmentFields?: boolean;
 };
 
 const CommonActions = (props: Props) => {
@@ -56,6 +58,7 @@ const CommonActions = (props: Props) => {
     currentUser,
     isFullView,
     synchSingleCard,
+    hideAssignmentFields,
   } = props;
 
   const userOnChange = usrs => saveItem({ assignedUserIds: usrs });
@@ -108,41 +111,45 @@ const CommonActions = (props: Props) => {
         <CustomerDateFields item={item} />
       )}
 
-      <FormGroup>
-        <ControlLabel uppercase={true}>Assigned to</ControlLabel>
-        <SelectTeamMembers
-          label="Choose users"
-          name="assignedUserIds"
-          initialValue={assignedUserIds}
-          onSelect={userOnChange}
-          filterParams={{
-            isAssignee: true,
-            departmentIds,
-            branchIds,
-          }}
-        />
-      </FormGroup>
+      {!hideAssignmentFields && (
+        <>
+          <FormGroup>
+            <ControlLabel uppercase={true}>Assigned to</ControlLabel>
+            <SelectTeamMembers
+              label="Choose users"
+              name="assignedUserIds"
+              initialValue={assignedUserIds}
+              onSelect={userOnChange}
+              filterParams={{
+                isAssignee: true,
+                departmentIds,
+                branchIds,
+              }}
+            />
+          </FormGroup>
 
-      <GridContainer $isFull={isFullView}>
-        <FormGroup>
-          <ControlLabel uppercase={true}>{__("Branches")}</ControlLabel>
-          <SelectBranches
-            name="branchIds"
-            label="Choose branches"
-            initialValue={item?.branchIds}
-            onSelect={onChangeStructure}
-          />
-        </FormGroup>
-        <FormGroup>
-          <ControlLabel uppercase={true}>{__("Departments")}</ControlLabel>
-          <SelectDepartments
-            name="departmentIds"
-            label="Choose departments"
-            onSelect={onChangeStructure}
-            initialValue={item?.departmentIds}
-          />
-        </FormGroup>
-      </GridContainer>
+          <GridContainer $isFull={isFullView}>
+            <FormGroup>
+              <ControlLabel uppercase={true}>{__("Branches")}</ControlLabel>
+              <SelectBranches
+                name="branchIds"
+                label="Choose branches"
+                initialValue={item?.branchIds}
+                onSelect={onChangeStructure}
+              />
+            </FormGroup>
+            <FormGroup>
+              <ControlLabel uppercase={true}>{__("Departments")}</ControlLabel>
+              <SelectDepartments
+                name="departmentIds"
+                label="Choose departments"
+                onSelect={onChangeStructure}
+                initialValue={item?.departmentIds}
+              />
+            </FormGroup>
+          </GridContainer>
+        </>
+      )}
 
       <GridContainer $isFull={isFullView}>
         <FormGroup>

@@ -21,9 +21,15 @@ import styled from "styled-components";
 import { withProps } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const Container = styled.div`
+const Container = styled.div<{ $isMobile?: boolean }>`
   height: 100%;
-  display: inline-flex;
+  display: ${(props) => (props.$isMobile ? "flex" : "inline-flex")};
+  flex-direction: ${(props) => (props.$isMobile ? "column" : "row")};
+  overflow-y: ${(props) => (props.$isMobile ? "auto" : "hidden")};
+  overflow-x: ${(props) => (props.$isMobile ? "hidden" : "auto")};
+  width: ${(props) => (props.$isMobile ? "calc(100vw - 50px)" : "auto")};
+  max-width: ${(props) => (props.$isMobile ? "calc(100vw - 50px)" : "none")};
+  box-sizing: border-box;
 `;
 
 type Props = {
@@ -37,6 +43,21 @@ type Props = {
 };
 
 class WithStages extends Component<WithStagesQueryProps> {
+  state = { isMobile: false };
+
+  componentDidMount() {
+    this.checkMobile();
+    window.addEventListener("resize", this.checkMobile);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.checkMobile);
+  }
+
+  checkMobile = () => {
+    this.setState({ isMobile: window.innerWidth <= 768 });
+  };
+
   componentWillReceiveProps(nextProps: Props) {
     const { stagesQuery, queryParams } = this.props;
     const { pipelineId } = queryParams;
@@ -117,9 +138,10 @@ class WithStages extends Component<WithStagesQueryProps> {
                 direction="horizontal"
                 ignoreContainerClipping={true}
               >
-                {provided => (
+                {(provided) => (
                   <Container
                     ref={provided.innerRef}
+                    $isMobile={this.state.isMobile}
                     {...provided.droppableProps}
                   >
                     {stageIds.map((stageId, index) => {
