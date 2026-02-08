@@ -8,7 +8,7 @@ import { AllUsersQueryResponse, IUser } from "@erxes/ui/src/auth/types";
 import React from "react";
 import { graphql } from "@apollo/client/react/hoc";
 import ErrorMsg from "@erxes/ui/src/components/ErrorMsg";
-import { mutations, queries } from "../../graphql";
+import { mutations, queries, subscriptions } from "../../graphql";
 import {
   CopyMutation,
   DetailQueryResponse,
@@ -21,9 +21,6 @@ import {
 import { invalidateCache } from "../../utils";
 import { PipelineConsumer } from "../PipelineContext";
 import withCurrentUser from "@erxes/ui/src/auth/containers/withCurrentUser";
-import DescriptionConflictModal, {
-  DescriptionConflictChoice
-} from "../../components/editForm/DescriptionConflictModal";
 
 type WrapperProps = {
   itemId: string;
@@ -56,17 +53,11 @@ type FinalProps = {
   copyMutation: CopyMutation;
 } & ContainerProps;
 
-type ConflictPending = {
-  doc: IItemParams;
-  callback: (item: IItem) => void;
-};
+const REFETCH_THROTTLE_MS = 2500;
 
 class EditFormContainer extends React.Component<FinalProps> {
-  private relationsRefetchedForItemId: string | null = null;
-
-  state: { descriptionConflictPending: ConflictPending | null } = {
-    descriptionConflictPending: null
-  };
+  private unsubcribe;
+  private lastRefetchTime = 0;
 
   constructor(props) {
     super(props);
@@ -77,92 +68,46 @@ class EditFormContainer extends React.Component<FinalProps> {
     this.copyItem = this.copyItem.bind(this);
   }
 
-  isDescriptionConflictError(error: any): boolean {
-    const message = error?.graphQLErrors?.[0]?.message || error?.message || "";
-    return message === "DESCRIPTION_CONFLICT";
-  }
-
-  handleDescriptionConflictChoice = (choice: DescriptionConflictChoice) => {
-    const { descriptionConflictPending } = this.state;
-    const { detailQuery, itemId, editMutation, options } = this.props;
-
-    if (!descriptionConflictPending) return;
-
-    if (choice === "reload") {
-      if (typeof window !== "undefined") {
-        const descriptionStorageKey = `${options.type}_description_${itemId}`;
-        localStorage.removeItem(descriptionStorageKey);
-      }
-      detailQuery.refetch().then(() => {
-        this.setState({ descriptionConflictPending: null });
-      });
-      return;
-    }
-
-    if (choice === "overwrite") {
-      const { doc, callback } = descriptionConflictPending;
-      const { expectedModifiedAt, ...docWithoutExpected } = doc;
-
-      editMutation({ variables: { _id: itemId, ...docWithoutExpected } })
-        .then(({ data }) => {
-          if (callback) {
-            callback(data[options.mutationsName.editMutation]);
-          }
-          invalidateCache();
-          this.setState({ descriptionConflictPending: null });
-        })
-        .catch(err => {
-          Alert.error(err.message);
-          this.setState({ descriptionConflictPending: null });
-        });
-      return;
-    }
-
-    this.setState({ descriptionConflictPending: null });
-  };
-
-  componentDidUpdate(prevProps: FinalProps) {
-    const { detailQuery, itemId, options } = this.props;
-    if (
-      options?.type !== "ticket" ||
-      detailQuery.loading ||
-      !detailQuery[options.queriesName.detailQuery] ||
-      this.relationsRefetchedForItemId === itemId
-    ) {
-      return;
-    }
-    this.relationsRefetchedForItemId = itemId;
-    client
-      .query({
-        query: gql(options.queries.detailQuery),
-        variables: { _id: itemId, includeRelations: true },
-        fetchPolicy: "network-only"
-      })
-      .then(({ data }) => {
-        const full = data?.[options.queriesName.detailQuery];
-        if (!full || !client.cache) return;
-        try {
-          const id = client.cache.identify({
-            __typename: "Ticket",
-            _id: itemId
-          });
-          if (id) {
-            client.cache.modify({
-              id,
-              fields: {
-                companies: () => full.companies ?? [],
-                customers: () => full.customers ?? [],
-                hasNotified: () => full.hasNotified ?? true
-              }
-            });
-          }
-        } catch (_) {}
-      })
-      .catch(() => {});
-  }
-
   componentDidMount() {
-    // 상세 모달 열린 동안은 구독하지 않음 → description 입력 버벅임 완화 (모달 닫으면 보드는 PipelineContext 구독으로 최신 유지)
+    const { detailQuery, itemId } = this.props;
+
+    this.unsubcribe = detailQuery.subscribeToMore({
+      document: gql(subscriptions.pipelinesChanged),
+      variables: { _id: itemId },
+      updateQuery: (
+        prev,
+        {
+          subscriptionData: {
+            data: { ticketsPipelinesChanged }
+          }
+        }
+      ) => {
+        if (!ticketsPipelinesChanged || !ticketsPipelinesChanged.data) {
+          return;
+        }
+
+        const { proccessId } = ticketsPipelinesChanged;
+
+        if (proccessId === localStorage.getItem("proccessId")) {
+          return;
+        }
+
+        if (document.querySelectorAll(".modal").length >= 2) {
+          return;
+        }
+
+        const now = Date.now();
+        if (now - this.lastRefetchTime < REFETCH_THROTTLE_MS) {
+          return;
+        }
+        this.lastRefetchTime = now;
+        this.props.detailQuery.refetch();
+      }
+    });
+  }
+
+  componentWillUnmount() {
+    this.unsubcribe();
   }
 
   addItem(doc: IItemParams, callback: () => void) {
@@ -215,12 +160,6 @@ class EditFormContainer extends React.Component<FinalProps> {
         invalidateCache();
       })
       .catch(error => {
-        if (this.isDescriptionConflictError(error)) {
-          this.setState({
-            descriptionConflictPending: { doc, callback }
-          });
-          return;
-        }
         Alert.error(error.message);
       });
   };
@@ -273,9 +212,8 @@ class EditFormContainer extends React.Component<FinalProps> {
 
   render() {
     const { usersQuery, detailQuery, options } = this.props;
-    const skipUsers = !!options?.skipAllUsersInEditForm;
 
-    if (detailQuery.loading || (!skipUsers && usersQuery?.loading)) {
+    if (usersQuery.loading || detailQuery.loading) {
       return <Spinner />;
     }
 
@@ -283,7 +221,7 @@ class EditFormContainer extends React.Component<FinalProps> {
       return <ErrorMsg>{detailQuery.error.message}</ErrorMsg>;
     }
 
-    const users = skipUsers ? [] : (usersQuery?.allUsers || []);
+    const users = usersQuery.allUsers;
     const item = detailQuery[options.queriesName.detailQuery];
 
     if (!item) {
@@ -298,22 +236,12 @@ class EditFormContainer extends React.Component<FinalProps> {
       saveItem: this.saveItem,
       copyItem: this.copyItem,
       updateTimeTrack: this.updateTimeTrack,
-      users,
-      descriptionConflictPending: this.state.descriptionConflictPending
+      users
     };
 
     const EditForm = options.EditForm;
-    const { descriptionConflictPending } = this.state;
 
-    return (
-      <>
-        <EditForm {...extendedProps} />
-        <DescriptionConflictModal
-          show={!!descriptionConflictPending}
-          onChoose={this.handleDescriptionConflictChoice}
-        />
-      </>
-    );
+    return <EditForm {...extendedProps} />;
   }
 }
 
@@ -331,25 +259,24 @@ const withQuery = (props: ContainerProps) => {
 
   return withProps<ContainerProps>(
     compose(
-      graphql<
-        ContainerProps,
-        DetailQueryResponse,
-        { _id: string; includeRelations?: boolean }
-      >(gql(options.queries.detailQuery), {
-        name: "detailQuery",
-        options: (props: ContainerProps) => ({
-          variables: {
-            _id: props.itemId,
-            ...(props.options?.type === "ticket" ? { includeRelations: false } : {})
-          },
-          fetchPolicy: "network-only"
-        })
-      }),
+      graphql<ContainerProps, DetailQueryResponse, { _id: string }>(
+        gql(options.queries.detailQuery),
+        {
+          name: "detailQuery",
+          options: ({ itemId }: { itemId: string }) => {
+            return {
+              variables: {
+                _id: itemId
+              },
+              fetchPolicy: "network-only"
+            };
+          }
+        }
+      ),
       graphql<ContainerProps, AllUsersQueryResponse>(
         gql(userQueries.allUsers),
         {
-          name: "usersQuery",
-          skip: ({ options }) => !!options?.skipAllUsersInEditForm
+          name: "usersQuery"
         }
       ),
       graphql<ContainerProps, SaveMutation, IItemParams>(
