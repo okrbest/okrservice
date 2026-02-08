@@ -53,8 +53,11 @@ type FinalProps = {
   copyMutation: CopyMutation;
 } & ContainerProps;
 
+const REFETCH_THROTTLE_MS = 2500;
+
 class EditFormContainer extends React.Component<FinalProps> {
   private unsubcribe;
+  private lastRefetchTime = 0;
 
   constructor(props) {
     super(props);
@@ -89,9 +92,16 @@ class EditFormContainer extends React.Component<FinalProps> {
           return;
         }
 
-        if (document.querySelectorAll(".modal").length < 2) {
-          this.props.detailQuery.refetch();
+        if (document.querySelectorAll(".modal").length >= 2) {
+          return;
         }
+
+        const now = Date.now();
+        if (now - this.lastRefetchTime < REFETCH_THROTTLE_MS) {
+          return;
+        }
+        this.lastRefetchTime = now;
+        this.props.detailQuery.refetch();
       }
     });
   }
