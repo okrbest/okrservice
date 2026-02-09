@@ -298,6 +298,13 @@ export const loadCustomerClass = (models: IModels, subdomain: string) => {
 
       if (doc.integrationId) {
         doc.relatedIntegrationIds = [doc.integrationId];
+        // 위젯/연동으로 생성된 고객은 이메일·전화번호가 있으면 무조건 유효함으로 저장
+        if (doc.primaryEmail && !doc.emailValidationStatus) {
+          doc.emailValidationStatus = "valid";
+        }
+        if (doc.primaryPhone && !doc.phoneValidationStatus) {
+          doc.phoneValidationStatus = "valid";
+        }
       }
 
       const pssDoc = await models.Customers.calcPSS(doc);
@@ -360,16 +367,18 @@ export const loadCustomerClass = (models: IModels, subdomain: string) => {
 
       if (doc.primaryEmail) {
         if (doc.primaryEmail !== oldCustomer.primaryEmail) {
-          doc.emailValidationStatus = "unknown";
-
+          if (doc.emailValidationStatus === undefined) {
+            doc.emailValidationStatus = "unknown";
+          }
           validateSingle(subdomain, { email: doc.primaryEmail });
         }
       }
 
       if (doc.primaryPhone) {
         if (doc.primaryPhone !== oldCustomer.primaryPhone) {
-          doc.phoneValidationStatus = "unknown";
-
+          if (doc.phoneValidationStatus === undefined) {
+            doc.phoneValidationStatus = "unknown";
+          }
           validateSingle(subdomain, { phone: doc.primaryPhone });
         }
       }

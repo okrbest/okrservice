@@ -12,7 +12,7 @@ function generateCustomerOptions(array: ICustomer[] = []): IOption[] {
 
     return {
       value: customer._id,
-      label: renderFullName(customer),
+      label: renderFullName(customer, true),
       avatar: customer.avatar,
     };
   });
