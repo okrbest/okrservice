@@ -348,6 +348,9 @@ const widgetMutations = {
       doc.phones = phones;
       doc.primaryPhone = phones[0] ?? undefined;
     }
+    // 위젯에서 제출한 고객정보는 이메일/전화번호가 있으면 무조건 유효함으로 저장
+    if (doc.primaryEmail) doc.emailValidationStatus = 'valid';
+    if (doc.primaryPhone) doc.phoneValidationStatus = 'valid';
 
     const customer = await sendCoreMessage({
       subdomain,

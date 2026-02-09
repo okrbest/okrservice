@@ -323,7 +323,7 @@ const LeftSide = styled.div`
 `;
 
 const RightDetailSide = styled.div`
-  width: 240px;
+  width: 280px;
   flex-shrink: 0;
   min-height: min-content;
   border-left: 1px solid ${colors.borderPrimary};
