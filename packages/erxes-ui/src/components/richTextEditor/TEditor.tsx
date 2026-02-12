@@ -244,53 +244,26 @@ const RichTextEditor = forwardRef(function RichTextEditor(
   useEffect(() => {
     if (editor && !isInitialContentSet.current) {
       const initialHTML = editor.getHTML();
-      console.log('🔍 [TEditor] Editor initialized with content:', {
-        contentLength: initialHTML.length,
-        contentPreview: initialHTML.substring(0, 100),
-        canUndo: editor.can().undo(),
-        canRedo: editor.can().redo()
-      });
-      
+
       // ⭐ 히스토리 강제 클리어: Tiptap이 초기 content도 히스토리에 추가하는 버그
       setTimeout(() => {
         if (editor && editor.view && editor.state) {
-          console.log('🔍 [TEditor] Starting history clear...');
-          
-          // 원래 내용 저장
           const originalContent = editor.getHTML();
-          
-          console.log('🔍 [TEditor] Before clear:', {
-            canUndo: editor.can().undo(),
-            canRedo: editor.can().redo(),
-            contentLength: originalContent.length
-          });
-          
+
           // ⭐ 모든 undo 실행하여 히스토리 스택 비우기
           let undoCount = 0;
           while (editor.can().undo() && undoCount < 100) {
             editor.commands.undo();
             undoCount++;
           }
-          
-          console.log('🔍 [TEditor] After undoing all:', {
-            undoCount,
-            canUndo: editor.can().undo(),
-            currentContent: editor.getHTML().substring(0, 50)
-          });
-          
+
           // 원래 내용으로 다시 설정 (히스토리에 추가하지 않음)
           editor.commands.setContent(originalContent, false);
-          
+
           // Redo 스택도 비우기
           while (editor.can().redo()) {
             editor.commands.redo();
           }
-          
-          console.log('🔍 [TEditor] After forced history clear:', {
-            canUndo: editor.can().undo(),
-            canRedo: editor.can().redo(),
-            content: editor.getHTML().substring(0, 100)
-          });
         }
       }, 100);
       

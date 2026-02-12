@@ -110,12 +110,7 @@ const MobileLayoutComponent: React.FC<Props> = ({
   item,
   onCloseDateFieldsChange
 }) => {
-  // 디버깅을 위한 로그
-  console.log('MobileLayoutComponent - isMobile:', isMobile);
-  console.log('MobileLayoutComponent - sidebarContent:', !!sidebarContent);
-  
   if (isMobile) {
-    console.log('Rendering mobile layout');
     return (
       <MobileLayout>
         {/* 시작일/마감일 섹션 - 스테이지 단계 바로 아래에 위치 */}
@@ -156,7 +151,6 @@ const MobileLayoutComponent: React.FC<Props> = ({
     );
   }
 
-  console.log('Rendering desktop layout');
   return (
     <DesktopLayout>
       {children}
