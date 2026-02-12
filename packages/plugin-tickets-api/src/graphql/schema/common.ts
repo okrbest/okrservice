@@ -111,6 +111,7 @@ export const commonMutationParams = `
   emailSent: Boolean,
   widgetAlarm: Boolean,
   assignAlarm: Boolean,
+  expectedModifiedAt: Date,
 `;
 
 export const commonDragParams = `

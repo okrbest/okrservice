@@ -184,22 +184,35 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     shouldRerenderOnTransaction: false,
   });
 
+  const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const LOCAL_STORAGE_DEBOUNCE_MS = 400;
+
   useEffect(() => {
     const handleEditorChange = ({ editor }) => {
       const editorContent = editor.getHTML();
       onChange && onChange(editorContent);
       if (name && typeof window !== 'undefined') {
-        // 타임스탬프와 함께 저장
-        const dataToStore = JSON.stringify({
-          content: editorContent,
-          timestamp: new Date().toISOString()
-        });
-        localStorage.setItem(name, dataToStore);
+        if (localStorageDebounceRef.current) {
+          clearTimeout(localStorageDebounceRef.current);
+        }
+        localStorageDebounceRef.current = setTimeout(() => {
+          localStorageDebounceRef.current = null;
+          const latestContent = editor.getHTML();
+          const dataToStore = JSON.stringify({
+            content: latestContent,
+            timestamp: new Date().toISOString()
+          });
+          localStorage.setItem(name, dataToStore);
+        }, LOCAL_STORAGE_DEBOUNCE_MS);
       }
     };
     editor && editor.on("update", handleEditorChange);
     return () => {
       editor && editor.off("update", handleEditorChange);
+      if (localStorageDebounceRef.current) {
+        clearTimeout(localStorageDebounceRef.current);
+        localStorageDebounceRef.current = null;
+      }
     };
   }, [editor, onChange, name]);
 

@@ -21,6 +21,9 @@ import {
 import { invalidateCache } from "../../utils";
 import { PipelineConsumer } from "../PipelineContext";
 import withCurrentUser from "@erxes/ui/src/auth/containers/withCurrentUser";
+import DescriptionConflictModal, {
+  DescriptionConflictChoice
+} from "../../components/editForm/DescriptionConflictModal";
 
 type WrapperProps = {
   itemId: string;
@@ -55,9 +58,18 @@ type FinalProps = {
 
 const REFETCH_THROTTLE_MS = 2500;
 
+type ConflictPending = {
+  doc: IItemParams;
+  callback: (item: IItem) => void;
+};
+
 class EditFormContainer extends React.Component<FinalProps> {
   private unsubcribe;
   private lastRefetchTime = 0;
+
+  state: { descriptionConflictPending: ConflictPending | null } = {
+    descriptionConflictPending: null
+  };
 
   constructor(props) {
     super(props);
@@ -67,6 +79,50 @@ class EditFormContainer extends React.Component<FinalProps> {
     this.removeItem = this.removeItem.bind(this);
     this.copyItem = this.copyItem.bind(this);
   }
+
+  isDescriptionConflictError(error: any): boolean {
+    const message = error?.graphQLErrors?.[0]?.message || error?.message || "";
+    return message === "DESCRIPTION_CONFLICT";
+  }
+
+  handleDescriptionConflictChoice = (choice: DescriptionConflictChoice) => {
+    const { descriptionConflictPending } = this.state;
+    const { detailQuery, itemId, editMutation, options } = this.props;
+
+    if (!descriptionConflictPending) return;
+
+    if (choice === "reload") {
+      if (typeof window !== "undefined") {
+        const descriptionStorageKey = `${options.type}_description_${itemId}`;
+        localStorage.removeItem(descriptionStorageKey);
+      }
+      detailQuery.refetch().then(() => {
+        this.setState({ descriptionConflictPending: null });
+      });
+      return;
+    }
+
+    if (choice === "overwrite") {
+      const { doc, callback } = descriptionConflictPending;
+      const { expectedModifiedAt, ...docWithoutExpected } = doc;
+
+      editMutation({ variables: { _id: itemId, ...docWithoutExpected } })
+        .then(({ data }) => {
+          if (callback) {
+            callback(data[options.mutationsName.editMutation]);
+          }
+          invalidateCache();
+          this.setState({ descriptionConflictPending: null });
+        })
+        .catch(err => {
+          Alert.error(err.message);
+          this.setState({ descriptionConflictPending: null });
+        });
+      return;
+    }
+
+    this.setState({ descriptionConflictPending: null });
+  };
 
   componentDidMount() {
     const { detailQuery, itemId } = this.props;
@@ -160,6 +216,12 @@ class EditFormContainer extends React.Component<FinalProps> {
         invalidateCache();
       })
       .catch(error => {
+        if (this.isDescriptionConflictError(error)) {
+          this.setState({
+            descriptionConflictPending: { doc, callback }
+          });
+          return;
+        }
         Alert.error(error.message);
       });
   };
@@ -240,8 +302,17 @@ class EditFormContainer extends React.Component<FinalProps> {
     };
 
     const EditForm = options.EditForm;
+    const { descriptionConflictPending } = this.state;
 
-    return <EditForm {...extendedProps} />;
+    return (
+      <>
+        <EditForm {...extendedProps} />
+        <DescriptionConflictModal
+          show={!!descriptionConflictPending}
+          onChoose={this.handleDescriptionConflictChoice}
+        />
+      </>
+    );
   }
 }
 
