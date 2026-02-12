@@ -771,17 +771,8 @@ const Left = (props: Props) => {
   } = props;
 
   const isMobile = useIsMobile();
-  
-  // 디버깅용 로그
-  console.log('Left component - isMobile:', isMobile);
-  console.log('Left component - window.innerWidth:', typeof window !== 'undefined' ? window.innerWidth : 'undefined');
-  
-  // 직접 체크
-  const isMobileDirect = typeof window !== 'undefined' && window.innerWidth <= 768;
-  console.log('Left component - isMobileDirect:', isMobileDirect);
 
   const onChangeAttachment = (files: IAttachment[]) => {
-    console.log(`[Left] onChangeAttachment 호출됨, ${files.length}개 파일 전달`);
     saveItem({ attachments: files });
   };
 
