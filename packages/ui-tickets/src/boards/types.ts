@@ -122,6 +122,7 @@ export interface IItemParams {
   branchIds?: string[];
   departmentIds?: string[];
   isCheckUserTicket?: boolean;
+  expectedModifiedAt?: Date;
 }
 
 export type SaveItemMutation = ({ variables: IItemParams }) => Promise<any>;

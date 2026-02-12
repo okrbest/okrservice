@@ -23,7 +23,8 @@ export const commonMutationVariables = `
   $departmentIds:[String],
   $manualEmailRequest: Boolean,
   $emailSent: Boolean,
-  $widgetAlarm: Boolean
+  $widgetAlarm: Boolean,
+  $expectedModifiedAt: Date
 `;
 
 export const commonMutationParams = `
@@ -49,7 +50,8 @@ export const commonMutationParams = `
   departmentIds: $departmentIds,
   manualEmailRequest: $manualEmailRequest,
   emailSent: $emailSent,
-  widgetAlarm: $widgetAlarm
+  widgetAlarm: $widgetAlarm,
+  expectedModifiedAt: $expectedModifiedAt
 `;
 
 export const commonDragVariables = `
