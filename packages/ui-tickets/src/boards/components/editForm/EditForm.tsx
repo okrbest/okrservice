@@ -33,6 +33,7 @@ type Props = {
   isPopupVisible?: boolean;
   hideHeader?: boolean;
   refresh: boolean;
+  descriptionConflictPending?: { doc: any; callback: (item: any) => void } | null;
 };
 
 function EditForm(props: Props) {
@@ -44,7 +45,8 @@ function EditForm(props: Props) {
     copyItem,
     options,
     beforePopupClose,
-    refresh
+    refresh,
+    descriptionConflictPending
   } = props;
   const location = useLocation();
   const navigate = useNavigate();
@@ -176,7 +178,8 @@ function EditForm(props: Props) {
                       saveItem: saveItemHandler,
                       onChangeStage,
                       copy,
-                      remove
+                      remove,
+                      descriptionConflictPending: descriptionConflictPending ?? null
                     })}
                   </div>
                 </Relative>

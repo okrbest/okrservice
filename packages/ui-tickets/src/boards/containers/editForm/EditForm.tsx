@@ -298,7 +298,8 @@ class EditFormContainer extends React.Component<FinalProps> {
       saveItem: this.saveItem,
       copyItem: this.copyItem,
       updateTimeTrack: this.updateTimeTrack,
-      users
+      users,
+      descriptionConflictPending: this.state.descriptionConflictPending
     };
 
     const EditForm = options.EditForm;
