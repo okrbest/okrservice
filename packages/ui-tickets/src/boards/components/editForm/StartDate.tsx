@@ -10,6 +10,7 @@ import ControlLabel from "@erxes/ui/src/components/form/Label";
 import Datetime from "@nateradebaugh/react-datetime";
 import Popover from "@erxes/ui/src/components/Popover";
 import React from "react";
+import { flushSync } from "react-dom";
 import dayjs from "dayjs";
 import { generateButtonStart } from "../../utils";
 import { __ } from "coreui/utils";
@@ -28,7 +29,8 @@ type Props = {
 };
 
 type State = {
-  startDate: Date;
+  startDate: Date | null;
+  popoverOpenKey: number;
 };
 
 class StartDate extends React.Component<Props, State> {
@@ -41,8 +43,16 @@ class StartDate extends React.Component<Props, State> {
     this.ref = React.createRef();
 
     this.state = {
-      startDate: props.startDate || dayjs(),
+      startDate: props.startDate || null,
+      popoverOpenKey: 0,
     };
+  }
+
+  static getDerivedStateFromProps(nextProps: Props, prevState: State) {
+    if (nextProps.startDate !== undefined && nextProps.startDate !== null) {
+      return { ...prevState, startDate: nextProps.startDate };
+    }
+    return null;
   }
 
   setOverlay = (overlay) => {
@@ -59,35 +69,36 @@ class StartDate extends React.Component<Props, State> {
 
   onSave = (close) => {
     const { startDate } = this.state;
+    const toSave = startDate ?? dayjs();
 
-    this.props.onChangeField("startDate", startDate);
+    this.props.onChangeField("startDate", toSave);
     close();
   };
 
   remove = (close) => {
+    this.setState({ startDate: null });
     this.props.onChangeField("startDate", null);
     close();
   };
 
   renderContent = (close) => {
     const { startDate } = this.state;
+    const displayDate = startDate ?? dayjs().toDate();
 
-    const day = dayjs(startDate).format("YYYY-MM-DD");
-    const time = dayjs(startDate).format("HH:mm");
+    const day = dayjs(displayDate).format("YYYY-MM-DD");
+    const time = dayjs(displayDate).format("HH:mm");
 
     const onChangeDateTime = (e) => {
       const type = e.target.type;
       const value = e.target.value;
 
-      const oldDay = dayjs(startDate).format("YYYY/MM/DD");
-      const oldTime = dayjs(startDate).format("HH:mm");
-      let newDate = startDate;
+      const oldDay = dayjs(displayDate).format("YYYY/MM/DD");
+      const oldTime = dayjs(displayDate).format("HH:mm");
+      let newDate: Date;
 
       if (type === "date") {
         newDate = new Date(value.concat(" ", oldTime));
-      }
-
-      if (type === "time") {
+      } else {
         newDate = new Date(oldDay.concat(" ", value));
       }
 
@@ -96,33 +107,28 @@ class StartDate extends React.Component<Props, State> {
 
     return (
       <CloseDateContent>
-        {startDate && (
-          <DateGrid>
-            <div>
-              <ControlLabel>Date</ControlLabel>
-              <input type="date" value={day} onChange={onChangeDateTime} />
-            </div>
-            <div>
-              <ControlLabel>Time</ControlLabel>
-              <input type="time" value={time} onChange={onChangeDateTime} />
-            </div>
-          </DateGrid>
-        )}
+        <DateGrid>
+          <div>
+            <ControlLabel>Date</ControlLabel>
+            <input type="date" value={day} onChange={onChangeDateTime} />
+          </div>
+          <div>
+            <ControlLabel>Time</ControlLabel>
+            <input type="time" value={time} onChange={onChangeDateTime} />
+          </div>
+        </DateGrid>
 
         <CalenderWrapper>
           <Datetime
             inputProps={{ placeholder: "Click to select a date" }}
             dateFormat="YYYY/MM/DD"
             timeFormat="HH:mm"
-            value={startDate}
+            value={displayDate}
             closeOnSelect={true}
             utc={true}
             input={false}
             onChange={this.dateOnChange}
-            defaultValue={dayjs()
-              .startOf("day")
-              .add(12, "hour")
-              .format("YYYY-MM-DD HH:mm:ss")}
+            defaultValue={dayjs().format("YYYY-MM-DD HH:mm:ss")}
           />
         </CalenderWrapper>
         <DateGrid>
@@ -142,11 +148,23 @@ class StartDate extends React.Component<Props, State> {
     const time = dayjs(startDate).format("HH:mm");
 
     const trigger = (
-      <Button colorname={generateButtonStart(startDate)}>
-        {startDate
-          ? `${dayjs(startDate).format("MMM DD")} at ${time}`
-          : __("Start date")}
-      </Button>
+      <span
+        onClick={() => {
+          flushSync(() =>
+            this.setState({
+              popoverOpenKey: Date.now(),
+              ...(this.props.startDate != null ? {} : { startDate: null }),
+            })
+          );
+        }}
+        style={{ display: "inline-block" }}
+      >
+        <Button colorname={generateButtonStart(startDate)}>
+          {startDate
+            ? `${dayjs(startDate).format("MMM DD")} at ${time}`
+            : __("Start date")}
+        </Button>
+      </span>
     );
 
     // Timer 컴포넌트에서 시작일 변경 시 호출되는 함수
@@ -175,7 +193,11 @@ class StartDate extends React.Component<Props, State> {
           trigger={trigger}
           closeAfterSelect={true}
         >
-          {this.renderContent}
+          {(close) => (
+            <React.Fragment key={this.state.popoverOpenKey}>
+              {this.renderContent(close)}
+            </React.Fragment>
+          )}
         </Popover>
       </CloseDateWrapper>
     );

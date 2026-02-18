@@ -1,9 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { Popover as PopoverContainer } from "@headlessui/react";
 import { PopoverPanel } from "@erxes/ui/src/styles/main";
 import { __ } from "coreui/utils";
 import { usePopper } from "react-popper";
+
+const OnOpenEffect = ({ onOpen }: { onOpen?: () => void }) => {
+  useEffect(() => {
+    onOpen?.();
+  }, []);
+  return null;
+};
 
 type Props = {
   trigger: any;
@@ -13,6 +20,7 @@ type Props = {
   closeAfterSelect?: boolean;
   innerRef?: any;
   defaultOpen?: boolean;
+  onOpen?: () => void;
   placement?:
     | "auto-start"
     | "auto"
@@ -40,6 +48,7 @@ const Popover = (props: Props) => {
     defaultOpen,
     style,
     innerRef,
+    onOpen,
   } = props;
   let [referenceElement, setReferenceElement] =
     useState<HTMLButtonElement | null>(null);
@@ -85,19 +94,22 @@ const Popover = (props: Props) => {
       style={{ position: "relative", ...style }}
       ref={innerRef && innerRef}
     >
-      {({ close }) => (
+      {({ close, open }) => (
         <>
           <PopoverContainer.Button ref={setReferenceElement}>
             {trigger}
           </PopoverContainer.Button>
-          <PopoverPanel
-            ref={setPopperElement}
-            style={styles.popper}
-            {...attributes.popper}
-            className={className}
-          >
-            {closeAfterSelect ? children(close) : children}
-          </PopoverPanel>
+          {open && onOpen && <OnOpenEffect onOpen={onOpen} />}
+          {open && (
+            <PopoverPanel
+              ref={setPopperElement}
+              style={styles.popper}
+              {...attributes.popper}
+              className={className}
+            >
+              {closeAfterSelect ? children(close) : children}
+            </PopoverPanel>
+          )}
         </>
       )}
     </PopoverContainer>

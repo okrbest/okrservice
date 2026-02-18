@@ -14,6 +14,7 @@ import FormControl from "@erxes/ui/src/components/form/Control";
 import Popover from "@erxes/ui/src/components/Popover";
 import { REMINDER_MINUTES } from "../../constants";
 import React from "react";
+import { flushSync } from "react-dom";
 import Select from "react-select";
 import dayjs from "dayjs";
 import client from "@erxes/ui/src/apolloClient";
@@ -33,7 +34,8 @@ type Props = {
 };
 
 type State = {
-  dueDate: Date;
+  dueDate: Date | null;
+  popoverOpenKey: number;
 };
 
 class CloseDate extends React.Component<Props, State> {
@@ -46,8 +48,16 @@ class CloseDate extends React.Component<Props, State> {
     this.ref = React.createRef();
 
     this.state = {
-      dueDate: props.closeDate || dayjs(),
+      dueDate: props.closeDate || null,
+      popoverOpenKey: 0,
     };
+  }
+
+  static getDerivedStateFromProps(nextProps: Props, prevState: State) {
+    if (nextProps.closeDate !== undefined && nextProps.closeDate !== null) {
+      return { ...prevState, dueDate: nextProps.closeDate };
+    }
+    return null;
   }
 
   componentDidMount() {
@@ -99,6 +109,7 @@ class CloseDate extends React.Component<Props, State> {
   onSave = (close) => {
     const { dueDate } = this.state;
     const { startDate } = this.props;
+    const toSave = dueDate ?? dayjs();
 
     // 시작일이 비어 있으면 마감일을 설정할 수 없음
     if (!startDate) {
@@ -106,11 +117,12 @@ class CloseDate extends React.Component<Props, State> {
       return;
     }
 
-    this.props.onChangeField("closeDate", dueDate);
+    this.props.onChangeField("closeDate", toSave);
     close();
   };
 
   remove = (close) => {
+    this.setState({ dueDate: null });
     this.props.onChangeField("closeDate", null);
     close();
   };
@@ -154,15 +166,16 @@ class CloseDate extends React.Component<Props, State> {
   renderContent = (close) => {
     const { reminderMinute, isCheckDate, createdDate } = this.props;
     const { dueDate } = this.state;
+    const displayDate = dueDate ?? dayjs().toDate();
 
     const checkedDate = new Date(
-      Math.max(new Date(dueDate).getTime(), new Date(createdDate).getTime())
+      Math.max(new Date(displayDate).getTime(), new Date(createdDate).getTime())
     );
     const day = isCheckDate
       ? dayjs(checkedDate).format("YYYY-MM-DD")
-      : dayjs(dueDate).format("YYYY-MM-DD");
+      : dayjs(displayDate).format("YYYY-MM-DD");
 
-    const time = dayjs(dueDate).format("HH:mm");
+    const time = dayjs(displayDate).format("HH:mm");
 
     const renderValidDate = (current) => {
       return isCheckDate
@@ -174,15 +187,13 @@ class CloseDate extends React.Component<Props, State> {
       const type = e.target.type;
       const value = e.target.value;
 
-      const oldDay = dayjs(dueDate).format("YYYY/MM/DD");
-      const oldTime = dayjs(dueDate).format("HH:mm");
-      let newDate = dueDate;
+      const oldDay = dayjs(displayDate).format("YYYY/MM/DD");
+      const oldTime = dayjs(displayDate).format("HH:mm");
+      let newDate: Date;
 
       if (type === "date") {
         newDate = new Date(value.concat(" ", oldTime));
-      }
-
-      if (type === "time") {
+      } else {
         newDate = new Date(oldDay.concat(" ", value));
       }
 
@@ -191,34 +202,29 @@ class CloseDate extends React.Component<Props, State> {
 
     return (
       <CloseDateContent>
-        {dueDate && (
-          <DateGrid>
-            <div>
-              <ControlLabel>Date</ControlLabel>
-              <input type="date" value={day} onChange={onChangeDateTime} />
-            </div>
-            <div>
-              <ControlLabel>Time</ControlLabel>
-              <input type="time" value={time} onChange={onChangeDateTime} />
-            </div>
-          </DateGrid>
-        )}
+        <DateGrid>
+          <div>
+            <ControlLabel>Date</ControlLabel>
+            <input type="date" value={day} onChange={onChangeDateTime} />
+          </div>
+          <div>
+            <ControlLabel>Time</ControlLabel>
+            <input type="time" value={time} onChange={onChangeDateTime} />
+          </div>
+        </DateGrid>
 
         <CalenderWrapper>
           <Datetime
             inputProps={{ placeholder: "Click to select a date" }}
             dateFormat="YYYY/MM/DD"
             timeFormat="HH:mm"
-            value={dueDate}
+            value={displayDate}
             closeOnSelect={true}
             utc={true}
             input={false}
             isValidDate={renderValidDate}
             onChange={this.dateOnChange}
-            defaultValue={dayjs()
-              .startOf("day")
-              .add(12, "hour")
-              .format("YYYY-MM-DD HH:mm:ss")}
+            defaultValue={dayjs().format("YYYY-MM-DD HH:mm:ss")}
           />
         </CalenderWrapper>
 
@@ -262,15 +268,27 @@ class CloseDate extends React.Component<Props, State> {
     
 
     const trigger = (
-      <Button 
-        colorname={generateButtonClass(closeDate, isComplete)}
-        disabled={!startDate}
-        title={!startDate ? __("시작일을 먼저 설정해주세요.") : ""}
+      <span
+        onClick={() => {
+          flushSync(() =>
+            this.setState({
+              popoverOpenKey: Date.now(),
+              ...(this.props.closeDate != null ? {} : { dueDate: null }),
+            })
+          );
+        }}
+        style={{ display: "inline-block" }}
       >
-        {closeDate
-          ? `${dayjs(closeDate).format("MMM DD")} at ${time}`
-          : __("Close date")}
-      </Button>
+        <Button
+          colorname={generateButtonClass(closeDate, isComplete)}
+          disabled={!startDate}
+          title={!startDate ? __("시작일을 먼저 설정해주세요.") : ""}
+        >
+          {closeDate
+            ? `${dayjs(closeDate).format("MMM DD")} at ${time}`
+            : __("Close date")}
+        </Button>
+      </span>
     );
 
     return (
@@ -280,7 +298,11 @@ class CloseDate extends React.Component<Props, State> {
           trigger={trigger}
           closeAfterSelect={true}
         >
-          {this.renderContent}
+          {(close) => (
+            <React.Fragment key={this.state.popoverOpenKey}>
+              {this.renderContent(close)}
+            </React.Fragment>
+          )}
         </Popover>
         {closeDate && (
           <CheckBoxWrapper>
