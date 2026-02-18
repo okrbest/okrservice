@@ -581,6 +581,7 @@ export default function TicketEditForm(props: Props) {
     remove,
     saveItem,
     onChangeStage,
+    descriptionConflictPending,
   }: IEditFormContent) {
     const onCloseDateFieldsChange = (key: string, value: any) => {
       saveItem({ [key]: value });
@@ -618,6 +619,7 @@ export default function TicketEditForm(props: Props) {
         onEditComment: isTicketType ? handleEditComment : undefined,
         currentUser,
         onSendEmail: handleSendEmail,
+        descriptionConflictPending,
       };
 
       const sidebarProps = {
@@ -683,6 +685,7 @@ export default function TicketEditForm(props: Props) {
             onEditComment={isTicketType ? handleEditComment : undefined}
             currentUser={currentUser}
             onSendEmail={handleSendEmail}
+            descriptionConflictPending={descriptionConflictPending}
           />
 
           <Sidebar

@@ -154,6 +154,7 @@ type DescProps = {
   contentType: string;
   isMobile: boolean;
   onChangeRefresh?: () => void;
+  hasDescriptionConflict?: boolean;
 };
 
 // WidgetComments 컴포넌트 수정
@@ -521,7 +522,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
 const DESCRIPTION_DEBOUNCE_MS = 400;
 
 const Description = React.memo((props: DescProps) => {
-  const { item, saveItem, contentType, isMobile, onChangeRefresh } = props;
+  const { item, saveItem, contentType, isMobile, onChangeRefresh, hasDescriptionConflict } = props;
   const [edit, setEdit] = useState(false);
   const [isSubmitted, setSubmit] = useState(false);
   const [description, setDescription] = useState(item.description);
@@ -559,10 +560,18 @@ const Description = React.memo((props: DescProps) => {
     }
   }, [isSubmitted]);
 
+  useEffect(() => {
+    if (hasDescriptionConflict) {
+      setEdit(true);
+      setSubmit(false);
+    }
+  }, [hasDescriptionConflict]);
+
   const onSend = useCallback(() => {
     setDescriptionDebounced.flush();
     const latestDescription = descriptionRef.current;
     savedDescriptionRef.current = latestDescription;
+    setSubmit(true);
     saveItem(
       {
         description: latestDescription,
@@ -573,7 +582,6 @@ const Description = React.memo((props: DescProps) => {
           onChangeRefresh();
         }
         savedDescriptionRef.current = null;
-        setSubmit(true);
       }
     );
   }, [saveItem, onChangeRefresh, setDescriptionDebounced, item.modifiedAt]);
@@ -752,6 +760,7 @@ type Props = {
   onDeleteComment?: (commentId: string) => void;
   onEditComment?: (commentId: string, content: string) => void;
   currentUser?: any;
+  descriptionConflictPending?: { doc: any; callback: (item: any) => void } | null;
 };
 
 const Left = (props: Props) => {
@@ -768,6 +777,7 @@ const Left = (props: Props) => {
     onChangeRefresh,
     widgetComments,
     onAddComment,
+    descriptionConflictPending,
   } = props;
 
   const isMobile = useIsMobile();
@@ -820,7 +830,14 @@ const Left = (props: Props) => {
         <Uploader defaultFileList={attachments} onChange={onChangeAttachment} />
       </FormGroup>
 
-      <Description item={item} saveItem={saveItem} contentType={options.type} isMobile={isMobile} onChangeRefresh={onChangeRefresh} />
+      <Description
+        item={item}
+        saveItem={saveItem}
+        contentType={options.type}
+        isMobile={isMobile}
+        onChangeRefresh={onChangeRefresh}
+        hasDescriptionConflict={!!descriptionConflictPending}
+      />
 
       <WidgetComments 
         widgetComments={widgetComments} 
