@@ -107,13 +107,16 @@ const DealSubmitContainer = (props: Props) => {
         .filter(([, v]) => v != null && v !== "")
         .map(([field, value]) => ({ field, value }));
 
+      // customerId가 유효할 때만 customerIds에 포함 (영업 파이프라인에 고객 표시를 위해 필수)
+      const validCustomerIds = customerId ? [customerId] : [];
+
       await dealAdd({
         variables: {
           name: formData.name,
           description: formData.description || undefined,
           attachments: transformedFiles,
           stageId: dealData.dealStageId,
-          customerIds: [customerId],
+          customerIds: validCustomerIds,
           amount: formData.amount ? parseFloat(String(formData.amount)) : undefined,
           closeDate: formData.closeDate || undefined,
           customFieldsData: customFieldsDataArr.length ? customFieldsDataArr : undefined,
