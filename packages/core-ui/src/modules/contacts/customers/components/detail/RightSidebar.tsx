@@ -76,7 +76,7 @@ export default class RightSidebar extends React.Component<Props> {
   render() {
     const { customer } = this.props;
 
-    const mainTypeName = renderFullName(customer);
+    const mainTypeName = renderFullName(customer, true);
 
     return (
       <Sidebar full={true} wide={true}>

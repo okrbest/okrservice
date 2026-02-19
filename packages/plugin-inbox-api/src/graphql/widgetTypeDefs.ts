@@ -209,10 +209,11 @@ export const mutations = ({ tickets, sales }) => `
   widgetsLeadIncreaseViewCount(formId: String!): JSON
   widgetsSendTypingInfo(conversationId: String!, text: String): String
 
+  widgetsTicketCustomersEdit(customerId: String, firstName: String, lastName: String, emails: [String], phones: [String], companyName: String): Customer
+
   ${
     tickets
-      ? `widgetsTicketCustomersEdit (customerId: String, firstName: String, lastName: String, emails: [String], phones: [String], companyName: String): Customer
-  widgetsTicketCheckProgressForget(email: String, phoneNumber: String): JSON
+      ? `widgetsTicketCheckProgressForget(email: String, phoneNumber: String): JSON
   widgetsTicketCheckProgress(number: String!): Ticket
   widgetsTicketCommentAdd(
     type: String!

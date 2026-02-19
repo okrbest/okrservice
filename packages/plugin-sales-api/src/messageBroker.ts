@@ -192,6 +192,25 @@ export const setupMessageConsumers = async () => {
     const models = await generateModels(subdomain);
     const { doc } = data;
     const customerIds = doc.customerIds || [];
+    let companyIds = doc.companyIds || [];
+
+    // 위젯에서 customerEdit로 고객-회사 연결 후 딜 제출 시, 고객에 연결된 회사를 딜에도 자동 연결
+    for (const customerId of customerIds) {
+      const customerCompanyIds = await sendCoreMessage({
+        subdomain,
+        action: "conformities.savedConformity",
+        data: {
+          mainType: "customer",
+          mainTypeId: customerId,
+          relTypes: ["company"],
+        },
+        isRPC: true,
+        defaultValue: [],
+      });
+      if (customerCompanyIds && customerCompanyIds.length > 0) {
+        companyIds = [...new Set([...companyIds, ...customerCompanyIds])];
+      }
+    }
 
     const customer = await sendCoreMessage({
       subdomain,
@@ -235,6 +254,7 @@ export const setupMessageConsumers = async () => {
       description: description,
       proccessId: Math.random().toString(),
       aboveItemId: "",
+      companyIds: companyIds.length > 0 ? companyIds : (doc.companyIds || []),
     };
 
     const deal = await itemsAdd(

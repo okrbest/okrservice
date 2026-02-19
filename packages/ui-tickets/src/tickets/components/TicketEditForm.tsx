@@ -150,31 +150,20 @@ export default function TicketEditForm(props: Props) {
   }, [item]);
   
   const saveItem = (doc: any, callback?: (item) => void) => {
-    if (doc.attachments) {
-      console.log(`[TicketEditForm] saveItem 호출 - attachments 길이: ${doc.attachments.length}`);
-    }
     props.saveItem(doc, (updatedItem) => {
-      console.log('💾 saveItem 완료, 업데이트된 item:', updatedItem);
-      console.log('🔍 emailSent:', updatedItem?.emailSent, 'widgetAlarm:', updatedItem?.widgetAlarm, 'manualEmailRequest:', updatedItem?.manualEmailRequest);
-      
-      // 로컬 state 즉시 업데이트
       setLocalItem(updatedItem);
-      
-      // callback 실행
+
       if (callback) {
         callback(updatedItem);
       }
-      
-      // description이나 emailSent가 변경된 경우 UI 새로고침
+
       if (doc.description !== undefined || doc.manualEmailRequest === true) {
-        console.log('🔄 UI 새로고침 예약');
-        // onUpdate를 호출하여 상위 컴포넌트에 업데이트 알림
         if (props.onUpdate) {
           props.onUpdate(updatedItem);
         }
-        setTimeout(() => {
-          setRefresh(prev => !prev);
-        }, 100); // 100ms로 단축
+        if (doc.manualEmailRequest === true) {
+          setTimeout(() => setRefresh(prev => !prev), 100);
+        }
       }
     });
   };
@@ -193,9 +182,6 @@ export default function TicketEditForm(props: Props) {
 
   // 수동 이메일 발송 함수 (자동화 트리거만 발동)
   const handleSendEmail = () => {
-    console.log('🚀 Send Email 버튼 클릭됨');
-    
-    // 확인 팝업 표시 - 확인을 누르면 then이 실행되고, 취소를 누르면 아무것도 실행되지 않음
     confirm(
       __("정말로 알림 이메일을 전송하시겠습니까?"),
       {
@@ -203,38 +189,19 @@ export default function TicketEditForm(props: Props) {
         cancelLabel: __("취소"),
       }
     ).then(() => {
-      // 사용자가 확인을 누른 경우에만 실행
-      console.log('📝 manualEmailRequest를 true로 설정하여 자동화 트리거 활성화...');
-      
-      // manualEmailRequest를 true로 설정하여 자동화 트리거 활성화
-      // 서버에서 자동화 처리 후 자동으로 false로 리셋되고 emailSent가 true로 변경됨
       saveItem({ manualEmailRequest: true }, (updatedItem) => {
-        console.log('✅ saveItem callback 실행 - 업데이트된 item:', updatedItem);
-        console.log('🔍 emailSent:', updatedItem?.emailSent, 'manualEmailRequest:', updatedItem?.manualEmailRequest);
-        
-        // onUpdate를 호출하여 상위 컴포넌트에 업데이트 알림
         if (props.onUpdate) {
           props.onUpdate(updatedItem);
         }
-        
-        // 서버에서 emailSent를 업데이트하는데 시간이 걸릴 수 있으므로
-        // 약간의 지연 후 다시 확인하여 UI 새로고침
         setTimeout(() => {
-          console.log('🔄 지연 후 UI 새로고침');
           setRefresh(prev => !prev);
-          
-          // onUpdate를 다시 호출하여 최신 데이터 반영
           if (props.onUpdate && updatedItem) {
             props.onUpdate(updatedItem);
           }
         }, 500);
       });
-      
-      console.log('✅ manualEmailRequest 설정 완료 - 자동화 트리거가 발동됩니다');
       Alert.success("이메일이 발송되었습니다.");
     }).catch((error: any) => {
-      // 오류 발생 시에만 실행 (취소는 catch되지 않음)
-      console.error('❌ 이메일 발송 에러:', error);
       Alert.error("이메일 발송에 실패했습니다: " + (error?.message || '알 수 없는 오류'));
     });
   };
@@ -254,7 +221,6 @@ export default function TicketEditForm(props: Props) {
       refetchWidgetComments();
       
       // 담당자가 댓글을 추가한 경우 emailSent를 false로 설정하여 Send Email 버튼 활성화
-      console.log('💬 댓글 추가 완료 - emailSent를 false로 업데이트하여 Send Email 버튼 활성화');
       setLocalItem((prev: any) => ({
         ...prev,
         emailSent: false,
@@ -615,6 +581,7 @@ export default function TicketEditForm(props: Props) {
     remove,
     saveItem,
     onChangeStage,
+    descriptionConflictPending,
   }: IEditFormContent) {
     const onCloseDateFieldsChange = (key: string, value: any) => {
       saveItem({ [key]: value });
@@ -652,6 +619,7 @@ export default function TicketEditForm(props: Props) {
         onEditComment: isTicketType ? handleEditComment : undefined,
         currentUser,
         onSendEmail: handleSendEmail,
+        descriptionConflictPending,
       };
 
       const sidebarProps = {
@@ -717,6 +685,7 @@ export default function TicketEditForm(props: Props) {
             onEditComment={isTicketType ? handleEditComment : undefined}
             currentUser={currentUser}
             onSendEmail={handleSendEmail}
+            descriptionConflictPending={descriptionConflictPending}
           />
 
           <Sidebar

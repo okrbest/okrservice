@@ -86,7 +86,7 @@ function Component({
         {customersObj.map((customer, index) => (
           <SectionBodyItem key={index}>
             <Link to={`/contacts/details/${customer._id}`}>
-              {renderFullName(customer)}
+              {renderFullName(customer, true)}
             </Link>
             {renderActionSection(customer)}
           </SectionBodyItem>

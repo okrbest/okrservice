@@ -67,15 +67,7 @@ export const useMediaQuery = (query: string): boolean => {
 
 // 모바일 전용 훅
 export const useIsMobile = (): boolean => {
-  const isMobile = useMediaQuery('(max-width: 768px)');
-  
-  // 디버깅을 위한 로그
-  if (typeof window !== 'undefined') {
-    console.log('useIsMobile - window.innerWidth:', window.innerWidth);
-    console.log('useIsMobile - isMobile:', isMobile);
-  }
-  
-  return isMobile;
+  return useMediaQuery('(max-width: 768px)');
 };
 
 // 태블릿 전용 훅

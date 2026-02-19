@@ -217,31 +217,35 @@ export const createConformity = async (
   subdomain: string,
   { companyIds, customerIds, mainType, mainTypeId }: IConformityCreate
 ) => {
-  const companyConformities: IConformityAdd[] = (companyIds || []).map(
-    companyId => ({
+  const companyConformities: IConformityAdd[] = (companyIds || [])
+    .filter((id): id is string => Boolean(id))
+    .map(companyId => ({
       mainType,
       mainTypeId,
       relType: "company",
       relTypeId: companyId
-    })
-  );
+    }));
 
-  const customerConformities: IConformityAdd[] = (customerIds || []).map(
-    customerId => ({
+  const customerConformities: IConformityAdd[] = (customerIds || [])
+    .filter((id): id is string => Boolean(id))
+    .map(customerId => ({
       mainType,
       mainTypeId,
       relType: "customer",
       relTypeId: customerId
-    })
-  );
+    }));
 
   const allConformities = companyConformities.concat(customerConformities);
 
-  sendCoreMessage({
-    subdomain,
-    action: "conformities.addConformities",
-    data: allConformities
-  });
+  // RPC를 사용해 각 conformity 저장을 완료할 때까지 대기 (Queue 사용 시 race condition 방지)
+  for (const doc of allConformities) {
+    await sendCoreMessage({
+      subdomain,
+      action: "conformities.addConformity",
+      data: doc,
+      isRPC: true
+    });
+  }
 };
 
 interface ILabelParams {

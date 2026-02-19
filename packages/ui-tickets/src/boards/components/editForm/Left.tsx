@@ -9,7 +9,8 @@ import {
   EditorWrapper,
 } from "@erxes/ui-internalnotes/src/components/Form";
 import { IItem, IItemParams, IOptions } from "../../types";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import debounce from "lodash/debounce";
 import { __ } from "coreui/utils";
 import { extractAttachment } from "@erxes/ui/src/utils";
 import styled from "styled-components";
@@ -153,6 +154,7 @@ type DescProps = {
   contentType: string;
   isMobile: boolean;
   onChangeRefresh?: () => void;
+  hasDescriptionConflict?: boolean;
 };
 
 // WidgetComments 컴포넌트 수정
@@ -517,14 +519,39 @@ const WidgetComments = (props: WidgetCommentsProps) => {
   );
 };
 
-const Description = (props: DescProps) => {
-  const { item, saveItem, contentType, isMobile, onChangeRefresh } = props;
+const DESCRIPTION_DEBOUNCE_MS = 400;
+
+const Description = React.memo((props: DescProps) => {
+  const { item, saveItem, contentType, isMobile, onChangeRefresh, hasDescriptionConflict } = props;
   const [edit, setEdit] = useState(false);
   const [isSubmitted, setSubmit] = useState(false);
   const [description, setDescription] = useState(item.description);
+  const descriptionRef = useRef(item.description);
+  const savedDescriptionRef = useRef<string | null>(null);
+  const lastSyncedModifiedAtRef = useRef<string | number | Date | undefined>(item.modifiedAt);
+
+  const setDescriptionDebounced = useMemo(
+    () => debounce((value: string) => setDescription(value), DESCRIPTION_DEBOUNCE_MS),
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      setDescriptionDebounced.cancel();
+    };
+  }, [setDescriptionDebounced]);
 
   useEffect(() => {
     setDescription(item.description);
+    descriptionRef.current = item.description;
+    lastSyncedModifiedAtRef.current = item.modifiedAt;
+  }, [item.description, item.modifiedAt]);
+
+  useEffect(() => {
+    if (savedDescriptionRef.current != null && item.description === savedDescriptionRef.current) {
+      savedDescriptionRef.current = null;
+      setSubmit(true);
+    }
   }, [item.description]);
 
   useEffect(() => {
@@ -533,16 +560,31 @@ const Description = (props: DescProps) => {
     }
   }, [isSubmitted]);
 
-  const onSend = () => {
-    saveItem({ description }, () => {
-      // saveItem이 자동으로 UI를 새로고침하므로 onChangeRefresh는 필요 없음
-      // 하지만 호환성을 위해 남겨둠
-      if (onChangeRefresh) {
-        onChangeRefresh();
-      }
-    });
+  useEffect(() => {
+    if (hasDescriptionConflict) {
+      setEdit(true);
+      setSubmit(false);
+    }
+  }, [hasDescriptionConflict]);
+
+  const onSend = useCallback(() => {
+    setDescriptionDebounced.flush();
+    const latestDescription = descriptionRef.current;
+    savedDescriptionRef.current = latestDescription;
     setSubmit(true);
-  };
+    saveItem(
+      {
+        description: latestDescription,
+        expectedModifiedAt: item.modifiedAt,
+      },
+      () => {
+        if (onChangeRefresh) {
+          onChangeRefresh();
+        }
+        savedDescriptionRef.current = null;
+      }
+    );
+  }, [saveItem, onChangeRefresh, setDescriptionDebounced, item.modifiedAt]);
 
   const toggleEdit = () => {
     setEdit((currentValue) => {
@@ -566,9 +608,11 @@ const Description = (props: DescProps) => {
               if (serverModifiedAt && storedTimestamp && serverModifiedAt > storedTimestamp) {
                 localStorage.removeItem(localStorageKey);
                 setDescription(item.description);
+                descriptionRef.current = item.description;
               } else {
-                // localStorage가 더 최신이거나 타임스탬프가 없으면 localStorage 사용
-                setDescription(storedContent || item.description);
+                const content = storedContent || item.description;
+                setDescription(content);
+                descriptionRef.current = content;
               }
             } catch (e) {
               // JSON 파싱 실패 시 기존 형식 (문자열만 저장된 경우)
@@ -583,22 +627,23 @@ const Description = (props: DescProps) => {
             }
           } else {
             setDescription(item.description);
+            descriptionRef.current = item.description;
           }
         } else {
           setDescription(item.description);
+          descriptionRef.current = item.description;
         }
       }
       
       // 편집 모드를 끌 때 (Cancel 시) localStorage 클리어 및 원본으로 되돌리기
       if (currentValue && !newValue) {
-        // localStorage 클리어하여 Ctrl+Z로 사라진 상태가 복원되지 않도록 함
         if (typeof window !== 'undefined') {
           const localStorageKey = `${contentType}_description_${item._id}`;
           localStorage.removeItem(localStorageKey);
         }
-        
-        // description을 원본으로 되돌리기
         setDescription(item.description);
+        descriptionRef.current = item.description;
+        setDescriptionDebounced.cancel();
       }
       
       return newValue;
@@ -606,9 +651,10 @@ const Description = (props: DescProps) => {
     setSubmit(false);
   };
 
-  const onChangeDescription = (content: string) => {
-    setDescription(content);
-  };
+  const onChangeDescription = useCallback((content: string) => {
+    descriptionRef.current = content;
+    setDescriptionDebounced(content);
+  }, [setDescriptionDebounced]);
 
   const renderFooter = () => {
     return (
@@ -621,7 +667,7 @@ const Description = (props: DescProps) => {
         >
           Cancel
         </Button>
-        {item.description !== description && (
+        {item.description !== descriptionRef.current && (
           <Button
             onClick={onSend}
             btnStyle="success"
@@ -661,7 +707,12 @@ const Description = (props: DescProps) => {
         ) : (
           <EditorWrapper>
             <RichTextEditor
-              content={description}
+              key={`${contentType}_description_${item._id}_${item.modifiedAt || ""}`}
+              content={
+                item.modifiedAt !== lastSyncedModifiedAtRef.current
+                  ? (item.description ?? "")
+                  : description
+              }
               onChange={onChangeDescription}
               height={"max-content"}
               isSubmitted={isSubmitted}
@@ -689,7 +740,8 @@ const Description = (props: DescProps) => {
       </ContentWrapper>
     </FormGroup>
   );
-};
+});
+Description.displayName = "Description";
 
 type Props = {
   item: IItem;
@@ -708,6 +760,7 @@ type Props = {
   onDeleteComment?: (commentId: string) => void;
   onEditComment?: (commentId: string, content: string) => void;
   currentUser?: any;
+  descriptionConflictPending?: { doc: any; callback: (item: any) => void } | null;
 };
 
 const Left = (props: Props) => {
@@ -724,20 +777,12 @@ const Left = (props: Props) => {
     onChangeRefresh,
     widgetComments,
     onAddComment,
+    descriptionConflictPending,
   } = props;
 
   const isMobile = useIsMobile();
-  
-  // 디버깅용 로그
-  console.log('Left component - isMobile:', isMobile);
-  console.log('Left component - window.innerWidth:', typeof window !== 'undefined' ? window.innerWidth : 'undefined');
-  
-  // 직접 체크
-  const isMobileDirect = typeof window !== 'undefined' && window.innerWidth <= 768;
-  console.log('Left component - isMobileDirect:', isMobileDirect);
 
   const onChangeAttachment = (files: IAttachment[]) => {
-    console.log(`[Left] onChangeAttachment 호출됨, ${files.length}개 파일 전달`);
     saveItem({ attachments: files });
   };
 
@@ -785,7 +830,14 @@ const Left = (props: Props) => {
         <Uploader defaultFileList={attachments} onChange={onChangeAttachment} />
       </FormGroup>
 
-      <Description item={item} saveItem={saveItem} contentType={options.type} isMobile={isMobile} onChangeRefresh={onChangeRefresh} />
+      <Description
+        item={item}
+        saveItem={saveItem}
+        contentType={options.type}
+        isMobile={isMobile}
+        onChangeRefresh={onChangeRefresh}
+        hasDescriptionConflict={!!descriptionConflictPending}
+      />
 
       <WidgetComments 
         widgetComments={widgetComments} 

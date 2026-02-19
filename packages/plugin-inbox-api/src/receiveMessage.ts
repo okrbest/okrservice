@@ -45,6 +45,10 @@ export const receiveRpcMessage = async (subdomain, data): Promise<RPResult> => {
 
     const { primaryEmail, primaryPhone, kind } = doc;
 
+    // 위젯에서 제출한 고객정보는 이메일/전화번호가 있으면 무조건 유효함으로 저장
+    if (primaryEmail) doc.emailValidationStatus = 'valid';
+    if (primaryPhone) doc.phoneValidationStatus = 'valid';
+
     let customer;
 
     const getCustomer = async (selector) =>

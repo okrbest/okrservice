@@ -38,10 +38,24 @@ const ticketMutations = {
    */
   async ticketsEdit(
     _root,
-    { _id, proccessId, ...doc }: ITicketsEdit & { proccessId: string },
+    { _id, proccessId, expectedModifiedAt, ...doc }: ITicketsEdit & { proccessId: string; expectedModifiedAt?: Date },
     { user, models, subdomain }: IContext
   ) {
     const oldTicket = await models.Tickets.getTicket(_id);
+
+    if (
+      doc.description !== undefined &&
+      expectedModifiedAt != null &&
+      oldTicket?.modifiedAt
+    ) {
+      const expectedMs = new Date(expectedModifiedAt).getTime();
+      const actualMs = new Date(oldTicket.modifiedAt).getTime();
+      if (Math.abs(expectedMs - actualMs) > 1000) {
+        const err = new Error("DESCRIPTION_CONFLICT") as Error & { code?: string };
+        err.code = "DESCRIPTION_CONFLICT";
+        throw err;
+      }
+    }
 
     return itemsEdit(
       models,

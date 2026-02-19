@@ -186,14 +186,17 @@ export const identifyCustomer = async (
   });
 
   if (!customer) {
+    const createData: Record<string, any> = {
+      primaryEmail: args.email,
+      code: args.code,
+      primaryPhone: args.phone
+    };
+    if (args.email) createData.emailValidationStatus = "valid";
+    if (args.phone) createData.phoneValidationStatus = "valid";
     customer = await sendCoreMessage({
       subdomain,
       action: "customers.createCustomer",
-      data: {
-        primaryEmail: args.email,
-        code: args.code,
-        primaryPhone: args.phone
-      },
+      data: createData,
       isRPC: true
     });
   }

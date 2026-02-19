@@ -122,6 +122,7 @@ export interface IItemParams {
   branchIds?: string[];
   departmentIds?: string[];
   isCheckUserTicket?: boolean;
+  expectedModifiedAt?: Date;
 }
 
 export type SaveItemMutation = ({ variables: IItemParams }) => Promise<any>;
@@ -442,6 +443,7 @@ export interface IEditFormContent {
   onChangeStage: (stageId: string) => void;
   copy: () => void;
   remove: (id: string) => void;
+  descriptionConflictPending?: { doc: any; callback: (item: any) => void } | null;
 }
 
 export type ConvertToMutationVariables = {

@@ -68,7 +68,7 @@ class CustomerChooser extends React.Component<
       search,
       clearState: () => search(""),
       title: "Customer",
-      renderName: renderFullName,
+      renderName: (customer) => renderFullName(customer, true),
       renderForm: formProps => (
         <CustomerForm
           {...formProps}

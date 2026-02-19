@@ -184,22 +184,35 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     shouldRerenderOnTransaction: false,
   });
 
+  const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const LOCAL_STORAGE_DEBOUNCE_MS = 400;
+
   useEffect(() => {
     const handleEditorChange = ({ editor }) => {
       const editorContent = editor.getHTML();
       onChange && onChange(editorContent);
       if (name && typeof window !== 'undefined') {
-        // 타임스탬프와 함께 저장
-        const dataToStore = JSON.stringify({
-          content: editorContent,
-          timestamp: new Date().toISOString()
-        });
-        localStorage.setItem(name, dataToStore);
+        if (localStorageDebounceRef.current) {
+          clearTimeout(localStorageDebounceRef.current);
+        }
+        localStorageDebounceRef.current = setTimeout(() => {
+          localStorageDebounceRef.current = null;
+          const latestContent = editor.getHTML();
+          const dataToStore = JSON.stringify({
+            content: latestContent,
+            timestamp: new Date().toISOString()
+          });
+          localStorage.setItem(name, dataToStore);
+        }, LOCAL_STORAGE_DEBOUNCE_MS);
       }
     };
     editor && editor.on("update", handleEditorChange);
     return () => {
       editor && editor.off("update", handleEditorChange);
+      if (localStorageDebounceRef.current) {
+        clearTimeout(localStorageDebounceRef.current);
+        localStorageDebounceRef.current = null;
+      }
     };
   }, [editor, onChange, name]);
 
@@ -231,53 +244,26 @@ const RichTextEditor = forwardRef(function RichTextEditor(
   useEffect(() => {
     if (editor && !isInitialContentSet.current) {
       const initialHTML = editor.getHTML();
-      console.log('🔍 [TEditor] Editor initialized with content:', {
-        contentLength: initialHTML.length,
-        contentPreview: initialHTML.substring(0, 100),
-        canUndo: editor.can().undo(),
-        canRedo: editor.can().redo()
-      });
-      
+
       // ⭐ 히스토리 강제 클리어: Tiptap이 초기 content도 히스토리에 추가하는 버그
       setTimeout(() => {
         if (editor && editor.view && editor.state) {
-          console.log('🔍 [TEditor] Starting history clear...');
-          
-          // 원래 내용 저장
           const originalContent = editor.getHTML();
-          
-          console.log('🔍 [TEditor] Before clear:', {
-            canUndo: editor.can().undo(),
-            canRedo: editor.can().redo(),
-            contentLength: originalContent.length
-          });
-          
+
           // ⭐ 모든 undo 실행하여 히스토리 스택 비우기
           let undoCount = 0;
           while (editor.can().undo() && undoCount < 100) {
             editor.commands.undo();
             undoCount++;
           }
-          
-          console.log('🔍 [TEditor] After undoing all:', {
-            undoCount,
-            canUndo: editor.can().undo(),
-            currentContent: editor.getHTML().substring(0, 50)
-          });
-          
+
           // 원래 내용으로 다시 설정 (히스토리에 추가하지 않음)
           editor.commands.setContent(originalContent, false);
-          
+
           // Redo 스택도 비우기
           while (editor.can().redo()) {
             editor.commands.redo();
           }
-          
-          console.log('🔍 [TEditor] After forced history clear:', {
-            canUndo: editor.can().undo(),
-            canRedo: editor.can().redo(),
-            content: editor.getHTML().substring(0, 100)
-          });
         }
       }, 100);
       

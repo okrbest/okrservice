@@ -13,12 +13,18 @@ type Props = {
 
 class Details extends React.Component<Props> {
   renderItem(item, color, index) {
+    // 고객(customer)은 이름만 표시(대표번호 제외). primaryName에 "이름+대표번호"가 올 수 있으므로 사용하지 않음.
+    const isCustomer =
+      item && !item.product && (item.firstName || item.lastName || item.primaryPhone);
+    const displayName = item.product
+      ? item.product.name
+      : isCustomer
+        ? renderFullName(item, true)
+        : item.name || item.primaryName || renderFullName(item, true);
     return (
       <ItemBox key={index}>
         <ItemIndicator color={color} />
-        {item.product
-          ? item.product.name
-          : item.name || item.primaryName || renderFullName(item)}
+        {displayName}
         {item.quantity && (
           <Quantity>
             ({item.quantity} {item.uom ? item.uom : "PC"})
