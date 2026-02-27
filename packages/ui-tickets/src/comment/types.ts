@@ -110,16 +110,32 @@ export type IClientPortalComment = {
   type: string;
 };
 
+export type IWidgetsCommentAttachment = {
+  name?: string;
+  url?: string;
+  type?: string;
+  size?: number;
+};
+
 export type IWidgetsComment = {
   _id: string;
   createdAt: string;
   content: string;
-  createdCustomer: {
-    avatar: string,
+  attachments?: IWidgetsCommentAttachment[];
+  createdUser?: {
+    _id: string;
+    avatar?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    fullName?: string;
+  };
+  createdCustomer?: {
+    avatar: string;
     _id: string;
     firstName: string;
     lastName: string;
-  }
+  };
 };
 
 export type ClientPortalCommentQueryResponse = {

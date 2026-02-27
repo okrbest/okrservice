@@ -193,6 +193,7 @@ export interface ITicketComment {
   customerId: string;
   type: string;
   content: any;
+  attachments?: Array<{ name?: string; url?: string; type?: string; size?: number }>;
   createdAt: string;
   createdUser: {
     _id: string;

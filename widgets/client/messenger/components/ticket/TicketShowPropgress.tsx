@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as dayjs from "dayjs";
+import dayjs from "dayjs";
 import xss from "xss";
 
 import { IAttachment, ITicketActivityLog, ITicketComment } from "../../types";
@@ -8,6 +8,8 @@ import { __, readFile } from "../../../utils";
 import Button from "../common/Button";
 import Container from "../common/Container";
 import Input from "../common/Input";
+import FileUploader from "../common/FileUploader";
+import Attachment from "../common/Attachment";
 import TicketActivity from "./TicketAcitvity";
 import { useTicket } from "../../context/Ticket";
 
@@ -30,6 +32,10 @@ const getFileIcon = (extension: string): string => {
   return iconMap[extension.toLowerCase()] || "📎";
 };
 
+interface FileWithUrl extends File {
+  url?: string;
+}
+
 type Props = {
   activityLogs: ITicketActivityLog[];
   activityLoading?: boolean;
@@ -37,6 +43,8 @@ type Props = {
   comments: ITicketComment[];
   setComment: (comment: string) => void;
   onComment: () => void;
+  files?: FileWithUrl[];
+  handleFiles?: (files: FileWithUrl[]) => void;
 };
 
 const TicketShowProgress: React.FC<Props> = ({
@@ -46,6 +54,8 @@ const TicketShowProgress: React.FC<Props> = ({
   comments,
   activityLogs,
   activityLoading = false,
+  files = [],
+  handleFiles,
 }) => {
   const { ticketData = {} } = useTicket();
   const descriptionRef = React.useRef<HTMLDivElement>(null);
@@ -326,7 +336,7 @@ const TicketShowProgress: React.FC<Props> = ({
     if (!comments || comments.length === 0) return null;
 
     return comments.map((comment: ITicketComment) => {
-      const { userType, createdUser, createdAt, content } =
+      const { userType, createdUser, createdAt, content, attachments } =
         comment || ({} as ITicketComment);
       const { firstName, lastName, email, emails, phone, phones, avatar } =
         createdUser || ({} as any);
@@ -369,9 +379,19 @@ const TicketShowProgress: React.FC<Props> = ({
               ref={(el) => setCommentRef(comment._id, el)}
               className="comment ticket-comment-content"
               dangerouslySetInnerHTML={{
-                __html: xss(content.replace(/\n/g, "<br />")),
+                __html: xss((content || "").replace(/\n/g, "<br />")),
               }}
             />
+            {attachments && attachments.length > 0 && (
+              <div className="ticket-comment-attachments" style={{ marginTop: "8px", display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {attachments.map((att, idx) => (
+                  <Attachment
+                    key={idx}
+                    attachment={{ name: att.name || "", url: att.url || "" }}
+                  />
+                ))}
+              </div>
+            )}
             <div className="date">
               {dayjs(createdAt).format("YYYY-MM-DD, LT")}
             </div>
@@ -431,9 +451,22 @@ const TicketShowProgress: React.FC<Props> = ({
         </Button>
       }
     >
-      <div className="ticket-progress-container">
-        <div className="ticket-progress-main-content">{renderContent()}</div>
-        <div className="ticket-comment-form">
+      <div className="ticket-progress-container" style={{ width: "100%", padding: "1.25rem", paddingBottom: "1rem" }}>
+        <div className="ticket-progress-main-content" style={{ maxWidth: "95%", paddingRight: 20 }}>{renderContent()}</div>
+        <div
+          className="ticket-comment-form"
+          style={{
+            position: "static",
+            bottom: "auto",
+            borderTop: "1px solid #ddd",
+            paddingTop: "1rem",
+            paddingBottom: "0.5rem",
+            marginTop: "1rem",
+            width: "100%",
+            maxWidth: "95%",
+            background: "#fff",
+          }}
+        >
           <div className="ticket-form-item">
             <Input
               textArea
@@ -443,6 +476,14 @@ const TicketShowProgress: React.FC<Props> = ({
               onChange={(e) => setComment(e.target.value)}
             />
           </div>
+          {handleFiles && (
+            <div className="ticket-form-item" style={{ marginTop: "12px" }}>
+              <label className="ticket-form-label" style={{ display: "block", marginBottom: "8px", fontSize: "13px", color: "#666" }}>
+                {__("Attach file")}
+              </label>
+              <FileUploader handleFiles={handleFiles} />
+            </div>
+          )}
         </div>
       </div>
     </Container>

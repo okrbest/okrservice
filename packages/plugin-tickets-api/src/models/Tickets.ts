@@ -22,8 +22,9 @@ export interface ITicketModel extends Model<ITicketDocument> {
     typeId: string,
     content: string,
     userType: string,
-    customerId: string
-  ): Promise<ITicketDocument>;
+    customerId?: string,
+    attachments?: Array<{ name?: string; url?: string; type?: string; size?: number; duration?: number }>
+  ): Promise<any>;
 }
 
 export const loadTicketClass = (models: IModels, subdomain: string) => {
@@ -62,10 +63,13 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
       typeId: string,
       content: string,
       userType: string,
-      customerId?: string
+      customerId?: string,
+      attachments?: Array<{ name?: string; url?: string; type?: string; size?: number; duration?: number }>
     ) {
       try {
-        if (!typeId || !content) {
+        const hasContent = content && content.trim().length > 0;
+        const hasAttachments = attachments && attachments.length > 0;
+        if (!typeId || (!hasContent && !hasAttachments)) {
           throw new Error("typeId or content not found");
         }
         const comment = await models.Comments.createComment({
@@ -73,7 +77,8 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
           typeId,
           content,
           userType,
-          userId: customerId
+          userId: customerId,
+          attachments: attachments || [],
         });
         return comment
       } catch (error) {

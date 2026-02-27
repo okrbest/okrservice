@@ -9,6 +9,10 @@ import TicketShowProgress from "../../components/ticket/TicketShowPropgress";
 import { connection } from "../../connection";
 import { useTicket } from "../../context/Ticket";
 
+interface FileWithUrl extends File {
+  url?: string;
+}
+
 type Props = {
   loading: boolean;
 };
@@ -17,6 +21,7 @@ const TicketShowProgressContainer = (props: Props) => {
   const { ticketData } = useTicket();
   const { customerId } = connection.data;
   const [comment, setComment] = React.useState("");
+  const [files, setFiles] = React.useState<FileWithUrl[]>([]);
 
   const {
     data,
@@ -35,6 +40,7 @@ const TicketShowProgressContainer = (props: Props) => {
   const [commentsAdd, { loading }] = useMutation(TICKET_COMMENTS_ADD, {
     onCompleted() {
       setComment("");
+      setFiles([]);
       commentQueryRefetch();
     },
     onError(error) {
@@ -56,6 +62,16 @@ const TicketShowProgressContainer = (props: Props) => {
   });
 
   const onComment = () => {
+    const attachments =
+      files.length > 0
+        ? files.map((file) => ({
+            // url에는 저장 키만 전달 (전체 URL이면 파이프라인에서 키가 이름처럼 노출될 수 있음)
+            url: file.url || "",
+            name: file.name || "",
+            type: file.type || "file",
+          }))
+        : undefined;
+
     return commentsAdd({
       variables: {
         type: "ticket",
@@ -63,6 +79,7 @@ const TicketShowProgressContainer = (props: Props) => {
         customerId: customerId,
         content: comment,
         userType: "client",
+        attachments,
       },
     });
   };
@@ -82,6 +99,8 @@ const TicketShowProgressContainer = (props: Props) => {
       comment={comment}
       comments={comments}
       onComment={onComment}
+      files={files}
+      handleFiles={setFiles}
     />
   );
 };

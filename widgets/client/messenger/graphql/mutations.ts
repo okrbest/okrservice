@@ -252,6 +252,7 @@ const TICKET_COMMENTS_ADD = gql`
     $content: String!
     $userType: String!
     $customerId: String
+    $attachments: [AttachmentInput]
   ) {
     widgetsTicketCommentAdd(
       type: $type
@@ -259,6 +260,7 @@ const TICKET_COMMENTS_ADD = gql`
       content: $content
       userType: $userType
       customerId: $customerId
+      attachments: $attachments
     ) {
       _id
       type

@@ -31,7 +31,14 @@ function Attachment({ attachment }: { attachment: IAttachment }) {
     const isImage = ["png", "jpeg", "jpg", "gif", "webp", "bmp", "svg"].indexOf(fileExtension) > -1;
 
     if (isImage) {
-      return <img role="presentation" src={readFile(attachment.url)} alt={attachment.name} />;
+      return (
+        <img
+          role="presentation"
+          src={readFile(attachment.url)}
+          alt={attachment.name}
+          style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "contain", display: "block" }}
+        />
+      );
     }
 
     return (

@@ -7,6 +7,7 @@ export const types = `
     
     userType: String,
     content: String,
+    attachments: [Attachment],
     createdUser: CommentsUser,
     createdAt: Date
     updatedAt: Date

@@ -26,7 +26,7 @@ type Props = {
 
 class ActivityItem extends React.Component<Props> {
   renderDetail(contentType: string, children: React.ReactNode) {
-    const type = contentType.split(":")[1];
+    const type = (contentType && contentType.includes(":")) ? contentType.split(":")[1] : contentType;
 
     const iconAndColor = getIconAndColor(type || contentType) || {};
 
@@ -45,7 +45,14 @@ class ActivityItem extends React.Component<Props> {
   render() {
     const { activity } = this.props;
 
+    if (!activity || typeof activity !== "object") {
+      return null;
+    }
+
     const { contentType, action, _id } = activity;
+    if (!contentType || typeof contentType !== "string") {
+      return null;
+    }
 
     const type = contentType.split(":")[1];
 

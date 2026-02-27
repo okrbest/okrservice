@@ -71,10 +71,67 @@ class Comment extends React.Component<Props, State> {
                   {createdUser.fullName ||
                     `${createdUser.firstName || ""} ${createdUser.lastName || ""}`}
                 </h5>
-                <div
-                  className="comment"
-                  dangerouslySetInnerHTML={{ __html: comment.content }}
-                />
+                {(comment.content && comment.content.trim()) ? (
+                  <div
+                    className="comment"
+                    dangerouslySetInnerHTML={{ __html: comment.content }}
+                  />
+                ) : null}
+                {comment.attachments &&
+                  comment.attachments.length > 0 && (
+                    <div style={{ marginTop: 8 }}>
+                      {comment.attachments.map((att, idx) => {
+                        const url = att.url ? readFile(att.url) : "";
+                        const isImage =
+                          att.type && att.type.startsWith("image/");
+                        const inlineUrl = url ? (url.indexOf("?") >= 0 ? url + "&inline=true" : url + "?inline=true") : "";
+                        return (
+                          <div
+                            key={`${comment._id}-att-${idx}`}
+                            style={{ marginBottom: 4 }}
+                          >
+                            {isImage ? (
+                              <>
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <img
+                                    src={url}
+                                    alt={att.name || ""}
+                                    style={{
+                                      maxWidth: 200,
+                                      maxHeight: 200,
+                                      objectFit: "contain",
+                                    }}
+                                  />
+                                </a>
+                                <div style={{ marginTop: 4, fontSize: 12 }}>
+                                  <a
+                                    href={inlineUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ color: "#6569df" }}
+                                  >
+                                    {__("Open in new window to view at full size")}
+                                  </a>
+                                </div>
+                              </>
+                            ) : (
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {att.name || __("Attachment")}
+                              </a>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
               </CommentContent>
               <span>
                 {__("Created at")}{" "}

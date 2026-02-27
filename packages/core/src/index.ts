@@ -316,9 +316,19 @@ app.get("/read-file", async (req: any, res, next) => {
     });
 
     if (inline && inline === "true") {
-      const extension = key.split(".").pop();
+      const extension = (key.split(".").pop() || "").toLowerCase();
+      const imageMime: Record<string, string> = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        gif: "image/gif",
+        webp: "image/webp",
+        svg: "image/svg+xml",
+        bmp: "image/bmp",
+        ico: "image/x-icon",
+      };
       res.setHeader("Content-disposition", 'inline; filename="' + key + '"');
-      res.setHeader("Content-type", `application/${extension}`);
+      res.setHeader("Content-type", imageMime[extension] || `application/${extension}`);
 
       return res.send(response);
     }

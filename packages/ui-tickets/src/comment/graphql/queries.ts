@@ -24,6 +24,12 @@ const widgetsTicketComments = `
     widgetsTicketComments(typeId: $typeId, type: $type) {
       _id
       content
+      attachments {
+        name
+        url
+        type
+        size
+      }
       createdUser {
         _id
         avatar

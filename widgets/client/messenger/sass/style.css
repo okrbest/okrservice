@@ -3699,19 +3699,14 @@ select.form-control:focus,
 
 .ticket-progress-container {
   width: 100%;
-  height: 85%;
   padding: 1.25rem;
-  padding-bottom: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  padding-bottom: 1rem;
 }
 
 .ticket-progress-container .ticket-progress-main-content {
-  height: 90%;
-  overflow: auto;
   max-width: 95%;
   padding-right: 20px;
+  margin-bottom: 0;
 }
 
 .ticket-progress-container .ticket-lbl {
@@ -3805,11 +3800,15 @@ select.form-control:focus,
 }
 
 .ticket-progress-container .ticket-comment-form {
+  position: static !important;
+  bottom: auto !important;
   border-top: 1px solid #ddd;
-  padding-top: 10px;
-  width: 90%;
-  position: fixed;
-  bottom: 150px;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 95%;
+  background: #fff;
 }
 
 .ticket-progress-logs > span {

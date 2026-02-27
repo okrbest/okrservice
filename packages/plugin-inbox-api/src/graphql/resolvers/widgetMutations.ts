@@ -495,10 +495,11 @@ const widgetMutations = {
       content: string;
       userType: string;
       customerId: string;
+      attachments?: IAttachment[];
     },
     { subdomain }: IContext
   ) {
-    const { type, typeId, content, userType, customerId } = args;
+    const { type, typeId, content, userType, customerId, attachments } = args;
     return await sendTicketsMessage({
       subdomain,
       action: "widgets.commentAdd",
@@ -508,6 +509,7 @@ const widgetMutations = {
         content,
         userType,
         customerId,
+        attachments: attachments || [],
       },
       isRPC: true,
     });

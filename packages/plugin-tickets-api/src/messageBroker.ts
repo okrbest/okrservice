@@ -522,10 +522,10 @@ export const setupMessageConsumers = async () => {
   });
   consumeRPCQueue("tickets:widgets.commentAdd", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
-    const { type, typeId, content, userType, customerId } = data;
+    const { type, typeId, content, userType, customerId, attachments } = data;
     
-    // 댓글 생성
-    const comment = await models.Tickets.createTicketComment(type, typeId, content, userType, customerId);
+    // 댓글 생성 (첨부파일 포함)
+    const comment = await models.Tickets.createTicketComment(type, typeId, content, userType, customerId, attachments);
     
     // 티켓 정보 가져오기
     const ticket = await models.Tickets.findOne({ _id: typeId });
