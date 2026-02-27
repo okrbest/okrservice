@@ -11,7 +11,7 @@ import {
 import { IItem, IItemParams, IOptions } from "../../types";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import debounce from "lodash/debounce";
-import { __ } from "coreui/utils";
+import { __, readFile } from "coreui/utils";
 import { extractAttachment } from "@erxes/ui/src/utils";
 import styled from "styled-components";
 import { useIsMobile } from "../../utils/mobile";
@@ -276,7 +276,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
   // 수정 모드 시작
   const startEditing = (comment: any) => {
     setEditingCommentId(comment._id);
-    setEditingContent(comment.content);
+    setEditingContent(comment.content ?? "");
   };
 
   // 수정 취소
@@ -287,7 +287,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
 
   // 수정 저장
   const saveEditing = async () => {
-    if (!onEditComment || !editingCommentId || !editingContent.trim()) return;
+    if (!onEditComment || !editingCommentId || !(editingContent ?? "").trim()) return;
     
     try {
       await onEditComment(editingCommentId, editingContent);
@@ -371,7 +371,7 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                              btnStyle="success"
                              size="small"
                              onClick={saveEditing}
-                             disabled={!editingContent.trim()}
+                             disabled={!(editingContent ?? "").trim()}
                              style={{
                                padding: '3px 8px',
                                fontSize: '11px',
@@ -385,8 +385,48 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                      ) : (
                        /* 일반 모드 */
                        <div>
-                         <div dangerouslySetInnerHTML={{ __html: comment.content }} />
-                         
+                         {(comment.content && comment.content.trim()) ? (
+                           <div dangerouslySetInnerHTML={{ __html: comment.content }} />
+                         ) : null}
+                         {/* 첨부파일 */}
+                         {comment.attachments && comment.attachments.length > 0 ? (
+                           <div style={{ marginTop: 8 }}>
+                             {comment.attachments.map((att: { name?: string; url?: string; type?: string }, idx: number) => {
+                               const url = att.url ? readFile(att.url) : "";
+                               const isImage = att.type && att.type.startsWith("image/");
+                               const inlineUrl = url ? (url.indexOf("?") >= 0 ? url + "&inline=true" : url + "?inline=true") : "";
+                               return (
+                                 <div key={`${comment._id}-att-${idx}`} style={{ marginBottom: 4 }}>
+                                   {isImage ? (
+                                     <>
+                                       <a href={url} target="_blank" rel="noopener noreferrer">
+                                         <img
+                                           src={url}
+                                           alt={att.name || ""}
+                                           style={{ maxWidth: 200, maxHeight: 200, objectFit: "contain" }}
+                                         />
+                                       </a>
+                                       <div style={{ marginTop: 4, fontSize: 12 }}>
+                                         <a
+                                           href={inlineUrl}
+                                           target="_blank"
+                                           rel="noopener noreferrer"
+                                           style={{ color: "#6569df" }}
+                                         >
+                                           {__("Open in new window to view at full size")}
+                                         </a>
+                                       </div>
+                                     </>
+                                   ) : (
+                                     <a href={url} target="_blank" rel="noopener noreferrer">
+                                       {att.name || __("Attachment")}
+                                     </a>
+                                   )}
+                                 </div>
+                               );
+                             })}
+                           </div>
+                         ) : null}
                          {/* 시간 표시 */}
                          <div style={{ 
                            fontSize: '11px', 
