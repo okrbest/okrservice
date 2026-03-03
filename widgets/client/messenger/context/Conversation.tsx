@@ -19,7 +19,7 @@ import { useLazyQuery, useMutation } from "@apollo/react-hooks";
 import { IBrowserInfo } from "../../types";
 import { IMessage } from "../types";
 import { connection } from "../connection";
-import { toggleNotifier } from "../utils/util";
+import { getDealData, toggleNotifier } from "../utils/util";
 import { useRouter } from "./Router";
 
 interface ConversationContextType {
@@ -76,7 +76,10 @@ export const ConversationProvider = ({
   const [isBrowserInfoSaved, setIsBrowserInfoSaved] = useState(false);
   const [browserInfo, setBrowserInfo] = useState<IBrowserInfo>({});
   const [activeConversationId, setActiveConversationId] = useState("");
-  const [isMessengerVisible, setIsMessengerVisible] = useState(false);
+  // When "Show Deal button" is enabled, start with widget open (no launcher click needed)
+  const showDealInitially =
+    getDealData()?.dealToggle === true && !!getDealData()?.dealStageId;
+  const [isMessengerVisible, setIsMessengerVisible] = useState(showDealInitially);
   const [isSavingNotified, setIsSavingNotified] = useState(false);
   const [lastSentTypingInfo, setLastSentTypingInfo] = useState<
     string | undefined
@@ -125,6 +128,16 @@ export const ConversationProvider = ({
     };
     saveBrowserInfo();
   }, [mutateSaveBrowserInfo, requestBrowserInfo]);
+
+  // When Show Deal is on: notify parent so widget appears open and launcher shows close icon
+  React.useEffect(() => {
+    if (showDealInitially && isMessengerVisible) {
+      postMessage("fromMessenger", "messenger", {
+        isVisible: true,
+        isSmallContainer,
+      });
+    }
+  }, []);
 
   const getBotInitialMessage = (callback: (botData: any) => void) => {
     return mutateWidgetGetBotInitialMessage({

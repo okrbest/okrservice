@@ -17,7 +17,10 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   const [activeFaqCategory, setActiveFaqCategory] =
     useState<IFaqCategory | null>(null);
   const [currentWebsiteApp, setCurrentWebsiteApp] = useState("");
-  const [isZoomed, setIsZoomed] = useState(false);
+  // Deal mode: always expanded, no zoom button
+  const isDealMode =
+    getDealData()?.dealToggle === true && !!getDealData()?.dealStageId;
+  const [isZoomed, setIsZoomed] = useState(isDealMode);
   const [initialRouteSet, setInitialRouteSet] = useState(false);
 
   const { setIsInputDisabled, setSelectedSkill, isLoggedIn } = useConfig();
@@ -26,13 +29,14 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   const integrationId = connection.data?.integrationId;
 
   // Set initial route based on deal configuration when connection.data is available
+  // Deal mode: show the form (문의&데모신청) directly instead of the button screen
   useEffect(() => {
     if (!initialRouteSet && connection.data && integrationId) {
       const dealData = getDealData();
       const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
 
       if (showDeal) {
-        setActiveRoute("deal");
+        setActiveRoute("deal-submit");
       }
       setInitialRouteSet(true);
     }
@@ -59,7 +63,7 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
       // setActiveRoute('acquireInformation');
       const dealData = getDealData();
       const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
-      setActiveRoute(showDeal ? "deal" : "home");
+      setActiveRoute(showDeal ? "deal-submit" : "home");
     }
   };
 
@@ -67,7 +71,7 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
     if ((!requireAuth && !getLocalStorageItem("hasNotified")) || !showChat) {
       const dealData = getDealData();
       const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
-      setActiveRoute(showDeal ? "deal" : "home");
+      setActiveRoute(showDeal ? "deal-submit" : "home");
     }
   };
 

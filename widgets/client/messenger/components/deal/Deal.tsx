@@ -45,6 +45,7 @@ const Deal: React.FC<Props> = ({
       withBottomNavBar={true}
       title={__("Deal")}
       showBackButton={false}
+      showZoomButton={false}
       persistentFooter={
         <div style={{ display: "none" }}>
           <Button full onClick={handleButtonClick}>

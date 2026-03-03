@@ -10,6 +10,7 @@ import { customerDetail, widgetsGetDealFields } from "../../graphql/queries";
 import { getDealData } from "../../utils/util";
 import { readFile } from "../../../utils";
 import { useRouter } from "../../context/Router";
+import { useConversation } from "../../context/Conversation";
 
 interface FileWithUrl extends File {
   url?: string;
@@ -23,6 +24,7 @@ type Props = {
 
 const DealSubmitContainer = (props: Props) => {
   const { setRoute } = useRouter();
+  const { toggle } = useConversation();
 
   const [files, setFiles] = React.useState<FileWithUrl[]>([]);
   const dealData = getDealData();
@@ -86,6 +88,11 @@ const DealSubmitContainer = (props: Props) => {
         setDealId(widgetDealCreated._id);
         setIsSubmitted(true);
         setError(null);
+        // 제출 완료 알림 후 위젯 닫기
+        setTimeout(() => {
+          window.alert("제출이 완료되었습니다. 감사합니다.");
+          toggle();
+        }, 100);
       }
     },
     onError(err) {
