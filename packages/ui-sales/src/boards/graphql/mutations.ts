@@ -153,6 +153,7 @@ export const commonFields = `
         lastName
         primaryEmail
         primaryPhone
+        emailValidationStatus
         visitorContactInfo
         customFieldsData
       }

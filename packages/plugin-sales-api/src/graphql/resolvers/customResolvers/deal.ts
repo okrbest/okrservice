@@ -180,9 +180,10 @@ export default {
       return activeCustomers;
     }
 
+    // Return full customer objects so sidebar list has primaryEmail, emailValidationStatus etc. (e.g. Send e-mail button state)
     return (activeCustomers || []).map(c => ({
       __typename: "Customer",
-      _id: c._id
+      ...c
     }));
   },
 
