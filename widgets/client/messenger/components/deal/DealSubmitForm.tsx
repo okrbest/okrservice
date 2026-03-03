@@ -143,11 +143,18 @@ const DealSubmitForm: React.FC<Props> = ({
         <div className="form-container">
           {isAuthFieldsVisible && (
             <>
-              <div style={{ marginBottom: "24px", textAlign: "center" }}>
-                <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px", color: "#1e40af" }}>
+              <div
+                style={{
+                  marginBottom: "24px",
+                  textAlign: "center",
+                  width: "100%",
+                  alignSelf: "stretch",
+                }}
+              >
+                <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px", color: "#1e40af", textAlign: "center" }}>
                   데모 사이트를 통해 직접 확인해보세요
                 </h2>
-                <h2 style={{ fontSize: "16px", fontWeight: "400", color: "#666", lineHeight: "1.6" }}>
+                <h2 style={{ fontSize: "16px", fontWeight: "400", color: "#666", lineHeight: "1.6", textAlign: "center" }}>
                   문의를 남겨주시면 데모 사이트 오픈과 함께 <br /> 도입 방안을 안내해드립니다.
                 </h2>
               </div>
@@ -254,6 +261,7 @@ const DealSubmitForm: React.FC<Props> = ({
       withBottomNavBar={true}
       title={__("Create a deal")}
       showBackButton={false}
+      showZoomButton={false}
       persistentFooter={
         !isSubmitted ? (
           <Button form="deal-form" type="submit" full>
