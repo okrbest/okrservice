@@ -119,7 +119,7 @@ const archivedTicketsParams = `
 `;
 
 export const queries = `
-  ticketDetail(_id: String!): Ticket
+  ticketDetail(_id: String!, includeRelations: Boolean): Ticket
   tickets(${listQueryParams}): [TicketListItem]
   ticketsTotalCount(${listQueryParams}): Int
   archivedTickets(

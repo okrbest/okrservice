@@ -132,6 +132,8 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
   // (assignedUserIds, stageId, status 조건이 함께 쓰이는 패턴 대응)
   ticketSchema.index({ stageId: 1, status: 1, assignedUserIds: 1 });
   ticketSchema.index({ assignedUserIds: 1, stageId: 1, status: 1 });
+  // getItemList의 $match + $sort(order, createdAt)가 인덱스 커버되도록
+  ticketSchema.index({ stageId: 1, status: 1, assignedUserIds: 1, order: 1, createdAt: -1 });
 
   return ticketSchema;
 };
