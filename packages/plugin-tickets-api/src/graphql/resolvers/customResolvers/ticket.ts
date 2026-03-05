@@ -15,9 +15,13 @@ export default {
   async companies(
     ticket: ITicketDocument,
     _args,
-    { subdomain }: IContext,
+    context: IContext,
     { isSubscription }
   ) {
+    if ((context as any).includeRelations === false) {
+      return [];
+    }
+    const { subdomain } = context;
     const companyIds = await sendCoreMessage({
       subdomain,
       action: "conformities.savedConformity",
@@ -48,9 +52,13 @@ export default {
   async customers(
     ticket: ITicketDocument,
     _args,
-    { subdomain }: IContext,
+    context: IContext,
     { isSubscription }
   ) {
+    if ((context as any).includeRelations === false) {
+      return [];
+    }
+    const { subdomain } = context;
     const customerIds = await sendCoreMessage({
       subdomain,
       action: "conformities.savedConformity",
@@ -147,8 +155,12 @@ export default {
   async hasNotified(
     ticket: ITicketDocument,
     _args,
-    { user, subdomain }: IContext
+    context: IContext
   ) {
+    if ((context as any).includeRelations === false) {
+      return true;
+    }
+    const { user, subdomain } = context;
     return sendNotificationsMessage({
       subdomain,
       action: "checkIfRead",

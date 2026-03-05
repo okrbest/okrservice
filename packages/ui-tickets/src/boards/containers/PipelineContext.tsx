@@ -91,9 +91,14 @@ type Ticket = {
   isComplete: boolean;
 };
 
+const STAGE_REFETCH_THROTTLE_MS = 2500;
+
 class PipelineProviderInner extends React.Component<Props, State> {
   static tickets: Ticket[] = [];
   static currentTicket: Ticket | null;
+
+  private pendingStageRefetchIds = new Set<string>();
+  private pendingStageRefetchTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(props: Props) {
     super(props);
@@ -220,7 +225,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
           if (action === "reOrdered") {
             this.refetchStage(destinationStageId);
           } else {
-            // refetch stages info ===
+            // refetch stages info (쓰로틀: 이벤트가 잦을 때 stageDetail 연속 호출 방지)
             const changedStageIds: string[] = item.stageId
               ? [item.stageId]
               : [];
@@ -236,18 +241,43 @@ class PipelineProviderInner extends React.Component<Props, State> {
               changedStageIds.push(oldStageId);
             }
 
-            for (const id of changedStageIds) {
-              client.query({
-                query: gql(queries.stageDetail),
-                fetchPolicy: "network-only",
-                variables: { _id: id }
-              });
-            }
+            changedStageIds.forEach(id => this.pendingStageRefetchIds.add(id));
+            this.scheduleThrottledStageRefetch();
           }
         }
       }
     });
   }
+
+  flushPendingStageRefetch = () => {
+    this.pendingStageRefetchTimeout = null;
+    const ids = Array.from(this.pendingStageRefetchIds);
+    this.pendingStageRefetchIds.clear();
+    ids.forEach(id => {
+      client.query({
+        query: gql(queries.stageDetail),
+        fetchPolicy: "network-only",
+        variables: { _id: id }
+      });
+    });
+  };
+
+  scheduleThrottledStageRefetch = () => {
+    if (this.pendingStageRefetchTimeout !== null) {
+      return;
+    }
+    this.pendingStageRefetchTimeout = setTimeout(() => {
+      this.flushPendingStageRefetch();
+    }, STAGE_REFETCH_THROTTLE_MS);
+  };
+
+  componentWillUnmount() {
+    if (this.pendingStageRefetchTimeout !== null) {
+      clearTimeout(this.pendingStageRefetchTimeout);
+      this.pendingStageRefetchTimeout = null;
+    }
+  }
+
   synchSingleCard = (itemId: string) => {
     setTimeout(() => {
       client

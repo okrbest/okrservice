@@ -66,6 +66,7 @@ type ConflictPending = {
 class EditFormContainer extends React.Component<FinalProps> {
   private unsubcribe;
   private lastRefetchTime = 0;
+  private relationsRefetchedForItemId: string | null = null;
 
   state: { descriptionConflictPending: ConflictPending | null } = {
     descriptionConflictPending: null
@@ -123,6 +124,19 @@ class EditFormContainer extends React.Component<FinalProps> {
 
     this.setState({ descriptionConflictPending: null });
   };
+
+  componentDidUpdate(prevProps: FinalProps) {
+    const { detailQuery, itemId, options } = this.props;
+    if (
+      options?.type === "ticket" &&
+      !detailQuery.loading &&
+      detailQuery[options.queriesName.detailQuery] &&
+      this.relationsRefetchedForItemId !== itemId
+    ) {
+      this.relationsRefetchedForItemId = itemId;
+      detailQuery.refetch({ variables: { _id: itemId, includeRelations: true } });
+    }
+  }
 
   componentDidMount() {
     const { detailQuery, itemId } = this.props;
@@ -332,20 +346,20 @@ const withQuery = (props: ContainerProps) => {
 
   return withProps<ContainerProps>(
     compose(
-      graphql<ContainerProps, DetailQueryResponse, { _id: string }>(
-        gql(options.queries.detailQuery),
-        {
-          name: "detailQuery",
-          options: ({ itemId }: { itemId: string }) => {
-            return {
-              variables: {
-                _id: itemId
-              },
-              fetchPolicy: "network-only"
-            };
-          }
-        }
-      ),
+      graphql<
+        ContainerProps,
+        DetailQueryResponse,
+        { _id: string; includeRelations?: boolean }
+      >(gql(options.queries.detailQuery), {
+        name: "detailQuery",
+        options: (props: ContainerProps) => ({
+          variables: {
+            _id: props.itemId,
+            ...(props.options?.type === "ticket" ? { includeRelations: false } : {})
+          },
+          fetchPolicy: "network-only"
+        })
+      }),
       graphql<ContainerProps, AllUsersQueryResponse>(
         gql(userQueries.allUsers),
         {

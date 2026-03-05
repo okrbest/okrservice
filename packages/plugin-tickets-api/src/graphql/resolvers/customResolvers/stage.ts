@@ -10,6 +10,23 @@ import {
   generateTicketCommonFilters
 } from "../queries/utils";
 
+const ITEMS_TOTAL_COUNT_CACHE_TTL_MS = 25 * 1000; // 25초
+const itemsTotalCountCache = new Map<
+  string,
+  { count: number; expiresAt: number }
+>();
+
+function getItemsTotalCountCacheKey(
+  stageId: string,
+  userId: string,
+  args: any
+): string {
+  const assignedToMe = args?.assignedToMe || "";
+  const assignedUserIds = (args?.assignedUserIds || []).slice().sort().join(",");
+  const search = args?.search || "";
+  return `${stageId}:${userId}:${assignedToMe}:${assignedUserIds}:${search}`;
+}
+
 const getAmountsMap = async (
   subdomain,
   models,
@@ -132,6 +149,17 @@ export default {
 
     switch (stage.type) {
       case BOARD_TYPES.TICKET: {
+        const cacheKey = getItemsTotalCountCacheKey(
+          stage._id,
+          user._id,
+          args || {}
+        );
+        const now = Date.now();
+        const cached = itemsTotalCountCache.get(cacheKey);
+        if (cached && cached.expiresAt > now) {
+          return cached.count;
+        }
+
         const filter = await generateTicketCommonFilters(
           models,
           subdomain,
@@ -140,7 +168,12 @@ export default {
           args.extraParams
         );
 
-        return Tickets.find(filter).countDocuments();
+        const count = await Tickets.find(filter).countDocuments();
+        itemsTotalCountCache.set(cacheKey, {
+          count,
+          expiresAt: now + ITEMS_TOTAL_COUNT_CACHE_TTL_MS
+        });
+        return count;
       }
     }
   },

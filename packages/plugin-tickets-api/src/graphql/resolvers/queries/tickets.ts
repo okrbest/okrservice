@@ -53,12 +53,16 @@ const ticketQueries = {
 
   /**
    * Tickets detail
+   * includeRelations: false면 companies/customers/hasNotified 등 RPC 호출 생략 → 모달 첫 로딩 속도 개선
    */
   async ticketDetail(
     _root,
-    { _id }: { _id: string },
-    { user, models, subdomain }: IContext
+    { _id, includeRelations }: { _id: string; includeRelations?: boolean },
+    context: IContext
   ) {
+    const { user, models, subdomain } = context;
+    (context as any).includeRelations = includeRelations !== false;
+
     const ticket = await models.Tickets.getTicket(_id);
 
     return checkItemPermByUser(subdomain, models, user, ticket);

@@ -128,8 +128,8 @@ const ticketsTotalCount = `
 `;
 
 const ticketDetail = `
-  query ticketDetail($_id: String!) {
-    ticketDetail(_id: $_id) {
+  query ticketDetail($_id: String!, $includeRelations: Boolean) {
+    ticketDetail(_id: $_id, includeRelations: $includeRelations) {
       ${ticketFields}
       ${commonFields}
     }
