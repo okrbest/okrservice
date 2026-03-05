@@ -274,8 +274,9 @@ class EditFormContainer extends React.Component<FinalProps> {
 
   render() {
     const { usersQuery, detailQuery, options } = this.props;
+    const skipUsers = !!options?.skipAllUsersInEditForm;
 
-    if (usersQuery.loading || detailQuery.loading) {
+    if (detailQuery.loading || (!skipUsers && usersQuery?.loading)) {
       return <Spinner />;
     }
 
@@ -283,7 +284,7 @@ class EditFormContainer extends React.Component<FinalProps> {
       return <ErrorMsg>{detailQuery.error.message}</ErrorMsg>;
     }
 
-    const users = usersQuery.allUsers;
+    const users = skipUsers ? [] : (usersQuery?.allUsers || []);
     const item = detailQuery[options.queriesName.detailQuery];
 
     if (!item) {
@@ -348,7 +349,8 @@ const withQuery = (props: ContainerProps) => {
       graphql<ContainerProps, AllUsersQueryResponse>(
         gql(userQueries.allUsers),
         {
-          name: "usersQuery"
+          name: "usersQuery",
+          skip: ({ options }) => !!options?.skipAllUsersInEditForm
         }
       ),
       graphql<ContainerProps, SaveMutation, IItemParams>(

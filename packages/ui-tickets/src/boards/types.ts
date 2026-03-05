@@ -58,6 +58,8 @@ export interface IOptions {
   };
   isMove: boolean;
   getExtraParams: (queryParams: any) => any;
+  /** true면 EditForm에서 allUsers 쿼리를 건너뛰어 초기 로딩 속도 개선 (담당자 선택은 SelectTeamMembers가 자체 조회) */
+  skipAllUsersInEditForm?: boolean;
 }
 
 export interface IPipeline {

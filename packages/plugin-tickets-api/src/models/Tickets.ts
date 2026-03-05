@@ -128,5 +128,10 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
 
   ticketSchema.loadClass(Ticket);
 
+  // 복합 인덱스: 담당 티켓이 많은 사용자의 itemsTotalCount / getItemList 쿼리 성능 개선
+  // (assignedUserIds, stageId, status 조건이 함께 쓰이는 패턴 대응)
+  ticketSchema.index({ stageId: 1, status: 1, assignedUserIds: 1 });
+  ticketSchema.index({ assignedUserIds: 1, stageId: 1, status: 1 });
+
   return ticketSchema;
 };

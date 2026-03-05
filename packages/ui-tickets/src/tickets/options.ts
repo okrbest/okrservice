@@ -48,6 +48,7 @@ const options = {
     changeSuccessText: 'You successfully changed a ticket'
   },
   isMove: true,
+  skipAllUsersInEditForm: true,
   getExtraParams: (queryParams: any) => {
     const {
       priority,
