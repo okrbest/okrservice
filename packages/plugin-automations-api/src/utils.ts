@@ -447,18 +447,23 @@ const isDiffValue = (latest, target, field) => {
   return false;
 };
 
+/** assignAlarm 트리거 중복 실행 방지: 같은 티켓+자동화에 대해 이 시간(ms) 내에는 재실행하지 않음 */
+const ASSIGN_ALARM_COOLDOWN_MS = 10 * 60 * 1000; // 10분
+
 export const calculateExecution = async ({
   models,
   subdomain,
   automationId,
   trigger,
-  target
+  target,
+  triggerSource
 }: {
   models: IModels;
   subdomain: string;
   automationId: string;
   trigger: ITrigger;
   target: any;
+  triggerSource?: string;
 }): Promise<IExecutionDocument | null | undefined> => {
   const { id, type, config, isCustom } = trigger;
   const { reEnrollment, reEnrollmentRules, contentId } = config || {};
@@ -550,6 +555,19 @@ export const calculateExecution = async ({
           return;
         }
       }
+    }
+  }
+
+  // assignAlarm 트리거: 같은 티켓+자동화에 대해 쿨다운(5분) 내 중복 실행 방지
+  if (triggerSource === 'assignAlarm' && target?._id) {
+    const cooldownSince = new Date(Date.now() - ASSIGN_ALARM_COOLDOWN_MS);
+    const recentExecution = await models.Executions.findOne({
+      automationId,
+      targetId: target._id,
+      createdAt: { $gte: cooldownSince }
+    }).lean();
+    if (recentExecution) {
+      return;
     }
   }
 
@@ -717,7 +735,8 @@ export const receiveTrigger = async ({
           subdomain,
           automationId: automation._id,
           trigger,
-          target
+          target,
+          triggerSource
         });
 
         if (execution) {
