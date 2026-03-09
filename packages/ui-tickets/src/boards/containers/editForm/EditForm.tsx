@@ -1,4 +1,5 @@
 import client from "@erxes/ui/src/apolloClient";
+import client from "@erxes/ui/src/apolloClient";
 import { gql } from "@apollo/client";
 import * as compose from "lodash.flowright";
 import Spinner from "@erxes/ui/src/components/Spinner";
@@ -57,6 +58,8 @@ type FinalProps = {
 } & ContainerProps;
 
 const REFETCH_THROTTLE_MS = 2500;
+/** 모달(상세) 열려 있을 때는 refetch 덜 하기 → description 입력 버벅임 완화 */
+const REFETCH_THROTTLE_WHEN_MODAL_MS = 10000;
 
 type ConflictPending = {
   doc: IItemParams;
@@ -128,14 +131,41 @@ class EditFormContainer extends React.Component<FinalProps> {
   componentDidUpdate(prevProps: FinalProps) {
     const { detailQuery, itemId, options } = this.props;
     if (
-      options?.type === "ticket" &&
-      !detailQuery.loading &&
-      detailQuery[options.queriesName.detailQuery] &&
-      this.relationsRefetchedForItemId !== itemId
+      options?.type !== "ticket" ||
+      detailQuery.loading ||
+      !detailQuery[options.queriesName.detailQuery] ||
+      this.relationsRefetchedForItemId === itemId
     ) {
-      this.relationsRefetchedForItemId = itemId;
-      detailQuery.refetch({ variables: { _id: itemId, includeRelations: true } });
+      return;
     }
+    this.relationsRefetchedForItemId = itemId;
+    client
+      .query({
+        query: gql(options.queries.detailQuery),
+        variables: { _id: itemId, includeRelations: true },
+        fetchPolicy: "network-only"
+      })
+      .then(({ data }) => {
+        const full = data?.[options.queriesName.detailQuery];
+        if (!full || !client.cache) return;
+        try {
+          const id = client.cache.identify({
+            __typename: "Ticket",
+            _id: itemId
+          });
+          if (id) {
+            client.cache.modify({
+              id,
+              fields: {
+                companies: () => full.companies ?? [],
+                customers: () => full.customers ?? [],
+                hasNotified: () => full.hasNotified ?? true
+              }
+            });
+          }
+        } catch (_) {}
+      })
+      .catch(() => {});
   }
 
   componentDidMount() {
@@ -166,8 +196,18 @@ class EditFormContainer extends React.Component<FinalProps> {
           return;
         }
 
+        const changedItemId = ticketsPipelinesChanged?.data?.item?._id;
+        const isOurItem = changedItemId && changedItemId === itemId;
+        const throttleMs =
+          document.querySelectorAll(".modal").length >= 1
+            ? REFETCH_THROTTLE_WHEN_MODAL_MS
+            : REFETCH_THROTTLE_MS;
+
         const now = Date.now();
-        if (now - this.lastRefetchTime < REFETCH_THROTTLE_MS) {
+        if (now - this.lastRefetchTime < throttleMs) {
+          return;
+        }
+        if (!isOurItem) {
           return;
         }
         this.lastRefetchTime = now;
