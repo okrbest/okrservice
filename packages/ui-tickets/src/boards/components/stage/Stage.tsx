@@ -9,6 +9,7 @@ import {
   Indicator,
   IndicatorItem,
   LoadingContent,
+  LoadMore,
   StageFooter,
   StageRoot,
   StageTitle
@@ -37,10 +38,16 @@ type Props = {
   onAddItem: (stageId: string, item: IItem) => void;
   onRemoveItem: (itemId: string, stageId: string) => void;
   loadMore: () => void;
+  /** 이전 구간 보기 (슬라이딩 윈도우) */
+  loadPrevious?: () => void;
+  /** 이전 보기 버튼 표시 여부 (stageSkipOffset > 0) */
+  showLoadPrevious?: boolean;
   options: IOptions;
   archiveItems: () => void;
   archiveList: () => void;
   sortItems: (type: string, description: string) => void;
+  /** 슬라이딩 윈도우 시 아직 더 불러올 수 있는지 (없으면 더보기 버튼 숨김) */
+  hasMore?: boolean;
 };
 
 type State = {
@@ -120,6 +127,13 @@ export default class Stage extends React.Component<Props, State> {
   componentDidUpdate(prevProps: Props) {
     const { items, stage } = this.props;
     const { items: prevItems, stage: prevStage } = prevProps;
+    
+    // 슬라이딩 윈도우로 아이템 세트가 바뀌면 스크롤을 맨 위로 → 다시 밑으로 스크롤해 더보기 가능
+    const sameLength = items.length === prevItems.length && items.length > 0;
+    const allIdsChanged = sameLength && items.every((item, i) => item._id !== prevItems[i]?._id);
+    if (allIdsChanged && this.bodyRef.current) {
+      this.bodyRef.current.scrollTop = 0;
+    }
     
     // items나 stage의 참조나 주요 필드 변경 확인 (JSON.stringify 제거)
     const itemsChanged = items !== prevItems || 
@@ -570,7 +584,25 @@ export default class Stage extends React.Component<Props, State> {
                 <Indicator>{this.renderIndicator()}</Indicator>
               </Header>
               <Body ref={this.bodyRef} onScroll={this.onScroll}>
+                {this.props.showLoadPrevious &&
+                  this.props.loadPrevious &&
+                  !this.props.loadingItems() && (
+                    <LoadMore
+                      type="button"
+                      onClick={this.props.loadPrevious}
+                    >
+                      {__("Load previous")}
+                    </LoadMore>
+                  )}
                 {this.renderItemList()}
+                {this.props.items.length < this.props.stage.itemsTotalCount &&
+                  (this.props.hasMore !== false) &&
+                  !this.props.loadingItems() && (
+                    <LoadMore type="button" onClick={this.props.loadMore}>
+                      {__("Load more")} ({this.props.items.length} /{" "}
+                      {this.props.stage.itemsTotalCount})
+                    </LoadMore>
+                  )}
                 {this.renderTriggerModal()}
               </Body>
               {this.renderAddItemTrigger()}

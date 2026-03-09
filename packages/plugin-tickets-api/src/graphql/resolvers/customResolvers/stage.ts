@@ -10,7 +10,7 @@ import {
   generateTicketCommonFilters
 } from "../queries/utils";
 
-const ITEMS_TOTAL_COUNT_CACHE_TTL_MS = 25 * 1000; // 25초
+const ITEMS_TOTAL_COUNT_CACHE_TTL_MS = 45 * 1000; // 45초 (담당 티켓 많을 때 count 쿼리 반복 완화)
 const itemsTotalCountCache = new Map<
   string,
   { count: number; expiresAt: number }

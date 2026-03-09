@@ -132,8 +132,11 @@ class WithStages extends Component<WithStagesQueryProps> {
             scheduleStage,
             refetchStage,
             onLoadStage,
+            onLoadPreviousStage,
             onAddItem,
-            onRemoveItem
+            onRemoveItem,
+            maxItemsPerStage,
+            stageSkipOffset
           }) => (
             <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
               <Droppable
@@ -169,8 +172,11 @@ class WithStages extends Component<WithStagesQueryProps> {
                           scheduleStage={scheduleStage}
                           refetchStage={refetchStage}
                           onLoad={onLoadStage}
+                          onLoadPrevious={onLoadPreviousStage}
                           onAddItem={onAddItem}
                           onRemoveItem={onRemoveItem}
+                          maxItemsPerStage={maxItemsPerStage}
+                          stageSkipOffset={stageSkipOffset?.[stageId] ?? 0}
                         />
                       );
                     })}

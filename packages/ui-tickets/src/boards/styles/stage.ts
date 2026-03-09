@@ -192,6 +192,23 @@ const AddNew = styled.a`
   }
 `;
 
+const LoadMore = styled.button`
+  display: block;
+  width: 100%;
+  color: ${secondaryText};
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  text-align: center;
+  user-select: none;
+  font-weight: 500;
+  &:hover {
+    background: ${hoverColor};
+    cursor: pointer;
+  }
+`;
+
 const IndicatorItem = styledTS<{ $isPass: boolean }>(styled.div)`
   flex: 1;
   background: ${(props) => (props.$isPass ? colors.colorCoreBlue : hoverColor)};
@@ -299,6 +316,7 @@ export const Divider = styled.div`
 
 export {
   AddNew,
+  LoadMore,
   Container,
   Content,
   Header,
