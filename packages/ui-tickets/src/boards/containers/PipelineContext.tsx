@@ -102,7 +102,8 @@ const STAGE_REFETCH_THROTTLE_MS = 2500;
 /** itemUpdate 구독 시 setState 쓰로틀: 이벤트가 잦아도 리렌더 최소화 */
 const ITEM_UPDATE_THROTTLE_MS = 600;
 /** 모달이 열려 있을 때는 보드 업데이트를 더 완화해 상세 입력 버벅임 방지 */
-const ITEM_UPDATE_THROTTLE_WHEN_MODAL_MS = 2500;
+/** 모달이 열려 있을 때는 보드 itemMap 갱신을 더 완화 → 상세에서 description 입력 시 버벅임 완화 */
+const ITEM_UPDATE_THROTTLE_WHEN_MODAL_MS = 10000;
 /** 스테이지당 메모리 상한: 담당 티켓 많을 때 itemMap/리렌더 비용 완화 */
 const MAX_ITEMS_PER_STAGE = 20;
 
@@ -302,8 +303,10 @@ class PipelineProviderInner extends React.Component<Props, State> {
     const pending = Array.from(this.pendingItemUpdatesRef.values());
     this.pendingItemUpdatesRef.clear();
     if (pending.length === 0) return;
+    const openItemId = this.props.queryParams?.itemId;
     let nextItemMap = this.state.itemMap;
     for (const item of pending) {
+      if (openItemId && item._id === openItemId) continue;
       nextItemMap = updateItemInfo({ itemMap: nextItemMap }, item);
     }
     this.setState({ itemMap: nextItemMap });
