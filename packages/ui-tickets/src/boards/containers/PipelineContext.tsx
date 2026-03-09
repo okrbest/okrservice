@@ -215,6 +215,12 @@ class PipelineProviderInner extends React.Component<Props, State> {
           }
 
           if (action === "itemUpdate") {
+            const { itemMap } = this.state;
+            const stageItems = itemMap[item.stageId] || [];
+            const isInCurrentMap = stageItems.some(
+              (i: IItem) => i._id === item._id
+            );
+            if (!isInCurrentMap) return;
             this.pendingItemUpdatesRef.set(item._id, item);
             if (this.itemUpdateFlushTimeout === null) {
               const throttleMs =
