@@ -1,5 +1,4 @@
 import client from "@erxes/ui/src/apolloClient";
-import client from "@erxes/ui/src/apolloClient";
 import { gql } from "@apollo/client";
 import * as compose from "lodash.flowright";
 import Spinner from "@erxes/ui/src/components/Spinner";
@@ -9,7 +8,7 @@ import { AllUsersQueryResponse, IUser } from "@erxes/ui/src/auth/types";
 import React from "react";
 import { graphql } from "@apollo/client/react/hoc";
 import ErrorMsg from "@erxes/ui/src/components/ErrorMsg";
-import { mutations, queries, subscriptions } from "../../graphql";
+import { mutations, queries } from "../../graphql";
 import {
   CopyMutation,
   DetailQueryResponse,
@@ -57,18 +56,12 @@ type FinalProps = {
   copyMutation: CopyMutation;
 } & ContainerProps;
 
-const REFETCH_THROTTLE_MS = 2500;
-/** 모달(상세) 열려 있을 때는 refetch 덜 하기 → description 입력 버벅임 완화 */
-const REFETCH_THROTTLE_WHEN_MODAL_MS = 10000;
-
 type ConflictPending = {
   doc: IItemParams;
   callback: (item: IItem) => void;
 };
 
 class EditFormContainer extends React.Component<FinalProps> {
-  private unsubcribe;
-  private lastRefetchTime = 0;
   private relationsRefetchedForItemId: string | null = null;
 
   state: { descriptionConflictPending: ConflictPending | null } = {
@@ -169,55 +162,7 @@ class EditFormContainer extends React.Component<FinalProps> {
   }
 
   componentDidMount() {
-    const { detailQuery, itemId } = this.props;
-
-    this.unsubcribe = detailQuery.subscribeToMore({
-      document: gql(subscriptions.pipelinesChanged),
-      variables: { _id: itemId },
-      updateQuery: (
-        prev,
-        {
-          subscriptionData: {
-            data: { ticketsPipelinesChanged }
-          }
-        }
-      ) => {
-        if (!ticketsPipelinesChanged || !ticketsPipelinesChanged.data) {
-          return;
-        }
-
-        const { proccessId } = ticketsPipelinesChanged;
-
-        if (proccessId === localStorage.getItem("proccessId")) {
-          return;
-        }
-
-        if (document.querySelectorAll(".modal").length >= 2) {
-          return;
-        }
-
-        const changedItemId = ticketsPipelinesChanged?.data?.item?._id;
-        const isOurItem = changedItemId && changedItemId === itemId;
-        const throttleMs =
-          document.querySelectorAll(".modal").length >= 1
-            ? REFETCH_THROTTLE_WHEN_MODAL_MS
-            : REFETCH_THROTTLE_MS;
-
-        const now = Date.now();
-        if (now - this.lastRefetchTime < throttleMs) {
-          return;
-        }
-        if (!isOurItem) {
-          return;
-        }
-        this.lastRefetchTime = now;
-        this.props.detailQuery.refetch();
-      }
-    });
-  }
-
-  componentWillUnmount() {
-    this.unsubcribe();
+    // 상세 모달 열린 동안은 구독하지 않음 → description 입력 버벅임 완화 (모달 닫으면 보드는 PipelineContext 구독으로 최신 유지)
   }
 
   addItem(doc: IItemParams, callback: () => void) {
