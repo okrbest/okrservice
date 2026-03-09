@@ -61,6 +61,8 @@ type State = {
   stageIds: string[];
   isShowLabel: boolean;
   isDragEnabled?: boolean;
+  /** 스테이지별 슬라이딩 윈도우: 앞쪽으로 건너뛴 개수 (다음 fetch의 skip = stageSkipOffset[stageId] + items.length) */
+  stageSkipOffset: { [stageId: string]: number };
 };
 
 interface IStore {
@@ -69,6 +71,8 @@ interface IStore {
   stageLoadMap: StageLoadMap;
   stageIds: string[];
   onLoadStage: (stageId: string, items: IItem[]) => void;
+  /** 이전 구간 보기: 해당 스테이지를 skipUsed 기준 20개로 교체 */
+  onLoadPreviousStage: (stageId: string, items: IItem[], skipUsed: number) => void;
   scheduleStage: (stageId: string) => void;
   refetchStage: (stageId: string) => void;
   onDragEnd: (result: IDragResult) => void;
@@ -79,6 +83,9 @@ interface IStore {
   synchSingleCard: (itemId: string) => void;
   isShowLabel: boolean;
   toggleLabels: () => void;
+  maxItemsPerStage: number;
+  /** 스테이지별 슬라이딩 윈도우 오프셋 (다음 loadMore 시 skip = stageSkipOffset + items.length) */
+  stageSkipOffset: { [stageId: string]: number };
 }
 
 const PipelineContext = React.createContext({} as IStore);
@@ -92,6 +99,12 @@ type Ticket = {
 };
 
 const STAGE_REFETCH_THROTTLE_MS = 2500;
+/** itemUpdate 구독 시 setState 쓰로틀: 이벤트가 잦아도 리렌더 최소화 */
+const ITEM_UPDATE_THROTTLE_MS = 600;
+/** 모달이 열려 있을 때는 보드 업데이트를 더 완화해 상세 입력 버벅임 방지 */
+const ITEM_UPDATE_THROTTLE_WHEN_MODAL_MS = 2500;
+/** 스테이지당 메모리 상한: 담당 티켓 많을 때 itemMap/리렌더 비용 완화 */
+const MAX_ITEMS_PER_STAGE = 20;
 
 class PipelineProviderInner extends React.Component<Props, State> {
   static tickets: Ticket[] = [];
@@ -99,6 +112,8 @@ class PipelineProviderInner extends React.Component<Props, State> {
 
   private pendingStageRefetchIds = new Set<string>();
   private pendingStageRefetchTimeout: ReturnType<typeof setTimeout> | null = null;
+  private pendingItemUpdatesRef = new Map<string, IItem>();
+  private itemUpdateFlushTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(props: Props) {
     super(props);
@@ -112,7 +127,8 @@ class PipelineProviderInner extends React.Component<Props, State> {
       itemMap: initialItemMap || {},
       stageLoadMap: {},
       stageIds,
-      isShowLabel: false || localStorage.getItem(pipeline._id) === "true"
+      isShowLabel: false || localStorage.getItem(pipeline._id) === "true",
+      stageSkipOffset: {}
     };
 
     PipelineProviderInner.tickets = [];
@@ -182,6 +198,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
           }
 
           if (action === "itemRemove") {
+            this.pendingItemUpdatesRef.delete(item._id);
             this.onRemoveItem(item._id, oldStageId);
           }
 
@@ -197,9 +214,18 @@ class PipelineProviderInner extends React.Component<Props, State> {
           }
 
           if (action === "itemUpdate") {
-            this.setState({
-              itemMap: updateItemInfo(this.state, item)
-            });
+            this.pendingItemUpdatesRef.set(item._id, item);
+            if (this.itemUpdateFlushTimeout === null) {
+              const throttleMs =
+                typeof document !== "undefined" &&
+                document.querySelectorAll(".modal").length >= 1
+                  ? ITEM_UPDATE_THROTTLE_WHEN_MODAL_MS
+                  : ITEM_UPDATE_THROTTLE_MS;
+              this.itemUpdateFlushTimeout = setTimeout(
+                () => this.flushPendingItemUpdates(),
+                throttleMs
+              );
+            }
           }
 
           if (action === "itemOfConformitiesUpdate" && item._id) {
@@ -271,10 +297,26 @@ class PipelineProviderInner extends React.Component<Props, State> {
     }, STAGE_REFETCH_THROTTLE_MS);
   };
 
+  flushPendingItemUpdates = () => {
+    this.itemUpdateFlushTimeout = null;
+    const pending = Array.from(this.pendingItemUpdatesRef.values());
+    this.pendingItemUpdatesRef.clear();
+    if (pending.length === 0) return;
+    let nextItemMap = this.state.itemMap;
+    for (const item of pending) {
+      nextItemMap = updateItemInfo({ itemMap: nextItemMap }, item);
+    }
+    this.setState({ itemMap: nextItemMap });
+  };
+
   componentWillUnmount() {
     if (this.pendingStageRefetchTimeout !== null) {
       clearTimeout(this.pendingStageRefetchTimeout);
       this.pendingStageRefetchTimeout = null;
+    }
+    if (this.itemUpdateFlushTimeout !== null) {
+      clearTimeout(this.itemUpdateFlushTimeout);
+      this.itemUpdateFlushTimeout = null;
     }
   }
 
@@ -511,19 +553,47 @@ class PipelineProviderInner extends React.Component<Props, State> {
    * - Mark stage's loading state as loaded
    */
   onLoadStage = (stageId: string, items: IItem[]) => {
-    const { itemMap, stageLoadMap, itemIds } = this.state;
+    const { itemMap, stageLoadMap, itemIds, stageSkipOffset } = this.state;
     const task = PipelineProviderInner.tickets.find(t => t.stageId === stageId);
 
     if (task) {
       task.isComplete = true;
     }
 
-    const newItemIds = [...itemIds, ...items.map(item => item._id)];
+    const isOverCap = items.length > MAX_ITEMS_PER_STAGE;
+    const cappedItems = isOverCap
+      ? items.slice(-MAX_ITEMS_PER_STAGE)
+      : items;
+    // 슬라이딩 시: 이미 건너뛴 개수(stageSkipOffset) + 이번에 앞에서 버린 개수 = 다음 skip
+    const newSkipOffset = isOverCap
+      ? (stageSkipOffset[stageId] || 0) + (items.length - MAX_ITEMS_PER_STAGE)
+      : 0;
+    const prevStageIds = (itemMap[stageId] || []).map(i => i._id);
+    const newIds = cappedItems.map(item => item._id);
+    const newItemIds = Array.from(
+      new Set([...itemIds.filter(id => !prevStageIds.includes(id)), ...newIds])
+    );
 
     this.setState({
-      itemIds: Array.from(new Set(newItemIds)),
+      itemIds: newItemIds,
+      itemMap: { ...itemMap, [stageId]: cappedItems },
+      stageLoadMap: { ...stageLoadMap, [stageId]: "loaded" },
+      stageSkipOffset: { ...stageSkipOffset, [stageId]: newSkipOffset }
+    });
+  };
+
+  /** 이전 구간 보기: items로 해당 스테이지 교체, stageSkipOffset = skipUsed */
+  onLoadPreviousStage = (stageId: string, items: IItem[], skipUsed: number) => {
+    const { itemMap, itemIds, stageSkipOffset } = this.state;
+    const prevStageIds = (itemMap[stageId] || []).map(i => i._id);
+    const newIds = items.map(item => item._id);
+    const newItemIds = Array.from(
+      new Set([...itemIds.filter(id => !prevStageIds.includes(id)), ...newIds])
+    );
+    this.setState({
+      itemIds: newItemIds,
       itemMap: { ...itemMap, [stageId]: items },
-      stageLoadMap: { ...stageLoadMap, [stageId]: "loaded" }
+      stageSkipOffset: { ...stageSkipOffset, [stageId]: skipUsed }
     });
   };
 
@@ -716,7 +786,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
   };
 
   render() {
-    const { itemMap, stageLoadMap, stageIds, isShowLabel } = this.state;
+    const { itemMap, stageLoadMap, stageIds, isShowLabel, stageSkipOffset } = this.state;
 
     return (
       <>
@@ -726,6 +796,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
             onDragEnd: this.onDragEnd,
             onDragStart: this.onDragStart,
             onLoadStage: this.onLoadStage,
+            onLoadPreviousStage: this.onLoadPreviousStage,
             scheduleStage: this.scheduleStage,
             refetchStage: this.refetchStage,
             onAddItem: this.onAddItem,
@@ -736,7 +807,9 @@ class PipelineProviderInner extends React.Component<Props, State> {
             stageLoadMap,
             stageIds,
             isShowLabel,
-            toggleLabels: this.toggleLabels
+            toggleLabels: this.toggleLabels,
+            maxItemsPerStage: MAX_ITEMS_PER_STAGE,
+            stageSkipOffset: stageSkipOffset || {}
           }}
         >
           {this.props.children}
