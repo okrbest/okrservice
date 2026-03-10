@@ -24,7 +24,7 @@ type Props = {
 
 const DealSubmitContainer = (props: Props) => {
   const { setRoute } = useRouter();
-  const { toggle } = useConversation();
+  const { toggle, saveGetNotified } = useConversation();
 
   const [files, setFiles] = React.useState<FileWithUrl[]>([]);
   const dealData = getDealData();
@@ -115,7 +115,8 @@ const DealSubmitContainer = (props: Props) => {
         .map(([field, value]) => ({ field, value }));
 
       // customerId가 유효할 때만 customerIds에 포함 (영업 파이프라인에 고객 표시를 위해 필수)
-      const validCustomerIds = customerId ? [customerId] : [];
+      // saveGetNotified 직후 제출 시 connection.data.customerId 사용
+      const validCustomerIds = connection.data.customerId ? [connection.data.customerId] : [];
 
       await dealAdd({
         variables: {
@@ -134,7 +135,12 @@ const DealSubmitContainer = (props: Props) => {
     },
     onError(err) {
       console.error("[Deal] Failed to update customer:", err.message);
-      setError(err.message || "Failed to save customer information. Please try again.");
+      const message = err.message || "Failed to save customer information. Please try again.";
+      const friendlyMessage =
+        message.includes("Customer ID not found") || message.includes("custom id not found")
+          ? "고객 정보를 찾을 수 없습니다. 이메일 또는 전화번호를 입력한 뒤 다시 제출해 주세요."
+          : message;
+      setError(friendlyMessage);
     },
   });
 
@@ -161,6 +167,34 @@ const DealSubmitContainer = (props: Props) => {
     // GraphQL [String] 타입에 맞게 문자열 배열로 전달
     const emails = formData.email != null && formData.email !== "" ? [String(formData.email)] : [];
     const phones = formData.phone != null && formData.phone !== "" ? [String(formData.phone)] : [];
+
+    // custom id(고객 ID)가 없는 경우: 먼저 이메일/전화번호로 고객 생성 후 제출
+    if (!customerId) {
+      const type = formData.email ? "email" : "phone";
+      const value = (formData.email || formData.phone || "").trim();
+      if (!value) {
+        setError("제출하려면 이메일 또는 전화번호를 입력해 주세요.");
+        return;
+      }
+      saveGetNotified(
+        { type, value },
+        () => {},
+        () => {
+          // saveGetNotified 완료 후 connection.data.customerId가 설정됨 → 고객 정보 갱신 후 딜 생성
+          customerEdit({
+            variables: {
+              customerId: connection.data.customerId,
+              firstName: formData.firstName ?? "",
+              lastName: "",
+              emails,
+              phones,
+              companyName: formData.companyName ?? "",
+            },
+          });
+        }
+      );
+      return;
+    }
 
     return customerEdit({
       variables: {
