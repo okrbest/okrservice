@@ -230,6 +230,20 @@ class ListItemRow extends React.PureComponent<Props> {
               })()
             )}
           </td>
+          {options.type === "deal" && (
+            <td style={{ fontWeight: "normal" }}>
+              {customers?.length > 0 && (customers[0]?.primaryEmail ?? customers[0]?.emails?.[0])
+                ? (customers[0].primaryEmail || customers[0].emails?.[0])
+                : "-"}
+            </td>
+          )}
+          {options.type === "deal" && (
+            <td style={{ fontWeight: "normal" }}>
+              {customers?.length > 0 && (customers[0]?.primaryPhone ?? customers[0]?.phones?.[0])
+                ? (customers[0].primaryPhone || customers[0].phones?.[0])
+                : "-"}
+            </td>
+          )}
           <ColumnChild>
             {this.checkNull(
               companies.length > 0,
@@ -242,22 +256,6 @@ class ListItemRow extends React.PureComponent<Props> {
               })()
             )}
           </ColumnChild>
-          {groupType !== 'assignee' && (
-            <td>
-              {this.checkNull(
-                assignedUsers.length > 0,
-                assignedUsers.map((user: any) => user.details?.operatorPhone || '-').join(', ')
-              )}
-            </td>
-          )}
-          {groupType !== 'assignee' && (
-            <td>
-              {this.checkNull(
-                assignedUsers.length > 0,
-                assignedUsers.map((user: any) => user.email || '-').join(', ')
-              )}
-            </td>
-          )}
           {groupType !== 'assignee' && (
             <td>
               {this.checkNull(
