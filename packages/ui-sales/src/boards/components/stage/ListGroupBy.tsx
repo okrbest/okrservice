@@ -129,9 +129,9 @@ const ListGroupBy = (props: Props) => {
               {options.type === "deal" && <th>{__("메일발송일")}</th>}
               {options.type === "deal" && <th>{__("직전소통일")}</th>}
               <th>{__("Associated Customer")}</th>
+              {options.type === "deal" && <th>{__("Customer Email")}</th>}
+              {options.type === "deal" && <th>{__("Customer Phone")}</th>}
               <th>{__("Associated Company")}</th>
-              {groupType !== "assignee" && <th>{__("Assignee Phone")}</th>}
-              {groupType !== "assignee" && <th>{__("Assignee Email")}</th>}
               {groupType !== "assignee" && <th>{__("Assignee")}</th>}
               {groupType !== "stage" && <th>{__("Stage")}</th>}
               {options.type === "deal" && customFields.map((field, index) => (
