@@ -24,6 +24,7 @@ import SelectBranches from "@erxes/ui/src/team/containers/SelectBranches";
 import SelectDepartments from "@erxes/ui/src/team/containers/SelectDepartments";
 import SelectLabel from "./label/SelectLabel";
 import SelectTeamMembers from "@erxes/ui/src/team/containers/SelectTeamMembers";
+import GoogleSheetsSync from "./GoogleSheetsSync";
 import { __ } from "coreui/utils";
 import dayjs from "dayjs";
 import { isEnabled } from "@erxes/ui/src/utils/core";
@@ -399,6 +400,18 @@ export default class RightMenu extends React.Component<Props, State> {
       );
     }
 
+    if (this.state.currentTab === "Google 시트") {
+      const { queryParams, options } = this.props;
+      if (options.type !== "deal" || !queryParams.pipelineId) {
+        return (
+          <TabContent>
+            <p>{__("영업 파이프라인을 선택한 상태에서 사용할 수 있습니다.")}</p>
+          </TabContent>
+        );
+      }
+      return <GoogleSheetsSync pipelineId={queryParams.pipelineId} />;
+    }
+
     const { queryParams, options } = this.props;
 
     return (
@@ -446,6 +459,12 @@ export default class RightMenu extends React.Component<Props, State> {
                   onClick={tabOnClick.bind(this, "Archived items")}
                 >
                   {__("Archived items")}
+                </TabTitle>
+                <TabTitle
+                  className={currentTab === "Google 시트" ? "active" : ""}
+                  onClick={tabOnClick.bind(this, "Google 시트")}
+                >
+                  {__("Google 시트")}
                 </TabTitle>
               </Tabs>
               {this.renderTabContent()}

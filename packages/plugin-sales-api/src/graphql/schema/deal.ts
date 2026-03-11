@@ -61,6 +61,10 @@ export const types = ({ contacts, clientPortal, loyalty }) => `
     unitPrice: Float
   }
 
+  type SyncDealsToSheetsResult {
+    syncedCount: Int!
+    message: String!
+  }
 `;
 
 const dealMutationParams = `
@@ -167,4 +171,5 @@ export const mutations = `
   dealsCreateProductsData(proccessId: String, dealId: String, docs: JSON): JSON
   dealsEditProductData(proccessId: String, dealId: String, dataId: String, doc: JSON): JSON
   dealsDeleteProductData(proccessId: String, dealId: String, dataId: String): JSON
+  syncDealsToGoogleSheet(pipelineId: String!, spreadsheetId: String!, sheetName: String, saveToPipeline: Boolean, fileBaseUrl: String): SyncDealsToSheetsResult
 `;

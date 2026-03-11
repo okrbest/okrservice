@@ -49,6 +49,8 @@ export const types = () => `
     paymentIds: [String]
     paymentTypes: JSON
     erxesAppToken: String
+    googleSpreadsheetId: String
+    googleSheetName: String
     ${commonTypes}
   }
 
@@ -199,6 +201,8 @@ const pipelineParams = `
   paymentIds: [String]
   paymentTypes: JSON
   erxesAppToken: String
+  googleSpreadsheetId: String
+  googleSheetName: String
 `;
 
 export const mutations = `

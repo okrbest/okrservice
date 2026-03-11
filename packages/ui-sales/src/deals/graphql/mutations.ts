@@ -99,6 +99,15 @@ const confirmLoyalties = `
   }
 `;
 
+const syncDealsToGoogleSheet = `
+  mutation syncDealsToGoogleSheet($pipelineId: String!, $spreadsheetId: String!, $sheetName: String, $saveToPipeline: Boolean, $fileBaseUrl: String) {
+    syncDealsToGoogleSheet(pipelineId: $pipelineId, spreadsheetId: $spreadsheetId, sheetName: $sheetName, saveToPipeline: $saveToPipeline, fileBaseUrl: $fileBaseUrl) {
+      syncedCount
+      message
+    }
+  }
+`;
+
 export default {
   dealsAdd,
   dealsEdit,
@@ -110,4 +119,5 @@ export default {
   dealsArchive,
   dealsCopy,
   confirmLoyalties,
+  syncDealsToGoogleSheet,
 };

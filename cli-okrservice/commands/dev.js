@@ -1,4 +1,5 @@
 const fse = require('fs-extra');
+const path = require('path');
 const { filePath, log, sleep } = require('./utils');
 const { execSync } = require('child_process');
 const net = require('net');
@@ -41,6 +42,12 @@ module.exports.devCmd = async program => {
   const configs = await fse.readJSON(filePath('configs.json'));
   const be_env = configs.be_env || {};
   const commonOptions = program.bash ? { interpreter: '/bin/bash' } : {};
+
+  // 프로젝트 루트 기준 상대 경로를 절대 경로로 변환 (다른 PC에서도 동작하도록)
+  const projectRoot = filePath('..');
+  if (be_env.GOOGLE_APPLICATION_CREDENTIALS && !path.isAbsolute(be_env.GOOGLE_APPLICATION_CREDENTIALS)) {
+    be_env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(projectRoot, be_env.GOOGLE_APPLICATION_CREDENTIALS);
+  }
 
   const enabledServices = [];
 

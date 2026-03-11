@@ -109,6 +109,9 @@ export interface IPipeline extends ICommonFields {
   paymentIds?: string[];
   paymentTypes?: any[];
   erxesAppToken?: string;
+  /** Google 시트 자동 동기화용 */
+  googleSpreadsheetId?: string;
+  googleSheetName?: string;
 }
 
 export interface IPipelineDocument extends IPipeline, Document {
@@ -380,6 +383,8 @@ export const pipelineSchema = new Schema({
   paymentIds: field({ type: [String], label: 'Online Payments' }),
   paymentTypes: field({ type: [Object], label: 'Other Payments' }),
   erxesAppToken: field({ type: String, label: 'Erxes App token' }),
+  googleSpreadsheetId: field({ type: String, optional: true, label: 'Google Spreadsheet ID (auto sync)' }),
+  googleSheetName: field({ type: String, optional: true, label: 'Google Sheet name' }),
   ...commonFieldsSchema
 });
 

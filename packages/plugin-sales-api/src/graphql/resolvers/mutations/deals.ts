@@ -18,6 +18,7 @@ import {
   itemsRemove,
 } from "./utils";
 import { putActivityLog } from "../../../logUtils";
+import { syncDealsToGoogleSheet, triggerGoogleSheetSyncIfConfigured } from "../../../googleSheetsSync";
 
 interface IDealsEdit extends IDeal {
   _id: string;
@@ -32,7 +33,7 @@ const dealMutations = {
     doc: IDeal & { proccessId: string; aboveItemId: string },
     { user, models, subdomain }: IContext
   ) {
-    return itemsAdd(
+    const item = await itemsAdd(
       models,
       subdomain,
       doc,
@@ -40,6 +41,12 @@ const dealMutations = {
       models.Deals.createDeal,
       user
     );
+    const stageId = item?.stageId || doc?.stageId;
+    if (stageId) {
+      const stage = await models.Stages.getStage(stageId);
+      triggerGoogleSheetSyncIfConfigured(models, subdomain, user, stage.pipelineId);
+    }
+    return item;
   },
 
   /**
@@ -88,7 +95,7 @@ const dealMutations = {
     await doScoreCampaign(subdomain, models, _id, doc);
     await confirmLoyalties(subdomain, _id, doc);
 
-    return itemsEdit(
+    const result = await itemsEdit(
       models,
       subdomain,
       _id,
@@ -99,6 +106,9 @@ const dealMutations = {
       user,
       models.Deals.updateDeal
     );
+    const stage = await models.Stages.getStage(oldDeal.stageId);
+    triggerGoogleSheetSyncIfConfigured(models, subdomain, user, stage.pipelineId);
+    return result;
   },
 
   /**
@@ -109,7 +119,7 @@ const dealMutations = {
     doc: IItemDragCommonFields,
     { user, models, subdomain }: IContext
   ) {
-    return itemsChange(
+    const result = await itemsChange(
       models,
       subdomain,
       doc,
@@ -117,6 +127,9 @@ const dealMutations = {
       user,
       models.Deals.updateDeal
     );
+    const stage = await models.Stages.getStage(doc.destinationStageId);
+    triggerGoogleSheetSyncIfConfigured(models, subdomain, user, stage.pipelineId);
+    return result;
   },
 
   /**
@@ -454,6 +467,36 @@ const dealMutations = {
       productsData,
     };
   },
+
+  async syncDealsToGoogleSheet(
+    _root,
+    {
+      pipelineId,
+      spreadsheetId,
+      sheetName,
+      saveToPipeline,
+      fileBaseUrl,
+    }: { pipelineId: string; spreadsheetId: string; sheetName?: string; saveToPipeline?: boolean; fileBaseUrl?: string },
+    { user, models, subdomain }: IContext
+  ) {
+    if (saveToPipeline) {
+      await models.Pipelines.updateOne(
+        { _id: pipelineId },
+        {
+          $set: {
+            googleSpreadsheetId: spreadsheetId.trim(),
+            googleSheetName: (sheetName && String(sheetName).trim()) || "Sheet1",
+          },
+        }
+      );
+    }
+    return syncDealsToGoogleSheet(models, subdomain, user, {
+      pipelineId,
+      spreadsheetId,
+      sheetName,
+      fileBaseUrl: fileBaseUrl?.trim() || undefined,
+    });
+  },
 };
 
 checkPermission(dealMutations, "dealsAdd", "dealsAdd");
@@ -464,5 +507,6 @@ checkPermission(dealMutations, "dealsDeleteProductData", "dealsEdit");
 checkPermission(dealMutations, "dealsRemove", "dealsRemove");
 checkPermission(dealMutations, "dealsWatch", "dealsWatch");
 checkPermission(dealMutations, "dealsArchive", "dealsArchive");
+checkPermission(dealMutations, "syncDealsToGoogleSheet", "showDeals");
 
 export default dealMutations;

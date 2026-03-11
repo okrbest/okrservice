@@ -8,6 +8,7 @@
   "dependencies": {
     "@erxes/api-utils": "*",
     "dayjs": "^1.11.13",
+    "googleapis": "^144.0.0",
     "server-timing": "3.3.1",
     "xlsx-populate": "^1.20.1"
   }

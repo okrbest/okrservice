@@ -42,6 +42,7 @@ cli-okrservice/permissions.json
 cli-okrservice/enabled-services.js
 cli-okrservice/enabled-services.json
 cli-okrservice/configs.json
+cli-okrservice/okrservice-sheets-*.json
 essyncer/plugins.json
 packages/core/src/private/uploads/
 packages/workers/src/private/uploads/

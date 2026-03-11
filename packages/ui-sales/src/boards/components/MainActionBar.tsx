@@ -32,6 +32,8 @@ import SelectType from "./SelectType";
 import TemporarySegment from "@erxes/ui-segments/src/components/filter/TemporarySegment";
 import Tip from "@erxes/ui/src/components/Tip";
 import { Listbox, Transition } from "@headlessui/react";
+import ModalTrigger from "@erxes/ui/src/components/ModalTrigger";
+import GoogleSheetsSync from "./GoogleSheetsSync";
 
 type Props = {
   onSearch: (search: string) => void;
@@ -149,6 +151,7 @@ class MainActionBar extends React.Component<Props, State> {
       extraFilter,
       options,
       clearFilter,
+      currentPipeline,
     } = this.props;
 
     const rightMenuProps = {
@@ -162,7 +165,32 @@ class MainActionBar extends React.Component<Props, State> {
       clearFilter,
     };
 
-    return <RightMenu {...rightMenuProps} />;
+    const isDeal = options.type === "deal";
+    const hasPipeline = currentPipeline?._id && queryParams?.pipelineId;
+
+    return (
+      <>
+        {isDeal && hasPipeline && (
+          <ModalTrigger
+            title={__("Google 시트 동기화")}
+            tipText={__("Google 시트 동기화")}
+            tipPlacement="bottom"
+            trigger={
+              <Button btnStyle="simple" icon="sync" size="small">
+                {__("Google 시트")}
+              </Button>
+            }
+            content={(props) => (
+              <GoogleSheetsSync
+                pipelineId={queryParams.pipelineId}
+                {...props}
+              />
+            )}
+          />
+        )}
+        <RightMenu {...rightMenuProps} />
+      </>
+    );
   }
 
   renderVisibility() {
