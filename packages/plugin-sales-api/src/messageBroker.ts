@@ -20,6 +20,7 @@ import {
   createBoardItem,
   updateName
 } from "./models/utils";
+import { triggerGoogleSheetSyncIfConfigured } from "./googleSheetsSync";
 import { getCardItem, convertNestedDate } from "./utils";
 import graphqlPubsub from "@erxes/api-utils/src/graphqlPubsub";
 import {
@@ -265,6 +266,48 @@ export const setupMessageConsumers = async () => {
       models.Deals.createDeal,
       undefined // user는 위젯에서 null
     );
+
+    if (deal?.stageId) {
+      try {
+        const stage = await models.Stages.getStage(deal.stageId);
+        let userForSync = deal.userId
+          ? await sendCoreMessage({
+              subdomain,
+              action: "users.findOne",
+              data: { _id: deal.userId },
+              isRPC: true,
+              defaultValue: null,
+            })
+          : null;
+        if (!userForSync) {
+          const pipeline = await models.Pipelines.getPipeline(stage.pipelineId);
+          const pipelineCreatorId = (pipeline as any).userId;
+          const memberIds = (pipeline as any).memberIds || [];
+          const firstUserId = pipelineCreatorId || (memberIds[0]);
+          if (firstUserId) {
+            userForSync = await sendCoreMessage({
+              subdomain,
+              action: "users.findOne",
+              data: { _id: firstUserId },
+              isRPC: true,
+              defaultValue: null,
+            });
+          }
+        }
+        if (!userForSync) {
+          userForSync = await sendCoreMessage({
+            subdomain,
+            action: "users.findOne",
+            data: { role: "system" },
+            isRPC: true,
+            defaultValue: null,
+          });
+        }
+        if (userForSync) {
+          triggerGoogleSheetSyncIfConfigured(models, subdomain, userForSync, stage.pipelineId);
+        }
+      } catch (_) {}
+    }
 
     // 위젯에서 생성한 Deal도 자동화 트리거(sales:deal, 단계와 같음) 발동
     // await 없이 비동기 처리 → 응답 속도 개선 (이메일 발송 등은 백그라운드에서 진행)

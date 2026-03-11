@@ -477,7 +477,7 @@ const dealMutations = {
       saveToPipeline,
       fileBaseUrl,
     }: { pipelineId: string; spreadsheetId: string; sheetName?: string; saveToPipeline?: boolean; fileBaseUrl?: string },
-    { user, models, subdomain, req }: IContext
+    { user, models, subdomain }: IContext
   ) {
     if (saveToPipeline) {
       await models.Pipelines.updateOne(
@@ -490,20 +490,11 @@ const dealMutations = {
         }
       );
     }
-    const requestOrigin = req?.headers?.origin || (() => {
-      try {
-        const r = req?.headers?.referer;
-        return r ? new URL(r).origin : "";
-      } catch {
-        return "";
-      }
-    })();
-    const effectiveFileBaseUrl = fileBaseUrl?.trim() || requestOrigin || undefined;
     return syncDealsToGoogleSheet(models, subdomain, user, {
       pipelineId,
       spreadsheetId,
       sheetName,
-      fileBaseUrl: effectiveFileBaseUrl,
+      fileBaseUrl: fileBaseUrl?.trim() || undefined,
     });
   },
 };

@@ -1,6 +1,3 @@
-import * as fs from "fs";
-import * as os from "os";
-import * as path from "path";
 import { google } from "googleapis";
 import { getEnv } from "@erxes/api-utils/src";
 import { generateModels, IModels } from "./connectionResolver";
@@ -14,35 +11,6 @@ import { sendCoreMessage } from "./messageBroker";
 
 const SHEETS_SCOPE = ["https://www.googleapis.com/auth/spreadsheets"];
 const DEFAULT_SHEET_NAME = "Sheet1";
-/** 구글 시트 첨부파일 링크에 항상 붙일 도메인(다른 소스가 없을 때 사용). 환경변수 ATTACHMENT_BASE_URL로 변경 가능 */
-const DEFAULT_ATTACHMENT_BASE_URL = "https://5240help.okrbiz.com";
-
-/** 설정/DB에 저장되면서 줄바꿈이 깨진 private_key를 PEM 형식으로 복구 (OpenSSL DECODER 오류 방지) */
-function normalizePrivateKey(privateKey: string): string {
-  if (!privateKey || typeof privateKey !== "string") return privateKey;
-  let key = privateKey.trim();
-  // 이스케이프된 줄바꿈 복원 (반복 적용으로 이중 이스케이프 처리)
-  while (key.includes("\\n")) {
-    key = key.replace(/\\n/g, "\n");
-  }
-  key = key.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  // PEM이 한 줄로 저장된 경우: BEGIN과 END 사이 base64를 64자마다 줄바꿈
-  const begin = "-----BEGIN PRIVATE KEY-----";
-  const end = "-----END PRIVATE KEY-----";
-  if (key.includes(begin) && key.includes(end) && !key.includes(begin + "\n")) {
-    const startIdx = key.indexOf(begin) + begin.length;
-    const endIdx = key.indexOf(end);
-    const middle = key.slice(startIdx, endIdx).replace(/\s/g, "");
-    if (middle.length > 0) {
-      const lines: string[] = [];
-      for (let i = 0; i < middle.length; i += 64) {
-        lines.push(middle.slice(i, i + 64));
-      }
-      key = begin + "\n" + lines.join("\n") + "\n" + end + "\n";
-    }
-  }
-  return key;
-}
 
 export interface SyncDealsToSheetsParams {
   pipelineId: string;
@@ -96,7 +64,7 @@ function stripHtml(html: any): string {
   return s.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() || "";
 }
 
-/** 첨부파일 하나의 다운로드 URL 생성. 절대 URL로 만들고 inline=false로 새 창에서 다운로드 유도. baseUrl 없으면 기본 도메인 사용 */
+/** 첨부파일 하나의 다운로드 URL 생성. clientApiBase(댓글과 동일한 REACT_APP_API_URL)가 있으면 그걸로 절대 URL, 없으면 domain + /gateway/pl:core/read-file 또는 경로만 */
 function getAttachmentDownloadUrl(
   att: { url?: string; name?: string },
   baseUrl: string,
@@ -107,43 +75,27 @@ function getAttachmentDownloadUrl(
   if (/^https?:\/\//i.test(url)) return url;
   const key = encodeURIComponent(url);
   const name = att?.name ? `&name=${encodeURIComponent(att.name)}` : "";
-  const inlineFalse = "&inline=false";
-  const pathSuffix = `?key=${key}${name}${inlineFalse}`;
-  const base = (baseUrl && String(baseUrl).trim()) || DEFAULT_ATTACHMENT_BASE_URL;
+  const pathSuffix = `?key=${key}${name}`;
+  if (!baseUrl || !String(baseUrl).trim()) {
+    return `/gateway/pl:core/read-file${pathSuffix}`;
+  }
+  const base = String(baseUrl).replace(/\/$/, "").trim();
   const domain = /^https?:\/\//i.test(base) ? base : `https://${base}`;
-  const pathPrefix = isClientApiBase ? "/read-file" : "/gateway/read-file";
-  return `${domain.replace(/\/$/, "")}${pathPrefix}${pathSuffix}`;
+  const pathPrefix = isClientApiBase ? "/read-file" : "/gateway/pl:core/read-file";
+  return `${domain}${pathPrefix}${pathSuffix}`;
 }
 
-/** 첨부파일 링크 열 개수 (구글 시트에서 HYPERLINK는 셀당 하나만 클릭되므로 열을 나눔) */
-const MAX_ATTACHMENT_COLUMNS = 3;
-
-/** 수식 내부에서 셀 문자열 이스케이프 (따옴표를 "" 로) */
-function escapeFormulaString(s: string): string {
-  return String(s).replace(/"/g, '""');
-}
-
-/** 딜 첨부파일을 열별로. 각 셀에 =HYPERLINK("url","첨부파일N") 하나씩 넣어서 모두 클릭 가능하게. 길이는 MAX_ATTACHMENT_COLUMNS */
-function formatAttachmentsAsColumns(
+/** 딜 첨부파일들을 구글 시트 셀용 텍스트로 (한 줄에 하나씩 URL 또는 경로) */
+function formatAttachmentsForSheet(
   attachments: any[] | undefined,
   baseUrl: string,
   isClientApiBase: boolean
-): string[] {
-  const urls = Array.isArray(attachments)
-    ? attachments
-        .map((a) => getAttachmentDownloadUrl(a, baseUrl, isClientApiBase))
-        .filter(Boolean)
-    : [];
-  const cells: string[] = [];
-  for (let i = 0; i < MAX_ATTACHMENT_COLUMNS; i++) {
-    if (i < urls.length) {
-      const label = `첨부파일${i + 1}`;
-      cells.push(`=HYPERLINK("${escapeFormulaString(urls[i])}","${escapeFormulaString(label)}")`);
-    } else {
-      cells.push("");
-    }
-  }
-  return cells;
+): string {
+  if (!Array.isArray(attachments) || attachments.length === 0) return "-";
+  const parts = attachments
+    .map((a) => getAttachmentDownloadUrl(a, baseUrl, isClientApiBase))
+    .filter(Boolean);
+  return parts.length ? parts.join("\n") : "-";
 }
 
 async function getDealListCustomFields(
@@ -193,11 +145,9 @@ async function getDealListCustomFields(
   return list;
 }
 
-async function getCustomerSpecialFieldIds(subdomain: string): Promise<{
+async function getCustomerDateFieldIds(subdomain: string): Promise<{
   mailSentDateFieldId: string | null;
   lastContactDateFieldId: string | null;
-  sendStatusFieldId: string | null;
-  errorMessageFieldId: string | null;
 }> {
   const groups = await sendCoreMessage({
     subdomain,
@@ -209,8 +159,6 @@ async function getCustomerSpecialFieldIds(subdomain: string): Promise<{
 
   let mailSentDateFieldId: string | null = null;
   let lastContactDateFieldId: string | null = null;
-  let sendStatusFieldId: string | null = null;
-  let errorMessageFieldId: string | null = null;
 
   for (const group of Array.isArray(groups) ? groups : []) {
     const fields = await sendCoreMessage({
@@ -237,52 +185,9 @@ async function getCustomerSpecialFieldIds(subdomain: string): Promise<{
       ) {
         lastContactDateFieldId = f._id;
       }
-      if (name === "발송상태") sendStatusFieldId = f._id;
-      if (name === "오류메시지") errorMessageFieldId = f._id;
     }
   }
-  return { mailSentDateFieldId, lastContactDateFieldId, sendStatusFieldId, errorMessageFieldId };
-}
-
-async function getDealSpecialFieldIds(
-  subdomain: string,
-  pipelineId: string
-): Promise<{ sendStatusFieldId: string | null; errorMessageFieldId: string | null }> {
-  const groups = await sendCoreMessage({
-    subdomain,
-    action: "fieldsGroups.find",
-    data: {
-      query: {
-        contentType: "sales:deal",
-        $or: [
-          { "config.pipelineIds": { $in: [pipelineId] } },
-          { "config.pipelineIds": { $size: 0 } },
-          { "config.boardsPipelines.pipelineIds": { $in: [pipelineId] } },
-        ],
-      },
-    },
-    isRPC: true,
-    defaultValue: [],
-  });
-
-  let sendStatusFieldId: string | null = null;
-  let errorMessageFieldId: string | null = null;
-
-  for (const group of Array.isArray(groups) ? groups : []) {
-    const fields = await sendCoreMessage({
-      subdomain,
-      action: "fields.find",
-      data: { query: { groupId: group._id } },
-      isRPC: true,
-      defaultValue: [],
-    });
-    for (const f of Array.isArray(fields) ? fields : []) {
-      const name = ((f.text || f.name) || "").trim();
-      if (name === "발송상태") sendStatusFieldId = f._id;
-      if (name === "오류메시지") errorMessageFieldId = f._id;
-    }
-  }
-  return { sendStatusFieldId, errorMessageFieldId };
+  return { mailSentDateFieldId, lastContactDateFieldId };
 }
 
 /**
@@ -298,67 +203,9 @@ export async function syncDealsToGoogleSheet(
   const { pipelineId, spreadsheetId, sheetName = DEFAULT_SHEET_NAME } = params;
 
   const keyPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  const unwrapConfig = (res: any): string =>
-    (typeof res === "object" && res?.data != null ? res.data : res) ?? "";
-
-  const sheetsJsonRes = await sendCoreMessage({
-    subdomain,
-    action: "getConfig",
-    data: { code: "GOOGLE_SHEETS_CREDENTIALS_JSON", defaultValue: "" },
-    isRPC: true,
-    defaultValue: "",
-  });
-  let credentialsJsonStr = (unwrapConfig(sheetsJsonRes) || "").trim();
-  if (!credentialsJsonStr) {
-    const appCredsRes = await sendCoreMessage({
-      subdomain,
-      action: "getConfig",
-      data: { code: "GOOGLE_APPLICATION_CREDENTIALS_JSON", defaultValue: "" },
-      isRPC: true,
-      defaultValue: "",
-    });
-    credentialsJsonStr = (unwrapConfig(appCredsRes) || "").trim();
-  }
-  if (!credentialsJsonStr) {
-    const [projectIdRes, clientEmailRes, privateKeyRes] = await Promise.all([
-      sendCoreMessage({
-        subdomain,
-        action: "getConfig",
-        data: { code: "GOOGLE_SHEETS_PROJECT_ID", defaultValue: "" },
-        isRPC: true,
-        defaultValue: "",
-      }),
-      sendCoreMessage({
-        subdomain,
-        action: "getConfig",
-        data: { code: "GOOGLE_SHEETS_CLIENT_EMAIL", defaultValue: "" },
-        isRPC: true,
-        defaultValue: "",
-      }),
-      sendCoreMessage({
-        subdomain,
-        action: "getConfig",
-        data: { code: "GOOGLE_SHEETS_PRIVATE_KEY", defaultValue: "" },
-        isRPC: true,
-        defaultValue: "",
-      }),
-    ]);
-    const projectId = (unwrapConfig(projectIdRes) || "").trim();
-    const clientEmail = (unwrapConfig(clientEmailRes) || "").trim();
-    const privateKey = (unwrapConfig(privateKeyRes) || "").trim();
-    if (projectId && clientEmail && privateKey) {
-      credentialsJsonStr = JSON.stringify({
-        type: "service_account",
-        project_id: projectId,
-        client_email: clientEmail,
-        private_key: normalizePrivateKey(privateKey),
-      });
-    }
-  }
-
-  if (!keyPath && !credentialsJsonStr) {
+  if (!keyPath) {
     throw new Error(
-      "설정 > 일반 설정 > Google에서 Google 스프레드시트 동기화 항목(프로젝트 ID, 서비스 계정 이메일, Private Key) 또는 서비스 계정 JSON을 입력하거나, GOOGLE_APPLICATION_CREDENTIALS 환경 변수를 설정해 주세요."
+      "GOOGLE_APPLICATION_CREDENTIALS 환경 변수가 설정되지 않았습니다."
     );
   }
 
@@ -386,29 +233,19 @@ export async function syncDealsToGoogleSheet(
     undefined
   );
 
-  const [
-    dealCustomFields,
-    { mailSentDateFieldId, lastContactDateFieldId, sendStatusFieldId: customerSendStatusFieldId, errorMessageFieldId: customerErrorMessageFieldId },
-    { sendStatusFieldId: dealSendStatusFieldId, errorMessageFieldId: dealErrorMessageFieldId },
-  ] = await Promise.all([
-    getDealListCustomFields(subdomain, pipelineId),
-    getCustomerSpecialFieldIds(subdomain),
-    getDealSpecialFieldIds(subdomain, pipelineId),
-  ]);
+  const [dealCustomFields, { mailSentDateFieldId, lastContactDateFieldId }] =
+    await Promise.all([
+      getDealListCustomFields(subdomain, pipelineId),
+      getCustomerDateFieldIds(subdomain),
+    ]);
 
-  // 발송상태·오류메시지: 딜 커스텀 필드 우선, 없으면 고객 커스텀 필드
-  const sendStatusFieldId = dealSendStatusFieldId ?? customerSendStatusFieldId;
-  const errorMessageFieldId = dealErrorMessageFieldId ?? customerErrorMessageFieldId;
-  const sendStatusIsDeal = !!dealSendStatusFieldId;
-  const errorMessageIsDeal = !!dealErrorMessageFieldId;
-
-  // 첨부파일 링크용: 프론트 fileBaseUrl → 요청 origin → core/config → env → 기본 도메인 순. 항상 절대 URL이 되도록 마지막에 기본 도메인 사용
+  // 첨부파일 링크용: 프론트에서 넘긴 fileBaseUrl(댓글과 동일한 REACT_APP_API_URL) 우선, 없으면 core/env 도메인 사용
   const fileBaseUrlFromClient = params.fileBaseUrl?.trim() || "";
   let attachmentBaseUrl: string;
   let attachmentIsClientApiBase: boolean;
   if (fileBaseUrlFromClient) {
     attachmentBaseUrl = fileBaseUrlFromClient;
-    attachmentIsClientApiBase = /\/gateway|\/pl:core/.test(fileBaseUrlFromClient);
+    attachmentIsClientApiBase = true;
   } else {
     const configDomainRes = await sendCoreMessage({
       subdomain,
@@ -425,8 +262,7 @@ export async function syncDealsToGoogleSheet(
       getEnv({ name: "DOMAIN" }) ||
       process.env.DOMAIN ||
       process.env.MAIN_APP_DOMAIN ||
-      process.env.ATTACHMENT_BASE_URL ||
-      DEFAULT_ATTACHMENT_BASE_URL;
+      "";
     attachmentIsClientApiBase = false;
   }
 
@@ -453,8 +289,6 @@ export async function syncDealsToGoogleSheet(
 
   const headers = [
     "메일발송일",
-    "발송상태",
-    "오류메시지",
     "직전소통일",
     "제목",
     "내용",
@@ -463,10 +297,8 @@ export async function syncDealsToGoogleSheet(
     "연락처",
     "E-MAIL 주소",
     "안내자",
-    ...Array.from({ length: MAX_ATTACHMENT_COLUMNS }, (_, i) => `첨부파일${i + 1}`),
+    "첨부파일",
     ...dealCustomFields.map((f) => f.text),
-    "deal_id",
-    "erxes_updated_at",
   ];
 
   const rows: string[][] = [headers];
@@ -508,17 +340,8 @@ export async function syncDealsToGoogleSheet(
     const companyNames =
       companies.map((c) => c.primaryName || "-").join(", ") || "-";
 
-    const sendStatusValue = sendStatusIsDeal
-      ? getDealCustomFieldValue(item.customFieldsData, sendStatusFieldId!)
-      : getCustomerCustomFieldValue(customers, sendStatusFieldId);
-    const errorMessageValue = errorMessageIsDeal
-      ? getDealCustomFieldValue(item.customFieldsData, errorMessageFieldId!)
-      : getCustomerCustomFieldValue(customers, errorMessageFieldId);
-
     rows.push([
       getCustomerCustomFieldValue(customers, mailSentDateFieldId),
-      sendStatusValue,
-      errorMessageValue,
       getCustomerCustomFieldValue(customers, lastContactDateFieldId),
       item.name || "",
       stripHtml(item.description || ""),
@@ -527,132 +350,89 @@ export async function syncDealsToGoogleSheet(
       customerPhone,
       customerEmail,
       assigneeNames,
-      ...formatAttachmentsAsColumns(item.attachments, attachmentBaseUrl, attachmentIsClientApiBase),
+      formatAttachmentsForSheet(item.attachments, attachmentBaseUrl, attachmentIsClientApiBase),
       ...dealCustomFields.map((f) =>
         getDealCustomFieldValue(item.customFieldsData, f._id)
       ),
-      String(item._id || ""),
-      item.modifiedAt ? new Date(item.modifiedAt).toISOString() : "",
     ]);
   }
 
-  // 설정에서 읽은 JSON은 임시 파일로 쓴 뒤 keyFile로 사용 (OpenSSL DECODER 오류 회피)
-  let tmpCredsPath: string | null = null;
-  const auth = credentialsJsonStr
-    ? (() => {
-        const creds = JSON.parse(credentialsJsonStr);
-        if (creds && typeof creds.private_key === "string") {
-          creds.private_key = normalizePrivateKey(creds.private_key);
-        }
-        tmpCredsPath = path.join(
-          os.tmpdir(),
-          `okr-google-sheets-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
-        );
-        fs.writeFileSync(tmpCredsPath, JSON.stringify(creds), { mode: 0o600 });
-        return new google.auth.GoogleAuth({
-          keyFile: tmpCredsPath,
-          scopes: SHEETS_SCOPE,
-        });
-      })()
-    : new google.auth.GoogleAuth({
-        keyFile: keyPath,
-        scopes: SHEETS_SCOPE,
-      });
+  const auth = new google.auth.GoogleAuth({
+    keyFile: keyPath,
+    scopes: SHEETS_SCOPE,
+  });
 
   const sheets = google.sheets({ version: "v4", auth });
 
   try {
-    try {
-      await sheets.spreadsheets.values.clear({
+    await sheets.spreadsheets.values.clear({
       spreadsheetId,
-      range: `'${sheetName}'!A:ZZ`,
+      range: `'${sheetName}'!A:Z`,
     });
-    } catch (e: any) {
-      if (e?.code !== 404 && e?.message?.indexOf("Unable to parse range") !== 0) {
-        throw e;
-      }
-    }
-
-    if (rows.length === 0) {
-      return { syncedCount: 0, message: "동기화할 딜이 없습니다." };
-    }
-
-    await sheets.spreadsheets.values.update({
-      spreadsheetId,
-      range: `'${sheetName}'!A1`,
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: rows,
-      },
-    });
-
-    // 첫 행(헤더) 배경색 #d9ead3 적용
-    const meta = await sheets.spreadsheets.get({
-      spreadsheetId,
-      fields: "sheets(properties(sheetId,title))",
-    });
-    const sheet = (meta.data.sheets || []).find(
-      (s: any) => (s.properties?.title || "") === sheetName
-    );
-    const sheetId = sheet?.properties?.sheetId;
-    if (typeof sheetId === "number") {
-      const totalCols = headers.length;
-      const hiddenStartCol = totalCols - 2; // deal_id, erxes_updated_at (0-indexed)
-
-      await sheets.spreadsheets.batchUpdate({
-        spreadsheetId,
-        requestBody: {
-          requests: [
-            {
-              repeatCell: {
-                range: {
-                  sheetId,
-                  startRowIndex: 0,
-                  endRowIndex: 1,
-                  startColumnIndex: 0,
-                  endColumnIndex: headers.length,
-                },
-                cell: {
-                  userEnteredFormat: {
-                    backgroundColor: {
-                      red: 217 / 255,
-                      green: 234 / 255,
-                      blue: 211 / 255,
-                    },
-                    textFormat: { bold: true },
-                  },
-                },
-                fields: "userEnteredFormat.backgroundColor,userEnteredFormat.textFormat.bold",
-              },
-            },
-            {
-              updateDimensionProperties: {
-                range: {
-                  sheetId,
-                  dimension: "COLUMNS",
-                  startIndex: hiddenStartCol,
-                  endIndex: totalCols,
-                },
-                properties: { hiddenByUser: true },
-                fields: "hiddenByUser",
-              },
-            },
-          ],
-        },
-      });
-    }
-
-    return {
-      syncedCount: rows.length - 1,
-      message: `${rows.length - 1}건의 딜이 Google 시트에 동기화되었습니다.`,
-    };
-  } finally {
-    if (tmpCredsPath) {
-      try {
-        fs.unlinkSync(tmpCredsPath);
-      } catch (_) {}
+  } catch (e: any) {
+    if (e?.code !== 404 && e?.message?.indexOf("Unable to parse range") !== 0) {
+      throw e;
     }
   }
+
+  if (rows.length === 0) {
+    return { syncedCount: 0, message: "동기화할 딜이 없습니다." };
+  }
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `'${sheetName}'!A1`,
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: rows,
+    },
+  });
+
+  // 첫 행(헤더) 배경색 #d9ead3 적용
+  const meta = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: "sheets(properties(sheetId,title))",
+  });
+  const sheet = (meta.data.sheets || []).find(
+    (s: any) => (s.properties?.title || "") === sheetName
+  );
+  const sheetId = sheet?.properties?.sheetId;
+  if (typeof sheetId === "number") {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            repeatCell: {
+              range: {
+                sheetId,
+                startRowIndex: 0,
+                endRowIndex: 1,
+                startColumnIndex: 0,
+                endColumnIndex: headers.length,
+              },
+              cell: {
+                userEnteredFormat: {
+                  backgroundColor: {
+                    red: 217 / 255,
+                    green: 234 / 255,
+                    blue: 211 / 255,
+                  },
+                  textFormat: { bold: true },
+                },
+              },
+              fields: "userEnteredFormat.backgroundColor,userEnteredFormat.textFormat.bold",
+            },
+          },
+        ],
+      },
+    });
+  }
+
+  return {
+    syncedCount: rows.length - 1,
+    message: `${rows.length - 1}건의 딜이 Google 시트에 동기화되었습니다.`,
+  };
 }
 
 /**
@@ -686,245 +466,4 @@ export function triggerGoogleSheetSyncIfConfigured(
       }
     }
   }, delayMs);
-}
-
-// ──────────────────────────────────────────────────────────────
-// 시트 → erxes 역방향 동기화 (Apps Script webhook 처리)
-// ──────────────────────────────────────────────────────────────
-
-export interface SheetWebhookPayload {
-  dealId: string;
-  columnName: string;
-  newValue: string;
-  sheetEditedAt: string; // ISO 8601
-}
-
-export type SheetWebhookResult =
-  | { ok: true }
-  | { ok: false; reason: "conflict" | "readonly_column" | "deal_not_found" | "field_not_found" | "unknown_error" };
-
-const READONLY_COLUMNS = new Set([
-  "첨부파일1", "첨부파일2", "첨부파일3",
-  "deal_id", "erxes_updated_at",
-]);
-
-type FixedTarget =
-  | { target: "deal"; field: "name" | "description" }
-  | { target: "customer"; field: "primaryPhone" | "primaryEmail" | "firstName" }
-  | { target: "company"; field: "primaryName" }
-  | { target: "deal_assignedUsers"; field: "assignedUserIds" };
-
-const FIXED_COLUMN_MAP: Record<string, FixedTarget> = {
-  "제목":        { target: "deal", field: "name" },
-  "내용":        { target: "deal", field: "description" },
-  "담당자":      { target: "customer", field: "firstName" },
-  "회사명":      { target: "company", field: "primaryName" },
-  "연락처":      { target: "customer", field: "primaryPhone" },
-  "E-MAIL 주소": { target: "customer", field: "primaryEmail" },
-  "안내자":      { target: "deal_assignedUsers", field: "assignedUserIds" },
-};
-
-/**
- * Apps Script가 시트 편집 감지 후 호출하는 webhook 처리.
- * 충돌 판단(수정 시간 비교) 후 erxes 딜/고객/회사 데이터 업데이트.
- */
-export async function handleSheetWebhook(
-  models: IModels,
-  subdomain: string,
-  payload: SheetWebhookPayload
-): Promise<SheetWebhookResult> {
-  const { dealId, columnName, newValue, sheetEditedAt } = payload;
-
-  if (READONLY_COLUMNS.has(columnName)) {
-    return { ok: false, reason: "readonly_column" };
-  }
-
-  const deal = await models.Deals.findOne({ _id: dealId }).lean();
-  if (!deal) return { ok: false, reason: "deal_not_found" };
-
-  // 충돌 판단: deal.modifiedAt이 시트 편집 시각보다 최신이면 erxes 우선
-  const dealModifiedAt = (deal as any).modifiedAt ? new Date((deal as any).modifiedAt).getTime() : 0;
-  const sheetEditedAtMs = new Date(sheetEditedAt).getTime();
-  if (dealModifiedAt > sheetEditedAtMs) {
-    return { ok: false, reason: "conflict" };
-  }
-
-  try {
-    const fixed = FIXED_COLUMN_MAP[columnName];
-    if (fixed) {
-      await applyFixedColumnUpdate(models, subdomain, deal, fixed, newValue);
-      return { ok: true };
-    }
-
-    const updated = await applyCustomFieldUpdate(models, subdomain, deal, columnName, newValue);
-    if (!updated) return { ok: false, reason: "field_not_found" };
-
-    return { ok: true };
-  } catch (_e) {
-    return { ok: false, reason: "unknown_error" };
-  }
-}
-
-async function applyFixedColumnUpdate(
-  models: IModels,
-  subdomain: string,
-  deal: any,
-  fixed: FixedTarget,
-  newValue: string
-): Promise<void> {
-  const now = new Date();
-
-  if (fixed.target === "deal") {
-    await models.Deals.updateOne(
-      { _id: deal._id },
-      { $set: { [fixed.field]: newValue, modifiedAt: now } }
-    );
-    return;
-  }
-
-  if (fixed.target === "deal_assignedUsers") {
-    const users = await sendCoreMessage({
-      subdomain,
-      action: "users.find",
-      data: {
-        query: {},
-        fields: { _id: 1, details: 1, email: 1, username: 1 },
-        limit: 500,
-      },
-      isRPC: true,
-      defaultValue: [],
-    });
-    const names = newValue.split(",").map((n) => n.trim()).filter(Boolean);
-    const matchedIds = (Array.isArray(users) ? users : [])
-      .filter((u: any) => {
-        const full = u.details?.fullName || u.email || u.username || "";
-        return names.some((n) => full.includes(n) || n.includes(full));
-      })
-      .map((u: any) => u._id);
-    await models.Deals.updateOne(
-      { _id: deal._id },
-      { $set: { assignedUserIds: matchedIds, modifiedAt: now } }
-    );
-    return;
-  }
-
-  const customerIds: string[] = deal.customerIds || [];
-  const companyIds: string[] = deal.companyIds || [];
-
-  if (fixed.target === "customer" && customerIds.length > 0) {
-    await sendCoreMessage({
-      subdomain,
-      action: "contacts:customers.updateCustomer",
-      data: { _id: customerIds[0], doc: { [fixed.field]: newValue } },
-      isRPC: true,
-      defaultValue: null,
-    });
-  }
-
-  if (fixed.target === "company" && companyIds.length > 0) {
-    await sendCoreMessage({
-      subdomain,
-      action: "contacts:companies.updateCompany",
-      data: { _id: companyIds[0], doc: { [fixed.field]: newValue } },
-      isRPC: true,
-      defaultValue: null,
-    });
-  }
-}
-
-async function applyCustomFieldUpdate(
-  models: IModels,
-  subdomain: string,
-  deal: any,
-  columnName: string,
-  newValue: string
-): Promise<boolean> {
-  const now = new Date();
-
-  // deal에는 pipelineId가 없으므로 stage를 통해 조회
-  const stage = await models.Stages.findOne({ _id: deal.stageId }).lean();
-  const pipelineId = (stage as any)?.pipelineId || "";
-
-  // 1. 딜 커스텀 필드에서 columnName 매칭
-  const dealGroups = await sendCoreMessage({
-    subdomain,
-    action: "fieldsGroups.find",
-    data: {
-      query: {
-        contentType: "sales:deal",
-        $or: [
-          { "config.pipelineIds": { $in: [pipelineId] } },
-          { "config.pipelineIds": { $size: 0 } },
-          { "config.boardsPipelines.pipelineIds": { $in: [pipelineId] } },
-        ],
-      },
-    },
-    isRPC: true,
-    defaultValue: [],
-  });
-
-  for (const group of Array.isArray(dealGroups) ? dealGroups : []) {
-    const fields = await sendCoreMessage({
-      subdomain,
-      action: "fields.find",
-      data: { query: { groupId: group._id } },
-      isRPC: true,
-      defaultValue: [],
-    });
-    const matched = (Array.isArray(fields) ? fields : []).find(
-      (f: any) => ((f.text || f.name) || "").trim() === columnName
-    );
-    if (matched) {
-      const existing: any[] = Array.isArray(deal.customFieldsData) ? deal.customFieldsData : [];
-      const updated = existing.filter((d: any) => d.field !== matched._id);
-      updated.push({ field: matched._id, value: newValue });
-      await models.Deals.updateOne(
-        { _id: deal._id },
-        { $set: { customFieldsData: updated, modifiedAt: now } }
-      );
-      return true;
-    }
-  }
-
-  // 2. 고객 커스텀 필드에서 columnName 매칭
-  const customerIds: string[] = deal.customerIds || [];
-  if (customerIds.length === 0) return false;
-
-  const customerGroups = await sendCoreMessage({
-    subdomain,
-    action: "fieldsGroups.find",
-    data: { query: { contentType: "core:customer" } },
-    isRPC: true,
-    defaultValue: [],
-  });
-
-  for (const group of Array.isArray(customerGroups) ? customerGroups : []) {
-    const fields = await sendCoreMessage({
-      subdomain,
-      action: "fields.find",
-      data: { query: { groupId: group._id } },
-      isRPC: true,
-      defaultValue: [],
-    });
-    const matched = (Array.isArray(fields) ? fields : []).find(
-      (f: any) => ((f.text || f.name) || "").trim() === columnName
-    );
-    if (matched) {
-      await sendCoreMessage({
-        subdomain,
-        action: "contacts:customers.updateCustomer",
-        data: {
-          _id: customerIds[0],
-          doc: {
-            customFieldsData: [{ field: matched._id, value: newValue }],
-          },
-        },
-        isRPC: true,
-        defaultValue: null,
-      });
-      return true;
-    }
-  }
-
-  return false;
 }

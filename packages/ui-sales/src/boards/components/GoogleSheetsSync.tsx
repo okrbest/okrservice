@@ -44,15 +44,12 @@ export default function GoogleSheetsSync({ pipelineId, closeModal }: Props) {
       Alert.warning("스프레드시트 ID를 입력해 주세요.");
       return;
     }
-    const env = getEnv();
-    const fileBaseUrl = env?.REACT_APP_API_URL || (typeof window !== "undefined" ? window.location.origin : "");
     syncDeals({
       variables: {
         pipelineId,
         spreadsheetId: spreadsheetId.trim(),
         sheetName: sheetName.trim() || "Sheet1",
         saveToPipeline: saveToPipeline || undefined,
-        fileBaseUrl: fileBaseUrl || undefined,
       },
     });
   };
