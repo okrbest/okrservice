@@ -120,6 +120,10 @@ export const KEY_LABELS = {
   GOOGLE_CLIENT_ID: 'Google Client Id',
   GOOGLE_CLIENT_SECRET: 'Google Client Secret',
   GOOGLE_MAP_API_KEY: 'Google Map Api Key',
+  GOOGLE_SHEETS_CREDENTIALS_JSON: 'Google Sheets 서비스 계정 JSON (전체 붙여넣기)',
+  GOOGLE_SHEETS_PROJECT_ID: 'Google Sheets 프로젝트 ID',
+  GOOGLE_SHEETS_CLIENT_EMAIL: 'Google Sheets 서비스 계정 이메일',
+  GOOGLE_SHEETS_PRIVATE_KEY: 'Google Sheets Private Key',
 
   DAILY_API_KEY: 'Daily api key',
   DAILY_END_POINT: 'Daily end point',

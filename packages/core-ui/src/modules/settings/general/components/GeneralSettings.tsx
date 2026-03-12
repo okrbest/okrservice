@@ -716,6 +716,33 @@ class GeneralSettings extends React.Component<Props, State> {
               "Google service account`s key path"
             )}
           </FlexRow>
+          <ControlLabel style={{ marginTop: 16, display: "block" }}>
+            {__("Google 스프레드시트 동기화 (딜 → 시트)")}
+          </ControlLabel>
+          <p style={{ margin: "4px 0 8px 0", color: "#888", fontSize: "12px" }}>
+            {__("딜을 Google 시트에 동기화할 때 사용합니다. 아래 항목을 직접 입력하거나, JSON 전체를 붙여넣을 수 있습니다. 비워두면 위 'Google Application Credentials' 경로를 사용합니다.")}
+          </p>
+          <FlexRow $alignItems="flex-start" $justifyContent="space-between">
+            {this.renderItem("GOOGLE_SHEETS_PROJECT_ID")}
+            {this.renderItem("GOOGLE_SHEETS_CLIENT_EMAIL")}
+          </FlexRow>
+          <FlexRow $alignItems="flex-start" $justifyContent="space-between">
+            {this.renderItem(
+              "GOOGLE_SHEETS_PRIVATE_KEY",
+              "서비스 계정 키(JSON)의 private_key 값 (-----BEGIN PRIVATE KEY----- 포함)",
+              "textarea"
+            )}
+          </FlexRow>
+          <FormGroup>
+            <ControlLabel>{KEY_LABELS.GOOGLE_SHEETS_CREDENTIALS_JSON}</ControlLabel>
+            <FormControl
+              componentclass="textarea"
+              defaultValue={configsMap?.GOOGLE_SHEETS_CREDENTIALS_JSON}
+              onChange={this.onChangeInput.bind(this, "GOOGLE_SHEETS_CREDENTIALS_JSON")}
+              rows={4}
+              placeholder='또는 JSON 전체: {"type":"service_account","project_id":"...","private_key":"...","client_email":"...@....iam.gserviceaccount.com",...}'
+            />
+          </FormGroup>
         </CollapseContent>
 
         <CollapseContent

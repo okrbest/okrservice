@@ -1,3 +1,6 @@
+import * as fs from "fs";
+import * as os from "os";
+import * as path from "path";
 import { google } from "googleapis";
 import { getEnv } from "@erxes/api-utils/src";
 import { generateModels, IModels } from "./connectionResolver";
@@ -13,6 +16,33 @@ const SHEETS_SCOPE = ["https://www.googleapis.com/auth/spreadsheets"];
 const DEFAULT_SHEET_NAME = "Sheet1";
 /** 구글 시트 첨부파일 링크에 항상 붙일 도메인(다른 소스가 없을 때 사용). 환경변수 ATTACHMENT_BASE_URL로 변경 가능 */
 const DEFAULT_ATTACHMENT_BASE_URL = "https://5240help.okrbiz.com";
+
+/** 설정/DB에 저장되면서 줄바꿈이 깨진 private_key를 PEM 형식으로 복구 (OpenSSL DECODER 오류 방지) */
+function normalizePrivateKey(privateKey: string): string {
+  if (!privateKey || typeof privateKey !== "string") return privateKey;
+  let key = privateKey.trim();
+  // 이스케이프된 줄바꿈 복원 (반복 적용으로 이중 이스케이프 처리)
+  while (key.includes("\\n")) {
+    key = key.replace(/\\n/g, "\n");
+  }
+  key = key.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  // PEM이 한 줄로 저장된 경우: BEGIN과 END 사이 base64를 64자마다 줄바꿈
+  const begin = "-----BEGIN PRIVATE KEY-----";
+  const end = "-----END PRIVATE KEY-----";
+  if (key.includes(begin) && key.includes(end) && !key.includes(begin + "\n")) {
+    const startIdx = key.indexOf(begin) + begin.length;
+    const endIdx = key.indexOf(end);
+    const middle = key.slice(startIdx, endIdx).replace(/\s/g, "");
+    if (middle.length > 0) {
+      const lines: string[] = [];
+      for (let i = 0; i < middle.length; i += 64) {
+        lines.push(middle.slice(i, i + 64));
+      }
+      key = begin + "\n" + lines.join("\n") + "\n" + end + "\n";
+    }
+  }
+  return key;
+}
 
 export interface SyncDealsToSheetsParams {
   pipelineId: string;
@@ -221,9 +251,67 @@ export async function syncDealsToGoogleSheet(
   const { pipelineId, spreadsheetId, sheetName = DEFAULT_SHEET_NAME } = params;
 
   const keyPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  if (!keyPath) {
+  const unwrapConfig = (res: any): string =>
+    (typeof res === "object" && res?.data != null ? res.data : res) ?? "";
+
+  const sheetsJsonRes = await sendCoreMessage({
+    subdomain,
+    action: "getConfig",
+    data: { code: "GOOGLE_SHEETS_CREDENTIALS_JSON", defaultValue: "" },
+    isRPC: true,
+    defaultValue: "",
+  });
+  let credentialsJsonStr = (unwrapConfig(sheetsJsonRes) || "").trim();
+  if (!credentialsJsonStr) {
+    const appCredsRes = await sendCoreMessage({
+      subdomain,
+      action: "getConfig",
+      data: { code: "GOOGLE_APPLICATION_CREDENTIALS_JSON", defaultValue: "" },
+      isRPC: true,
+      defaultValue: "",
+    });
+    credentialsJsonStr = (unwrapConfig(appCredsRes) || "").trim();
+  }
+  if (!credentialsJsonStr) {
+    const [projectIdRes, clientEmailRes, privateKeyRes] = await Promise.all([
+      sendCoreMessage({
+        subdomain,
+        action: "getConfig",
+        data: { code: "GOOGLE_SHEETS_PROJECT_ID", defaultValue: "" },
+        isRPC: true,
+        defaultValue: "",
+      }),
+      sendCoreMessage({
+        subdomain,
+        action: "getConfig",
+        data: { code: "GOOGLE_SHEETS_CLIENT_EMAIL", defaultValue: "" },
+        isRPC: true,
+        defaultValue: "",
+      }),
+      sendCoreMessage({
+        subdomain,
+        action: "getConfig",
+        data: { code: "GOOGLE_SHEETS_PRIVATE_KEY", defaultValue: "" },
+        isRPC: true,
+        defaultValue: "",
+      }),
+    ]);
+    const projectId = (unwrapConfig(projectIdRes) || "").trim();
+    const clientEmail = (unwrapConfig(clientEmailRes) || "").trim();
+    const privateKey = (unwrapConfig(privateKeyRes) || "").trim();
+    if (projectId && clientEmail && privateKey) {
+      credentialsJsonStr = JSON.stringify({
+        type: "service_account",
+        project_id: projectId,
+        client_email: clientEmail,
+        private_key: normalizePrivateKey(privateKey),
+      });
+    }
+  }
+
+  if (!keyPath && !credentialsJsonStr) {
     throw new Error(
-      "GOOGLE_APPLICATION_CREDENTIALS 환경 변수가 설정되지 않았습니다."
+      "설정 > 일반 설정 > Google에서 Google 스프레드시트 동기화 항목(프로젝트 ID, 서비스 계정 이메일, Private Key) 또는 서비스 계정 JSON을 입력하거나, GOOGLE_APPLICATION_CREDENTIALS 환경 변수를 설정해 주세요."
     );
   }
 
@@ -376,82 +464,108 @@ export async function syncDealsToGoogleSheet(
     ]);
   }
 
-  const auth = new google.auth.GoogleAuth({
-    keyFile: keyPath,
-    scopes: SHEETS_SCOPE,
-  });
+  // 설정에서 읽은 JSON은 임시 파일로 쓴 뒤 keyFile로 사용 (OpenSSL DECODER 오류 회피)
+  let tmpCredsPath: string | null = null;
+  const auth = credentialsJsonStr
+    ? (() => {
+        const creds = JSON.parse(credentialsJsonStr);
+        if (creds && typeof creds.private_key === "string") {
+          creds.private_key = normalizePrivateKey(creds.private_key);
+        }
+        tmpCredsPath = path.join(
+          os.tmpdir(),
+          `okr-google-sheets-${Date.now()}-${Math.random().toString(36).slice(2)}.json`
+        );
+        fs.writeFileSync(tmpCredsPath, JSON.stringify(creds), { mode: 0o600 });
+        return new google.auth.GoogleAuth({
+          keyFile: tmpCredsPath,
+          scopes: SHEETS_SCOPE,
+        });
+      })()
+    : new google.auth.GoogleAuth({
+        keyFile: keyPath,
+        scopes: SHEETS_SCOPE,
+      });
 
   const sheets = google.sheets({ version: "v4", auth });
 
   try {
-    await sheets.spreadsheets.values.clear({
+    try {
+      await sheets.spreadsheets.values.clear({
       spreadsheetId,
       range: `'${sheetName}'!A:ZZ`,
     });
-  } catch (e: any) {
-    if (e?.code !== 404 && e?.message?.indexOf("Unable to parse range") !== 0) {
-      throw e;
+    } catch (e: any) {
+      if (e?.code !== 404 && e?.message?.indexOf("Unable to parse range") !== 0) {
+        throw e;
+      }
     }
-  }
 
-  if (rows.length === 0) {
-    return { syncedCount: 0, message: "동기화할 딜이 없습니다." };
-  }
+    if (rows.length === 0) {
+      return { syncedCount: 0, message: "동기화할 딜이 없습니다." };
+    }
 
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range: `'${sheetName}'!A1`,
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: rows,
-    },
-  });
-
-  // 첫 행(헤더) 배경색 #d9ead3 적용
-  const meta = await sheets.spreadsheets.get({
-    spreadsheetId,
-    fields: "sheets(properties(sheetId,title))",
-  });
-  const sheet = (meta.data.sheets || []).find(
-    (s: any) => (s.properties?.title || "") === sheetName
-  );
-  const sheetId = sheet?.properties?.sheetId;
-  if (typeof sheetId === "number") {
-    await sheets.spreadsheets.batchUpdate({
+    await sheets.spreadsheets.values.update({
       spreadsheetId,
+      range: `'${sheetName}'!A1`,
+      valueInputOption: "USER_ENTERED",
       requestBody: {
-        requests: [
-          {
-            repeatCell: {
-              range: {
-                sheetId,
-                startRowIndex: 0,
-                endRowIndex: 1,
-                startColumnIndex: 0,
-                endColumnIndex: headers.length,
-              },
-              cell: {
-                userEnteredFormat: {
-                  backgroundColor: {
-                    red: 217 / 255,
-                    green: 234 / 255,
-                    blue: 211 / 255,
-                  },
-                  textFormat: { bold: true },
-                },
-              },
-              fields: "userEnteredFormat.backgroundColor,userEnteredFormat.textFormat.bold",
-            },
-          },
-        ],
+        values: rows,
       },
     });
-  }
 
-  return {
-    syncedCount: rows.length - 1,
-    message: `${rows.length - 1}건의 딜이 Google 시트에 동기화되었습니다.`,
-  };
+    // 첫 행(헤더) 배경색 #d9ead3 적용
+    const meta = await sheets.spreadsheets.get({
+      spreadsheetId,
+      fields: "sheets(properties(sheetId,title))",
+    });
+    const sheet = (meta.data.sheets || []).find(
+      (s: any) => (s.properties?.title || "") === sheetName
+    );
+    const sheetId = sheet?.properties?.sheetId;
+    if (typeof sheetId === "number") {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: 0,
+                  endRowIndex: 1,
+                  startColumnIndex: 0,
+                  endColumnIndex: headers.length,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    backgroundColor: {
+                      red: 217 / 255,
+                      green: 234 / 255,
+                      blue: 211 / 255,
+                    },
+                    textFormat: { bold: true },
+                  },
+                },
+                fields: "userEnteredFormat.backgroundColor,userEnteredFormat.textFormat.bold",
+              },
+            },
+          ],
+        },
+      });
+    }
+
+    return {
+      syncedCount: rows.length - 1,
+      message: `${rows.length - 1}건의 딜이 Google 시트에 동기화되었습니다.`,
+    };
+  } finally {
+    if (tmpCredsPath) {
+      try {
+        fs.unlinkSync(tmpCredsPath);
+      } catch (_) {}
+    }
+  }
 }
 
 /**
