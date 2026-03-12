@@ -20,6 +20,7 @@ type Props = {
   handleFormChange: (name: string, value: string | boolean | string[]) => void;
   dealToggle?: boolean;
   dealCustomFieldIds?: string[];
+  dealRequiredCustomFieldIds?: string[];
   dealFields?: DealField[];
   kind?: "client" | "vendor";
 } & IMessengerData;
@@ -32,6 +33,7 @@ function General({
   handleFormChange,
   dealToggle = false,
   dealCustomFieldIds = [],
+  dealRequiredCustomFieldIds = [],
   dealFields = [],
 }: Props) {
   const [show, setShow] = useState<boolean>(false);
@@ -55,6 +57,13 @@ function General({
       next = [...dealCustomFieldIds, fieldId];
     }
     handleFormChange("dealCustomFieldIds", next);
+  };
+
+  const toggleRequiredCustomField = (fieldId: string) => {
+    const next = dealRequiredCustomFieldIds.includes(fieldId)
+      ? dealRequiredCustomFieldIds.filter((id) => id !== fieldId)
+      : [...dealRequiredCustomFieldIds, fieldId];
+    handleFormChange("dealRequiredCustomFieldIds", next);
   };
 
   const BoardSelect: React.FC<any> = ({
@@ -121,22 +130,38 @@ function General({
             <FormGroup>
               <ControlLabel>{__("Show these custom fields in widget (Create a deal)")}</ControlLabel>
               <p style={{ margin: "4px 0 8px 0", color: "#888", fontSize: "12px" }}>
-                {__("Select which custom fields to display. If none selected, all are shown.")}
+                {__("Select which custom fields to display. If none selected, all are shown. Check \"Required\" to make the field mandatory.")}
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                {dealFields.map((f) => (
-                  <label
-                    key={f._id}
-                    style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={showAll || dealCustomFieldIds.includes(f._id)}
-                      onChange={() => toggleCustomField(f._id)}
-                    />
-                    <span>{f.label || f._id}</span>
-                  </label>
-                ))}
+                {dealFields.map((f) => {
+                  const isShown = showAll || dealCustomFieldIds.includes(f._id);
+                  const isRequired = dealRequiredCustomFieldIds.includes(f._id);
+                  return (
+                    <div
+                      key={f._id}
+                      style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}
+                    >
+                      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                        <input
+                          type="checkbox"
+                          checked={isShown}
+                          onChange={() => toggleCustomField(f._id)}
+                        />
+                        <span>{f.label || f._id}</span>
+                      </label>
+                      {isShown && (
+                        <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "12px", color: "#666" }}>
+                          <input
+                            type="checkbox"
+                            checked={isRequired}
+                            onChange={() => toggleRequiredCustomField(f._id)}
+                          />
+                          <span>{__("Required")}</span>
+                        </label>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </FormGroup>
           )}

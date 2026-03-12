@@ -77,6 +77,7 @@ type State = {
   dealBoardId?: string;
   dealToggle?: boolean;
   dealCustomFieldIds?: string[];
+  dealRequiredCustomFieldIds?: string[];
   title: string;
   botEndpointUrl?: string;
   botShowInitialMessage?: boolean;
@@ -172,6 +173,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealBoardId: dealData.dealBoardId || "",
       dealToggle: dealData.dealToggle || false,
       dealCustomFieldIds: dealData.dealCustomFieldIds || [],
+      dealRequiredCustomFieldIds: dealData.dealRequiredCustomFieldIds || [],
       channelIds: channels.map((item) => item._id) || [],
       color: uiOptions.color || "#6569DF",
       textColor: uiOptions.textColor || "#fff",
@@ -287,6 +289,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealBoardId,
       dealToggle,
       dealCustomFieldIds,
+      dealRequiredCustomFieldIds,
     } = this.state;
 
     if (!languageCode) {
@@ -391,6 +394,7 @@ class CreateMessenger extends React.Component<Props, State> {
         dealBoardId: dealBoardId || "",
         dealToggle: !!dealToggle,
         dealCustomFieldIds: dealCustomFieldIds || [],
+        dealRequiredCustomFieldIds: dealRequiredCustomFieldIds || [],
       },
       uiOptions: {
         color: this.state.color,
@@ -491,6 +495,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealBoardId = "",
       dealToggle = false,
       dealCustomFieldIds = [],
+      dealRequiredCustomFieldIds = [],
     } = this.state;
 
     const { integration } = this.props;
@@ -614,6 +619,7 @@ class CreateMessenger extends React.Component<Props, State> {
                   dealStageId={(dealStageId || "") as string}
                   dealToggle={dealToggle}
                   dealCustomFieldIds={dealCustomFieldIds || []}
+                  dealRequiredCustomFieldIds={dealRequiredCustomFieldIds || []}
                 />
               </Step>
               <Step

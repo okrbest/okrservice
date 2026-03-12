@@ -116,6 +116,7 @@ export const types = `
     dealPipelineId: String
     dealBoardId: String
     dealCustomFieldIds: [String]
+    dealRequiredCustomFieldIds: [String]
   }
 
   input IntegrationMessengerData {

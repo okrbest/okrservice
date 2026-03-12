@@ -99,6 +99,7 @@ export interface IDealData {
   dealPipelineId?: String;
   dealBoardId?: String;
   dealCustomFieldIds?: string[];
+  dealRequiredCustomFieldIds?: string[];
 }
 
 export interface IMessengerDataDocument extends IMessengerData, Document {}
@@ -330,7 +331,8 @@ const dealSchema = new Schema(
     dealStageId: { type: String, required: true },
     dealPipelineId: { type: String, required: true },
     dealBoardId: { type: String, required: true },
-    dealCustomFieldIds: { type: [String] }
+    dealCustomFieldIds: { type: [String] },
+    dealRequiredCustomFieldIds: { type: [String] }
   },
   { _id: false }
 );
