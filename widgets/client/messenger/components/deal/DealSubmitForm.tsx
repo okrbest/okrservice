@@ -16,6 +16,7 @@ type Props = {
   formData: any;
   customFields?: CustomField[];
   customFieldsData?: Record<string, any>;
+  requiredCustomFieldIds?: string[];
   customerLoading: boolean;
   error?: string | null;
   handleSubmit: (e: any) => void;
@@ -34,6 +35,7 @@ const DealSubmitForm: React.FC<Props> = ({
   formData,
   customFields = [],
   customFieldsData = {},
+  requiredCustomFieldIds = [],
   error,
   handleChange,
   handleCustomFieldChange,
@@ -45,10 +47,20 @@ const DealSubmitForm: React.FC<Props> = ({
 
   const { isAuthFieldsVisible } = useConfig();
 
+  const isRequired = (fieldId: string) => requiredCustomFieldIds.includes(fieldId);
+
   const renderCustomField = (f: CustomField) => {
     const value = customFieldsData[f._id];
     const onCustomChange = (e: any) => handleCustomFieldChange?.(f._id, e.target.value);
     const label = f.label || f._id;
+    const required = isRequired(f._id);
+    const labelNode = required ? (
+      <>
+        {label} <span className="required" style={{ color: "red", marginLeft: "2px" }}>*</span>
+      </>
+    ) : (
+      label
+    );
 
     if (f.type === "textarea" || f.type === "note") {
       return (
@@ -56,11 +68,11 @@ const DealSubmitForm: React.FC<Props> = ({
           <Input
             id={`custom_${f._id}`}
             textArea
-            label={String(label)}
+            label={required ? `${label} *` : String(label)}
             onChange={onCustomChange}
             value={value ?? ""}
             rows={4}
-            required={true}
+            required={required}
           />
         </div>
       );
@@ -71,13 +83,13 @@ const DealSubmitForm: React.FC<Props> = ({
         <div key={f._id} className="ticket-form-item">
           <div className="input-container">
             <label htmlFor={`custom_${f._id}`} style={{ whiteSpace: "nowrap" }}>
-              {label} <span className="required" style={{ color: "red", marginLeft: "2px" }}>*</span>
+              {labelNode}
             </label>
             <select
               id={`custom_${f._id}`}
               value={value ?? ""}
               onChange={(e) => handleCustomFieldChange?.(f._id, e.target.value)}
-              required
+              required={required}
             >
               <option value="">{__("Select")}</option>
               {opts.map((o: any, idx: number) => {
@@ -99,11 +111,11 @@ const DealSubmitForm: React.FC<Props> = ({
         <div key={f._id} className="ticket-form-item">
           <Input
             id={`custom_${f._id}`}
-            label={String(label)}
+            label={required ? `${label} *` : String(label)}
             type="date"
             onChange={onCustomChange}
             value={value ?? ""}
-            required={true}
+            required={required}
           />
         </div>
       );
@@ -113,11 +125,11 @@ const DealSubmitForm: React.FC<Props> = ({
         <div key={f._id} className="ticket-form-item">
           <Input
             id={`custom_${f._id}`}
-            label={String(label)}
+            label={required ? `${label} *` : String(label)}
             type="number"
             onChange={onCustomChange}
             value={value ?? ""}
-            required={true}
+            required={required}
           />
         </div>
       );
@@ -126,10 +138,10 @@ const DealSubmitForm: React.FC<Props> = ({
       <div key={f._id} className="ticket-form-item">
         <Input
           id={`custom_${f._id}`}
-          label={String(label)}
+          label={required ? `${label} *` : String(label)}
           onChange={onCustomChange}
           value={value ?? ""}
-          required={true}
+          required={required}
         />
       </div>
     );

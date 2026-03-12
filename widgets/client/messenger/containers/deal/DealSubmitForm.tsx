@@ -56,6 +56,7 @@ const DealSubmitContainer = (props: Props) => {
   const boardId = dealData?.dealBoardId || "";
   const pipelineId = dealData?.dealPipelineId || "";
   const selectedIds = dealData?.dealCustomFieldIds || [];
+  const requiredCustomFieldIds = dealData?.dealRequiredCustomFieldIds || [];
   const { data: dealFieldsData } = useQuery(gql(widgetsGetDealFields), {
     variables: { boardId, pipelineId },
     skip: !boardId || !pipelineId,
@@ -164,6 +165,21 @@ const DealSubmitContainer = (props: Props) => {
     e.preventDefault();
     setError(null); // Clear previous error on new submission
 
+    // 필수 커스텀 필드 검증
+    if (requiredCustomFieldIds.length > 0 && customFields.length > 0) {
+      const missing = requiredCustomFieldIds.filter((fieldId: string) => {
+        const val = customFieldsData[fieldId];
+        return val == null || (typeof val === "string" && val.trim() === "") || (Array.isArray(val) && val.length === 0);
+      });
+      if (missing.length > 0) {
+        const fieldLabels = missing
+          .map((id: string) => customFields.find((f) => f._id === id)?.label || id)
+          .join(", ");
+        setError(`필수 항목을 입력해 주세요: ${fieldLabels}`);
+        return;
+      }
+    }
+
     // GraphQL [String] 타입에 맞게 문자열 배열로 전달
     const emails = formData.email != null && formData.email !== "" ? [String(formData.email)] : [];
     const phones = formData.phone != null && formData.phone !== "" ? [String(formData.phone)] : [];
@@ -220,6 +236,7 @@ const DealSubmitContainer = (props: Props) => {
       dealId={dealId}
       customFields={customFields}
       customFieldsData={customFieldsData}
+      requiredCustomFieldIds={requiredCustomFieldIds}
       error={error}
       handleSubmit={onSubmit}
       handleChange={handleChange}

@@ -329,6 +329,7 @@ export interface IDealTypeMessenger {
   dealPipelineId?: string;
   dealBoardId?: string;
   dealCustomFieldIds?: string[];
+  dealRequiredCustomFieldIds?: string[];
 }
 
 export interface IIntegration {

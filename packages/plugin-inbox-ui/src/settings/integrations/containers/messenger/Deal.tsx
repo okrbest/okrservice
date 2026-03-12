@@ -21,6 +21,7 @@ type Props = {
   dealStageId: string;
   dealToggle?: boolean;
   dealCustomFieldIds?: string[];
+  dealRequiredCustomFieldIds?: string[];
 };
 
 function GeneralContainer(props: Props) {
@@ -92,6 +93,7 @@ function GeneralContainer(props: Props) {
     fetchPipelines,
     dealToggle: props.dealToggle,
     dealCustomFieldIds: props.dealCustomFieldIds || [],
+    dealRequiredCustomFieldIds: props.dealRequiredCustomFieldIds || [],
     dealFields,
   };
   return <General {...updatedProps} />;
