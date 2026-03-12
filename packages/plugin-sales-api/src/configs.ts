@@ -73,6 +73,7 @@ export default {
 
     context.models = await generateModels(subdomain);
     context.subdomain = subdomain;
+    context.req = req;
 
     context.serverTiming = {
       startTime: res.startTime,

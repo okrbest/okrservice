@@ -11,6 +11,8 @@ import { sendCoreMessage } from "./messageBroker";
 
 const SHEETS_SCOPE = ["https://www.googleapis.com/auth/spreadsheets"];
 const DEFAULT_SHEET_NAME = "Sheet1";
+/** 구글 시트 첨부파일 링크에 항상 붙일 도메인(다른 소스가 없을 때 사용). 환경변수 ATTACHMENT_BASE_URL로 변경 가능 */
+const DEFAULT_ATTACHMENT_BASE_URL = "https://5240help.okrbiz.com";
 
 export interface SyncDealsToSheetsParams {
   pipelineId: string;
@@ -64,7 +66,7 @@ function stripHtml(html: any): string {
   return s.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() || "";
 }
 
-/** 첨부파일 하나의 다운로드 URL 생성. clientApiBase(댓글과 동일한 REACT_APP_API_URL)가 있으면 그걸로 절대 URL, 없으면 domain + /gateway/pl:core/read-file 또는 경로만 */
+/** 첨부파일 하나의 다운로드 URL 생성. 절대 URL로 만들고 inline=false로 새 창에서 다운로드 유도. baseUrl 없으면 기본 도메인 사용 */
 function getAttachmentDownloadUrl(
   att: { url?: string; name?: string },
   baseUrl: string,
@@ -75,27 +77,43 @@ function getAttachmentDownloadUrl(
   if (/^https?:\/\//i.test(url)) return url;
   const key = encodeURIComponent(url);
   const name = att?.name ? `&name=${encodeURIComponent(att.name)}` : "";
-  const pathSuffix = `?key=${key}${name}`;
-  if (!baseUrl || !String(baseUrl).trim()) {
-    return `/gateway/pl:core/read-file${pathSuffix}`;
-  }
-  const base = String(baseUrl).replace(/\/$/, "").trim();
+  const inlineFalse = "&inline=false";
+  const pathSuffix = `?key=${key}${name}${inlineFalse}`;
+  const base = (baseUrl && String(baseUrl).trim()) || DEFAULT_ATTACHMENT_BASE_URL;
   const domain = /^https?:\/\//i.test(base) ? base : `https://${base}`;
-  const pathPrefix = isClientApiBase ? "/read-file" : "/gateway/pl:core/read-file";
-  return `${domain}${pathPrefix}${pathSuffix}`;
+  const pathPrefix = isClientApiBase ? "/read-file" : "/gateway/read-file";
+  return `${domain.replace(/\/$/, "")}${pathPrefix}${pathSuffix}`;
 }
 
-/** 딜 첨부파일들을 구글 시트 셀용 텍스트로 (한 줄에 하나씩 URL 또는 경로) */
-function formatAttachmentsForSheet(
+/** 첨부파일 링크 열 개수 (구글 시트에서 HYPERLINK는 셀당 하나만 클릭되므로 열을 나눔) */
+const MAX_ATTACHMENT_COLUMNS = 3;
+
+/** 수식 내부에서 셀 문자열 이스케이프 (따옴표를 "" 로) */
+function escapeFormulaString(s: string): string {
+  return String(s).replace(/"/g, '""');
+}
+
+/** 딜 첨부파일을 열별로. 각 셀에 =HYPERLINK("url","첨부파일N") 하나씩 넣어서 모두 클릭 가능하게. 길이는 MAX_ATTACHMENT_COLUMNS */
+function formatAttachmentsAsColumns(
   attachments: any[] | undefined,
   baseUrl: string,
   isClientApiBase: boolean
-): string {
-  if (!Array.isArray(attachments) || attachments.length === 0) return "-";
-  const parts = attachments
-    .map((a) => getAttachmentDownloadUrl(a, baseUrl, isClientApiBase))
-    .filter(Boolean);
-  return parts.length ? parts.join("\n") : "-";
+): string[] {
+  const urls = Array.isArray(attachments)
+    ? attachments
+        .map((a) => getAttachmentDownloadUrl(a, baseUrl, isClientApiBase))
+        .filter(Boolean)
+    : [];
+  const cells: string[] = [];
+  for (let i = 0; i < MAX_ATTACHMENT_COLUMNS; i++) {
+    if (i < urls.length) {
+      const label = `첨부파일${i + 1}`;
+      cells.push(`=HYPERLINK("${escapeFormulaString(urls[i])}","${escapeFormulaString(label)}")`);
+    } else {
+      cells.push("");
+    }
+  }
+  return cells;
 }
 
 async function getDealListCustomFields(
@@ -239,13 +257,13 @@ export async function syncDealsToGoogleSheet(
       getCustomerDateFieldIds(subdomain),
     ]);
 
-  // 첨부파일 링크용: 프론트에서 넘긴 fileBaseUrl(댓글과 동일한 REACT_APP_API_URL) 우선, 없으면 core/env 도메인 사용
+  // 첨부파일 링크용: 프론트 fileBaseUrl → 요청 origin → core/config → env → 기본 도메인 순. 항상 절대 URL이 되도록 마지막에 기본 도메인 사용
   const fileBaseUrlFromClient = params.fileBaseUrl?.trim() || "";
   let attachmentBaseUrl: string;
   let attachmentIsClientApiBase: boolean;
   if (fileBaseUrlFromClient) {
     attachmentBaseUrl = fileBaseUrlFromClient;
-    attachmentIsClientApiBase = true;
+    attachmentIsClientApiBase = /\/gateway|\/pl:core/.test(fileBaseUrlFromClient);
   } else {
     const configDomainRes = await sendCoreMessage({
       subdomain,
@@ -262,7 +280,8 @@ export async function syncDealsToGoogleSheet(
       getEnv({ name: "DOMAIN" }) ||
       process.env.DOMAIN ||
       process.env.MAIN_APP_DOMAIN ||
-      "";
+      process.env.ATTACHMENT_BASE_URL ||
+      DEFAULT_ATTACHMENT_BASE_URL;
     attachmentIsClientApiBase = false;
   }
 
@@ -297,7 +316,7 @@ export async function syncDealsToGoogleSheet(
     "연락처",
     "E-MAIL 주소",
     "안내자",
-    "첨부파일",
+    ...Array.from({ length: MAX_ATTACHMENT_COLUMNS }, (_, i) => `첨부파일${i + 1}`),
     ...dealCustomFields.map((f) => f.text),
   ];
 
@@ -350,7 +369,7 @@ export async function syncDealsToGoogleSheet(
       customerPhone,
       customerEmail,
       assigneeNames,
-      formatAttachmentsForSheet(item.attachments, attachmentBaseUrl, attachmentIsClientApiBase),
+      ...formatAttachmentsAsColumns(item.attachments, attachmentBaseUrl, attachmentIsClientApiBase),
       ...dealCustomFields.map((f) =>
         getDealCustomFieldValue(item.customFieldsData, f._id)
       ),
@@ -367,7 +386,7 @@ export async function syncDealsToGoogleSheet(
   try {
     await sheets.spreadsheets.values.clear({
       spreadsheetId,
-      range: `'${sheetName}'!A:Z`,
+      range: `'${sheetName}'!A:ZZ`,
     });
   } catch (e: any) {
     if (e?.code !== 404 && e?.message?.indexOf("Unable to parse range") !== 0) {

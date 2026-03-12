@@ -57,6 +57,7 @@ export interface IContext extends IMainContext {
   subdomain: string;
   models: IModels;
   serverTiming: any;
+  req?: any;
 }
 
 export const loadClasses = (
