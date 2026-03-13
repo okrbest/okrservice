@@ -28,6 +28,25 @@ import {
 } from "./data/utils";
 
 import { debugBase, debugError, debugInit } from "./debuggers";
+
+/** RFC 5987: Content-Disposition filename에 한글/특수문자 시 헤더 규격 위반 방지 */
+function safeContentDisposition(
+  disposition: "inline" | "attachment",
+  filename: string
+): string {
+  const clean = (s: string) =>
+    s.replace(/[\x00-\x1f\x7f"]/g, "").replace(/\\/g, "\\\\");
+  const isAscii = /^[\x20-\x7E]*$/.test(filename);
+  const ext = path.extname(filename) || "";
+  const fallback = ext ? `file${ext}` : "file";
+
+  if (isAscii && filename.length > 0) {
+    return `${disposition}; filename="${clean(filename)}"`;
+  }
+  const safe = clean(fallback);
+  const encoded = encodeURIComponent(filename);
+  return `${disposition}; filename="${safe}"; filename*=UTF-8''${encoded}`;
+}
 import { initBroker, sendCommonMessage } from "./messageBroker";
 import { uploader } from "./middlewares/fileMiddleware";
 import {
@@ -327,13 +346,19 @@ app.get("/read-file", async (req: any, res, next) => {
         bmp: "image/bmp",
         ico: "image/x-icon",
       };
-      res.setHeader("Content-disposition", 'inline; filename="' + key + '"');
+      res.setHeader(
+        "Content-disposition",
+        safeContentDisposition("inline", name && String(name) ? String(name) : key)
+      );
       res.setHeader("Content-type", imageMime[extension] || `application/${extension}`);
 
       return res.send(response);
     }
 
-    res.attachment(name || key);
+    res.setHeader(
+      "Content-disposition",
+      safeContentDisposition("attachment", name && String(name) ? String(name) : key)
+    );
 
     return res.send(response);
   } catch (e) {
