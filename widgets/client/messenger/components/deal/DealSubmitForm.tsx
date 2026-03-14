@@ -270,21 +270,10 @@ const DealSubmitForm: React.FC<Props> = ({
 
   return (
     <Container
-      withBottomNavBar={true}
+      withBottomNavBar={false}
       title={__("Create a deal")}
       showBackButton={false}
       showZoomButton={false}
-      persistentFooter={
-        !isSubmitted ? (
-          <Button form="deal-form" type="submit" full>
-            {loading ? (
-              <div className="loader" />
-            ) : (
-              <span className="font-semibold">{submitText}</span>
-            )}
-          </Button>
-        ) : null
-      }
     >
       <div className="ticket-container">
         {error && (
@@ -316,7 +305,29 @@ const DealSubmitForm: React.FC<Props> = ({
             </div>
           </div>
         ) : (
-          renderForm()
+          <>
+            {renderForm()}
+            <div style={{ marginTop: "20px", width: "100%" }}>
+              <Button
+                form="deal-form"
+                type="submit"
+                full
+                style={{
+                  padding: "14px 24px",
+                  fontSize: "16px",
+                  minHeight: "52px",
+                  minWidth: "500px",
+                  fontWeight: 600,
+                }}
+              >
+                {loading ? (
+                  <div className="loader" />
+                ) : (
+                  <span className="font-semibold">{submitText}</span>
+                )}
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </Container>

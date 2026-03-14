@@ -2,7 +2,6 @@ import * as React from "react";
 
 import { IconDeal } from "../../../icons/Icons";
 
-import Button from "../common/Button";
 import Container from "../common/Container";
 import { __ } from "../../../utils";
 import { connection } from "../../connection";
@@ -11,17 +10,13 @@ type Props = {
   loading: boolean;
   activeRoute: string;
   handleSubmit: (activeRoute: string) => void;
-  handleButtonClick: () => void;
 };
 
 const Deal: React.FC<Props> = ({
   loading,
   activeRoute,
   handleSubmit,
-  handleButtonClick,
 }) => {
-  const continueText = __("Continue");
-
   const renderSubmitForm = () => {
     const submitDealRoute = connection.data.customerId
       ? "deal-submit"
@@ -42,17 +37,10 @@ const Deal: React.FC<Props> = ({
 
   return (
     <Container
-      withBottomNavBar={true}
+      withBottomNavBar={false}
       title={__("Deal")}
       showBackButton={false}
       showZoomButton={false}
-      persistentFooter={
-        <div style={{ display: "none" }}>
-          <Button full onClick={handleButtonClick}>
-            <span className="font-semibold">{continueText}</span>
-          </Button>
-        </div>
-      }
     >
       <div className="ticket-container">
         {loading ? <div className="loader" /> : renderSubmitForm()}
