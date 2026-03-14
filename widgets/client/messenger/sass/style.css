@@ -4723,6 +4723,14 @@ select.form-control:focus,
   }
 }
 
+.ticket-container .deal-submit-button {
+  padding: 14px 24px;
+  font-size: 16px;
+  min-height: 52px;
+  min-width: 600px;
+  font-weight: 600;
+}
+
 .social-link {
   display: inline-block;
   outline: none;
@@ -4755,6 +4763,8 @@ select.form-control:focus,
   background: #fff;
   border-radius: 1rem;
   overflow: hidden;
+  padding-top: 8px;
+  box-sizing: border-box;
 }
 
 .container-content {
@@ -4770,6 +4780,7 @@ select.form-control:focus,
   display: flex;
   flex-shrink: 0;
   padding: 0 1.25rem;
+  padding-top: 4px;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;

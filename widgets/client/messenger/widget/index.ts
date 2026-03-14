@@ -299,12 +299,12 @@ window.addEventListener("message", async (event: MessageEvent) => {
       if (isVisible) {
         messengerIframeContainer.classList.add("erxes-messenger-shown");
         messengerIframeContainer.classList.remove("erxes-messenger-hidden");
-        // Deal mode: always use zoomed size (no zoom button)
+        // Deal mode: zoomed size, height up to 1200px; use 100vh - 92px to match bottom:92px so top is not clipped
         if (isDealMode) {
           messengerIframeContainer.style.width = `${ZOOMED_WIDTH_DEAL}px`;
-          messengerIframeContainer.style.height = "calc(100% - 104px)";
+          messengerIframeContainer.style.height = "min(1200px, calc(100vh - 92px))";
           messengerIframeContainer.style.maxWidth = "100%";
-          messengerIframeContainer.style.maxHeight = "calc(100% - 104px)";
+          messengerIframeContainer.style.maxHeight = "min(1200px, calc(100vh - 92px))";
           messengerIframeContainer.style.transition =
             "width 0.3s, height 0.3s, max-width 0.3s, max-height 0.3s";
         }
@@ -371,16 +371,20 @@ window.addEventListener("message", (event: MessageEvent) => {
           ? `${ZOOMED_WIDTH_DEAL}px`
           : `${ZOOMED_WIDTH_DEFAULT}px`;
         frameDiv.style.width = zoomedWidth;
-        frameDiv.style.height = "calc(100% - 104px)";
+        frameDiv.style.height = isDealMode
+          ? "min(1200px, calc(100vh - 92px))"
+          : "calc(100% - 104px)";
         frameDiv.style.maxWidth = "100%";
-        frameDiv.style.maxHeight = "calc(100% - 104px)";
+        frameDiv.style.maxHeight = isDealMode
+          ? "min(1200px, calc(100vh - 92px))"
+          : "calc(100% - 104px)";
         frameDiv.style.transition =
           "width 0.3s, height 0.3s, max-width 0.3s, max-height 0.3s";
       } else {
         frameDiv.style.width = "408px";
-        frameDiv.style.height = "min(704px, 100% - 104px)";
+        frameDiv.style.height = "min(1200px, 100% - 104px)";
         frameDiv.style.maxWidth = "408px";
-        frameDiv.style.maxHeight = "704px";
+        frameDiv.style.maxHeight = "1200px";
         frameDiv.style.transition = "";
       }
     }

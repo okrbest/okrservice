@@ -67,9 +67,9 @@ const Container: React.FC<Props> = ({
   const shouldShowTopBar = withTopBar || title || showZoomButton;
 
   return (
-    <div className="container">
+    <div className="container" style={{ paddingTop: 2, boxSizing: "border-box" }}>
       {shouldShowTopBar && (
-        <div className="top-nav-container" style={style}>
+        <div className="top-nav-container" style={{ ...style, paddingTop: 8 }}>
           <div className="top-nav" style={containerStyle}>
             {showBackButton && (
               <div className="icon" onClick={handleBackClick}>

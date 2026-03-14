@@ -18,6 +18,7 @@ const Button: React.FC<ButtonProps> = ({
   withDefaultStyle,
   type = "button",
   className,
+  style: styleProp,
   ...buttonProps
 }) => {
   const color = getColor();
@@ -44,7 +45,7 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      style={style}
+      style={{ ...style, ...styleProp }}
       className={buttonClassNames}
       type={type}
       {...buttonProps}
