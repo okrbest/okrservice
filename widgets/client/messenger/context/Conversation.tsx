@@ -76,10 +76,14 @@ export const ConversationProvider = ({
   const [isBrowserInfoSaved, setIsBrowserInfoSaved] = useState(false);
   const [browserInfo, setBrowserInfo] = useState<IBrowserInfo>({});
   const [activeConversationId, setActiveConversationId] = useState("");
-  // When "Show Deal button" is enabled, start with widget open (no launcher click needed)
+  // When "Show Deal button" is enabled and launcher is shown, start with widget open.
+  // When showLauncher is false (custom button), always start closed so publisher controls open via button.
   const showDealInitially =
     getDealData()?.dealToggle === true && !!getDealData()?.dealStageId;
-  const [isMessengerVisible, setIsMessengerVisible] = useState(showDealInitially);
+  const showLauncher = connection.setting?.showLauncher !== false;
+  const [isMessengerVisible, setIsMessengerVisible] = useState(
+    showDealInitially && showLauncher
+  );
   const [isSavingNotified, setIsSavingNotified] = useState(false);
   const [lastSentTypingInfo, setLastSentTypingInfo] = useState<
     string | undefined
@@ -129,11 +133,16 @@ export const ConversationProvider = ({
     saveBrowserInfo();
   }, [mutateSaveBrowserInfo, requestBrowserInfo]);
 
-  // When Show Deal is on: notify parent so widget appears open and launcher shows close icon
+  // Sync initial visibility with parent: open when deal+launcher, closed when custom button (showLauncher false)
   React.useEffect(() => {
     if (showDealInitially && isMessengerVisible) {
       postMessage("fromMessenger", "messenger", {
         isVisible: true,
+        isSmallContainer,
+      });
+    } else if (!isMessengerVisible) {
+      postMessage("fromMessenger", "messenger", {
+        isVisible: false,
         isSmallContainer,
       });
     }
@@ -212,15 +221,17 @@ export const ConversationProvider = ({
   };
 
   const toggle = (isVisible?: boolean) => {
+    const nextVisible =
+      typeof isVisible === "boolean" ? isVisible : !isMessengerVisible;
     // notify parent window launcher state
     postMessage("fromMessenger", "messenger", {
-      isVisible: !isMessengerVisible,
+      isVisible: nextVisible,
       isSmallContainer,
     });
 
-    setIsMessengerVisible(!isMessengerVisible);
+    setIsMessengerVisible(nextVisible);
 
-    if (activeRoute.includes("conversation")) {
+    if (nextVisible && activeRoute.includes("conversation")) {
       prepareOpenLastConversation();
     }
   };
