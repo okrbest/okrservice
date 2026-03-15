@@ -9,9 +9,12 @@ const MessageHandler = ({ children }: { children: React.ReactNode }) => {
     (event: MessageEvent) => {
       const { data } = event;
 
-      if (data?.fromPublisher && data.action === 'toggleMessenger') {
-        // Receive show messenger command from publisher
-        toggle();
+      if (data?.fromPublisher) {
+        if (data.action === 'toggleMessenger') {
+          toggle();
+        } else if (data.action === 'showMessenger') {
+          toggle(true);
+        }
       }
     },
     [toggle]
