@@ -26,6 +26,7 @@ type StageProps = {
   customFields?: any[];
   mailSentDateFieldId?: string | null;
   lastContactDateFieldId?: string | null;
+  fullHeight?: boolean;
 };
 
 type FinalStageProps = {
@@ -132,7 +133,8 @@ class ListGroupByContainer extends React.PureComponent<FinalStageProps, State> {
       options,
       customFields,
       mailSentDateFieldId,
-      lastContactDateFieldId
+      lastContactDateFieldId,
+      fullHeight
     } = this.props;
 
     if (itemsQuery.loading) {
@@ -167,6 +169,7 @@ class ListGroupByContainer extends React.PureComponent<FinalStageProps, State> {
         customFields={customFields}
         mailSentDateFieldId={mailSentDateFieldId}
         lastContactDateFieldId={lastContactDateFieldId}
+        fullHeight={fullHeight}
       />
     );
   }

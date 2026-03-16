@@ -40,6 +40,7 @@ type Props = {
   customFields?: any[];
   mailSentDateFieldId?: string | null;
   lastContactDateFieldId?: string | null;
+  fullHeight?: boolean;
 };
 
 const ListGroupBy = (props: Props) => {
@@ -165,14 +166,16 @@ const ListGroupBy = (props: Props) => {
     );
   };
 
-  const { groupType } = props;
+  const { groupType, fullHeight } = props;
 
   return (
-    <ListContainer>
+    <ListContainer $fullHeight={fullHeight}>
       <Header>
         <StageTitle>{renderHeader()}</StageTitle>
       </Header>
-      <ListBody onScroll={onScroll}>{renderTable()}</ListBody>
+      <ListBody $fullHeight={fullHeight} onScroll={onScroll}>
+        {renderTable()}
+      </ListBody>
       {groupType === "stage" && <Footer>{renderAddItemTrigger()}</Footer>}
     </ListContainer>
   );
