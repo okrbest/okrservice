@@ -13,6 +13,15 @@ import React from "react";
 import Spinner from "@erxes/ui/src/components/Spinner";
 import ViewGroupBy from "./ViewGroupBy";
 import { queries } from "../graphql";
+import styled from "styled-components";
+
+const ListWrapper = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
 
 type Props = {
   date?: IDateColumn;
@@ -71,13 +80,15 @@ function Board(props: Props & WrapperProps) {
 
   if (viewType === "list" || viewType === "gantt") {
     return (
-      <ViewGroupBy
-        key={pipeline._id}
-        options={options}
-        pipeline={pipeline}
-        queryParams={queryParams}
-        viewType={viewType}
-      />
+      <ListWrapper>
+        <ViewGroupBy
+          key={pipeline._id}
+          options={options}
+          pipeline={pipeline}
+          queryParams={queryParams}
+          viewType={viewType}
+        />
+      </ListWrapper>
     );
   }
 

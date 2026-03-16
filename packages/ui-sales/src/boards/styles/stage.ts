@@ -120,19 +120,41 @@ const Amount = styledTS<{ $unUsed: boolean }>(styled.ul)`
   }
 `;
 
-const ListContainer = styled.div`
+const ListContainer = styledTS<{ $fullHeight?: boolean }>(styled.div)`
   border: 1px solid rgb(238, 238, 238);
   border-radius: ${dimensions.unitSpacing - 4}px;
   margin: ${dimensions.coreSpacing}px ${dimensions.unitSpacing}px;
   transition: background-color 0.3s ease;
   box-shadow: 0px 0px 20px 2px rgb(0 0 0 / 10%);
+  ${(props) =>
+    props.$fullHeight &&
+    css`
+      flex: 1;
+      min-height: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+    `}
 `;
 
-export const ListBody = styled.div`
+export const ListBody = styled.div<{ $fullHeight?: boolean }>`
   overflow: auto;
   position: relative;
   overflow-y: overlay;
   max-height: 300px;
+  ${(props) =>
+    props.$fullHeight &&
+    css`
+      max-height: none;
+      flex: 1;
+      min-height: 0;
+      height: 100%;
+      display: block;
+    `}
 `;
 
 export const Footer = styled.div`

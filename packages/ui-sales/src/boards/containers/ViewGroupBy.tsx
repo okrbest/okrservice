@@ -9,7 +9,7 @@ import {
 } from "../types";
 import { gql } from "@apollo/client";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
-import { withProps } from "@erxes/ui/src/utils";
+import { router as routerUtils, withProps } from "@erxes/ui/src/utils";
 import { graphql } from "@apollo/client/react/hoc";
 import { queries } from "../graphql";
 import styled from "styled-components";
@@ -23,12 +23,128 @@ import { AllUsersQueryResponse } from "@erxes/ui/src/auth/types";
 import { queries as userQueries } from "@erxes/ui/src/team/graphql";
 import { FieldsGroupsQueryResponse } from "@erxes/ui-forms/src/settings/properties/types";
 import { queries as fieldQueries } from "@erxes/ui-forms/src/settings/properties/graphql";
+import { useLocation, useNavigate } from "react-router-dom";
+import { colors, dimensions } from "@erxes/ui/src/styles";
 
 const Container = styled.div`
   min-height: 500px;
   overflow: auto;
   background-color: white;
 `;
+
+const ListViewContainer = styled.div`
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: white;
+`;
+
+const ListViewFullHeightWrapper = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+const StageTabsWrapper = styled.div`
+  display: flex;
+  gap: 2px;
+  padding: 0 ${dimensions.coreSpacing}px ${dimensions.unitSpacing}px;
+  margin-bottom: ${dimensions.unitSpacing}px;
+  border-bottom: 1px solid ${colors.borderPrimary};
+  flex-shrink: 0;
+`;
+
+const StageTab = styled.button<{ $active?: boolean }>`
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: ${(props) =>
+    props.$active ? colors.colorSecondary : "transparent"};
+  color: ${(props) =>
+    props.$active ? colors.colorWhite : colors.textPrimary};
+  font-size: 13px;
+  font-weight: ${(props) => (props.$active ? 600 : 400)};
+  cursor: pointer;
+  &:hover {
+    background: ${(props) =>
+      props.$active ? colors.colorSecondary : colors.bgActive};
+  }
+`;
+
+type ListViewWithStagesProps = {
+  groups: any[];
+  groupType: string;
+  queryParams: any;
+  options: IOptions;
+  refetchStages: ({ pipelineId }: { pipelineId?: string }) => Promise<any>;
+  customFields?: any[];
+  mailSentDateFieldId?: string | null;
+  lastContactDateFieldId?: string | null;
+};
+
+function ListViewWithStages({
+  groups,
+  groupType,
+  queryParams,
+  options,
+  refetchStages,
+  customFields,
+  mailSentDateFieldId,
+  lastContactDateFieldId
+}: ListViewWithStagesProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const stageIds = groups.map((g) => g._id);
+  const currentStageId =
+    queryParams.stageId && stageIds.includes(queryParams.stageId)
+      ? queryParams.stageId
+      : stageIds[0];
+  const currentGroup = groups.find((g) => g._id === currentStageId) || groups[0];
+
+  return (
+    <ListViewContainer>
+      <StageTabsWrapper>
+        {groups.map((groupObj) => (
+          <StageTab
+            key={groupObj._id}
+            $active={groupObj._id === currentStageId}
+            onClick={() =>
+              routerUtils.setParams(navigate, location, {
+                stageId: groupObj._id
+              })
+            }
+          >
+            {groupObj.name}
+          </StageTab>
+        ))}
+      </StageTabsWrapper>
+      <ListViewFullHeightWrapper>
+        {currentGroup && (
+          <ListGroupBy
+            key={currentGroup._id}
+            options={options}
+            groupObj={currentGroup}
+            groupType={groupType}
+            index={0}
+            length={1}
+            queryParams={queryParams}
+            refetchStages={refetchStages}
+            customFields={customFields}
+            mailSentDateFieldId={mailSentDateFieldId}
+            lastContactDateFieldId={lastContactDateFieldId}
+            fullHeight
+          />
+        )}
+      </ListViewFullHeightWrapper>
+    </ListViewContainer>
+  );
+}
 
 type Props = {
   pipeline: IPipeline;
@@ -215,6 +331,22 @@ class WithStages extends Component<WithStagesProps> {
           type={options.type}
           groupType={groupType}
           groups={groups}
+        />
+      );
+    }
+
+    // 리스트 뷰 + 스테이지 그룹: 한 페이지에 한 스테이지만 표시, 탭으로 스테이지 전환
+    if (viewType === "list" && groupType === "stage") {
+      return (
+        <ListViewWithStages
+          groups={groups}
+          groupType={groupType}
+          queryParams={queryParams}
+          options={options}
+          refetchStages={stagesQuery.refetch}
+          customFields={customFields}
+          mailSentDateFieldId={mailSentDateFieldId}
+          lastContactDateFieldId={lastContactDateFieldId}
         />
       );
     }

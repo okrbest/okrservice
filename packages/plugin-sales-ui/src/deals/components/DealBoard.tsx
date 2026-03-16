@@ -10,6 +10,18 @@ import Header from "@erxes/ui/src/layout/components/Header";
 import React from "react";
 import DealMainActionBar from "./DealMainActionBar";
 import options from "@erxes/ui-sales/src/deals/options";
+import styled from "styled-components";
+
+const ListViewRoot = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  /* 리스트 박스가 아래 공간까지 꽉 차도록 뷰포트 기준 높이 강제 */
+  height: calc(100vh - 120px);
+  min-height: calc(100vh - 120px);
+`;
 
 type Props = {
   queryParams: any;
@@ -30,12 +42,37 @@ class DealBoard extends React.Component<Props> {
   }
 
   render() {
+    const { viewType } = this.props;
+    const isListView = viewType === "list";
+
     return (
-      <BoardContainer>
+      <BoardContainer
+        style={
+          isListView
+            ? {
+                height: "100vh",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden"
+              }
+            : undefined
+        }
+      >
         <Header title={__("Sales")} submenu={menuDeal} />
-        <BoardContent $transparent={true}>
+        <BoardContent
+          $transparent={true}
+          style={
+            isListView
+              ? { flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }
+              : undefined
+          }
+        >
           {this.renderActionBar()}
-          {this.renderContent()}
+          {isListView ? (
+            <ListViewRoot>{this.renderContent()}</ListViewRoot>
+          ) : (
+            this.renderContent()
+          )}
         </BoardContent>
       </BoardContainer>
     );
