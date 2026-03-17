@@ -18,8 +18,6 @@ import { TicketProvider } from "../context/Ticket";
 import client from "../../apollo-client";
 import { getMessengerData } from "../utils/util";
 
-// import "../sass/style.css";
-
 dayjs.extend(localizedFormat);
 dayjs.extend(relativeTime);
 

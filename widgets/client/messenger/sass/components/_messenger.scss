@@ -112,3 +112,11 @@
     box-shadow: 0 5px 20px 5px rgba(0, 0, 0, 0.1);
   }
 }
+
+// 모바일(420px 이하): 위젯 안쪽 콘텐츠를 90%로 축소
+@media screen and (max-width: 420px) {
+  .erxes-messenger {
+    transform: scale(0.9);
+    transform-origin: top center;
+  }
+}

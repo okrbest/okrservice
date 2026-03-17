@@ -299,14 +299,21 @@ window.addEventListener("message", async (event: MessageEvent) => {
       if (isVisible) {
         messengerIframeContainer.classList.add("erxes-messenger-shown");
         messengerIframeContainer.classList.remove("erxes-messenger-hidden");
-        // Deal mode: zoomed size, height up to 1200px; use 100vh - 92px to match bottom:92px so top is not clipped
-        if (isDealMode) {
+        // Deal mode: zoomed size on desktop; on mobile (≤420px) let CSS media query control size
+        const isNarrowViewport = window.innerWidth <= 420;
+        if (isDealMode && !isNarrowViewport) {
           messengerIframeContainer.style.width = `${ZOOMED_WIDTH_DEAL}px`;
           messengerIframeContainer.style.height = "min(1200px, calc(100vh - 92px))";
           messengerIframeContainer.style.maxWidth = "100%";
           messengerIframeContainer.style.maxHeight = "min(1200px, calc(100vh - 92px))";
           messengerIframeContainer.style.transition =
             "width 0.3s, height 0.3s, max-width 0.3s, max-height 0.3s";
+        } else if (isDealMode && isNarrowViewport) {
+          messengerIframeContainer.style.width = "";
+          messengerIframeContainer.style.height = "";
+          messengerIframeContainer.style.maxWidth = "";
+          messengerIframeContainer.style.maxHeight = "";
+          messengerIframeContainer.style.transition = "";
         }
         launcher.style.backgroundImage = "none";
         launcher.innerHTML = CLOSE_ICON_STRING;
@@ -365,7 +372,8 @@ window.addEventListener("message", (event: MessageEvent) => {
     const frameDiv = document.querySelector(
       ".erxes-messenger-shown"
     ) as HTMLElement | null;
-    if (frameDiv) {
+    const isNarrowViewport = window.innerWidth <= 420;
+    if (frameDiv && !isNarrowViewport) {
       if (data.zoom) {
         const zoomedWidth = isDealMode
           ? `${ZOOMED_WIDTH_DEAL}px`
@@ -387,6 +395,12 @@ window.addEventListener("message", (event: MessageEvent) => {
         frameDiv.style.maxHeight = "1200px";
         frameDiv.style.transition = "";
       }
+    } else if (frameDiv && isNarrowViewport) {
+      frameDiv.style.width = "";
+      frameDiv.style.height = "";
+      frameDiv.style.maxWidth = "";
+      frameDiv.style.maxHeight = "";
+      frameDiv.style.transition = "";
     }
   }
 });
