@@ -320,27 +320,6 @@ const DealSubmitForm: React.FC<Props> = ({
             >
               <div
                 style={{
-                  padding: "14px 16px",
-                  backgroundColor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "12px",
-                  marginBottom: "12px",
-                }}
-              >
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "13px",
-                    lineHeight: 1.6,
-                    color: "#475569",
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  개인정보는 서비스 제공, 고객 문의 처리, 본인 확인 등을 위해 성명, 연락처, 이메일이 수집·이용되며, 서비스 이용기간 내 보관됩니다. 동의를 거부하실 수 있으며, 거부 시 서비스 이용이 제한될 수 있습니다.
-                </p>
-              </div>
-              <div
-                style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
@@ -363,7 +342,17 @@ const DealSubmitForm: React.FC<Props> = ({
                     userSelect: "none",
                   }}
                 >
-                  위 내용에 동의합니다
+                  (필수){" "}
+                  <a
+                    href="https://5240.cloud/%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%ec%b2%98%eb%a6%ac%eb%b0%a9%ec%b9%a8/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ color: "#4f33af", textDecoration: "underline" }}
+                  >
+                    개인정보 처리방침
+                  </a>
+                  에 동의합니다.
                 </label>
               </div>
             </div>
@@ -384,6 +373,28 @@ const DealSubmitForm: React.FC<Props> = ({
                 {error}
               </div>
             )}
+            <p
+              style={{
+                marginTop: 0,
+                marginBottom: "14px",
+                fontSize: "12px",
+                color: "#94a3b8",
+                lineHeight: 1.5,
+                textAlign: "left",
+                width: "100%",
+              }}
+            >
+              ✼ 본 양식을 제출하실 경우,{" "}
+              <a
+                href="https://5240.cloud/%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%ec%b2%98%eb%a6%ac%eb%b0%a9%ec%b9%a8/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#4f33af", textDecoration: "underline" }}
+              >
+                개인정보 처리방침
+              </a>
+              에 모두 동의하신 것으로 간주됩니다.
+            </p>
             <div
               style={{
                 width: "calc(100% + 24px)",
