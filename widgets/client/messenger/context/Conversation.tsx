@@ -234,6 +234,14 @@ export const ConversationProvider = ({
     if (nextVisible && activeRoute.includes("conversation")) {
       prepareOpenLastConversation();
     }
+    // 딜 모드: 위젯을 열 때 문의&데모신청 선택 화면이 아니라 폼이 바로 보이도록
+    if (nextVisible) {
+      const dealData = getDealData();
+      const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
+      if (showDeal && activeRoute === "deal") {
+        setRoute("deal-submit");
+      }
+    }
   };
 
   const prepareOpenLastConversation = () => {

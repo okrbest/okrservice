@@ -86,14 +86,10 @@ const DealSubmitContainer = (props: Props) => {
       const { widgetDealCreated } = data || {};
 
       if (widgetDealCreated?._id) {
-        setDealId(widgetDealCreated._id);
-        setIsSubmitted(true);
         setError(null);
-        // 제출 완료 알림 후 위젯 닫기
-        setTimeout(() => {
-          window.alert("제출이 완료되었습니다. 감사합니다.");
-          toggle();
-        }, 100);
+        // 제출 완료 알림 후 위젯만 닫기 (성공 화면·문의&데모신청 화면 없이)
+        window.alert("제출이 완료되었습니다. 감사합니다.");
+        toggle();
       }
     },
     onError(err) {
