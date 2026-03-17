@@ -43,6 +43,7 @@ const DealSubmitContainer = (props: Props) => {
     closeDate: "",
   });
   const [customFieldsData, setCustomFieldsData] = React.useState<Record<string, any>>({});
+  const [agreePrivacy, setAgreePrivacy] = React.useState(false);
 
   const {
     data: customer,
@@ -161,6 +162,12 @@ const DealSubmitContainer = (props: Props) => {
     e.preventDefault();
     setError(null); // Clear previous error on new submission
 
+    // 개인정보 수집/제공 동의 필수
+    if (!agreePrivacy) {
+      setError("개인정보 수집/제공에 동의해 주세요.");
+      return;
+    }
+
     // 필수 커스텀 필드 검증
     if (requiredCustomFieldIds.length > 0 && customFields.length > 0) {
       const missing = requiredCustomFieldIds.filter((fieldId: string) => {
@@ -240,6 +247,8 @@ const DealSubmitContainer = (props: Props) => {
       handleButtonClick={onButtonClick}
       handleFiles={setFiles}
       customerLoading={customerId ? customerLoading : false}
+      agreePrivacy={agreePrivacy}
+      onAgreePrivacyChange={setAgreePrivacy}
     />
   );
 };
