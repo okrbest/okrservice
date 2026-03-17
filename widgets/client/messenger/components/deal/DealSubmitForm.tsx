@@ -24,6 +24,8 @@ type Props = {
   handleCustomFieldChange?: (fieldId: string, value: any) => void;
   handleButtonClick: () => void;
   handleFiles: (files: any) => void;
+  agreePrivacy?: boolean;
+  onAgreePrivacyChange?: (checked: boolean) => void;
 };
 
 const DealSubmitForm: React.FC<Props> = ({
@@ -41,6 +43,8 @@ const DealSubmitForm: React.FC<Props> = ({
   handleCustomFieldChange,
   handleFiles,
   handleButtonClick,
+  agreePrivacy = false,
+  onAgreePrivacyChange,
 }) => {
   const submitText = __("Submit");
   const { email, firstName, companyName, phone } = formData;
@@ -307,7 +311,86 @@ const DealSubmitForm: React.FC<Props> = ({
         ) : (
           <>
             {renderForm()}
-            <div style={{ marginTop: "20px", width: "100%" }}>
+            <div
+              style={{
+                marginTop: "20px",
+                width: "100%",
+                marginBottom: "12px",
+              }}
+            >
+              <div
+                style={{
+                  padding: "14px 16px",
+                  backgroundColor: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "12px",
+                  marginBottom: "12px",
+                }}
+              >
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "13px",
+                    lineHeight: 1.6,
+                    color: "#475569",
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  개인정보는 서비스 제공, 고객 문의 처리, 본인 확인 등을 위해 성명, 연락처, 이메일이 수집·이용되며, 서비스 이용기간 내 보관됩니다. 동의를 거부하실 수 있으며, 거부 시 서비스 이용이 제한될 수 있습니다.
+                </p>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  id="agree-privacy"
+                  checked={agreePrivacy}
+                  onChange={(e) => onAgreePrivacyChange?.(e.target.checked)}
+                  style={{ width: "18px", height: "18px", cursor: "pointer", flexShrink: 0 }}
+                />
+                <label
+                  htmlFor="agree-privacy"
+                  style={{
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "#334155",
+                    userSelect: "none",
+                  }}
+                >
+                  위 내용에 동의합니다
+                </label>
+              </div>
+            </div>
+            {error && (
+              <div
+                className="error-message"
+                style={{
+                  width: "90%",
+                  padding: "12px 16px",
+                  marginBottom: "12px",
+                  backgroundColor: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: "8px",
+                  color: "#dc2626",
+                  fontSize: "14px",
+                }}
+              >
+                {error}
+              </div>
+            )}
+            <div
+              style={{
+                width: "calc(100% + 24px)",
+                maxWidth: "calc(100% + 24px)",
+                margin: "0 -12px",
+              }}
+            >
               <Button
                 form="deal-form"
                 type="submit"
@@ -316,7 +399,7 @@ const DealSubmitForm: React.FC<Props> = ({
                   padding: "14px 24px",
                   fontSize: "16px",
                   minHeight: "52px",
-                  minWidth: "500px",
+                  maxWidth: "100%",
                   fontWeight: 600,
                 }}
               >
