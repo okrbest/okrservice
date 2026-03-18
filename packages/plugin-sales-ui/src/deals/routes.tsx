@@ -37,7 +37,8 @@ const Conversation = asyncComponent(
 );
 
 const Deals = () => {
-  let view = localStorage.getItem("dealView") || "board";
+  // 메인 네비에서 /deal 진입 시 항상 리스트 우선 (localStorage dealView는 보드 등에서 마지막 탭으로 덮어써져서 무시)
+  const view = "list";
   let dealsLink = `/deal/${view}`;
 
   const { defaultBoards, defaultPipelines } = getDefaultBoardAndPipelines();

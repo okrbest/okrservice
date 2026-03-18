@@ -192,7 +192,7 @@ function Main(props: FinalProps) {
       JSON.stringify(defaultPipelines)
     );
 
-    navigate(`/${type}/board`);
+    navigate(type === "deal" ? "/deal/list" : `/${type}/board`);
     return null;
   }
 
