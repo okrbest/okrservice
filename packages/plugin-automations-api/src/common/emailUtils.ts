@@ -847,12 +847,42 @@ export const handleEmail = async ({
       }
     }
 
+    let targetForLog = target;
+    if (
+      triggerType?.includes('ticket') &&
+      target?._id &&
+      !target?.name
+    ) {
+      try {
+        const ticket = await sendCommonMessage({
+          subdomain,
+          serviceName: 'tickets',
+          action: 'tickets.findOne',
+          data: { _id: target._id },
+          isRPC: true,
+          defaultValue: null
+        });
+        if (ticket?.name) {
+          targetForLog = { ...target, name: ticket.name };
+        }
+      } catch (e) {
+        debugError('triggerSummary ticket lookup:', e);
+      }
+    }
+
+    const triggerSummary = buildAutomationTriggerSummary(
+      triggerType,
+      targetForLog
+    );
+
     const responses = await sendEmails({
       subdomain,
       params,
       customerMapByEmail, // 미리 조회한 고객 정보 맵 전달
       targetCompanyMap, // target.companyIds에서 조회한 회사 정보 맵 전달
-      targetCompanyIds // target.companyIds 전달
+      targetCompanyIds, // target.companyIds 전달
+      triggerType: triggerType || '',
+      triggerSummary
     });
     
     await setActivityLog({
@@ -953,18 +983,62 @@ const createTransporter = async ({ ses }, configs) => {
   });
 };
 
+/** 자동화 이메일 로그용: 어떤 대상(티켓 제목 등) 때문에 발송됐는지 한 줄 요약 */
+const buildAutomationTriggerSummary = (
+  triggerType: string | undefined,
+  target: any
+): string => {
+  if (!target && !triggerType) {
+    return '';
+  }
+  const tt = triggerType || '';
+  const title =
+    target?.name ||
+    target?.subject ||
+    target?.title ||
+    target?.primaryName ||
+    (Array.isArray(target?.names) ? target.names[0] : '') ||
+    '';
+
+  if (tt.includes('ticket')) {
+    return title ? `티켓 · ${title}` : '티켓';
+  }
+  if (tt.includes('deal') || tt.startsWith('sales:')) {
+    return title ? `딜 · ${title}` : '딜';
+  }
+  if (tt.includes('customer') || tt.includes('contacts:')) {
+    const nm = [target?.firstName, target?.lastName].filter(Boolean).join(' ');
+    const label = nm || target?.primaryEmail || target?.email;
+    return label ? `고객 · ${label}` : '고객';
+  }
+  if (tt.includes('company') || tt.includes('companies:')) {
+    return title ? `회사 · ${title}` : '회사';
+  }
+  if (tt.includes('lead')) {
+    return title ? `리드 · ${title}` : '리드';
+  }
+  if (title) {
+    return `${tt || '자동화'} · ${String(title).slice(0, 120)}`;
+  }
+  return tt || '자동화 이메일';
+};
+
 const sendEmails = async ({
   subdomain,
   params,
   customerMapByEmail = {},
   targetCompanyMap = {},
-  targetCompanyIds = []
+  targetCompanyIds = [],
+  triggerType = '',
+  triggerSummary = ''
 }: {
   subdomain: string;
   params: any;
   customerMapByEmail?: { [email: string]: any };
   targetCompanyMap?: { [companyId: string]: string };
   targetCompanyIds?: string[];
+  triggerType?: string;
+  triggerSummary?: string;
 }) => {
   const { toEmails = [], fromEmail, title, customHtml, attachments } = params;
 
@@ -1028,24 +1102,29 @@ const sendEmails = async ({
     };
     let headers: { [key: string]: string } = {};
 
+    let pendingDeliveryId: string | null = null;
     if (!!AWS_SES_ACCESS_KEY_ID?.length && !!AWS_SES_SECRET_ACCESS_KEY.length) {
       const emailDelivery = await sendCoreMessage({
         subdomain,
         action: 'emailDeliveries.create',
         data: {
-          kind: 'transaction',
-          to: toEmail,
-          from: fromEmail,
+          kind: 'automation',
+          to: [toEmail],
+          from: fromAddress || fromEmail || '',
           subject: title,
-          body: customHtml,
-          status: 'pending'
+          body: customHtml || '',
+          status: 'pending',
+          triggerType: triggerType || undefined,
+          triggerSummary: triggerSummary || undefined
         },
         isRPC: true
       });
 
+      pendingDeliveryId = emailDelivery?._id || null;
+
       headers = {
         'X-SES-CONFIGURATION-SET': AWS_SES_CONFIG_SET || 'erxes',
-        EmailDeliveryId: emailDelivery && emailDelivery._id
+        EmailDeliveryId: pendingDeliveryId || ''
       };
     } else {
       headers['X-SES-CONFIGURATION-SET'] = 'erxes';
@@ -1057,9 +1136,41 @@ const sendEmails = async ({
       throw new Error(`"From" email address is missing: ${mailOptions.from}`);
     }
 
+    const logAutomationDelivery = async (status: 'received' | 'failed') => {
+      if (pendingDeliveryId) {
+        await sendCoreMessage({
+          subdomain,
+          action: 'emailDeliveries.updateStatus',
+          data: { _id: pendingDeliveryId, status },
+          isRPC: true
+        });
+        return;
+      }
+      await sendCoreMessage({
+        subdomain,
+        action: 'emailDeliveries.create',
+        data: {
+          kind: 'automation',
+          to: [toEmail],
+          from: fromAddress || fromEmail || '',
+          subject: title,
+          body: customHtml || '',
+          status,
+          triggerType: triggerType || undefined,
+          triggerSummary: triggerSummary || undefined
+        },
+        isRPC: true
+      });
+    };
+
     try {
       const info = await transporter.sendMail(mailOptions);
-      
+      try {
+        await logAutomationDelivery('received');
+      } catch (logErr) {
+        debugError('automation email delivery log (received):', logErr);
+      }
+
       // 먼저 미리 조회한 고객 정보 맵에서 확인
       let customerInfo = customerMapByEmail[toEmail] || null;
       
@@ -1205,6 +1316,11 @@ const sendEmails = async ({
       
       responses.push(responseItem);
     } catch (error) {
+      try {
+        await logAutomationDelivery('failed');
+      } catch (logErr) {
+        debugError('automation email log failed:', logErr);
+      }
       // 에러가 발생해도 고객 정보는 포함
       const errorResponse: any = { fromEmail, toEmail, error };
       
