@@ -66,7 +66,7 @@ const Home: React.FC<Props> = ({
 
   const handleHideWidget = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    toggle(true);
+    toggle(false);
   };
 
   const renderGreetings = () => (

@@ -20,13 +20,15 @@ const App: React.FC<Props> = ({ showLauncher }) => {
 
   const handleHideWidget = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    toggle(true);
+    event.stopPropagation();
+    toggle(false);
   };
-  
+
   return isMessengerVisible ? (
     <div className="erxes-messenger">
       {isMobile && (
-        <button 
+        <button
+          type="button"
           className="mobile-close-button"
           onClick={handleHideWidget}
           aria-label="닫기"
