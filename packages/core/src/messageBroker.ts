@@ -910,6 +910,18 @@ export const setupMessageConsumers = async (): Promise<void> => {
     }
   );
 
+  consumeRPCQueue(
+    "core:emailDeliveries.updateStatus",
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+      const { _id, status } = data || {};
+      if (_id && status) {
+        await models.EmailDeliveries.updateEmailDeliveryStatus(_id, status);
+      }
+      return { status: "success" };
+    }
+  );
+
   //segments
 
   consumeRPCQueue("core:segmentFindOne", async ({ subdomain, data }) => {

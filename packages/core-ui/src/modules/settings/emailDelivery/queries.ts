@@ -16,6 +16,27 @@ const transactionEmailDeliveries = `
   }
 `;
 
+const automationEmailDeliveries = `
+  query automationEmailDeliveries($searchValue: String, $page: Int, $perPage: Int) {
+    automationEmailDeliveries(searchValue: $searchValue, page: $page, perPage: $perPage) {
+      totalCount
+      list {
+        _id
+        subject
+        to
+        cc
+        bcc
+        from
+        status
+        body
+        triggerSummary
+        triggerType
+        createdAt
+      }
+    }
+  }
+`;
+
 const engageReportsList = `
   query engageReportsList($page: Int, $perPage: Int, $customerId: String, $status: String, $searchValue: String) {
     engageReportsList(page: $page, perPage: $perPage, customerId: $customerId, status: $status, searchValue: $searchValue) {
@@ -40,5 +61,6 @@ const engageReportsList = `
 
 export default {
   engageReportsList,
-  transactionEmailDeliveries
+  transactionEmailDeliveries,
+  automationEmailDeliveries
 };

@@ -88,6 +88,36 @@ export default function Row(props: Props) {
     );
   }
 
+  if (emailType === EMAIL_TYPES.AUTOMATION) {
+    const raw = (item.body || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    const preview =
+      raw.length > 160 ? `${raw.slice(0, 160)}…` : raw || "-";
+    const ctx =
+      (item as { triggerSummary?: string }).triggerSummary ||
+      (item as { triggerType?: string }).triggerType ||
+      "-";
+    return (
+      <RowWrapper key={item._id}>
+        <td style={{ maxWidth: 280 }} title={ctx}>
+          {ctx}
+        </td>
+        <td>{item.subject || "-"}</td>
+        {getMails(item.to)}
+        <td>
+          <Label lblStyle="primary">{item.status || "-"}</Label>
+        </td>
+        <td style={{ maxWidth: 320 }} title={raw}>
+          {preview}
+        </td>
+        <td>
+          <DateWrapper>
+            {dayjs(item.createdAt).format("LLL") || "-"}
+          </DateWrapper>
+        </td>
+      </RowWrapper>
+    );
+  }
+
   let title: React.ReactNode = <span>-</span>;
 
   if (item.engage) {

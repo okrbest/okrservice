@@ -21,21 +21,52 @@ const emailDeliveryQueries = {
     const selector: any = { kind: "transaction" };
 
     if (searchValue) {
+      const re = new RegExp(searchValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
       selector.$or = [
-        { from: { $regex: new RegExp(searchValue) } },
-        { subject: { $regex: new RegExp(searchValue) } },
-        { to: { $regex: new RegExp(searchValue) } }
+        { from: re },
+        { subject: re },
+        { to: re }
       ];
     }
 
     const totalCount = await models.EmailDeliveries.countDocuments(selector);
 
-    return {
-      list: paginate(models.EmailDeliveries.find(selector), params).sort({
-        createdAt: -1
-      }),
-      totalCount
-    };
+    const list = await paginate(
+      models.EmailDeliveries.find(selector).sort({ createdAt: -1 }),
+      params
+    ).lean();
+
+    return { list, totalCount };
+  },
+
+  async automationEmailDeliveries(
+    _root,
+    {
+      searchValue,
+      ...params
+    }: { searchValue: string; page: number; perPage: number },
+    { models }: IContext
+  ) {
+    const selector: any = { kind: "automation" };
+
+    if (searchValue) {
+      const re = new RegExp(searchValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      selector.$or = [
+        { from: re },
+        { subject: re },
+        { to: re },
+        { triggerSummary: re }
+      ];
+    }
+
+    const totalCount = await models.EmailDeliveries.countDocuments(selector);
+
+    const list = await paginate(
+      models.EmailDeliveries.find(selector).sort({ createdAt: -1 }),
+      params
+    ).lean();
+
+    return { list, totalCount };
   },
   async emailDeliveriesAsLogs(
     _root,
@@ -56,6 +87,7 @@ const emailDeliveryQueries = {
 
 requireLogin(emailDeliveryQueries, "emailDeliveryDetail");
 requireLogin(emailDeliveryQueries, "transactionEmailDeliveries");
+requireLogin(emailDeliveryQueries, "automationEmailDeliveries");
 requireLogin(emailDeliveryQueries, "emailDeliveriesAsLogs");
 
 export default emailDeliveryQueries;

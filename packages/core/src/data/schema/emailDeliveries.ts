@@ -15,6 +15,8 @@ export const types = `
     createdAt: Date
     fromUser: User
     fromEmail: String
+    triggerSummary: String
+    triggerType: String
   }
 
   type EmailDeliveryList {
@@ -26,5 +28,6 @@ export const types = `
 export const queries = `
   emailDeliveryDetail(_id: String): EmailDelivery 
   transactionEmailDeliveries(searchValue: String, page: Int, perPage: Int): EmailDeliveryList
+  automationEmailDeliveries(searchValue: String, page: Int, perPage: Int): EmailDeliveryList
   emailDeliveriesAsLogs(contentId: String!): [JSON]
 `;

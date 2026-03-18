@@ -21,6 +21,9 @@ export interface IEmailDeliveries {
   userId?: string;
   customerId?: string;
   status?: string;
+  /** 자동화: 어떤 대상(티켓 제목 등) 때문에 발송됐는지 */
+  triggerSummary?: string;
+  triggerType?: string;
 }
 
 export interface IEmailDeliveriesDocument extends IEmailDeliveries, Document {
@@ -30,7 +33,8 @@ export interface IEmailDeliveriesDocument extends IEmailDeliveries, Document {
 export const EMAIL_DELIVERY_STATUS = {
   PENDING: "pending",
   RECEIVED: "received",
-  ALL: ["pending", "received"]
+  FAILED: "failed",
+  ALL: ["pending", "received", "failed"]
 };
 
 export const emailDeliveriesSchema = new Schema({
@@ -49,5 +53,7 @@ export const emailDeliveriesSchema = new Schema({
   status: field({
     type: String,
     enum: EMAIL_DELIVERY_STATUS.ALL
-  })
+  }),
+  triggerSummary: field({ type: String, optional: true }),
+  triggerType: field({ type: String, optional: true })
 });

@@ -9,89 +9,110 @@ import { isEnabled } from "@erxes/ui/src/utils/core";
 import { useLocation, useNavigate } from "react-router-dom";
 
 type Props = {
-  queryParams: Record<string, string>;
+  queryParams: Record<string, string | string[] | undefined>;
 };
 
 export const EMAIL_TYPES = {
   TRANSACTION: "transaction",
+  AUTOMATION: "automation",
   ENGAGE: "engage",
 };
+
+function firstParam(v: string | string[] | undefined): string {
+  if (Array.isArray(v)) return String(v[0] || "");
+  return String(v || "");
+}
 
 function EmailDeliveryContainer(props: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const { queryParams } = props;
 
-  const [emailType, setEmailType] = React.useState(
-    queryParams.emailType || EMAIL_TYPES.TRANSACTION
-  );
+  const rawType = firstParam(queryParams.emailType);
+  const emailType =
+    rawType === EMAIL_TYPES.AUTOMATION
+      ? EMAIL_TYPES.AUTOMATION
+      : rawType === EMAIL_TYPES.ENGAGE
+        ? EMAIL_TYPES.ENGAGE
+        : EMAIL_TYPES.TRANSACTION;
 
-  const [status, setStatus] = React.useState(
-    queryParams.emailType === EMAIL_TYPES.ENGAGE ? queryParams.status : ''
-  );
+  const status = firstParam(queryParams.status);
 
-  React.useEffect(() => {
-    const qp = { emailType: emailType || "", status: status || "" };
-
-    router.setParams(navigate, location, qp);
-  }, [location, emailType, status]);
+  const isAutomation = emailType === EMAIL_TYPES.AUTOMATION;
 
   const transactionResponse = useQuery(
     gql(queries.transactionEmailDeliveries),
     {
       variables: {
-        searchValue: queryParams.searchValue,
-        ...generatePaginationParams(queryParams),
+        searchValue: firstParam(queryParams.searchValue),
+        ...generatePaginationParams(queryParams as Record<string, string>),
       },
+      skip: isAutomation || emailType === EMAIL_TYPES.ENGAGE,
     }
   );
 
+  const automationResponse = useQuery(gql(queries.automationEmailDeliveries), {
+    variables: {
+      searchValue: firstParam(queryParams.searchValue),
+      ...generatePaginationParams(queryParams as Record<string, string>),
+    },
+    skip: !isAutomation,
+  });
+
   const engageReportsListResponse = useQuery(gql(queries.engageReportsList), {
     variables: {
-      status: queryParams.status,
-      customerId: queryParams.customerId,
-      ...generatePaginationParams(queryParams),
-      searchValue: queryParams.searchValue,
+      status: firstParam(queryParams.status),
+      customerId: firstParam(queryParams.customerId),
+      ...generatePaginationParams(queryParams as Record<string, string>),
+      searchValue: firstParam(queryParams.searchValue),
     },
-    skip: isEnabled("engages") ? false : true,
+    skip:
+      !isEnabled("engages") || emailType !== EMAIL_TYPES.ENGAGE,
   });
 
   const handleSelectEmailType = (type: string) => {
-    setEmailType(type);
-    setStatus("");
-
-    if (type === EMAIL_TYPES.TRANSACTION) {
-      return router.removeParams(
+    if (type === EMAIL_TYPES.ENGAGE) {
+      router.removeParams(
         navigate,
         location,
         "page",
         "perPage",
-        "searchValue",
-        "status"
+        "searchValue"
       );
+      return router.setParams(navigate, location, {
+        emailType: type,
+        status: "",
+      });
     }
-
-    return router.removeParams(
+    router.removeParams(
       navigate,
       location,
       "page",
       "perPage",
-      "searchValue"
+      "searchValue",
+      "status"
     );
+    return router.setParams(navigate, location, {
+      emailType: type,
+      page: "1",
+    });
   };
 
   const handleSelectStatus = (emailStatus: string) => {
-    setStatus(emailStatus);
-
     return router.setParams(navigate, location, {
       status: emailStatus,
-      emailType,
+      emailType: EMAIL_TYPES.ENGAGE,
     });
   };
 
   const transactionData = transactionResponse.data || {};
   const emailDeliveries = transactionData.transactionEmailDeliveries || {};
   const emailDeliveriesLoading = transactionResponse.loading;
+
+  const automationData = automationResponse.data || {};
+  const automationDeliveries =
+    automationData.automationEmailDeliveries || {};
+  const automationLoading = automationResponse.loading;
 
   const engageReportsListData = engageReportsListResponse.data || {};
   const reportsList = engageReportsListData.engageReportsList || {};
@@ -105,6 +126,10 @@ function EmailDeliveryContainer(props: Props) {
     list = emailDeliveries.list || [];
     count = emailDeliveries.totalCount || 0;
     loading = emailDeliveriesLoading;
+  } else if (emailType === EMAIL_TYPES.AUTOMATION) {
+    list = automationDeliveries.list || [];
+    count = automationDeliveries.totalCount || 0;
+    loading = automationLoading;
   } else {
     list = reportsList.list || [];
     count = reportsList.totalCount || 0;
@@ -118,7 +143,7 @@ function EmailDeliveryContainer(props: Props) {
     loading,
     emailType,
     handleSelectEmailType,
-    searchValue: queryParams.searchValue || "",
+    searchValue: firstParam(queryParams.searchValue),
     handleSelectStatus,
     status,
   };

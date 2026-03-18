@@ -201,7 +201,7 @@ export default class NavigationGoto extends React.Component<Props, State> {
                   className={this.state.cursor === index ? " active" : ""}
                 >
                   <i className={item.icon} />
-                  <p>{item.text}</p>
+                  <p>{__(item.text)}</p>
                   <span>{item.name}</span>
                 </GotoItem>
               </NavLink>
@@ -239,7 +239,7 @@ export default class NavigationGoto extends React.Component<Props, State> {
                     }
                   >
                     <i className={plugin.icon} />
-                    <p>{plugin.text}</p>
+                    <p>{__(plugin.text)}</p>
                     <span>{plugin.name}</span>
                   </GotoItem>
                 </NavLink>
@@ -288,7 +288,7 @@ export default class NavigationGoto extends React.Component<Props, State> {
                 >
                   <GotoItem className={cursor === index ? " active" : ""}>
                     <i className={icon} />
-                    <p>{text}</p>
+                    <p>{__(text)}</p>
                     <span>{name}</span>
                   </GotoItem>
                 </NavLink>

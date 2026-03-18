@@ -10,8 +10,8 @@ import Wrapper from "@erxes/ui/src/layout/components/Wrapper";
 import { BarItems } from "@erxes/ui/src/layout/styles";
 import * as React from "react";
 import Select, { OnChangeValue } from "react-select";
-import { EMAIL_TYPES } from "../containers/EmailDelivery";
 import Row from "./Row";
+import { EMAIL_TYPES } from "../containers/EmailDelivery";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 import { FlexRow } from "@erxes/ui-settings/src/styles";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -35,11 +35,20 @@ const breadcrumb = [
 
 const emailTypeOptions = [
   { value: "transaction", label: __("Transaction") },
+  { value: "automation", label: __("Automation email logs") },
   { value: "engage", label: __("SES Engage") },
 ];
 
 const tableHeaders = {
   transaction: ["Subject", "To", "Cc", "Bcc", "From", "Status", "Created at"],
+  automation: [
+    __("Sending basis"),
+    __("Subject"),
+    "To",
+    "Status",
+    __("Content preview"),
+    "Created at",
+  ],
   engage: ["Customer", "Email", "Title", "Status", "Created at"],
 };
 
@@ -127,7 +136,13 @@ function EmailDelivery({
   }
 
   function renderActionBar() {
-    const isTransaction = emailType === EMAIL_TYPES.TRANSACTION;
+    const isTransactionLike =
+      emailType === EMAIL_TYPES.TRANSACTION ||
+      emailType === EMAIL_TYPES.AUTOMATION;
+
+    const selectOptions = isEnabled("engages")
+      ? emailTypeOptions
+      : emailTypeOptions.filter((o) => o.value !== "engage");
 
     const content = (
       <BarItems>
@@ -140,18 +155,16 @@ function EmailDelivery({
           />
 
           <React.Fragment>
-            {isEnabled("engages") && (
-              <Select
-                placeholder={__("Choose Email type")}
-                value={emailTypeOptions.find(
-                  (option) => option.value === emailType
-                )}
-                options={emailTypeOptions}
-                onChange={handleEmailtype}
-                isClearable={false}
-              />
-            )}
-            {isTransaction ? null : (
+            <Select
+              placeholder={__("Choose Email type")}
+              value={selectOptions.find(
+                (option) => option.value === emailType
+              )}
+              options={selectOptions}
+              onChange={handleEmailtype}
+              isClearable={false}
+            />
+            {isTransactionLike ? null : (
               <Select
                 placeholder={__("Choose status")}
                 value={STATUS_OPTIONS.find((option) => option.value === status)}
