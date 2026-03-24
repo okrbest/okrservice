@@ -522,7 +522,7 @@ export const getUserAvatar = (user: IUserDoc, width?: number) => {
     return "/images/avatar-colored.svg";
   }
 
-  return readFile(details.avatar, width);
+  return readFile(details.avatar, width, true);
 };
 export function withProps<IProps>(
   Wrapped: new (props: IProps) => React.Component<IProps>

@@ -83,7 +83,7 @@ const content = (option: IOption): React.ReactNode => (
     <Avatar
       src={
         option.avatar
-          ? readFile(option.avatar, 40)
+          ? readFile(option.avatar, 40, true)
           : "/images/avatar-colored.svg"
       }
     />

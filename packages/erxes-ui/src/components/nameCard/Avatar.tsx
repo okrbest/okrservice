@@ -92,7 +92,7 @@ class Avatar extends React.Component<Props> {
 
     return (
       <AvatarImage
-        image={readFile(src, size && size * 2)}
+        image={readFile(src, size && size * 2, true)}
         style={this.generateStyle(size)}
       />
     );

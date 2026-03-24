@@ -78,7 +78,7 @@ const RespondBoxContainer = (props: FinalProps) => {
         avatar:
           user.details &&
           user.details.avatar &&
-          readFile(user.details.avatar, 44),
+          readFile(user.details.avatar, 44, true),
       });
     }
     return mentionUsers;

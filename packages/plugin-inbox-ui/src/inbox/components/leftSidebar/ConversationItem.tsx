@@ -180,7 +180,7 @@ const ConversationItem: React.FC<Props> = (props) => {
                     src={
                       assignedUser.details &&
                       (assignedUser.details.avatar
-                        ? readFile(assignedUser.details.avatar, 36)
+                        ? readFile(assignedUser.details.avatar, 36, true)
                         : "/images/avatar-colored.svg")
                     }
                   />
