@@ -73,12 +73,6 @@ export const GENERAL_SETTINGS = [
   },
   {
     name: 'General Settings',
-    text: 'Email Delivery Logs',
-    icon: 'icon-fast-mail',
-    url: '/settings/emailDelivery',
-  },
-  {
-    name: 'General Settings',
     text: 'Automation email logs',
     icon: 'icon-circular',
     url: '/settings/emailDelivery?emailType=automation',

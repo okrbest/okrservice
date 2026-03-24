@@ -2,11 +2,15 @@ import { gql } from "@apollo/client";
 import { router } from "@erxes/ui/src/utils";
 import { generatePaginationParams } from "@erxes/ui/src/utils/router";
 import * as React from "react";
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import EmailDelivery from "../components/EmailDelivery";
 import queries from "../queries";
+import mutations from "../mutations";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 import { useLocation, useNavigate } from "react-router-dom";
+import Alert from "@erxes/ui/src/utils/Alert/index";
+import confirm from "@erxes/ui/src/utils/confirmation/confirm";
+import { __ } from "coreui/utils";
 
 type Props = {
   queryParams: Record<string, string | string[] | undefined>;
@@ -69,6 +73,27 @@ function EmailDeliveryContainer(props: Props) {
     skip:
       !isEnabled("engages") || emailType !== EMAIL_TYPES.ENGAGE,
   });
+
+  const [removeEmailDeliveryMutation] = useMutation(
+    gql(mutations.removeEmailDelivery)
+  );
+
+  const handleRemoveEmailDelivery = (_id: string) => {
+    confirm(__("Are you sure you want to delete this email log?")).then(() => {
+      removeEmailDeliveryMutation({ variables: { _id } })
+        .then(() => {
+          Alert.success(__("Successfully deleted"));
+          if (emailType === EMAIL_TYPES.AUTOMATION) {
+            automationResponse.refetch();
+          } else if (emailType === EMAIL_TYPES.TRANSACTION) {
+            transactionResponse.refetch();
+          }
+        })
+        .catch((e: Error) => {
+          Alert.error(__(e.message));
+        });
+    });
+  };
 
   const handleSelectEmailType = (type: string) => {
     if (type === EMAIL_TYPES.ENGAGE) {
@@ -146,6 +171,7 @@ function EmailDeliveryContainer(props: Props) {
     searchValue: firstParam(queryParams.searchValue),
     handleSelectStatus,
     status,
+    onRemoveEmailDelivery: handleRemoveEmailDelivery,
   };
 
   return <EmailDelivery {...updatedProps} />;

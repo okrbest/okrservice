@@ -9,15 +9,18 @@ import { STATUS_OPTIONS } from "./EmailDelivery";
 import { RowWrapper, TableCell } from "../../logs/styles";
 import Tip from "@erxes/ui/src/components/Tip";
 import Icon from "@erxes/ui/src/components/Icon";
+import Button from "@erxes/ui/src/components/Button";
 import { EmailDeliveryItem } from "@erxes/ui-engage/src/types";
+import { __ } from "coreui/utils";
 
 type Props = {
   item: EmailDeliveryItem;
   emailType: string;
+  onRemove?: (_id: string) => void;
 };
 
 export default function Row(props: Props) {
-  const { emailType, item } = props;
+  const { emailType, item, onRemove } = props;
 
   const [showMore, setShowMore] = React.useState<boolean>(false);
 
@@ -84,6 +87,17 @@ export default function Row(props: Props) {
             {dayjs(item.createdAt).format("LLL") || "-"}
           </DateWrapper>
         </td>
+        <td>
+          {onRemove ? (
+            <Tip text={__("Delete")} placement="top">
+              <Button
+                btnStyle="link"
+                icon="trash-alt"
+                onClick={() => onRemove(item._id)}
+              />
+            </Tip>
+          ) : null}
+        </td>
       </RowWrapper>
     );
   }
@@ -113,6 +127,17 @@ export default function Row(props: Props) {
           <DateWrapper>
             {dayjs(item.createdAt).format("LLL") || "-"}
           </DateWrapper>
+        </td>
+        <td>
+          {onRemove ? (
+            <Tip text={__("Delete")} placement="top">
+              <Button
+                btnStyle="link"
+                icon="trash-alt"
+                onClick={() => onRemove(item._id)}
+              />
+            </Tip>
+          ) : null}
         </td>
       </RowWrapper>
     );

@@ -21,6 +21,7 @@ import productConfigs from './productConfigs';
 import uoms from './uoms';
 import formWidgets from './formWidget';
 import emailTemplates from './emailTemplates';
+import emailDeliveries from './emailDeliveries';
 import dashboards from './dashboard';
 import reports from './report';
 import sections from './section';
@@ -58,6 +59,7 @@ export default {
   ...uoms,
   ...formWidgets,
   ...emailTemplates,
+  ...emailDeliveries,
   ...dashboards,
   ...reports,
   ...sections,

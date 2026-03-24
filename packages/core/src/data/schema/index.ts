@@ -67,6 +67,7 @@ import { types as LogTypes, queries as LogQueries } from './logs';
 import {
   types as EmailDeliveryTypes,
   queries as EmailDeliveryQueries,
+  mutations as EmailDeliveryMutations,
 } from './emailDeliveries';
 
 import {
@@ -268,6 +269,7 @@ export let mutations = `
   ${RateMutations}
   ${BundleMutations}
   ${ProductRuleMutations}
+  ${EmailDeliveryMutations}
 `;
 
 export let subscriptions = `

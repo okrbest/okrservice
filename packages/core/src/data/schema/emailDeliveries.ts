@@ -31,3 +31,7 @@ export const queries = `
   automationEmailDeliveries(searchValue: String, page: Int, perPage: Int): EmailDeliveryList
   emailDeliveriesAsLogs(contentId: String!): [JSON]
 `;
+
+export const mutations = `
+  removeEmailDelivery(_id: String!): JSON
+`;

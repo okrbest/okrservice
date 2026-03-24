@@ -217,13 +217,6 @@ class Settings extends React.PureComponent {
             )}
 
             {this.renderBox(
-              'Email Delivery Logs',
-              '/images/icons/erxes-27.png',
-              '/settings/emailDelivery',
-              '',
-              []
-            )}
-            {this.renderBox(
               'Automation email logs',
               '/images/icons/erxes-14.svg',
               '/settings/emailDelivery?emailType=automation',
