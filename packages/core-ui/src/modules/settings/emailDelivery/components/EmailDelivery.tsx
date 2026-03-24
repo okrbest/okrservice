@@ -26,6 +26,7 @@ type Props = {
   handleSelectEmailType: (type: string) => void;
   handleSelectStatus: (status: string) => void;
   status: string;
+  onRemoveEmailDelivery?: (_id: string) => void;
 };
 
 const breadcrumb = [
@@ -40,7 +41,16 @@ const emailTypeOptions = [
 ];
 
 const tableHeaders = {
-  transaction: ["Subject", "To", "Cc", "Bcc", "From", "Status", "Created at"],
+  transaction: [
+    "Subject",
+    "To",
+    "Cc",
+    "Bcc",
+    "From",
+    "Status",
+    "Created at",
+    __("Actions"),
+  ],
   automation: [
     __("Sending basis"),
     __("Subject"),
@@ -48,6 +58,7 @@ const tableHeaders = {
     "Status",
     __("Content preview"),
     "Created at",
+    __("Actions"),
   ],
   engage: ["Customer", "Email", "Title", "Status", "Created at"],
 };
@@ -80,6 +91,7 @@ function EmailDelivery({
   searchValue,
   handleSelectStatus,
   status,
+  onRemoveEmailDelivery,
 }: Props) {
   const [search, setSearch] = React.useState(searchValue);
   const timerRef = React.useRef<number | null>(null);
@@ -128,7 +140,17 @@ function EmailDelivery({
         </thead>
         <tbody>
           {list.map((item) => (
-            <Row key={item._id} item={item} emailType={emailType} />
+            <Row
+              key={item._id}
+              item={item}
+              emailType={emailType}
+              onRemove={
+                emailType === EMAIL_TYPES.TRANSACTION ||
+                emailType === EMAIL_TYPES.AUTOMATION
+                  ? onRemoveEmailDelivery
+                  : undefined
+              }
+            />
           ))}
         </tbody>
       </Table>
