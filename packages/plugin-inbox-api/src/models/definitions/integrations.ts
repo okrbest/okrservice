@@ -100,6 +100,7 @@ export interface IDealData {
   dealBoardId?: String;
   dealCustomFieldIds?: string[];
   dealRequiredCustomFieldIds?: string[];
+  dealShowPrivacyConsent?: Boolean;
 }
 
 export interface IMessengerDataDocument extends IMessengerData, Document {}
@@ -332,7 +333,8 @@ const dealSchema = new Schema(
     dealPipelineId: { type: String, required: true },
     dealBoardId: { type: String, required: true },
     dealCustomFieldIds: { type: [String] },
-    dealRequiredCustomFieldIds: { type: [String] }
+    dealRequiredCustomFieldIds: { type: [String] },
+    dealShowPrivacyConsent: { type: Boolean }
   },
   { _id: false }
 );
