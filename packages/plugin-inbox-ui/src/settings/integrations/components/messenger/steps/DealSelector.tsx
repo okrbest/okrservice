@@ -21,6 +21,7 @@ type Props = {
   dealToggle?: boolean;
   dealCustomFieldIds?: string[];
   dealRequiredCustomFieldIds?: string[];
+  dealShowPrivacyConsent?: boolean;
   dealFields?: DealField[];
   kind?: "client" | "vendor";
 } & IMessengerData;
@@ -34,6 +35,7 @@ function General({
   dealToggle = false,
   dealCustomFieldIds = [],
   dealRequiredCustomFieldIds = [],
+  dealShowPrivacyConsent = true,
   dealFields = [],
 }: Props) {
   const [show, setShow] = useState<boolean>(false);
@@ -42,6 +44,10 @@ function General({
 
   const handleDealToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFormChange("dealToggle", e.target.checked);
+  };
+
+  const handlePrivacyConsentToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFormChange("dealShowPrivacyConsent", e.target.checked);
   };
 
   const allIds = dealFields.map((f) => f._id);
@@ -126,6 +132,23 @@ function General({
               />
             )}
           </FormGroup>
+          {dealToggle && (
+            <FormGroup>
+              <ControlLabel>
+                {__("Show privacy consent checkbox and notice on deal form")}
+              </ControlLabel>
+              <ToggleWrapper>
+                <Toggle
+                  checked={dealShowPrivacyConsent}
+                  onChange={handlePrivacyConsentToggle}
+                  icons={{
+                    checked: <span>{__("Yes")}</span>,
+                    unchecked: <span>{__("No")}</span>,
+                  }}
+                />
+              </ToggleWrapper>
+            </FormGroup>
+          )}
           {dealToggle && dealFields.length > 0 && (
             <FormGroup>
               <ControlLabel>{__("Show these custom fields in widget (Create a deal)")}</ControlLabel>

@@ -22,6 +22,7 @@ type Props = {
   dealToggle?: boolean;
   dealCustomFieldIds?: string[];
   dealRequiredCustomFieldIds?: string[];
+  dealShowPrivacyConsent?: boolean;
 };
 
 function GeneralContainer(props: Props) {
@@ -94,6 +95,7 @@ function GeneralContainer(props: Props) {
     dealToggle: props.dealToggle,
     dealCustomFieldIds: props.dealCustomFieldIds || [],
     dealRequiredCustomFieldIds: props.dealRequiredCustomFieldIds || [],
+    dealShowPrivacyConsent: props.dealShowPrivacyConsent,
     dealFields,
   };
   return <General {...updatedProps} />;

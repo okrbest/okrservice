@@ -26,6 +26,7 @@ type Props = {
   handleFiles: (files: any) => void;
   agreePrivacy?: boolean;
   onAgreePrivacyChange?: (checked: boolean) => void;
+  showPrivacyConsent?: boolean;
 };
 
 const DealSubmitForm: React.FC<Props> = ({
@@ -45,6 +46,7 @@ const DealSubmitForm: React.FC<Props> = ({
   handleButtonClick,
   agreePrivacy = false,
   onAgreePrivacyChange,
+  showPrivacyConsent = true,
 }) => {
   const submitText = __("Submit");
   const { email, firstName, companyName, phone } = formData;
@@ -311,51 +313,53 @@ const DealSubmitForm: React.FC<Props> = ({
         ) : (
           <>
             {renderForm()}
-            <div
-              style={{
-                marginTop: "20px",
-                width: "100%",
-                marginBottom: "12px",
-              }}
-            >
+            {showPrivacyConsent && (
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
+                  marginTop: "20px",
+                  width: "100%",
+                  marginBottom: "12px",
                 }}
               >
-                <input
-                  type="checkbox"
-                  id="agree-privacy"
-                  checked={agreePrivacy}
-                  onChange={(e) => onAgreePrivacyChange?.(e.target.checked)}
-                  style={{ width: "18px", height: "18px", cursor: "pointer", flexShrink: 0 }}
-                />
-                <label
-                  htmlFor="agree-privacy"
+                <div
                   style={{
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    color: "#334155",
-                    userSelect: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
                   }}
                 >
-                  (필수){" "}
-                  <a
-                    href="https://5240.cloud/%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%ec%b2%98%eb%a6%ac%eb%b0%a9%ec%b9%a8/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    style={{ color: "#4f33af", textDecoration: "underline" }}
+                  <input
+                    type="checkbox"
+                    id="agree-privacy"
+                    checked={agreePrivacy}
+                    onChange={(e) => onAgreePrivacyChange?.(e.target.checked)}
+                    style={{ width: "18px", height: "18px", cursor: "pointer", flexShrink: 0 }}
+                  />
+                  <label
+                    htmlFor="agree-privacy"
+                    style={{
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color: "#334155",
+                      userSelect: "none",
+                    }}
                   >
-                    개인정보 처리방침
-                  </a>
-                  에 동의합니다.
-                </label>
+                    (필수){" "}
+                    <a
+                      href="https://5240.cloud/%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%ec%b2%98%eb%a6%ac%eb%b0%a9%ec%b9%a8/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ color: "#4f33af", textDecoration: "underline" }}
+                    >
+                      개인정보 처리방침
+                    </a>
+                    에 동의합니다.
+                  </label>
+                </div>
               </div>
-            </div>
+            )}
             {error && (
               <div
                 className="error-message"
@@ -373,28 +377,30 @@ const DealSubmitForm: React.FC<Props> = ({
                 {error}
               </div>
             )}
-            <p
-              style={{
-                marginTop: 0,
-                marginBottom: "14px",
-                fontSize: "12px",
-                color: "#94a3b8",
-                lineHeight: 1.5,
-                textAlign: "left",
-                width: "100%",
-              }}
-            >
-              ✼ 본 양식을 제출하실 경우,{" "}
-              <a
-                href="https://5240.cloud/%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%ec%b2%98%eb%a6%ac%eb%b0%a9%ec%b9%a8/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: "#4f33af", textDecoration: "underline" }}
+            {showPrivacyConsent && (
+              <p
+                style={{
+                  marginTop: 0,
+                  marginBottom: "14px",
+                  fontSize: "12px",
+                  color: "#94a3b8",
+                  lineHeight: 1.5,
+                  textAlign: "left",
+                  width: "100%",
+                }}
               >
-                개인정보 처리방침
-              </a>
-              에 모두 동의하신 것으로 간주됩니다.
-            </p>
+                ✼ 본 양식을 제출하실 경우,{" "}
+                <a
+                  href="https://5240.cloud/%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%ec%b2%98%eb%a6%ac%eb%b0%a9%ec%b9%a8/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#4f33af", textDecoration: "underline" }}
+                >
+                  개인정보 처리방침
+                </a>
+                에 모두 동의하신 것으로 간주됩니다.
+              </p>
+            )}
             <div
               style={{
                 width: "calc(100% + 24px)",

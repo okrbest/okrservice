@@ -58,6 +58,7 @@ const DealSubmitContainer = (props: Props) => {
   const pipelineId = dealData?.dealPipelineId || "";
   const selectedIds = dealData?.dealCustomFieldIds || [];
   const requiredCustomFieldIds = dealData?.dealRequiredCustomFieldIds || [];
+  const showPrivacyConsent = dealData?.dealShowPrivacyConsent !== false;
   const { data: dealFieldsData } = useQuery(gql(widgetsGetDealFields), {
     variables: { boardId, pipelineId },
     skip: !boardId || !pipelineId,
@@ -162,8 +163,7 @@ const DealSubmitContainer = (props: Props) => {
     e.preventDefault();
     setError(null); // Clear previous error on new submission
 
-    // 개인정보 수집/제공 동의 필수
-    if (!agreePrivacy) {
+    if (showPrivacyConsent && !agreePrivacy) {
       setError("개인정보 수집/제공에 동의해 주세요.");
       return;
     }
@@ -249,6 +249,7 @@ const DealSubmitContainer = (props: Props) => {
       customerLoading={customerId ? customerLoading : false}
       agreePrivacy={agreePrivacy}
       onAgreePrivacyChange={setAgreePrivacy}
+      showPrivacyConsent={showPrivacyConsent}
     />
   );
 };

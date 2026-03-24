@@ -78,6 +78,7 @@ type State = {
   dealToggle?: boolean;
   dealCustomFieldIds?: string[];
   dealRequiredCustomFieldIds?: string[];
+  dealShowPrivacyConsent?: boolean;
   title: string;
   botEndpointUrl?: string;
   botShowInitialMessage?: boolean;
@@ -174,6 +175,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealToggle: dealData.dealToggle || false,
       dealCustomFieldIds: dealData.dealCustomFieldIds || [],
       dealRequiredCustomFieldIds: dealData.dealRequiredCustomFieldIds || [],
+      dealShowPrivacyConsent: dealData.dealShowPrivacyConsent !== false,
       channelIds: channels.map((item) => item._id) || [],
       color: uiOptions.color || "#6569DF",
       textColor: uiOptions.textColor || "#fff",
@@ -290,6 +292,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealToggle,
       dealCustomFieldIds,
       dealRequiredCustomFieldIds,
+      dealShowPrivacyConsent,
     } = this.state;
 
     if (!languageCode) {
@@ -395,6 +398,7 @@ class CreateMessenger extends React.Component<Props, State> {
         dealToggle: !!dealToggle,
         dealCustomFieldIds: dealCustomFieldIds || [],
         dealRequiredCustomFieldIds: dealRequiredCustomFieldIds || [],
+        dealShowPrivacyConsent: dealShowPrivacyConsent !== false,
       },
       uiOptions: {
         color: this.state.color,
@@ -496,6 +500,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealToggle = false,
       dealCustomFieldIds = [],
       dealRequiredCustomFieldIds = [],
+      dealShowPrivacyConsent = true,
     } = this.state;
 
     const { integration } = this.props;
@@ -620,6 +625,7 @@ class CreateMessenger extends React.Component<Props, State> {
                   dealToggle={dealToggle}
                   dealCustomFieldIds={dealCustomFieldIds || []}
                   dealRequiredCustomFieldIds={dealRequiredCustomFieldIds || []}
+                  dealShowPrivacyConsent={dealShowPrivacyConsent}
                 />
               </Step>
               <Step

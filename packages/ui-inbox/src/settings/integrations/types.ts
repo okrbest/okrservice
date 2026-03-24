@@ -330,6 +330,7 @@ export interface IDealTypeMessenger {
   dealBoardId?: string;
   dealCustomFieldIds?: string[];
   dealRequiredCustomFieldIds?: string[];
+  dealShowPrivacyConsent?: boolean;
 }
 
 export interface IIntegration {
