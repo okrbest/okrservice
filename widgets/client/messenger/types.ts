@@ -97,6 +97,7 @@ export interface IConnectResponse {
     dealStageId?: string;
     dealToggle?: boolean;
     dealFormTitle?: string;
+    dealPrivacyPolicyUrl?: string;
     [k: string]: any;
   };
   visitorId?: string;

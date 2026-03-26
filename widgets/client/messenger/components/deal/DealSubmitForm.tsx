@@ -7,6 +7,22 @@ import Input from "../common/Input";
 import { __ } from "../../../utils";
 import { useConfig } from "../../context/Config";
 
+/** Used when integration has no dealPrivacyPolicyUrl */
+const DEFAULT_DEAL_PRIVACY_POLICY_URL =
+  "https://5240.cloud/%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%ec%b2%98%eb%a6%ac%eb%b0%a9%ec%b9%a8/";
+
+function resolvePrivacyPolicyHref(raw?: string): string {
+  const t = raw != null ? String(raw).trim() : "";
+  if (t === "") {
+    return DEFAULT_DEAL_PRIVACY_POLICY_URL;
+  }
+  const lower = t.toLowerCase();
+  if (lower.startsWith("https://") || lower.startsWith("http://")) {
+    return t;
+  }
+  return DEFAULT_DEAL_PRIVACY_POLICY_URL;
+}
+
 type CustomField = { _id: string; name: string; label: string; type: string; options?: Array<{ value: string; label: string }> };
 
 type Props = {
@@ -29,6 +45,8 @@ type Props = {
   showPrivacyConsent?: boolean;
   /** Integration-specific header; falls back to i18n "Create a deal" */
   formTitle?: string;
+  /** Privacy policy link; invalid/non-http(s) values fall back to default URL */
+  privacyPolicyUrl?: string;
 };
 
 const DealSubmitForm: React.FC<Props> = ({
@@ -50,6 +68,7 @@ const DealSubmitForm: React.FC<Props> = ({
   onAgreePrivacyChange,
   showPrivacyConsent = true,
   formTitle,
+  privacyPolicyUrl,
 }) => {
   const submitText = __("Submit");
   const { email, firstName, companyName, phone } = formData;
@@ -280,6 +299,7 @@ const DealSubmitForm: React.FC<Props> = ({
   const trimmedTitle = formTitle != null ? String(formTitle).trim() : "";
   const headerTitle =
     trimmedTitle !== "" ? trimmedTitle : __("Create a deal");
+  const privacyPolicyHref = resolvePrivacyPolicyHref(privacyPolicyUrl);
 
   return (
     <Container
@@ -354,7 +374,7 @@ const DealSubmitForm: React.FC<Props> = ({
                   >
                     (필수){" "}
                     <a
-                      href="https://5240.cloud/%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%ec%b2%98%eb%a6%ac%eb%b0%a9%ec%b9%a8/"
+                      href={privacyPolicyHref}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
@@ -398,7 +418,7 @@ const DealSubmitForm: React.FC<Props> = ({
               >
                 ✼ 본 양식을 제출하실 경우,{" "}
                 <a
-                  href="https://5240.cloud/%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%ec%b2%98%eb%a6%ac%eb%b0%a9%ec%b9%a8/"
+                  href={privacyPolicyHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ color: "#4f33af", textDecoration: "underline" }}

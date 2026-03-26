@@ -333,6 +333,8 @@ export interface IDealTypeMessenger {
   dealShowPrivacyConsent?: boolean;
   /** Custom header on messenger deal form; omit or empty for default */
   dealFormTitle?: string;
+  /** Privacy policy URL for consent links in deal widget */
+  dealPrivacyPolicyUrl?: string;
 }
 
 export interface IIntegration {

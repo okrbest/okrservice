@@ -356,7 +356,8 @@ export const loadClass = (models: IModels, subdomain: string) => {
         dealCustomFieldIds,
         dealRequiredCustomFieldIds,
         dealShowPrivacyConsent,
-        dealFormTitle
+        dealFormTitle,
+        dealPrivacyPolicyUrl
       }: IDealData
     ) {
       await models.Integrations.updateOne(
@@ -372,7 +373,8 @@ export const loadClass = (models: IModels, subdomain: string) => {
               dealCustomFieldIds,
               dealRequiredCustomFieldIds,
               dealShowPrivacyConsent,
-              dealFormTitle
+              dealFormTitle,
+              dealPrivacyPolicyUrl
             }
           }
         },

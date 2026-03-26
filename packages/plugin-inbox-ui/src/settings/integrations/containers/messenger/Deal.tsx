@@ -24,6 +24,7 @@ type Props = {
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: boolean;
   dealFormTitle?: string;
+  dealPrivacyPolicyUrl?: string;
 };
 
 function GeneralContainer(props: Props) {

@@ -24,6 +24,7 @@ type Props = {
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: boolean;
   dealFormTitle?: string;
+  dealPrivacyPolicyUrl?: string;
   dealFields?: DealField[];
   kind?: "client" | "vendor";
 } & IMessengerData;
@@ -39,6 +40,7 @@ function General({
   dealRequiredCustomFieldIds = [],
   dealShowPrivacyConsent = true,
   dealFormTitle = "",
+  dealPrivacyPolicyUrl = "",
   dealFields = [],
 }: Props) {
   const [show, setShow] = useState<boolean>(false);
@@ -169,6 +171,25 @@ function General({
                   }}
                 />
               </ToggleWrapper>
+            </FormGroup>
+          )}
+          {dealToggle && dealShowPrivacyConsent && (
+            <FormGroup>
+              <ControlLabel>
+                {__("Privacy policy URL (deal form)")}
+              </ControlLabel>
+              <p style={{ margin: "4px 0 8px 0", color: "#888", fontSize: "12px" }}>
+                {__(
+                  "URL opened when users click the privacy policy link. Use https://. Leave empty to use the default link."
+                )}
+              </p>
+              <FormControl
+                value={dealPrivacyPolicyUrl}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleFormChange("dealPrivacyPolicyUrl", e.target.value)
+                }
+                placeholder="https://"
+              />
             </FormGroup>
           )}
           {dealToggle && dealFields.length > 0 && (
