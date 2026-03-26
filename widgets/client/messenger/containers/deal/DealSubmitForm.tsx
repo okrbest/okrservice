@@ -60,6 +60,7 @@ const DealSubmitContainer = (props: Props) => {
   const requiredCustomFieldIds = dealData?.dealRequiredCustomFieldIds || [];
   const showPrivacyConsent = dealData?.dealShowPrivacyConsent !== false;
   const formTitle = dealData?.dealFormTitle;
+  const privacyPolicyUrl = dealData?.dealPrivacyPolicyUrl;
   const { data: dealFieldsData } = useQuery(gql(widgetsGetDealFields), {
     variables: { boardId, pipelineId },
     skip: !boardId || !pipelineId,
@@ -252,6 +253,7 @@ const DealSubmitContainer = (props: Props) => {
       onAgreePrivacyChange={setAgreePrivacy}
       showPrivacyConsent={showPrivacyConsent}
       formTitle={formTitle}
+      privacyPolicyUrl={privacyPolicyUrl}
     />
   );
 };
