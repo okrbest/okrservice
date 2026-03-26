@@ -79,6 +79,7 @@ type State = {
   dealCustomFieldIds?: string[];
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: boolean;
+  dealFormTitle?: string;
   title: string;
   botEndpointUrl?: string;
   botShowInitialMessage?: boolean;
@@ -176,6 +177,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealCustomFieldIds: dealData.dealCustomFieldIds || [],
       dealRequiredCustomFieldIds: dealData.dealRequiredCustomFieldIds || [],
       dealShowPrivacyConsent: dealData.dealShowPrivacyConsent !== false,
+      dealFormTitle: dealData.dealFormTitle || "",
       channelIds: channels.map((item) => item._id) || [],
       color: uiOptions.color || "#6569DF",
       textColor: uiOptions.textColor || "#fff",
@@ -293,6 +295,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealCustomFieldIds,
       dealRequiredCustomFieldIds,
       dealShowPrivacyConsent,
+      dealFormTitle,
     } = this.state;
 
     if (!languageCode) {
@@ -399,6 +402,7 @@ class CreateMessenger extends React.Component<Props, State> {
         dealCustomFieldIds: dealCustomFieldIds || [],
         dealRequiredCustomFieldIds: dealRequiredCustomFieldIds || [],
         dealShowPrivacyConsent: dealShowPrivacyConsent !== false,
+        dealFormTitle: (dealFormTitle || "").trim(),
       },
       uiOptions: {
         color: this.state.color,
@@ -501,6 +505,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealCustomFieldIds = [],
       dealRequiredCustomFieldIds = [],
       dealShowPrivacyConsent = true,
+      dealFormTitle = "",
     } = this.state;
 
     const { integration } = this.props;
@@ -626,6 +631,7 @@ class CreateMessenger extends React.Component<Props, State> {
                   dealCustomFieldIds={dealCustomFieldIds || []}
                   dealRequiredCustomFieldIds={dealRequiredCustomFieldIds || []}
                   dealShowPrivacyConsent={dealShowPrivacyConsent}
+                  dealFormTitle={dealFormTitle}
                 />
               </Step>
               <Step

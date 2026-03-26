@@ -101,6 +101,8 @@ export interface IDealData {
   dealCustomFieldIds?: string[];
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: Boolean;
+  /** Messenger deal form header; empty uses default i18n title */
+  dealFormTitle?: String;
 }
 
 export interface IMessengerDataDocument extends IMessengerData, Document {}
@@ -206,6 +208,7 @@ export interface IDealDataDocument extends Document {
   dealStageId?: String;
   dealPipelineId?: String;
   dealBoardId?: String;
+  dealFormTitle?: String;
 }
 
 export interface IIntegrationDocument extends IIntegration, Document {
@@ -334,7 +337,8 @@ const dealSchema = new Schema(
     dealBoardId: { type: String, required: true },
     dealCustomFieldIds: { type: [String] },
     dealRequiredCustomFieldIds: { type: [String] },
-    dealShowPrivacyConsent: { type: Boolean }
+    dealShowPrivacyConsent: { type: Boolean },
+    dealFormTitle: { type: String, optional: true },
   },
   { _id: false }
 );

@@ -331,6 +331,8 @@ export interface IDealTypeMessenger {
   dealCustomFieldIds?: string[];
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: boolean;
+  /** Custom header on messenger deal form; omit or empty for default */
+  dealFormTitle?: string;
 }
 
 export interface IIntegration {

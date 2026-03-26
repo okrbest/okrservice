@@ -93,7 +93,12 @@ export interface IConnectResponse {
   messengerData: IIntegrationMessengerData;
   uiOptions: IIntegrationUiOptions;
   ticketData?: { ticketStageId?: string; ticketToggle?: boolean; [k: string]: any };
-  dealData?: { dealStageId?: string; dealToggle?: boolean; [k: string]: any };
+  dealData?: {
+    dealStageId?: string;
+    dealToggle?: boolean;
+    dealFormTitle?: string;
+    [k: string]: any;
+  };
   visitorId?: string;
   brand?: { name?: string; description?: string };
   callData?: any;

@@ -27,6 +27,8 @@ type Props = {
   agreePrivacy?: boolean;
   onAgreePrivacyChange?: (checked: boolean) => void;
   showPrivacyConsent?: boolean;
+  /** Integration-specific header; falls back to i18n "Create a deal" */
+  formTitle?: string;
 };
 
 const DealSubmitForm: React.FC<Props> = ({
@@ -47,6 +49,7 @@ const DealSubmitForm: React.FC<Props> = ({
   agreePrivacy = false,
   onAgreePrivacyChange,
   showPrivacyConsent = true,
+  formTitle,
 }) => {
   const submitText = __("Submit");
   const { email, firstName, companyName, phone } = formData;
@@ -274,10 +277,14 @@ const DealSubmitForm: React.FC<Props> = ({
     }
   }, [isSubmitted, dealId, handleButtonClick]);
 
+  const trimmedTitle = formTitle != null ? String(formTitle).trim() : "";
+  const headerTitle =
+    trimmedTitle !== "" ? trimmedTitle : __("Create a deal");
+
   return (
     <Container
       withBottomNavBar={false}
-      title={__("Create a deal")}
+      title={headerTitle}
       showBackButton={false}
       showZoomButton={false}
     >

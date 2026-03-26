@@ -6,6 +6,7 @@ import { FlexItem, LeftItem } from "@erxes/ui/src/components/step/styles";
 import { IMessengerData } from "@erxes/ui-inbox/src/settings/integrations/types";
 import FormGroup from "@erxes/ui/src/components/form/Group";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
+import FormControl from "@erxes/ui/src/components/form/Control";
 import Toggle from "@erxes/ui/src/components/Toggle";
 import { ToggleWrapper } from "../widgetPreview/styles";
 
@@ -22,6 +23,7 @@ type Props = {
   dealCustomFieldIds?: string[];
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: boolean;
+  dealFormTitle?: string;
   dealFields?: DealField[];
   kind?: "client" | "vendor";
 } & IMessengerData;
@@ -36,6 +38,7 @@ function General({
   dealCustomFieldIds = [],
   dealRequiredCustomFieldIds = [],
   dealShowPrivacyConsent = true,
+  dealFormTitle = "",
   dealFields = [],
 }: Props) {
   const [show, setShow] = useState<boolean>(false);
@@ -132,6 +135,25 @@ function General({
               />
             )}
           </FormGroup>
+          {dealToggle && (
+            <FormGroup>
+              <ControlLabel>
+                {__("Deal form title in widget")}
+              </ControlLabel>
+              <p style={{ margin: "4px 0 8px 0", color: "#888", fontSize: "12px" }}>
+                {__(
+                  "Shown at the top of the deal form. Leave empty to use the default translated title."
+                )}
+              </p>
+              <FormControl
+                value={dealFormTitle}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleFormChange("dealFormTitle", e.target.value)
+                }
+                placeholder={__("e.g. General inquiry & demo request")}
+              />
+            </FormGroup>
+          )}
           {dealToggle && (
             <FormGroup>
               <ControlLabel>
