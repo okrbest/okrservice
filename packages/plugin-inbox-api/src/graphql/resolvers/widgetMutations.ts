@@ -35,6 +35,75 @@ import { isEnabled } from "@erxes/api-utils/src/serviceDiscovery";
 import redis from "@erxes/api-utils/src/redis";
 import { trackViewPageEvent } from "../../events";
 
+function escapeRegExpForWidgetCustomerLookup(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * 다른 고객이 이미 같은 연락처를 쓰는지 조회 (위젯 방문자 제외).
+ *
+ * - 폼에 이메일을 적었으면 **이메일로만** 충돌을 판단한다. (이메일 매칭 실패 후
+ *   전화로 다른 고객을 잡으면, 입력 이메일과 무관한 레코드에 딜이 붙는 문제가 생김)
+ * - 이메일이 비어 있고 전화만 있으면 전화로만 조회한다.
+ */
+async function findWidgetContactConflictCustomerId(
+  subdomain: string,
+  excludeCustomerId: string,
+  emailRaw?: string,
+  phoneRaw?: string
+): Promise<string | null> {
+  const base: Record<string, any> = {
+    status: { $ne: "deleted" },
+    _id: { $ne: excludeCustomerId },
+  };
+
+  const email = typeof emailRaw === "string" ? emailRaw.trim() : "";
+  if (email) {
+    const other = await sendCoreMessage({
+      subdomain,
+      action: "customers.findOne",
+      data: {
+        ...base,
+        $or: [
+          { primaryEmail: email },
+          { emails: { $in: [email] } },
+          {
+            primaryEmail: {
+              $regex: `^${escapeRegExpForWidgetCustomerLookup(email)}$`,
+              $options: "i",
+            },
+          },
+        ],
+      },
+      isRPC: true,
+      defaultValue: null,
+    });
+    if (other && other._id) {
+      return String(other._id);
+    }
+    return null;
+  }
+
+  const phone = typeof phoneRaw === "string" ? phoneRaw.trim() : "";
+  if (phone) {
+    const other = await sendCoreMessage({
+      subdomain,
+      action: "customers.findOne",
+      data: {
+        ...base,
+        $or: [{ primaryPhone: phone }, { phones: { $in: [phone] } }],
+      },
+      isRPC: true,
+      defaultValue: null,
+    });
+    if (other && other._id) {
+      return String(other._id);
+    }
+  }
+
+  return null;
+}
+
 interface IWidgetEmailParams {
   toEmails: string[];
   fromEmail: string;
@@ -336,32 +405,75 @@ const widgetMutations = {
       }
     }
 
-    // Update customer: primaryEmail/primaryPhone 포함해 연락처에 이메일·전화번호 저장
-    const doc: Record<string, any> = {};
-    if (firstName !== undefined && firstName !== null) doc.firstName = firstName;
-    if (lastName !== undefined && lastName !== null) doc.lastName = lastName;
-    if (emails !== undefined && Array.isArray(emails)) {
-      doc.emails = emails;
-      doc.primaryEmail = emails[0] ?? undefined;
-    }
-    if (phones !== undefined && Array.isArray(phones)) {
-      doc.phones = phones;
-      doc.primaryPhone = phones[0] ?? undefined;
-    }
-    // 위젯에서 제출한 고객정보는 이메일/전화번호가 있으면 무조건 유효함으로 저장
-    if (doc.primaryEmail) doc.emailValidationStatus = 'valid';
-    if (doc.primaryPhone) doc.phoneValidationStatus = 'valid';
-
-    const customer = await sendCoreMessage({
+    const conflictCustomerId = await findWidgetContactConflictCustomerId(
       subdomain,
-      action: "customers.updateCustomer",
-      data: {
-        _id: customerId,
-        doc,
-      },
-      isRPC: true,
-      defaultValue: null,
-    });
+      customerId,
+      emails?.[0],
+      phones?.[0]
+    );
+
+    let customer: any = null;
+
+    if (conflictCustomerId) {
+      // 이미 동일 이메일/전화의 고객이 있으면 방문자 레코드에 연락처를 올리지 않고 기존 고객만 갱신·반환 (딜/티켓은 이 _id로 생성)
+      const docSafe: Record<string, any> = {};
+      if (firstName !== undefined && firstName !== null) {
+        docSafe.firstName = firstName;
+      }
+      if (lastName !== undefined && lastName !== null) {
+        docSafe.lastName = lastName;
+      }
+
+      if (Object.keys(docSafe).length > 0) {
+        customer = await sendCoreMessage({
+          subdomain,
+          action: "customers.updateCustomer",
+          data: {
+            _id: conflictCustomerId,
+            doc: docSafe,
+          },
+          isRPC: true,
+          defaultValue: null,
+        });
+      } else {
+        customer = await sendCoreMessage({
+          subdomain,
+          action: "customers.findOne",
+          data: { _id: conflictCustomerId },
+          isRPC: true,
+          defaultValue: null,
+        });
+      }
+    } else {
+      // Update visitor: primaryEmail/primaryPhone 포함해 연락처에 이메일·전화번호 저장
+      const doc: Record<string, any> = {};
+      if (firstName !== undefined && firstName !== null) doc.firstName = firstName;
+      if (lastName !== undefined && lastName !== null) doc.lastName = lastName;
+      if (emails !== undefined && Array.isArray(emails)) {
+        doc.emails = emails;
+        doc.primaryEmail = emails[0] ?? undefined;
+      }
+      if (phones !== undefined && Array.isArray(phones)) {
+        doc.phones = phones;
+        doc.primaryPhone = phones[0] ?? undefined;
+      }
+      // 위젯에서 제출한 고객정보는 이메일/전화번호가 있으면 무조건 유효함으로 저장
+      if (doc.primaryEmail) doc.emailValidationStatus = "valid";
+      if (doc.primaryPhone) doc.phoneValidationStatus = "valid";
+
+      customer = await sendCoreMessage({
+        subdomain,
+        action: "customers.updateCustomer",
+        data: {
+          _id: customerId,
+          doc,
+        },
+        isRPC: true,
+        defaultValue: null,
+      });
+    }
+
+    const linkCustomerId = customer?._id ? String(customer._id) : customerId;
 
     // Handle company if companyName is provided
     let companyLinkWarning: string | null = null;
@@ -434,7 +546,7 @@ const widgetMutations = {
             action: "conformities.addConformity",
             data: {
               mainType: "customer",
-              mainTypeId: customerId,
+              mainTypeId: linkCustomerId,
               relType: "company",
               relTypeId: company._id,
             },

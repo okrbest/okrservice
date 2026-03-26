@@ -104,7 +104,13 @@ const DealSubmitContainer = (props: Props) => {
 
   const [customerEdit] = useMutation(CUSTOMER_EDIT, {
     fetchPolicy: "no-cache",
-    onCompleted: async () => {
+    onCompleted: async (data) => {
+      const edited = data?.widgetsTicketCustomersEdit;
+      const idForDeal =
+        edited?._id != null && String(edited._id) !== ""
+          ? String(edited._id)
+          : connection.data.customerId;
+
       const transformedFiles = files.map((file) => ({
         url: readFile(file.url || ""),
         name: file.name,
@@ -115,9 +121,8 @@ const DealSubmitContainer = (props: Props) => {
         .filter(([, v]) => v != null && v !== "")
         .map(([field, value]) => ({ field, value }));
 
-      // customerId가 유효할 때만 customerIds에 포함 (영업 파이프라인에 고객 표시를 위해 필수)
-      // saveGetNotified 직후 제출 시 connection.data.customerId 사용
-      const validCustomerIds = connection.data.customerId ? [connection.data.customerId] : [];
+      // 중복 이메일/전화 시 서버가 기존 고객 _id를 반환하므로 뮤테이션 결과를 우선 사용
+      const validCustomerIds = idForDeal ? [idForDeal] : [];
 
       await dealAdd({
         variables: {
