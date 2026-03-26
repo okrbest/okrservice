@@ -41,6 +41,7 @@ type Props = {
   dealCustomFieldIds?: string[];
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: boolean;
+  dealFormTitle?: string;
 };
 
 const ConfigSetup: React.FC<Props> = ({
@@ -66,6 +67,7 @@ const ConfigSetup: React.FC<Props> = ({
   dealCustomFieldIds,
   dealRequiredCustomFieldIds,
   dealShowPrivacyConsent,
+  dealFormTitle,
 }) => {
   return (
     <FlexItem>
@@ -139,6 +141,7 @@ const ConfigSetup: React.FC<Props> = ({
               dealCustomFieldIds={dealCustomFieldIds || []}
               dealRequiredCustomFieldIds={dealRequiredCustomFieldIds || []}
               dealShowPrivacyConsent={dealShowPrivacyConsent}
+              dealFormTitle={dealFormTitle}
             />
           </CollapseContent>
         </ContentBox>

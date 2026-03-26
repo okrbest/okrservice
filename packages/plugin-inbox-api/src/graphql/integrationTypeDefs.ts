@@ -118,6 +118,7 @@ export const types = `
     dealCustomFieldIds: [String]
     dealRequiredCustomFieldIds: [String]
     dealShowPrivacyConsent: Boolean
+    dealFormTitle: String
   }
 
   input IntegrationMessengerData {
