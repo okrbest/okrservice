@@ -189,11 +189,19 @@ export const findCustomer = async (
     }).lean();
   }
 
-  if (!customer && doc._id) {
-    customer = await Customers.findOne({
-      ...defaultFilter,
-      _id: doc._id
-    }).lean();
+  // _id가 문자열/ObjectId일 때만 단축 조회. { $ne: ... } 등 연산자 객체는 truthy라
+  // findOne({ _id: { $ne: x } })가 되어 "첫 번째 임의 고객"이 반환되는 버그가 난다.
+  if (!customer && doc._id != null) {
+    const idVal = doc._id;
+    const isOperatorObject =
+      typeof idVal === "object" &&
+      Object.keys(idVal).some((k) => k.startsWith("$"));
+    if (!isOperatorObject) {
+      customer = await Customers.findOne({
+        ...defaultFilter,
+        _id: idVal,
+      }).lean();
+    }
   }
 
   if (!customer) {

@@ -84,7 +84,13 @@ const TicketSubmitContainer = (props: Props) => {
 
   const [customerEdit] = useMutation(CUSTOMER_EDIT, {
     fetchPolicy: "no-cache",
-    onCompleted: async () => {
+    onCompleted: async (data) => {
+      const edited = data?.widgetsTicketCustomersEdit;
+      const idForTicket =
+        edited?._id != null && String(edited._id) !== ""
+          ? String(edited._id)
+          : customerId;
+
       const transformedFiles = files.map((file) => ({
         url: readFile(file.url || ""),
         name: file.name,
@@ -97,7 +103,7 @@ const TicketSubmitContainer = (props: Props) => {
         attachments: transformedFiles,
         stageId: ticketData.ticketStageId,
         type: formData.ticketType,
-        customerIds: [customerId],
+        customerIds: idForTicket ? [idForTicket] : [],
       });
 
       await ticketAdd({
@@ -107,7 +113,7 @@ const TicketSubmitContainer = (props: Props) => {
           attachments: transformedFiles,
           stageId: ticketData.ticketStageId,
           type: formData.ticketType,
-          customerIds: [customerId],
+          customerIds: idForTicket ? [idForTicket] : [],
           visibility: formData.visibility,
         },
       });
