@@ -305,11 +305,15 @@ export const loadClass = (models: IModels, subdomain: string) => {
      */
     public static async saveMessengerAppearanceData(
       _id: string,
-      { color, wallpaper, logo, textColor }: IUiOptions
+      { color, wallpaper, logo, textColor, panelWidth }: IUiOptions
     ) {
       await models.Integrations.updateOne(
         { _id },
-        { $set: { uiOptions: { color, wallpaper, logo, textColor } } },
+        {
+          $set: {
+            uiOptions: { color, wallpaper, logo, textColor, panelWidth },
+          },
+        },
         { runValdatiors: true }
       );
 

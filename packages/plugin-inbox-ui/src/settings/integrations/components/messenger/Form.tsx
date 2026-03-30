@@ -105,6 +105,8 @@ type State = {
   logo: string;
   logoPreviewStyle: any;
   logoPreviewUrl: string;
+  /** Desktop embed panel width (px) */
+  panelWidth: number;
   facebook: string;
   instagram: string;
   twitter: string;
@@ -204,6 +206,7 @@ class CreateMessenger extends React.Component<Props, State> {
       logo: uiOptions.logo || "",
       logoPreviewStyle: {},
       logoPreviewUrl: uiOptions.logo || "/images/erxes.png",
+      panelWidth: uiOptions.panelWidth || 408,
       facebook: links.facebook || "",
       instagram: links.instagram || "",
       twitter: links.twitter || "",
@@ -317,6 +320,17 @@ class CreateMessenger extends React.Component<Props, State> {
       return Alert.error("Choose a channel");
     }
 
+    const panelWidthNum = Number(this.state.panelWidth);
+    if (
+      !Number.isFinite(panelWidthNum) ||
+      panelWidthNum < 320 ||
+      panelWidthNum > 1200
+    ) {
+      return Alert.error(
+        __("Messenger panel width must be between 320 and 1200 pixels")
+      );
+    }
+
     if (messengerApps.websites && messengerApps.websites.length > 0) {
       for (const website of messengerApps.websites) {
         if (website.url === "") {
@@ -413,6 +427,7 @@ class CreateMessenger extends React.Component<Props, State> {
         textColor: this.state.textColor,
         wallpaper: this.state.wallpaper,
         logo: this.state.logo,
+        panelWidth: Math.round(panelWidthNum),
       },
       messengerApps,
       callData: callData || {},
@@ -511,6 +526,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealShowPrivacyConsent = true,
       dealFormTitle = "",
       dealPrivacyPolicyUrl = "",
+      panelWidth,
     } = this.state;
 
     const { integration } = this.props;
@@ -539,6 +555,7 @@ class CreateMessenger extends React.Component<Props, State> {
                   textColor={textColor}
                   logoPreviewUrl={logoPreviewUrl}
                   wallpaper={wallpaper}
+                  panelWidth={panelWidth}
                 />
               </Step>
 

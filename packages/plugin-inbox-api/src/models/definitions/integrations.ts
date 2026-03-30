@@ -176,6 +176,8 @@ export interface IUiOptions {
   wallpaper?: string;
   logo?: string;
   textColor?: string;
+  /** Embedded messenger panel width in pixels (desktop) */
+  panelWidth?: number;
 }
 
 // subdocument schema for messenger UiOptions
@@ -488,6 +490,7 @@ const uiOptionsSchema = new Schema(
     textColor: field({ type: String }),
     wallpaper: field({ type: String }),
     logo: field({ type: String }),
+    panelWidth: field({ type: Number, optional: true }),
   },
   { _id: false },
 );

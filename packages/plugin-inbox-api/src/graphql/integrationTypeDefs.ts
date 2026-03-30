@@ -156,6 +156,7 @@ export const types = `
     wallpaper: String
     logo: String
     textColor: String
+    panelWidth: Int
   }
 
   input OperatorInput {
