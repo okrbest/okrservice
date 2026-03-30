@@ -281,6 +281,8 @@ export interface IUiOptions {
   wallpaper?: string;
   logo?: string;
   logoPreviewUrl?: string;
+  /** Desktop messenger widget panel width (px) */
+  panelWidth?: number;
 }
 
 export interface ITopic {

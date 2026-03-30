@@ -28,9 +28,39 @@ let baseUrl = "";
 let isDealMode = false;
 const showLauncherSetting = window.erxesSettings?.messenger?.showLauncher;
 
-// Deal mode: zoomed width 30% wider than default (688 * 1.3 ≈ 894)
-const ZOOMED_WIDTH_DEFAULT = 688;
-const ZOOMED_WIDTH_DEAL = 894;
+/** Default panel width when integration has no panelWidth (matches legacy CSS) */
+const BASE_PANEL_WIDTH = 408;
+/** Zoomed widths were tuned for 408px base; scale proportionally for custom widths */
+const ZOOM_RATIO_DEFAULT = 688 / 408;
+const ZOOM_RATIO_DEAL = 894 / 408;
+
+let resolvedPanelWidth = BASE_PANEL_WIDTH;
+
+function clampPanelWidth(raw: unknown): number {
+  const n = typeof raw === "number" ? raw : parseInt(String(raw), 10);
+  if (!Number.isFinite(n)) {
+    return BASE_PANEL_WIDTH;
+  }
+  return Math.min(1200, Math.max(320, Math.round(n)));
+}
+
+function applyMessengerPanelWidthFromUi(uiOptions: { panelWidth?: unknown }) {
+  resolvedPanelWidth = uiOptions?.panelWidth != null
+    ? clampPanelWidth(uiOptions.panelWidth)
+    : BASE_PANEL_WIDTH;
+  messengerIframeContainer.style.setProperty(
+    "--erxes-messenger-panel-width",
+    `${resolvedPanelWidth}px`
+  );
+}
+
+function zoomedWidthDefault(): number {
+  return Math.round(resolvedPanelWidth * ZOOM_RATIO_DEFAULT);
+}
+
+function zoomedWidthDeal(): number {
+  return Math.round(resolvedPanelWidth * ZOOM_RATIO_DEAL);
+}
 
 const DELAY = 1500;
 const ERXES_WIDGET_CONTAINER_ID = "erxes-messenger-container";
@@ -234,6 +264,8 @@ window.addEventListener("message", async (event: MessageEvent) => {
 
     const { color, logo: uiOptionsLogo } = uiOptions;
 
+    applyMessengerPanelWidthFromUi(uiOptions);
+
     logo = uiOptionsLogo;
     backgroundImage = logo
       ? `url(${baseUrl}/read-file?key=${encodeURIComponent(logo)}&width=20)`
@@ -302,7 +334,7 @@ window.addEventListener("message", async (event: MessageEvent) => {
         // Deal mode: zoomed size on desktop; on mobile (≤420px) let CSS media query control size
         const isNarrowViewport = window.innerWidth <= 420;
         if (isDealMode && !isNarrowViewport) {
-          messengerIframeContainer.style.width = `${ZOOMED_WIDTH_DEAL}px`;
+          messengerIframeContainer.style.width = `${zoomedWidthDeal()}px`;
           messengerIframeContainer.style.height = "min(1200px, calc(100vh - 92px))";
           messengerIframeContainer.style.maxWidth = "100%";
           messengerIframeContainer.style.maxHeight = "min(1200px, calc(100vh - 92px))";
@@ -376,8 +408,8 @@ window.addEventListener("message", (event: MessageEvent) => {
     if (frameDiv && !isNarrowViewport) {
       if (data.zoom) {
         const zoomedWidth = isDealMode
-          ? `${ZOOMED_WIDTH_DEAL}px`
-          : `${ZOOMED_WIDTH_DEFAULT}px`;
+          ? `${zoomedWidthDeal()}px`
+          : `${zoomedWidthDefault()}px`;
         frameDiv.style.width = zoomedWidth;
         frameDiv.style.height = isDealMode
           ? "min(1200px, calc(100vh - 92px))"
@@ -389,9 +421,9 @@ window.addEventListener("message", (event: MessageEvent) => {
         frameDiv.style.transition =
           "width 0.3s, height 0.3s, max-width 0.3s, max-height 0.3s";
       } else {
-        frameDiv.style.width = "408px";
+        frameDiv.style.width = `${resolvedPanelWidth}px`;
         frameDiv.style.height = "min(1200px, 100% - 104px)";
-        frameDiv.style.maxWidth = "408px";
+        frameDiv.style.maxWidth = `${resolvedPanelWidth}px`;
         frameDiv.style.maxHeight = "1200px";
         frameDiv.style.transition = "";
       }

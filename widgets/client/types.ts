@@ -208,6 +208,7 @@ export interface IIntegrationUiOptions {
   wallpaper: string;
   logo: string;
   showVideoCallRequest: boolean;
+  panelWidth?: number;
 }
 
 export interface IIntegration {

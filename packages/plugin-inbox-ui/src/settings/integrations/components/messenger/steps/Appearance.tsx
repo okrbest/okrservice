@@ -6,6 +6,7 @@ import {
   WidgetBackgrounds
 } from "@erxes/ui-settings/src/styles";
 import { ControlLabel } from "@erxes/ui/src/components/form";
+import FormControl from "@erxes/ui/src/components/form/Control";
 import Popover from "@erxes/ui/src/components/Popover";
 import { FlexItem, LeftItem } from "@erxes/ui/src/components/step/styles";
 import { ColorPick, ColorPicker } from "@erxes/ui/src/styles/main";
@@ -24,13 +25,15 @@ type Props = {
       | "logoPreviewUrl"
       | "wallpaper"
       | "color"
-      | "textColor",
-    value: string
+      | "textColor"
+      | "panelWidth",
+    value: string | number
   ) => void;
   color: string;
   textColor: string;
   logoPreviewUrl?: string;
   wallpaper: string;
+  panelWidth: number;
 };
 
 type State = {
@@ -116,12 +119,27 @@ class Appearance extends React.Component<Props, State> {
   }
 
   render() {
-    const { color, textColor, onChange } = this.props;
+    const { color, textColor, onChange, panelWidth } = this.props;
     const onChangeColor = (key, e) => onChange(key, e.hex);
 
     return (
       <FlexItem>
         <LeftItem>
+          <SubItem>
+            <ControlLabel>
+              {__("Messenger panel width (desktop, px)")}
+            </ControlLabel>
+            <FormControl
+              type="number"
+              min={320}
+              max={1200}
+              value={panelWidth}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const v = parseInt(e.target.value, 10);
+                onChange("panelWidth", Number.isFinite(v) ? v : 408);
+              }}
+            />
+          </SubItem>
           <SubItem>
             <ControlLabel>{__("Choose a background color")}</ControlLabel>
             <Popover
