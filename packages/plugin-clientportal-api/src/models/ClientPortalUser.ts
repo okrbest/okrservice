@@ -1198,6 +1198,25 @@ export const loadClientPortalUserClass = (models: IModels) => {
         });
       }
 
+      if (user && doc.email && user.type !== 'staff') {
+        const trimmedMail = doc.email.toLowerCase().trim();
+        const coreUser = await sendCoreMessage({
+          subdomain,
+          action: 'users.findOne',
+          data: { email: trimmedMail },
+          isRPC: true,
+          defaultValue: null,
+        });
+
+        if (coreUser) {
+          await models.ClientPortalUsers.updateOne(
+            { _id: user._id },
+            { $set: { type: 'staff', email: trimmedMail } }
+          );
+          user = await models.ClientPortalUsers.findById(user._id);
+        }
+      }
+
       if (!user) {
         throw new Error('Can not create user');
       }

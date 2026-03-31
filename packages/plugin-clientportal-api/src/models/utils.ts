@@ -24,12 +24,22 @@ export interface IContactsParams {
 
 export const handleContacts = async (args: IContactsParams) => {
   const { subdomain, models, clientPortalId, document, password } = args;
-  const { type = 'customer' } = document;
+  const trimmedMail = (document.email || '').toLowerCase().trim();
+
+  const coreUser =
+    trimmedMail &&
+    (await sendCoreMessage({
+      subdomain,
+      action: 'users.findOne',
+      data: { email: trimmedMail },
+      isRPC: true,
+      defaultValue: null,
+    }));
+
+  const type = document.type || (coreUser ? 'staff' : 'customer');
 
   let qry: any = {};
   let user: any;
-
-  const trimmedMail = (document.email || '').toLowerCase().trim();
 
   if (document.email) {
     qry = { email: trimmedMail };
@@ -40,6 +50,23 @@ export const handleContacts = async (args: IContactsParams) => {
   }
 
   qry.clientPortalId = clientPortalId;
+
+  if (type === 'staff') {
+    user = await models.ClientPortalUsers.findOne(qry);
+
+    if (user) {
+      return user;
+    }
+
+    return models.ClientPortalUsers.create({
+      ...document,
+      email: trimmedMail || document.email,
+      type: 'staff',
+      clientPortalId,
+      password:
+        password && (await models.ClientPortalUsers.generatePassword(password)),
+    });
+  }
 
   if (type === 'customer') {
     let customer = await sendCoreMessage({
@@ -192,6 +219,10 @@ export const handleContacts = async (args: IContactsParams) => {
 };
 
 export const putActivityLog = async (subdomain, user) => {
+  if (!['customer', 'company'].includes(user.type)) {
+    return;
+  }
+
   let contentType = 'core:customer';
   let contentId = user.erxesCustomerId;
 
