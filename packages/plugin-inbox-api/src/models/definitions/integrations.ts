@@ -43,6 +43,10 @@ export interface IMessengerDataMessagesItem {
 export interface IMessageDataMessages {
   [key: string]: IMessengerDataMessagesItem;
 }
+
+export interface IScheduledMessage {
+  content?: string;
+}
 type BotPersistentMenuTypeMessenger = {
   _id: string;
   type: string;
@@ -76,6 +80,7 @@ export interface IMessengerData {
   messages?: IMessageDataMessages;
   links?: ILink;
   externalLinks?: IExternalLink[];
+  scheduledMessage?: IScheduledMessage;
   showChat?: boolean;
   showLauncher?: boolean;
   hideWhenOffline?: boolean;
@@ -294,6 +299,7 @@ const messengerDataSchema = new Schema(
       youtube: String,
     },
     externalLinks: field({ type: Object, optional: true }),
+    scheduledMessage: field({ type: Object, optional: true }),
     requireAuth: field({ type: Boolean, default: true }),
     showChat: field({ type: Boolean, default: true }),
     showLauncher: field({ type: Boolean, default: true }),

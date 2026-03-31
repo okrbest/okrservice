@@ -7,7 +7,8 @@ export const BOARD_STATUSES = {
 export const USER_LOGIN_TYPES = {
   COMPANY: 'company',
   CUSTOMER: 'customer',
-  ALL: ['customer', 'company'],
+  STAFF: 'staff',
+  ALL: ['customer', 'company', 'staff'],
 };
 
 export const DEFAULT_MAIL_CONFIG = {
