@@ -324,4 +324,4 @@ export const formUseTemplate = async ({
   return `/forms/${type}s`;
 };
 
-// workflow Action 실행
+// workflow Action 실행 시 사용하는 타입
