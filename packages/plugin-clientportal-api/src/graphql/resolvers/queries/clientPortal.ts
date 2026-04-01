@@ -145,6 +145,44 @@ const configClientPortalQueries = {
     });
   },
 
+  async clientPortalGetTicketBoards(_root, _args, { subdomain }: IContext) {
+    return sendTicketsMessage({
+      subdomain,
+      action: "boards.find",
+      data: { type: "ticket" },
+      isRPC: true,
+      defaultValue: [],
+    });
+  },
+
+  async clientPortalGetTicketPipelines(
+    _root,
+    { boardId }: { boardId: string },
+    { subdomain }: IContext
+  ) {
+    return sendTicketsMessage({
+      subdomain,
+      action: "pipelines.find",
+      data: { boardId, type: "ticket" },
+      isRPC: true,
+      defaultValue: [],
+    });
+  },
+
+  async clientPortalGetTicketStages(
+    _root,
+    { pipelineId }: { pipelineId: string },
+    { subdomain }: IContext
+  ) {
+    return sendTicketsMessage({
+      subdomain,
+      action: "stages.find",
+      data: { pipelineId },
+      isRPC: true,
+      defaultValue: [],
+    });
+  },
+
   async clientPortalTickets(_root, _args, context: IContext) {
     return getCards("ticket", context, _args);
   },
