@@ -133,6 +133,21 @@ const sendNotification = async (
         },
       });
 
+      // Mobile push: send FCM to staff cpUser if they have a linked device
+      sendClientPortalMessagge({
+        subdomain,
+        action: "staff:mobilePush",
+        data: {
+          erxesUserId: receiverId,
+          title,
+          content,
+          notifType,
+          link,
+        },
+      }).catch(() => {
+        // Non-critical: ignore FCM dispatch errors so notification still saves
+      });
+
       // 알림 생성이 성공했을 때만 이메일 수집
       // 담당자 지정 이메일은 getNotificationByEmail 설정과 무관하게 발송
       const recipient = recipients.find((r) => r._id === receiverId);
