@@ -502,14 +502,128 @@ export const getCards = async (
     throw new Error("Login required");
   }
 
+  const argPipelineId: string | undefined = args?.pipelineId;
+  const showAll: boolean = args?.showAll === true;
+
   const cp = await models.ClientPortals.getConfig(cpUser.clientPortalId);
 
-  const pipelineId = cp[type + "PipelineId"];
+  const pipelineId = argPipelineId || cp[type + "PipelineId"];
 
   if (!pipelineId || pipelineId.length === 0) {
     return [];
   }
 
+  // Staff branch: assignedUserIds 기반 조회 (showAll=true면 전체 조회)
+  if (cpUser.type === "staff") {
+    let resolvedUserIds: string[] = args?.userIds || [];
+
+    if (!resolvedUserIds.length) {
+      const cpUserDoc = cpUser as any;
+      if (cpUserDoc?.userId) {
+        resolvedUserIds = [cpUserDoc.userId];
+      } else if (cpUser.email) {
+        const coreUser = await sendCoreMessage({
+          subdomain,
+          action: "users.findOne",
+          data: { email: cpUser.email },
+          isRPC: true,
+          defaultValue: null,
+        });
+        if (coreUser?._id) {
+          resolvedUserIds = [coreUser._id];
+        }
+      }
+    }
+
+    if (!resolvedUserIds.length && !showAll) {
+      return [];
+    }
+
+    let staffStages = [] as any;
+    switch (type) {
+      case "ticket":
+        staffStages = await sendTicketsMessage({
+          subdomain,
+          action: "stages.find",
+          data: { pipelineId },
+          isRPC: true,
+          defaultValue: [],
+        });
+        break;
+      case "deal":
+        staffStages = await sendSalesMessage({
+          subdomain,
+          action: "stages.find",
+          data: { pipelineId },
+          isRPC: true,
+          defaultValue: [],
+        });
+        break;
+      case "task":
+        staffStages = await sendTasksMessage({
+          subdomain,
+          action: "stages.find",
+          data: { pipelineId },
+          isRPC: true,
+          defaultValue: [],
+        });
+        break;
+      case "purchase":
+        staffStages = await sendPurchasesMessage({
+          subdomain,
+          action: "stages.find",
+          data: { pipelineId },
+          isRPC: true,
+          defaultValue: [],
+        });
+        break;
+    }
+
+    if (staffStages.length === 0) {
+      return [];
+    }
+
+    const staffStageIds = staffStages.map((stage) => stage._id);
+    let staffOneStageId = "";
+    if (args?.stageId) {
+      staffOneStageId = staffStageIds.includes(args.stageId)
+        ? args.stageId
+        : "noneId";
+    }
+
+    const staffMessage = {
+      subdomain,
+      action: `${type}s.find`,
+      data: {
+        status: { $regex: "^((?!archived).)*$", $options: "i" },
+        stageId: staffOneStageId ? staffOneStageId : { $in: staffStageIds },
+        // showAll=true면 assignedUserIds 필터 생략 (전체 티켓), 기존 호출은 영향 없음
+        ...(resolvedUserIds.length > 0 && {
+          assignedUserIds: { $in: resolvedUserIds },
+        }),
+        ...(args?.priority && { priority: { $in: args?.priority || [] } }),
+        ...(args?.labelIds && { labelIds: { $in: args?.labelIds || [] } }),
+        ...(args?.closeDateType && {
+          closeDate: getCloseDateByType(args.closeDateType),
+        }),
+      },
+      isRPC: true,
+      defaultValue: [],
+    };
+
+    switch (type) {
+      case "deal":
+        return sendSalesMessage(staffMessage);
+      case "task":
+        return sendTasksMessage(staffMessage);
+      case "ticket":
+        return sendTicketsMessage(staffMessage);
+      case "purchase":
+        return sendPurchasesMessage(staffMessage);
+    }
+  }
+
+  // Customer path (기존 동작 유지)
   const customer = await sendCoreMessage({
     subdomain,
     action: "customers.findOne",
