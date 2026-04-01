@@ -7,7 +7,7 @@ import * as jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 import { tokenHandler } from '../../../auth/authUtils';
 import { IContext } from '../../../connectionResolver';
-import { sendCoreMessage } from '../../../messageBroker';
+import { sendCoreMessage, sendNotificationsMessage } from '../../../messageBroker';
 import { ILoginParams } from '../../../models/ClientPortalUser';
 import {
   IInvitiation,
@@ -1506,6 +1506,25 @@ export const clientPortalUserMutations = {
     );
 
     return updated;
+  },
+
+  async clientPortalMarkStaffNotificationsRead(
+    _root,
+    { ids }: { ids: string[] },
+    { cpUser, subdomain }: IContext
+  ) {
+    if (!cpUser || (cpUser as any).type !== "staff") return false;
+    if (!ids?.length) return true;
+
+    await sendNotificationsMessage({
+      subdomain,
+      action: "batchUpdate",
+      data: {
+        selector: { _id: { $in: ids } },
+        modifier: { $set: { isRead: true } },
+      },
+    });
+    return true;
   },
 };
 
