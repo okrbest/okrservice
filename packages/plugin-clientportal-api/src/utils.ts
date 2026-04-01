@@ -598,7 +598,7 @@ export const getCards = async (
         status: { $regex: "^((?!archived).)*$", $options: "i" },
         stageId: staffOneStageId ? staffOneStageId : { $in: staffStageIds },
         // showAll=true면 assignedUserIds 필터 생략 (전체 티켓), 기존 호출은 영향 없음
-        ...(resolvedUserIds.length > 0 && {
+        ...(!showAll && resolvedUserIds.length > 0 && {
           assignedUserIds: { $in: resolvedUserIds },
         }),
         ...(args?.priority && { priority: { $in: args?.priority || [] } }),
