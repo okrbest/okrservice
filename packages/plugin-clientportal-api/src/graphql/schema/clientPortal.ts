@@ -87,6 +87,14 @@ ${
   enabledPlugins.tickets
     ? `
 
+    extend type TicketsBoard @key(fields: "_id") {
+    _id: String! @external
+  }
+
+    extend type TicketsPipeline @key(fields: "_id") {
+    _id: String! @external
+  }
+
     extend type TicketsStage @key(fields: "_id") {
     _id: String! @external
   }
@@ -475,6 +483,16 @@ ${
     modifiedAt: Date
   }
 
+  type StaffNotificationItem {
+    _id: String!
+    title: String
+    content: String
+    notifType: String
+    link: String
+    isRead: Boolean
+    createdAt: Date
+  }
+
 `;
 
 export const queries = (enabledPlugins) => `
@@ -541,6 +559,9 @@ export const queries = (enabledPlugins) => `
    `
       : ''
   }
+
+  clientPortalStaffNotifications(limit: Int, skip: Int): [StaffNotificationItem]
+  clientPortalUnreadNotificationCount: Int
 `;
 
 export const mutations = (enabledPlugins) => `
@@ -593,4 +614,6 @@ export const mutations = (enabledPlugins) => `
     clientPortalId: String!,
     transactionId: String!
   ): JSON
+
+  clientPortalMarkStaffNotificationsRead(ids: [String]!): Boolean
 `;
