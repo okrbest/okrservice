@@ -4,7 +4,9 @@ import { paginate } from "@erxes/api-utils/src";
 import { IContext, IModels } from "../../../connectionResolver";
 import {
   sendCommonMessage,
+  sendCoreMessage,
   sendKbMessage,
+  sendNotificationsMessage,
   sendTasksMessage,
   sendTicketsMessage,
 } from "../../../messageBroker";
@@ -23,6 +25,21 @@ const getByHost = async (models, requestInfo) => {
 
   return config;
 };
+
+async function getErxesUserIdForCpUser(
+  cpUser: any,
+  subdomain: string
+): Promise<string | null> {
+  if (!cpUser?.email) return null;
+  const erxesUser = await sendCoreMessage({
+    subdomain,
+    action: "users.findOne",
+    data: { email: cpUser.email },
+    isRPC: true,
+    defaultValue: null,
+  });
+  return erxesUser?._id || null;
+}
 
 const configClientPortalQueries = {
   async clientPortalGetConfigs(
@@ -518,6 +535,61 @@ const configClientPortalQueries = {
     if (users?.length > 0) filter.cpUserId = { $in: users.map((d) => d._id) };
     else return [];
     return models.ClientPortalUserCards.find(filter);
+  },
+
+  async clientPortalStaffNotifications(
+    _root,
+    { limit = 20, skip = 0 }: { limit?: number; skip?: number },
+    { cpUser, subdomain }: IContext
+  ) {
+    if (!cpUser || (cpUser as any).type !== "staff") return [];
+    const erxesUserId = await getErxesUserIdForCpUser(cpUser, subdomain);
+    if (!erxesUserId) return [];
+
+    return sendNotificationsMessage({
+      subdomain,
+      action: "find",
+      isRPC: true,
+      data: {
+        selector: { receiver: erxesUserId },
+        fields: {
+          _id: 1,
+          title: 1,
+          content: 1,
+          notifType: 1,
+          link: 1,
+          isRead: 1,
+          createdAt: 1,
+        },
+        sort: { createdAt: -1 },
+        limit,
+        skip,
+      },
+      defaultValue: [],
+    });
+  },
+
+  async clientPortalUnreadNotificationCount(
+    _root,
+    _args,
+    { cpUser, subdomain }: IContext
+  ) {
+    if (!cpUser || (cpUser as any).type !== "staff") return 0;
+    const erxesUserId = await getErxesUserIdForCpUser(cpUser, subdomain);
+    if (!erxesUserId) return 0;
+
+    const notifications = await sendNotificationsMessage({
+      subdomain,
+      action: "find",
+      isRPC: true,
+      data: {
+        selector: { receiver: erxesUserId, isRead: false },
+        fields: { _id: 1 },
+        limit: 100,
+      },
+      defaultValue: [],
+    });
+    return notifications.length;
   },
 };
 
