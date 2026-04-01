@@ -45,6 +45,29 @@ const DealSubmitContainer = (props: Props) => {
   const [customFieldsData, setCustomFieldsData] = React.useState<Record<string, any>>({});
   const [agreePrivacy, setAgreePrivacy] = React.useState(false);
 
+  const trackDealSubmitConversion = React.useCallback(() => {
+    const w = window as any;
+
+    if (typeof w.gtag === "function") {
+      w.gtag("event", "conversion", {
+        send_to: "AW-11002647279/0Y4xCIqat5McEO-lvP4o",
+        value: 1.0,
+        currency: "KRW",
+      });
+      return;
+    }
+
+    // gtag가 아직 준비되지 않은 경우를 대비해 dataLayer에도 동일 이벤트를 적재
+    if (Array.isArray(w.dataLayer)) {
+      w.dataLayer.push({
+        event: "conversion",
+        send_to: "AW-11002647279/0Y4xCIqat5McEO-lvP4o",
+        value: 1.0,
+        currency: "KRW",
+      });
+    }
+  }, []);
+
   const {
     data: customer,
     loading: customerLoading,
@@ -91,6 +114,7 @@ const DealSubmitContainer = (props: Props) => {
 
       if (widgetDealCreated?._id) {
         setError(null);
+        trackDealSubmitConversion();
         // 제출 완료 알림 후 위젯만 닫기 (성공 화면·문의&데모신청 화면 없이)
         window.alert("제출이 완료되었습니다. 감사합니다.");
         toggle();
