@@ -263,6 +263,48 @@ export const setupMessageConsumers = async () => {
       };
     }
   );
+
+  consumeQueue(
+    "clientportal:staff:mobilePush",
+    async ({
+      subdomain,
+      data: { erxesUserId, title, content, notifType, link },
+    }) => {
+      const models = await generateModels(subdomain);
+
+      // 1. Look up the erxes user to get their email
+      const erxesUser = await sendCoreMessage({
+        subdomain,
+        action: "users.findOne",
+        data: { _id: erxesUserId },
+        isRPC: true,
+        defaultValue: null,
+      });
+      if (!erxesUser?.email) return;
+
+      // 2. Find the staff ClientPortalUser with this email who has a device token
+      const cpUser = await models.ClientPortalUsers.findOne({
+        email: erxesUser.email,
+        type: "staff",
+        "deviceTokens.0": { $exists: true },
+      }).lean();
+      if (!cpUser) return;
+
+      // 3. Send FCM via the existing sendNotification helper (isMobile: true path)
+      await sendNotification(models, subdomain, {
+        receivers: [cpUser._id.toString()],
+        title,
+        content,
+        notifType: "system",
+        link: link || "",
+        isMobile: true,
+        eventData: {
+          notifType,
+          screen: "notifications",
+        },
+      });
+    }
+  );
 };
 
 export const sendCoreMessage = async (args: MessageArgsOmitService) => {
