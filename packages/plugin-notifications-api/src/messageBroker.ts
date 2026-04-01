@@ -404,11 +404,15 @@ export const setupMessageConsumers = async () => {
 
   consumeRPCQueue(
     "notifications:find",
-    async ({ subdomain, data: { selector, fields } }) => {
+    async ({ subdomain, data: { selector, fields, sort, limit, skip } }) => {
       const models = await generateModels(subdomain);
+      let query = models.Notifications.find(selector, fields);
+      if (sort) query = query.sort(sort);
+      if (typeof skip === "number") query = query.skip(skip);
+      if (typeof limit === "number") query = query.limit(limit);
       return {
         status: "success",
-        data: await models.Notifications.find(selector, fields),
+        data: await query.lean(),
       };
     }
   );
