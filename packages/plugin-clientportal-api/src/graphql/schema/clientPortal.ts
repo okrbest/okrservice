@@ -514,8 +514,11 @@ export const queries = (enabledPlugins) => `
     enabledPlugins.tickets
       ? `
     clientPortalTicket(_id: String!): Ticket
-    clientPortalTickets(priority: [String], labelIds:[String], stageId: String, userIds: [String], closeDateType: String, date: TicketsItemDate): [Ticket]
+    clientPortalTickets(priority: [String], labelIds:[String], stageId: String, pipelineId: String, showAll: Boolean, userIds: [String], closeDateType: String, date: TicketsItemDate): [Ticket]
     clientPortalUserTickets(userId: String): [Ticket]
+    clientPortalGetTicketBoards: [TicketsBoard]
+    clientPortalGetTicketPipelines(boardId: String!): [TicketsPipeline]
+    clientPortalGetTicketStages(pipelineId: String!): [TicketsStage]
 
     `
       : ''
