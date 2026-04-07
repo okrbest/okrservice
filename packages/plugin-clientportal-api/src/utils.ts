@@ -583,7 +583,8 @@ export const getCards = async (
       return [];
     }
 
-    const staffStageIds = staffStages.map((stage) => stage._id);
+    const activeStages = staffStages.filter((stage) => stage.probability !== "Resolved");
+    const staffStageIds = activeStages.map((stage) => stage._id);
     let staffOneStageId = "";
     if (args?.stageId) {
       staffOneStageId = staffStageIds.includes(args.stageId)

@@ -191,13 +191,14 @@ const configClientPortalQueries = {
     { pipelineId }: { pipelineId: string },
     { subdomain }: IContext
   ) {
-    return sendTicketsMessage({
+    const stages = await sendTicketsMessage({
       subdomain,
       action: "stages.find",
       data: { pipelineId },
       isRPC: true,
       defaultValue: [],
     });
+    return stages.filter((s: any) => s.probability !== "Resolved");
   },
 
   async clientPortalTickets(_root, _args, context: IContext) {
@@ -546,7 +547,7 @@ const configClientPortalQueries = {
     const erxesUserId = await getErxesUserIdForCpUser(cpUser, subdomain);
     if (!erxesUserId) return [];
 
-    return sendNotificationsMessage({
+    const notifications = await sendNotificationsMessage({
       subdomain,
       action: "find",
       isRPC: true,
@@ -560,6 +561,7 @@ const configClientPortalQueries = {
           link: 1,
           isRead: 1,
           createdAt: 1,
+          date: 1,
         },
         sort: { createdAt: -1 },
         limit,
@@ -567,6 +569,11 @@ const configClientPortalQueries = {
       },
       defaultValue: [],
     });
+
+    return (notifications || []).map((notification: any) => ({
+      ...notification,
+      createdAt: notification?.createdAt || notification?.date || null,
+    }));
   },
 
   async clientPortalUnreadNotificationCount(
