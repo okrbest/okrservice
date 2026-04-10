@@ -4,7 +4,7 @@ import {
   TriggerType
 } from './models/definitions/automaions';
 
-import { ACTIONS } from './constants';
+import { ACTIONS, TICKET_AUTOMATION_TRIGGER_SOURCE } from './constants';
 import {
   EXECUTION_STATUS,
   IExecAction,
@@ -137,6 +137,54 @@ export const checkSegmentHasAssignAlarmCondition = async (
       // SubSegment가 있으면 재귀적으로 확인
       if (condition.type === 'subSegment' && condition.subSegmentId) {
         const hasInSubSegment = await checkSegmentHasAssignAlarmCondition(
+          subdomain,
+          condition.subSegmentId
+        );
+        if (hasInSubSegment) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Segment가 assignAlarmComment 조건을 체크하는지 확인 (고객 댓글 전용 트리거)
+ */
+export const checkSegmentHasAssignAlarmCommentCondition = async (
+  subdomain: string,
+  segmentId: string
+): Promise<boolean> => {
+  if (!segmentId) {
+    return false;
+  }
+
+  try {
+    const result = await sendCommonMessage({
+      subdomain,
+      serviceName: 'core',
+      action: 'segmentFindOne',
+      data: { _id: segmentId },
+      isRPC: true
+    });
+
+    const segment = result?.data || result;
+
+    if (!segment?.conditions) {
+      return false;
+    }
+
+    for (const condition of segment.conditions) {
+      if (condition.propertyName === 'assignAlarmComment') {
+        return true;
+      }
+
+      if (condition.type === 'subSegment' && condition.subSegmentId) {
+        const hasInSubSegment = await checkSegmentHasAssignAlarmCommentCondition(
           subdomain,
           condition.subSegmentId
         );
@@ -532,8 +580,9 @@ export const calculateExecution = async ({
       // 수동 트리거(manualEmailRequest 등)는 재등록 검사 없이 항상 실행
       const isManualTrigger = target.manualEmailRequest === true;
       
-      // assignAlarm이 true인 경우 재등록 검사 없이 항상 실행 (description 수정으로 인한 트리거)
-      const isAssignAlarmTrigger = target.assignAlarm === true;
+      // assignAlarm 계열 트리거: 재등록 검사 없이 항상 실행
+      const isAssignAlarmTrigger =
+        target.assignAlarm === true || target.assignAlarmComment === true;
       
       if (!isManualTrigger && !isAssignAlarmTrigger) {
         // 완료/누락 상태인 경우에만 재등록 검사
@@ -558,8 +607,12 @@ export const calculateExecution = async ({
     }
   }
 
-  // assignAlarm 트리거: 같은 티켓+자동화에 대해 쿨다운(5분) 내 중복 실행 방지
-  if (triggerSource === 'assignAlarm' && target?._id) {
+  // assignAlarm 계열: 같은 티켓+자동화에 대해 쿨다운 내 중복 실행 방지
+  if (
+    (triggerSource === TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_DESCRIPTION ||
+      triggerSource === TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_COMMENT) &&
+    target?._id
+  ) {
     const cooldownSince = new Date(Date.now() - ASSIGN_ALARM_COOLDOWN_MS);
     const recentExecution = await models.Executions.findOne({
       automationId,
@@ -700,15 +753,31 @@ export const receiveTrigger = async ({
           }
         }
 
-        // Assign Alarm 필터링: triggerSource가 "assignAlarm"일 때
-        // 이 트리거의 segment가 assignAlarm 조건을 체크하는지 확인
-        if (triggerSource === 'assignAlarm') {
+        // 본문(description) 수정 → segment에 assignAlarm 조건
+        if (
+          triggerSource === TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_DESCRIPTION
+        ) {
           const hasAssignAlarmCondition = await checkSegmentHasAssignAlarmCondition(
             subdomain,
             trigger.config.contentId
           );
-          
+
           if (!hasAssignAlarmCondition) {
+            continue;
+          }
+        }
+
+        // 고객 댓글 → segment에 assignAlarmComment 조건
+        if (
+          triggerSource === TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_COMMENT
+        ) {
+          const hasAssignAlarmCommentCondition =
+            await checkSegmentHasAssignAlarmCommentCondition(
+              subdomain,
+              trigger.config.contentId
+            );
+
+          if (!hasAssignAlarmCommentCondition) {
             continue;
           }
         }

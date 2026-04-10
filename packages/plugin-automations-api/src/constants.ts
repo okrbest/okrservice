@@ -90,3 +90,9 @@ export const STATUSES = {
   ACTIVE: "active",
   ARCHIVED: "archived"
 };
+
+/** 티켓 플러그인과 동일한 문자열 — 자동화 트리거 소스 (본문 수정 vs 댓글) */
+export const TICKET_AUTOMATION_TRIGGER_SOURCE = {
+  ASSIGN_ALARM_DESCRIPTION: "assignAlarmDescription",
+  ASSIGN_ALARM_COMMENT: "assignAlarmComment"
+} as const;
