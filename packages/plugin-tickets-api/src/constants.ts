@@ -16,6 +16,12 @@ import {
 
 import { pipelineLabelSchema } from './models/definitions/pipelineLabels';
 
+/** 티켓 자동화: 본문(description) 수정 vs 고객 댓글 트리거 구분 */
+export const TICKET_AUTOMATION_TRIGGER_SOURCE = {
+  ASSIGN_ALARM_DESCRIPTION: 'assignAlarmDescription',
+  ASSIGN_ALARM_COMMENT: 'assignAlarmComment'
+} as const;
+
 export const IMPORT_EXPORT_TYPES = [
   {
     text: 'Ticket',
@@ -314,6 +320,14 @@ export const CARD_PROPERTIES_INFO = {
     {
       label: 'Assign Alarm',
       field: 'assignAlarm',
+      canHide: false,
+      validation: null,
+      type: 'select',
+      options: ['true', 'false']
+    },
+    {
+      label: 'Assign Alarm (Comment)',
+      field: 'assignAlarmComment',
       canHide: false,
       validation: null,
       type: 'select',

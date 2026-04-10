@@ -37,6 +37,7 @@ import {
   sendCoreMessage,
   sendNotificationsMessage,
 } from "../../../messageBroker";
+import { TICKET_AUTOMATION_TRIGGER_SOURCE } from "../../../constants";
 
 export const itemResolver = async (
   models: IModels,
@@ -377,7 +378,9 @@ export const itemsEdit = async (
     // assignAlarm이 true로 설정되었으므로 자동화 트리거 전송
     const ticketForAutomation = updatedItem.toObject ? updatedItem.toObject() : { ...updatedItem };
     ticketForAutomation.assignAlarm = true;  // 자동화 트리거를 위해 true로 명시적 설정
-    
+    ticketForAutomation.assignAlarmTriggerSource =
+      TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_DESCRIPTION;
+
     const { sendMessage } = await import("@erxes/api-utils/src/core");
     try {
       await sendMessage({
@@ -387,10 +390,11 @@ export const itemsEdit = async (
         data: {
           type: "tickets:ticket",
           targets: [ticketForAutomation],  // assignAlarm: true인 데이터 전달
-          triggerSource: "assignAlarm"
+          triggerSource:
+            TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_DESCRIPTION
         }
       });
-      console.log('✅ assignAlarm 자동화 트리거 전송 완료');
+      console.log('✅ assignAlarmDescription 자동화 트리거 전송 완료');
       
       // description 변경으로 인한 자동화 트리거를 이미 보냈으므로
       // putUpdateLog에서는 자동화 트리거를 스킵하도록 플래그 설정

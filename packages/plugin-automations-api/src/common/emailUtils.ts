@@ -3,7 +3,7 @@ import {
   sendCoreMessage,
   sendSegmentsMessage
 } from '../messageBroker';
-import { EMAIL_RECIPIENTS_TYPES } from '../constants';
+import { EMAIL_RECIPIENTS_TYPES, TICKET_AUTOMATION_TRIGGER_SOURCE } from '../constants';
 import { getEnv } from '../utils';
 import * as AWS from 'aws-sdk';
 import * as nodemailer from 'nodemailer';
@@ -289,10 +289,17 @@ export const generateDoc = async ({
     fromUserEmail = fromUser?.email;
   }
 
-  // assignAlarm이 true이고 modifiedBy가 있을 때만 수정자 이메일 가져오기
-  // (description 수정으로 인한 assignAlarm인 경우에만 수정자 제외)
+  // 본문(description) 수정(assignAlarmDescription)일 때만 마지막 수정자 제외.
+  // 고객 댓글(assignAlarmComment)은 담당자·수정자 구분 없이 수신자 전원에게 발송.
   let modifiedByEmail = '';
-  if (target?.assignAlarm === true && target?.modifiedBy) {
+  const isCommentAssignTrigger =
+    target?.assignAlarmTriggerSource ===
+    TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_COMMENT;
+  if (
+    target?.assignAlarm === true &&
+    target?.modifiedBy &&
+    !isCommentAssignTrigger
+  ) {
     const modifiedUser = await sendCoreMessage({
       subdomain,
       action: 'users.findOne',
@@ -347,8 +354,7 @@ export const generateDoc = async ({
     throw new Error(`"Recieving emails not found. Check if ticket has assigned users or email configuration is correct. Details: ${JSON.stringify(errorDetails)}"`);
   }
 
-  // 발신자는 항상 제외
-  // assignAlarm이 true이고 modifiedBy가 있을 때만 수정자도 제외 (description 수정인 경우)
+  // 발신자는 항상 제외. 수정자 제외는 본문 수정 트리거에서만 적용(위에서 modifiedByEmail 미조회 시 빈 값)
   const excludedEmails = [fromUserEmail];
   if (modifiedByEmail) {
     excludedEmails.push(modifiedByEmail);

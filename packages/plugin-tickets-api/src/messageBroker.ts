@@ -24,6 +24,7 @@ import { getCardItem } from "./utils";
 import graphqlPubsub from "@erxes/api-utils/src/graphqlPubsub";
 import { itemsAdd } from "../src/graphql/resolvers/mutations/utils";
 import { sendMessage } from "@erxes/api-utils/src/core";
+import { TICKET_AUTOMATION_TRIGGER_SOURCE } from "./constants";
 
 export const setupMessageConsumers = async () => {
   consumeRPCQueue("tickets:tickets.create", async ({ subdomain, data }) => {
@@ -597,7 +598,10 @@ export const setupMessageConsumers = async () => {
         if (updatedTicket) {
           const ticketForAutomation: any = updatedTicket.toObject ? updatedTicket.toObject() : { ...updatedTicket };
           ticketForAutomation.assignAlarm = true;  // 자동화 트리거를 위해 true로 명시적 설정
-          
+          ticketForAutomation.assignAlarmComment = true; // 세그먼트 assignAlarmComment 조건용
+          ticketForAutomation.assignAlarmTriggerSource =
+            TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_COMMENT;
+
           try {
             await sendMessage({
               subdomain,
@@ -606,10 +610,11 @@ export const setupMessageConsumers = async () => {
               data: {
                 type: "tickets:ticket",
                 targets: [ticketForAutomation],  // assignAlarm: true인 데이터 전달
-                triggerSource: "assignAlarm"
+                triggerSource:
+                  TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_COMMENT
               }
             });
-            console.log('✅ assignAlarm 자동화 트리거 전송 완료 (client comment)');
+            console.log('✅ assignAlarmComment 자동화 트리거 전송 완료 (client comment)');
             
             // 자동화 트리거 전송 후 10초 뒤에 assignAlarm을 false로 리셋
             // 이렇게 해야 고객이 다시 댓글을 달면 자동화가 재등록(재실행)될 수 있음
