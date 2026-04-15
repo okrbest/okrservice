@@ -4,6 +4,10 @@ import { sendCoreMessage } from "../../../messageBroker";
 import { IBoardDocument } from "../../../models/definitions/boards";
 
 export default {
+  async __resolveReference({ _id }, { models }: IContext) {
+    return models.Boards.findOne({ _id }).lean();
+  },
+
   async pipelines(
     board: IBoardDocument,
     {},

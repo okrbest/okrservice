@@ -225,11 +225,89 @@ const configClientPortalQueries = {
     return sendTicketsMessage({
       subdomain,
       action: "tickets.findOne",
-      data: {
-        _id,
-      },
+      data: { _id },
       isRPC: true,
     });
+  },
+
+  async clientPortalTicketContacts(
+    _root,
+    { ticketId }: { ticketId: string },
+    { subdomain }: IContext
+  ) {
+    const [customerIds, companyIds] = await Promise.all([
+      sendCoreMessage({
+        subdomain,
+        action: "conformities.savedConformity",
+        data: { mainType: "ticket", mainTypeId: ticketId, relTypes: ["customer"] },
+        isRPC: true,
+        defaultValue: [],
+      }),
+      sendCoreMessage({
+        subdomain,
+        action: "conformities.savedConformity",
+        data: { mainType: "ticket", mainTypeId: ticketId, relTypes: ["company"] },
+        isRPC: true,
+        defaultValue: [],
+      }),
+    ]);
+
+    const [customers, companies] = await Promise.all([
+      customerIds.length
+        ? sendCoreMessage({
+            subdomain,
+            action: "customers.findActiveCustomers",
+            data: { selector: { _id: { $in: customerIds } } },
+            isRPC: true,
+            defaultValue: [],
+          })
+        : Promise.resolve([]),
+      companyIds.length
+        ? sendCoreMessage({
+            subdomain,
+            action: "companies.findActiveCompanies",
+            data: { selector: { _id: { $in: companyIds } } },
+            isRPC: true,
+            defaultValue: [],
+          })
+        : Promise.resolve([]),
+    ]);
+
+    return { customers, companies };
+  },
+
+  async clientPortalTicketStageMeta(
+    _root,
+    { ticketId }: { ticketId: string },
+    { subdomain }: IContext
+  ) {
+    const ticket = await sendTicketsMessage({
+      subdomain,
+      action: "tickets.findOne",
+      data: { _id: ticketId },
+      isRPC: true,
+      defaultValue: null,
+    });
+
+    if (!ticket) {
+      return { stageId: null, pipelineId: null };
+    }
+
+    const stageId = ticket.stageId || null;
+    let pipelineId = ticket.pipelineId || null;
+
+    if (!pipelineId && stageId) {
+      const stage = await sendTicketsMessage({
+        subdomain,
+        action: "stages.findOne",
+        data: { _id: stageId },
+        isRPC: true,
+        defaultValue: null,
+      });
+      pipelineId = stage?.pipelineId || null;
+    }
+
+    return { stageId, pipelineId };
   },
 
   /**
@@ -536,6 +614,32 @@ const configClientPortalQueries = {
     if (users?.length > 0) filter.cpUserId = { $in: users.map((d) => d._id) };
     else return [];
     return models.ClientPortalUserCards.find(filter);
+  },
+
+  async clientPortalAssignableMembers(
+    _root,
+    _args,
+    { cpUser, subdomain }: IContext
+  ) {
+    if (!cpUser) return [];
+
+    const users = await sendCoreMessage({
+      subdomain,
+      action: "users.find",
+      data: {
+        query: { isActive: true },
+        sort: { createdAt: 1 },
+      },
+      isRPC: true,
+      defaultValue: [],
+    });
+
+    return (users || []).map((u: any) => ({
+      _id: u?._id,
+      firstName: u?.details?.firstName || u?.firstName || "",
+      lastName: u?.details?.lastName || u?.lastName || "",
+      email: u?.email || "",
+    }));
   },
 
   async clientPortalStaffNotifications(
