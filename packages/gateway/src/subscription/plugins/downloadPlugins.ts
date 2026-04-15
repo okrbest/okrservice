@@ -6,7 +6,13 @@ import { pipeline } from 'node:stream/promises';
 
 async function downloadFile(url, path): Promise<void> {
   const res = await fetch(url);
-  await pipeline(res.body, fs.createWriteStream(path));
+  if (!res.ok || !res.body) {
+    throw new Error(`HTTP ${res.status} while downloading ${url}`);
+  }
+
+  const tempPath = `${path}.tmp`;
+  await pipeline(res.body, fs.createWriteStream(tempPath));
+  await fs.promises.rename(tempPath, path);
 }
 
 export default async function downloadPlugins(): Promise<void> {
@@ -52,8 +58,14 @@ export default async function downloadPlugins(): Promise<void> {
 
 async function clearDirectory(directory: string) {
   const files = await fs.promises.readdir(directory);
-  const unlinkPromises = files.map((file) =>
-    fs.promises.unlink(`${directory}/${file}`),
-  );
+  const unlinkPromises = files.map(async (file) => {
+    try {
+      await fs.promises.unlink(`${directory}/${file}`);
+    } catch (e) {
+      if (e?.code !== 'ENOENT') {
+        throw e;
+      }
+    }
+  });
   await Promise.all(unlinkPromises);
 }

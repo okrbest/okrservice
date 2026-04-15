@@ -17,7 +17,7 @@ import * as ws from "ws";
 import { filterXSS } from "xss";
 import { debugError, debugInfo } from "../debuggers";
 
-import app from "@erxes/api-utils/src/app";
+import app from "../app";
 import {
   getServices,
   join,
