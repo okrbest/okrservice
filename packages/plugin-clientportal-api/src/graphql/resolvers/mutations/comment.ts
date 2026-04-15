@@ -27,6 +27,25 @@ const clientPortalCommentMutations = {
             })()
         : user._id;
 
+    // Ticket comments are stored in tickets service (ticket_comments).
+    // If we write to local client_portal_comments, staff-app detail query won't see them.
+    if (type === "ticket") {
+      const created = await sendTicketsMessage({
+        subdomain,
+        action: "widgets.commentAdd",
+        data: {
+          type,
+          typeId,
+          content,
+          userType,
+          customerId: userType === "client" ? cpUser?.erxesCustomerId : undefined,
+        },
+        isRPC: true,
+      });
+
+      return created;
+    }
+
     // Create the comment
     const comment = await models.Comments.createComment({
       type,

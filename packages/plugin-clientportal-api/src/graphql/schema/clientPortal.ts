@@ -104,6 +104,25 @@ ${
     _id: String! @external
   }
 
+  type TicketContactItem {
+    _id: String!
+    firstName: String
+    lastName: String
+    primaryEmail: String
+    primaryPhone: String
+  }
+
+  type TicketCompanyItem {
+    _id: String!
+    primaryName: String
+    primaryEmail: String
+    primaryPhone: String
+  }
+
+  type TicketContactsResult {
+    customers: [TicketContactItem]
+    companies: [TicketCompanyItem]
+  }
 
   input TicketsItemDate {
     month: Int
@@ -493,6 +512,18 @@ ${
     createdAt: Date
   }
 
+  type AssignableMember {
+    _id: String!
+    firstName: String
+    lastName: String
+    email: String
+  }
+
+  type TicketStageMeta {
+    stageId: String
+    pipelineId: String
+  }
+
 `;
 
 export const queries = (enabledPlugins) => `
@@ -534,6 +565,8 @@ export const queries = (enabledPlugins) => `
     clientPortalTicket(_id: String!): Ticket
     clientPortalTickets(priority: [String], labelIds:[String], stageId: String, pipelineId: String, showAll: Boolean, userIds: [String], closeDateType: String, date: TicketsItemDate): [Ticket]
     clientPortalUserTickets(userId: String): [Ticket]
+    clientPortalTicketContacts(ticketId: String!): TicketContactsResult
+    clientPortalTicketStageMeta(ticketId: String!): TicketStageMeta
     clientPortalGetTicketBoards: [TicketsBoard]
     clientPortalGetTicketPipelines(boardId: String!): [TicketsPipeline]
     clientPortalGetTicketStages(pipelineId: String!): [TicketsStage]
@@ -562,6 +595,7 @@ export const queries = (enabledPlugins) => `
 
   clientPortalStaffNotifications(limit: Int, skip: Int): [StaffNotificationItem]
   clientPortalUnreadNotificationCount: Int
+  clientPortalAssignableMembers: [AssignableMember]
 `;
 
 export const mutations = (enabledPlugins) => `
@@ -616,4 +650,5 @@ export const mutations = (enabledPlugins) => `
   ): JSON
 
   clientPortalMarkStaffNotificationsRead(ids: [String]!): Boolean
+  clientPortalTicketAssign(ticketId: String!, assignedUserIds: [String]!): Boolean
 `;

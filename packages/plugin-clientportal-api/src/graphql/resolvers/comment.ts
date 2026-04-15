@@ -38,14 +38,25 @@ export default {
       };
     }
 
-    const cpUser: any = await models.ClientPortalUsers.getUser({
-      _id: comment.userId
-    });
+    let cpUser: any = null;
+    try {
+      cpUser = await models.ClientPortalUsers.getUser({
+        _id: comment.userId
+      });
+    } catch {
+      cpUser = null;
+    }
+
+    // Some historic comments can point to removed users.
+    // Return null instead of throwing so comment lists stay readable.
+    if (!cpUser) {
+      return null;
+    }
 
     return {
       _id: cpUser._id,
       avatar: cpUser.avatar,
-      fullName: `${cpUser.firstName} ${cpUser.lastName}`,
+      fullName: [cpUser.firstName, cpUser.lastName].filter(Boolean).join(' ').trim(),
       firstName: cpUser.firstName,
       lastName: cpUser.lastName,
       email: cpUser.email

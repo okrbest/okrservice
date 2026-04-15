@@ -7,6 +7,10 @@ import {
 import { generateTicketCommonFilters } from "../queries/utils";
 
 export default {
+  async __resolveReference({ _id }, { models }: IContext) {
+    return models.Pipelines.findOne({ _id }).lean();
+  },
+
   createdUser(pipeline: IPipelineDocument) {
     if (!pipeline.userId) {
       return;
