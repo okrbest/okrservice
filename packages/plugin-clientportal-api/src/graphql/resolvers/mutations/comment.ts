@@ -46,7 +46,21 @@ const clientPortalCommentMutations = {
       // 직원이 댓글 추가 시 → 티켓에 연결된 고객에게 푸시 알림 발송
       if (userType === "team") {
         try {
-          const customerIds = await sendCoreMessage({
+          // 1) 티켓에서 직접 customerId를 읽는다 (conformity 여부와 무관하게 동작)
+          const ticket = await sendTicketsMessage({
+            subdomain,
+            action: "tickets.findOne",
+            data: { _id: typeId },
+            isRPC: true,
+            defaultValue: null,
+          });
+
+          // 2) 티켓의 customerId + conformity 결과를 합산해 중복 없이 조회
+          const directCustomerIds: string[] = ticket?.customerId
+            ? [ticket.customerId]
+            : ticket?.customerIds ?? [];
+
+          const conformityCustomerIds: string[] = await sendCoreMessage({
             subdomain,
             action: "conformities.savedConformity",
             data: { mainType: "ticket", mainTypeId: typeId, relTypes: ["customer"] },
@@ -54,9 +68,13 @@ const clientPortalCommentMutations = {
             defaultValue: [],
           });
 
-          if (customerIds?.length) {
+          const allCustomerIds = Array.from(
+            new Set([...directCustomerIds, ...conformityCustomerIds])
+          );
+
+          if (allCustomerIds.length) {
             const cpUsers = await models.ClientPortalUsers.find({
-              erxesCustomerId: { $in: customerIds },
+              erxesCustomerId: { $in: allCustomerIds },
             }).lean();
 
             const receiverIds = cpUsers.map((u: any) => u._id);
