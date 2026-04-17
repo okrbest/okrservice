@@ -142,6 +142,11 @@ export const setupMessageConsumers = async () => {
    */
   consumeQueue("clientportal:sendNotification", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
+    console.log(
+      `clientportal:sendNotification received isMobile=${String(
+        (data as any)?.isMobile
+      )}`
+    );
     await sendNotification(models, subdomain, data);
   });
 
