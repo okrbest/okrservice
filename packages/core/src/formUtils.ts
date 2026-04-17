@@ -4,6 +4,30 @@ import { fetchServiceForms, sendInboxMessage } from "./messageBroker";
 import { IFormSubmissionFilter } from "./db/models/definitions/forms";
 import { getRealIdFromElk } from "@erxes/api-utils/src/elasticsearch";
 
+/** 직원 규모 — 필드 code가 employeeSize이거나 라벨이 직원 규모인 경우 통일된 선택지 */
+const EMPLOYEE_SIZE_OPTIONS: string[] = [
+  "임직원 100명 이하",
+  "임직원 100~300명",
+  "임직원 300~500명",
+  "임직원 500~1000명",
+  "임직원 1000명 이상",
+];
+
+function resolveEmployeeSizeOptions(customField: {
+  code?: string;
+  text?: string;
+  options?: string[];
+}): string[] | undefined {
+  if (customField.code === "employeeSize") {
+    return EMPLOYEE_SIZE_OPTIONS;
+  }
+  const t = customField.text || "";
+  if (/직원\s*규모|직원규모/.test(t)) {
+    return EMPLOYEE_SIZE_OPTIONS;
+  }
+  return undefined;
+}
+
 export const getCustomFields = async (
   models: IModels,
   contentType: string,
@@ -109,12 +133,16 @@ export const fieldsCombinedByContentType = async (
 
   const extendedFields = customFieldsWithGroups
     .filter(({ group }) => group?.isVisible)
-    .map(({ customField, group }) => ({
+    .map(({ customField, group }) => {
+      const employeeOpts = resolveEmployeeSizeOptions(customField);
+      const optionList = employeeOpts ?? customField.options;
+
+      return {
       _id: Math.random(),
       name: `customFieldsData.${getRealIdFromElk(customField._id)}`,
       label: customField.text,
-      options: customField.options,
-      selectOptions: generateSelectOptions(customField.options),
+      options: optionList,
+      selectOptions: generateSelectOptions(optionList),
       validation: customField.validation,
       type: customField.type,
       group: group._id,
@@ -129,7 +157,8 @@ export const fieldsCombinedByContentType = async (
             description: group.description
           }
         : undefined
-    }));
+    };
+    });
 
   fields = [...fields, ...extendedFields];
 
