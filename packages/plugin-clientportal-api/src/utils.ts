@@ -15,6 +15,7 @@ import {
   sendTicketsMessage,
 } from "./messageBroker";
 import fetch from "node-fetch";
+import * as fs from "fs";
 
 import * as admin from "firebase-admin";
 import { CLOSE_DATE_TYPES } from "./constants";
@@ -200,23 +201,52 @@ export const generateRandomPassword = (len: number = 10) => {
 };
 
 export const initFirebase = async (subdomain: string): Promise<void> => {
-  const config = await sendCoreMessage({
-    subdomain,
-    action: "configs.findOne",
-    data: {
-      query: {
-        code: "GOOGLE_APPLICATION_CREDENTIALS_JSON",
-      },
-    },
-    isRPC: true,
-    defaultValue: null,
-  });
+  let codeString = "";
 
-  if (!config) {
-    return;
+  // 1) Direct env JSON has highest priority (no broker dependency)
+  if (!codeString && process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+    codeString = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
   }
 
-  const codeString = config.value || "value";
+  // 2) Fallback to service-account file path (no broker dependency)
+  if (!codeString && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    try {
+      codeString = fs.readFileSync(
+        process.env.GOOGLE_APPLICATION_CREDENTIALS,
+        "utf8"
+      );
+    } catch (e) {
+      console.error(`Failed to read GOOGLE_APPLICATION_CREDENTIALS file: ${e.message}`);
+    }
+  }
+
+  // 3) Last fallback: core config lookup over message broker
+  if (!codeString) {
+    try {
+      const config = await sendCoreMessage({
+        subdomain,
+        action: "configs.findOne",
+        data: {
+          query: {
+            code: "GOOGLE_APPLICATION_CREDENTIALS_JSON",
+          },
+        },
+        isRPC: true,
+        defaultValue: null,
+      });
+
+      if (config?.value) {
+        codeString = config.value;
+      }
+    } catch (e) {
+      console.error(`Failed to fetch GOOGLE_APPLICATION_CREDENTIALS_JSON from core config: ${e.message}`);
+    }
+  }
+
+  if (!codeString) {
+    console.error("initFirebase: no credentials source found");
+    return;
+  }
 
   if (codeString[0] === "{" && codeString[codeString.length - 1] === "}") {
     const serviceAccount = JSON.parse(codeString);
@@ -268,6 +298,16 @@ export const sendNotification = async (
   } = doc;
 
   const link = doc.link;
+  const normalizedData: Record<string, string> = Object.entries(eventData || {}).reduce(
+    (acc, [key, value]) => {
+      if (value === undefined || value === null) {
+        return acc;
+      }
+      acc[key] = typeof value === "string" ? value : JSON.stringify(value);
+      return acc;
+    },
+    {} as Record<string, string>
+  );
 
   // remove duplicated ids
   const receiverIds = [...Array.from(new Set(receivers))];
@@ -319,104 +359,160 @@ export const sendNotification = async (
     });
   }
 
-  sendCoreMessage({
-    subdomain,
-    action: "sendEmail",
-    data: {
-      toEmails,
-      title: "Notification",
-      template: {
-        name: "notification",
-        data: {
-          notification: { ...doc, link },
+  // Keep mobile push independent from email delivery path.
+  // RabbitMQ/email failures must not block FCM sending.
+  Promise.resolve(
+    sendCoreMessage({
+      subdomain,
+      action: "sendEmail",
+      data: {
+        toEmails,
+        title: "Notification",
+        template: {
+          name: "notification",
+          data: {
+            notification: { ...doc, link },
+          },
+        },
+        modifier: (data: any, email: string) => {
+          const user = recipients.find((item) => item.email === email);
+
+          if (user) {
+            data.uid = user._id;
+          }
         },
       },
-      modifier: (data: any, email: string) => {
-        const user = recipients.find((item) => item.email === email);
-
-        if (user) {
-          data.uid = user._id;
-        }
-      },
-    },
+    })
+  ).catch((e) => {
+    console.error(`sendEmail enqueue failed, continue mobile push: ${e.message}`);
   });
 
   if (isMobile) {
-    if (!admin.apps.length) {
-      await initFirebase(subdomain);
-    }
-    const transporter = admin.messaging();
-    const deviceTokens: string[] = [];
-
-    for (const recipient of recipients) {
-      if (recipient.deviceTokens) {
-        deviceTokens.push(...recipient.deviceTokens);
+    try {
+      if (!admin.apps.length) {
+        await initFirebase(subdomain);
       }
-    }
+      if (!admin.apps.length) {
+        try {
+          const filePath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+          if (filePath) {
+            const fileString = fs.readFileSync(filePath, "utf8");
+            const serviceAccount = JSON.parse(fileString);
+            await admin.initializeApp({
+              credential: admin.credential.cert(serviceAccount),
+            });
+          }
+        } catch (e) {
+          console.error(`Mobile push fallback init error: ${e.message}`);
+        }
+      }
+      if (!admin.apps.length) {
+        console.error("Mobile push skipped: Firebase app is still not initialized.");
+        return;
+      }
+      const transporter = admin.messaging();
+      const deviceTokens: string[] = [];
 
-    const expiredTokens = [""];
-    const chunkSize = 500;
+      for (const recipient of recipients) {
+        if (recipient.deviceTokens) {
+          deviceTokens.push(...recipient.deviceTokens);
+        }
+      }
 
-    if (deviceTokens.length > 1) {
-      const tokenChunks = [] as string[][];
+      const expiredTokens = [""];
+      const chunkSize = 500;
 
-      if (deviceTokens.length > chunkSize) {
-        for (let i = 0; i < deviceTokens.length; i += chunkSize) {
-          const chunk = deviceTokens.slice(i, i + chunkSize);
-          tokenChunks.push(chunk);
+      if (deviceTokens.length > 1) {
+        const tokenChunks = [] as string[][];
+
+        if (deviceTokens.length > chunkSize) {
+          for (let i = 0; i < deviceTokens.length; i += chunkSize) {
+            const chunk = deviceTokens.slice(i, i + chunkSize);
+            tokenChunks.push(chunk);
+          }
+        } else {
+          tokenChunks.push(deviceTokens);
+        }
+
+        for (const tokensChunk of tokenChunks) {
+          try {
+            const multicastMessage = {
+              tokens: tokensChunk,
+              notification: { title, body: content },
+            data: normalizedData,
+              android: {
+              priority: "high" as const,
+                notification: {
+                  sound: mobileConfig?.sound,
+                channelId: mobileConfig?.channelId || "fcm_fallback_notification_channel",
+                },
+              },
+              apns: {
+              headers: {
+                "apns-priority": "10",
+              },
+                payload: {
+                  aps: {
+                    sound: mobileConfig?.sound,
+                  },
+                },
+              },
+            };
+
+            const result = await transporter.sendEachForMulticast(multicastMessage);
+            if (result.failureCount > 0) {
+              console.error(
+                `Firebase multicast partial failure: success=${result.successCount}, failure=${result.failureCount}`
+              );
+            }
+          } catch (e) {
+            debugError(
+              `Error occurred during Firebase multicast send: ${e.message}`
+            );
+            console.error(`Firebase multicast send error: ${e.message}`);
+            expiredTokens.push(...tokensChunk);
+          }
         }
       } else {
-        tokenChunks.push(deviceTokens);
-      }
-
-      for (const tokensChunk of tokenChunks) {
-        try {
-          const multicastMessage = {
-            tokens: tokensChunk,
-            notification: { title, body: content },
-            data: eventData || {},
+        for (const token of deviceTokens) {
+          try {
+            await transporter.send({
+              token,
+              notification: { title, body: content },
+            data: normalizedData,
             android: {
+              priority: "high",
               notification: {
                 sound: mobileConfig?.sound,
-                channelId: mobileConfig?.channelId,
+                channelId: mobileConfig?.channelId || "fcm_fallback_notification_channel",
               },
             },
             apns: {
+              headers: {
+                "apns-priority": "10",
+              },
               payload: {
                 aps: {
                   sound: mobileConfig?.sound,
                 },
               },
             },
-          };
-
-          await transporter.sendEachForMulticast(multicastMessage);
-        } catch (e) {
-          debugError(
-            `Error occurred during Firebase multicast send: ${e.message}`
-          );
-          expiredTokens.push(...tokensChunk);
+            });
+          } catch (e) {
+            debugError(`Error occurred during firebase send: ${e.message}`);
+            console.error(`Firebase single send error: ${e.message}`);
+            expiredTokens.push(token);
+          }
         }
       }
-    } else {
-      for (const token of deviceTokens) {
-        try {
-          await transporter.send({
-            token,
-            notification: { title, body: content },
-            data: eventData || {},
-          });
-        } catch (e) {
-          debugError(`Error occurred during firebase send: ${e.message}`);
-          expiredTokens.push(token);
-        }
+      if (expiredTokens.length > 0) {
+        await models.ClientPortalUsers.updateMany(
+          {},
+          { $pull: { deviceTokens: { $in: expiredTokens } } }
+        );
       }
-    }
-    if (expiredTokens.length > 0) {
-      await models.ClientPortalUsers.updateMany(
-        {},
-        { $pull: { deviceTokens: { $in: expiredTokens } } }
-      );
+    } catch (e) {
+      console.error(`Mobile push unexpected error: ${e.message}`);
     }
   }
 };
