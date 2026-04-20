@@ -608,6 +608,7 @@ export const calculateExecution = async ({
   }
 
   // assignAlarm 계열: 같은 티켓+자동화에 대해 쿨다운 내 중복 실행 방지
+  // 트리거 소스(본문 수정 vs 고객 댓글)별로 구분해 서로를 막지 않음
   if (
     (triggerSource === TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_DESCRIPTION ||
       triggerSource === TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_COMMENT) &&
@@ -617,7 +618,8 @@ export const calculateExecution = async ({
     const recentExecution = await models.Executions.findOne({
       automationId,
       targetId: target._id,
-      createdAt: { $gte: cooldownSince }
+      createdAt: { $gte: cooldownSince },
+      'target.assignAlarmTriggerSource': triggerSource
     }).lean();
     if (recentExecution) {
       return;
