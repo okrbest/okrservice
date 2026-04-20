@@ -62,6 +62,32 @@ function mergeToMust(...queries: any[]): any[] {
   return must;
 }
 
+/** 트리거 시점 targetObject와 세그먼트 property 조건 일치 여부 (assignAlarm / assignAlarmComment 등) */
+function matchPropertyConditionToTarget(
+  targetObject: any,
+  cond: ICondition
+): boolean {
+  if (!cond.propertyName) {
+    return false;
+  }
+
+  const targetValue = targetObject[cond.propertyName];
+  const expectedValue = cond.propertyValue;
+
+  let matches = false;
+  if (cond.propertyOperator === "e") {
+    matches = String(targetValue) === String(expectedValue);
+  } else if (cond.propertyOperator === "it") {
+    matches =
+      targetValue === true || String(targetValue).toLowerCase() === "true";
+  } else if (cond.propertyOperator === "if") {
+    matches =
+      targetValue === false || String(targetValue).toLowerCase() === "false";
+  }
+
+  return matches;
+}
+
 export const isInSegment = async (
   models: IModels,
   subdomain: string,
@@ -90,45 +116,89 @@ export const isInSegment = async (
     console.log('🎯 isInSegment (core) - Using targetObject for condition check');
     
     try {
-      for (const condition of segment.conditions) {
-        if (condition.type === 'subSegment' && condition.subSegmentId) {
-          const subSegment = await models.Segments.findOne({ _id: condition.subSegmentId });
-          
-          if (subSegment && subSegment.conditions) {
-            for (const subCondition of subSegment.conditions) {
-              if (subCondition.type === 'property' && subCondition.propertyName) {
-                const targetValue = options.targetObject[subCondition.propertyName];
-                const expectedValue = subCondition.propertyValue;
-                
-                console.log('🔍 isInSegment (core) - Checking property from targetObject:', {
-                  propertyName: subCondition.propertyName,
-                  targetValue,
-                  expectedValue,
-                  operator: subCondition.propertyOperator
-                });
-                
-                // 연산자에 따른 조건 체크
-                let matches = false;
-                if (subCondition.propertyOperator === 'e') {
-                  matches = String(targetValue) === String(expectedValue);
-                } else if (subCondition.propertyOperator === 'it') {
-                  matches = targetValue === true || String(targetValue).toLowerCase() === 'true';
-                } else if (subCondition.propertyOperator === 'if') {
-                  matches = targetValue === false || String(targetValue).toLowerCase() === 'false';
-                }
-                
-                console.log('🔍 isInSegment (core) - Property check result:', { matches });
-                
-                if (matches) {
-                  console.log('✅ isInSegment (core) - Condition matched from targetObject');
-                  return true;
-                }
+      const cj = segment.conditionsConjunction || "and";
+      // 최상위 property: type이 없어도 propertyName만 있으면 체크 (checkSegment·ES 쿼리와 정합)
+      const topLevelProps = segment.conditions.filter(
+        (c) =>
+          !!c.propertyName &&
+          c.type !== "subSegment" &&
+          c.type !== "event"
+      );
+      const subSegmentConds = segment.conditions.filter(
+        (c) => c.type === "subSegment" && c.subSegmentId
+      );
+
+      const topLevelMatch =
+        topLevelProps.length === 0
+          ? null
+          : cj === "and"
+            ? topLevelProps.every((c) =>
+                matchPropertyConditionToTarget(options.targetObject, c)
+              )
+            : topLevelProps.some((c) =>
+                matchPropertyConditionToTarget(options.targetObject, c)
+              );
+
+      let subSegmentMatch = false;
+      for (const condition of subSegmentConds) {
+        const subSegment = await models.Segments.findOne({
+          _id: condition.subSegmentId
+        });
+
+        if (subSegment && subSegment.conditions) {
+          for (const subCondition of subSegment.conditions) {
+            if (
+              subCondition.propertyName &&
+              subCondition.type !== "subSegment" &&
+              subCondition.type !== "event"
+            ) {
+              console.log('🔍 isInSegment (core) - Checking property from targetObject:', {
+                propertyName: subCondition.propertyName,
+                targetValue: options.targetObject[subCondition.propertyName],
+                expectedValue: subCondition.propertyValue,
+                operator: subCondition.propertyOperator
+              });
+
+              const matches = matchPropertyConditionToTarget(
+                options.targetObject,
+                subCondition
+              );
+
+              console.log('🔍 isInSegment (core) - Property check result:', { matches });
+
+              if (matches) {
+                subSegmentMatch = true;
+                break;
               }
             }
           }
         }
+        if (subSegmentMatch) {
+          break;
+        }
       }
-      
+
+      if (topLevelProps.length > 0 && subSegmentConds.length > 0) {
+        const ok =
+          cj === "and"
+            ? topLevelMatch && subSegmentMatch
+            : topLevelMatch || subSegmentMatch;
+        if (ok) {
+          console.log('✅ isInSegment (core) - Condition matched from targetObject (mixed)');
+          return true;
+        }
+      } else if (topLevelProps.length > 0) {
+        if (topLevelMatch) {
+          console.log('✅ isInSegment (core) - Condition matched from targetObject (top-level property)');
+          return true;
+        }
+      } else if (subSegmentConds.length > 0) {
+        if (subSegmentMatch) {
+          console.log('✅ isInSegment (core) - Condition matched from targetObject (subSegment)');
+          return true;
+        }
+      }
+
       console.log('⚠️ isInSegment (core) - No conditions matched from targetObject');
       return false;
     } catch (e) {
