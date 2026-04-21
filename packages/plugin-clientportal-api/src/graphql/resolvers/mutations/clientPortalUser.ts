@@ -1526,6 +1526,42 @@ export const clientPortalUserMutations = {
     });
     return true;
   },
+
+  async clientPortalDeleteStaffNotifications(
+    _root,
+    { ids }: { ids: string[] },
+    { cpUser, subdomain }: IContext
+  ) {
+    if (!cpUser || (cpUser as any).type !== "staff") return false;
+    if (!ids?.length) return true;
+
+    const user = await sendCoreMessage({
+      subdomain,
+      action: "users.findOne",
+      data: { email: cpUser.email },
+      isRPC: true,
+      defaultValue: null,
+    });
+
+    const erxesUserId = user?._id;
+    const selector: any = { _id: { $in: ids } };
+    // If we can resolve the linked erxes user, constrain deletion to own notifications.
+    // Fallback keeps delete functional even when email mapping is inconsistent.
+    if (erxesUserId) {
+      selector.receiver = erxesUserId;
+    }
+
+    await sendNotificationsMessage({
+      subdomain,
+      action: "removeMany",
+      isRPC: true,
+      data: {
+        selector,
+      },
+    });
+
+    return true;
+  },
 };
 
 export const userMutations = {

@@ -650,5 +650,6 @@ export const mutations = (enabledPlugins) => `
   ): JSON
 
   clientPortalMarkStaffNotificationsRead(ids: [String]!): Boolean
+  clientPortalDeleteStaffNotifications(ids: [String]!): Boolean
   clientPortalTicketAssign(ticketId: String!, assignedUserIds: [String]!): Boolean
 `;

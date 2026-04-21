@@ -407,6 +407,26 @@ export const setupMessageConsumers = async () => {
   );
 
   consumeRPCQueue(
+    "notifications:removeMany",
+    async ({ subdomain, data: { selector } }) => {
+      const models = await generateModels(subdomain);
+      const result = await models.Notifications.deleteMany(selector || {});
+      return {
+        status: "success",
+        data: result?.deletedCount || 0,
+      };
+    }
+  );
+
+  consumeQueue(
+    "notifications:removeMany",
+    async ({ subdomain, data: { selector } }) => {
+      const models = await generateModels(subdomain);
+      await models.Notifications.deleteMany(selector || {});
+    }
+  );
+
+  consumeRPCQueue(
     "notifications:checkIfRead",
     async ({ subdomain, data: { userId, itemId } }) => {
       const models = await generateModels(subdomain);
@@ -428,6 +448,17 @@ export const setupMessageConsumers = async () => {
       return {
         status: "success",
         data: await query.lean(),
+      };
+    }
+  );
+
+  consumeRPCQueue(
+    "notifications:count",
+    async ({ subdomain, data: { selector } }) => {
+      const models = await generateModels(subdomain);
+      return {
+        status: "success",
+        data: await models.Notifications.countDocuments(selector || {}),
       };
     }
   );

@@ -75,6 +75,7 @@ export interface IPipeline {
   branchIds?: string[];
   departmentIds?: string[];
   memberIds?: string[];
+  newTicketNotifyUserIds?: string[];
   condition?: string;
   label?: string;
   bgColor?: string;
