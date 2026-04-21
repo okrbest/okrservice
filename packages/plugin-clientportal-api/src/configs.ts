@@ -2,6 +2,7 @@ import { getSubdomain } from '@erxes/api-utils/src/core';
 import * as cookieParser from 'cookie-parser';
 
 import afterMutations from './afterMutations';
+import { startAttendanceScheduler } from './jobs/attendanceScheduler';
 import { generateModels } from './connectionResolver';
 import forms from './forms';
 import resolvers from './graphql/resolvers';
@@ -56,6 +57,9 @@ export default {
     return context;
   },
   middlewares: [cookieParser(), cpUserMiddleware],
-  onServerInit: async () => {},
+  onServerInit: async () => {
+    const subdomain = process.env.DEFAULT_SUBDOMAIN || 'os'
+    startAttendanceScheduler(subdomain)
+  },
   setupMessageConsumers,
 };
