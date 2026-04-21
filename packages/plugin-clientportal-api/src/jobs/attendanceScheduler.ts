@@ -3,6 +3,7 @@ import { sendNotification } from '../utils'
 
 /**
  * 현재 시각(HH:MM)이 출근 10분 전인지 확인
+ * NOTE: startHour:startMinute >= 00:10 가정 (자정 전후 경계는 미지원)
  */
 export function isAttendanceWindowNow(
   startHour: number,
@@ -31,13 +32,10 @@ export async function runAttendancePushCheck(subdomain: string): Promise<void> {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000)
   const nowHour = kst.getUTCHours()
   const nowMinute = kst.getUTCMinutes()
-  const today = kst.toISOString().slice(0, 10)
+  const today = todayKST()
 
   const schedules = await models.WorkSchedules.find({
-    $or: [
-      { lastPushSentDate: { $ne: today } },
-      { lastPushSentDate: { $exists: false } },
-    ],
+    lastPushSentDate: { $ne: today },
   }).lean()
 
   for (const schedule of schedules) {
