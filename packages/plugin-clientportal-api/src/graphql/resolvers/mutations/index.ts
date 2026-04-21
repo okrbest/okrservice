@@ -5,6 +5,7 @@ import notificationMutations from './clientPortalNotifications';
 import comment from './comment';
 import fieldConfig from './fieldConfig';
 import vercel from './vercel';
+import workSchedule from './workSchedule';
 
 export default {
   ...clientPortal,
@@ -15,4 +16,5 @@ export default {
   ...fieldConfig,
   ...clientPortalUserPost,
   ...vercel,
+  ...workSchedule,
 };

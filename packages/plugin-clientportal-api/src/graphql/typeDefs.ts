@@ -33,6 +33,12 @@ import {
   mutations as vercelMutations,
 } from './schema/vercel';
 
+import {
+  types as workScheduleTypes,
+  queries as workScheduleQueries,
+  mutations as workScheduleMutations,
+} from './schema/workSchedule';
+
 import { isEnabled } from '@erxes/api-utils/src/serviceDiscovery';
 
 const typeDefs = async () => {
@@ -82,6 +88,7 @@ const typeDefs = async () => {
     ${notificationTypes}
     ${commentTypes}
     ${fieldConfigTypes}
+    ${workScheduleTypes}
 
     ${clientPortalUserInputs}
 
@@ -92,6 +99,7 @@ const typeDefs = async () => {
      ${commentQueries}
      ${fieldConfigQueries}
      ${vercelQueries}
+     ${workScheduleQueries}
     }
 
     extend type Mutation {
@@ -100,6 +108,7 @@ const typeDefs = async () => {
       ${notificationMutations}
       ${fieldConfigMutations}
       ${vercelMutations}
+      ${workScheduleMutations}
     }
   `;
 };
