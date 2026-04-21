@@ -31,6 +31,8 @@ import {
   loadCompanyClass,
 } from './models/ClientPortalCompany';
 import { IClientCompanyDocument } from './models/definitions/clientPortalCompany';
+import { IWorkScheduleModel } from './models/WorkSchedule';
+import { IWorkScheduleDocument, workScheduleSchema } from './models/definitions/workSchedule';
 
 export interface IModels {
   ClientPortals: IClientPortalModel;
@@ -40,6 +42,7 @@ export interface IModels {
   Comments: ICommentModel;
   FieldConfigs: IFieldConfigModel;
   Companies: IClientCompanyModel;
+  WorkSchedules: IWorkScheduleModel;
 }
 
 export interface IContext extends IMainContext {
@@ -85,6 +88,11 @@ export const loadClasses = (db: mongoose.Connection): IModels => {
   models.Companies = db.model<IClientCompanyDocument, IClientCompanyModel>(
     'client_portal_companies',
     loadCompanyClass(models)
+  );
+
+  models.WorkSchedules = db.model<IWorkScheduleDocument, IWorkScheduleModel>(
+    'work_schedules',
+    workScheduleSchema
   );
 
   return models;
