@@ -87,6 +87,7 @@ export interface IPipeline extends ICommonFields {
   status?: string;
   visibility?: string;
   memberIds?: string[];
+  newTicketNotifyUserIds?: string[];
   bgColor?: string;
   watchedUserIds?: string[];
   startDate?: Date;
@@ -332,6 +333,11 @@ export const pipelineSchema = new Schema({
   }),
   watchedUserIds: field({ type: [String], label: "Watched users" }),
   memberIds: field({ type: [String], label: "Members" }),
+  newTicketNotifyUserIds: field({
+    type: [String],
+    optional: true,
+    label: "New ticket notify users",
+  }),
   bgColor: field({ type: String, label: "Background color" }),
   // Growth hack
   startDate: field({ type: Date, optional: true, label: "Start date" }),

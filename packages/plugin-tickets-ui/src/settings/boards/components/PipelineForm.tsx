@@ -63,6 +63,9 @@ const PipelineForm = (props: Props) => {
   const [selectedMemberIds, setSelectedMemberIds] = useState(
     pipeline ? pipeline.memberIds : []
   );
+  const [newTicketNotifyUserIds, setNewTicketNotifyUserIds] = useState(
+    pipeline ? pipeline.newTicketNotifyUserIds || [] : []
+  );
   const [backgroundColor, setBackgroundColor] = useState(
     (pipeline && pipeline.bgColor) || colors.colorPrimaryDark
   );
@@ -109,6 +112,9 @@ const PipelineForm = (props: Props) => {
 
   const onChangeMembers = items => {
     setSelectedMemberIds(items);
+  };
+  const onChangeNewTicketNotifyUsers = items => {
+    setNewTicketNotifyUserIds(items);
   };
 
   const onChangeDepartments = options => {
@@ -159,6 +165,7 @@ const PipelineForm = (props: Props) => {
       boardId,
       stages: stages.filter(el => el.name),
       memberIds: selectedMemberIds,
+      newTicketNotifyUserIds,
       bgColor: backgroundColor,
       isCheckDate,
       isCheckUser,
@@ -436,6 +443,18 @@ const PipelineForm = (props: Props) => {
         {renderTags()}
 
         {renderSelectMembers()}
+
+        <FormGroup>
+          <SelectMemberStyled>
+            <ControlLabel>신규 티켓 알림 수신자</ControlLabel>
+            <SelectTeamMembers
+              label='알림 수신자 선택'
+              name='newTicketNotifyUserIds'
+              initialValue={newTicketNotifyUserIds}
+              onSelect={onChangeNewTicketNotifyUsers}
+            />
+          </SelectMemberStyled>
+        </FormGroup>
 
         {renderNumberInput()}
 

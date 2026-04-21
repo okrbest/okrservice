@@ -138,7 +138,14 @@ export const sendNotifications = async (
   }
 
   if (invitedUsers && invitedUsers.length > 0) {
-    const filteredReceivers = invitedUsers.filter((id) => id !== user._id);
+    const isTicket = contentType === "ticket";
+    const filteredReceivers = isTicket
+      ? invitedUsers.filter((id) => id)
+      : invitedUsers.filter((id) => id !== user._id);
+    const assignmentTitle = isTicket
+      ? "새 티켓 담당자로 지정되었습니다"
+      : notificationDoc.title;
+    const assignmentContent = item?.name || "새 티켓";
     console.log(`🔍 [Debug] sendNotification for ticketAdd:`, {
       invitedUsers,
       user_id: user._id,
@@ -149,9 +156,10 @@ export const sendNotifications = async (
     
     sendNotification(subdomain, {
       ...notificationDoc,
+      title: assignmentTitle,
       notifType: NOTIFICATION_TYPES[`${contentType.toUpperCase()}_ADD`],
       action: `invited you to the ${contentType}: `,
-      content: `'${item.name}'`,
+      content: assignmentContent,
       emailTitle: `새로 발급된 '${item.name}' 티켓의 담당자로 지정되었습니다`,
       emailContent: item.description,
       receivers: filteredReceivers,
@@ -161,12 +169,9 @@ export const sendNotifications = async (
       subdomain: "os",
       action: "sendMobileNotification",
       data: {
-        title: `${item.name}`,
-        body: `${
-          notificationDoc.createdUser?.details?.fullName ||
-          notificationDoc.createdUser?.details?.shortName
-        } invited you to the ${contentType}`,
-        receivers: invitedUsers.filter((id) => id !== user._id),
+        title: assignmentTitle,
+        body: assignmentContent,
+        receivers: filteredReceivers,
         data: {
           type: contentType,
           id: item._id,
@@ -179,7 +184,14 @@ export const sendNotifications = async (
   // (담당자가 없으면 "담당자로 지정되었습니다" 알림을 보낼 필요가 없음)
   // 다른 타입의 알림(Edit, Change 등)은 정상적으로 전송
   const isAddType = type === `${contentType}Add`;
-  if (!isAddType || (invitedUsers && invitedUsers.length > 0)) {
+  const isGenericTicketUpdateType =
+    contentType === "ticket" &&
+    (type === "ticketEdit" || type === "ticketChange");
+
+  if (
+    (!isAddType || (invitedUsers && invitedUsers.length > 0)) &&
+    !isGenericTicketUpdateType
+  ) {
     sendNotification(subdomain, {
       ...notificationDoc,
     });

@@ -22,6 +22,7 @@ export const types = () => `
     tag: Tag
     visibility: String!
     memberIds: [String]
+    newTicketNotifyUserIds: [String]
     departmentIds: [String]
     branchIds: [String]
     members: [User]
@@ -173,6 +174,7 @@ const pipelineParams = `
   stages: JSON,
   visibility: String!,
   memberIds: [String],
+  newTicketNotifyUserIds: [String],
   tagId: String,
   bgColor: String,
   startDate: Date,

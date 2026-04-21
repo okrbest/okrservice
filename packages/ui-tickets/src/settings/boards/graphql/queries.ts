@@ -30,6 +30,7 @@ const pipelines = `
       boardId
       visibility
       memberIds
+      newTicketNotifyUserIds
       bgColor
       hackScoringType
       templateId

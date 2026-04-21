@@ -667,7 +667,8 @@ const configClientPortalQueries = {
           createdAt: 1,
           date: 1,
         },
-        sort: { createdAt: -1 },
+        // notifications collection stores canonical time in `date`
+        sort: { date: -1, _id: -1 },
         limit,
         skip,
       },
@@ -689,18 +690,17 @@ const configClientPortalQueries = {
     const erxesUserId = await getErxesUserIdForCpUser(cpUser, subdomain);
     if (!erxesUserId) return 0;
 
-    const notifications = await sendNotificationsMessage({
+    const unreadCount = await sendNotificationsMessage({
       subdomain,
-      action: "find",
+      action: "count",
       isRPC: true,
       data: {
         selector: { receiver: erxesUserId, isRead: false },
-        fields: { _id: 1 },
-        limit: 100,
       },
-      defaultValue: [],
+      defaultValue: 0,
     });
-    return notifications.length;
+
+    return Number(unreadCount) || 0;
   },
 };
 
