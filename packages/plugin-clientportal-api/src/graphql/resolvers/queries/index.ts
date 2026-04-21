@@ -4,6 +4,7 @@ import clientPortalNotifications from './clientPortalNotifications';
 import comment from './comment';
 import fieldConfig from './fieldConfig';
 import vercel from './vercel';
+import { IContext } from '../../../connectionResolver';
 
 export default {
   ...clientPortal,
@@ -11,5 +12,9 @@ export default {
   ...clientPortalNotifications,
   ...comment,
   ...fieldConfig,
-  ...vercel
+  ...vercel,
+
+  workSchedule: async (_root: any, { userId }: { userId: string }, { models }: IContext) => {
+    return models.WorkSchedules.findOne({ userId });
+  },
 };
