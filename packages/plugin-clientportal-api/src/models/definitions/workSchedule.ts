@@ -1,5 +1,5 @@
 import { Document, Schema } from 'mongoose'
-import { field } from './utils'
+import { field } from '@erxes/api-utils/src'
 
 export interface IWorkSchedule {
   userId: string
@@ -8,8 +8,8 @@ export interface IWorkSchedule {
   endHour: number
   endMinute: number
   deeplinkUrl: string
-  deeplinkParams: Record<string, string>
-  lastPushSentDate?: string  // 'YYYY-MM-DD' — 중복 발송 방지
+  deeplinkParams: object
+  lastPushSentDate?: string
 }
 
 export interface IWorkScheduleDocument extends IWorkSchedule, Document {}
