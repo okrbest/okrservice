@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 
 import { __ } from "../../../utils";
 import Container from "../common/Container";
+import { openReadFileImageInNewTab } from "../../../utils";
 
 type TicketStage = {
   _id: string;
@@ -68,36 +69,10 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeC
             link.href = '#';
             link.textContent = __('원본 이미지 보기');
             link.style.cssText = 'font-size: 11px; color: #007bff; text-decoration: none; cursor: pointer;';
-            link.addEventListener('click', async (e) => {
+            link.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
-              
-              // URL에서 name 파라미터 제거하여 다운로드 방지
-              let viewUrl = originalSrc;
-              if (viewUrl.includes('&name=')) {
-                viewUrl = viewUrl.split('&name=')[0];
-              }
-              
-              // fetch로 이미지를 가져와서 blob URL로 변환하여 새 탭에서 열기
-              try {
-                const response = await fetch(viewUrl, { mode: 'cors' });
-                if (response.ok) {
-                  const blob = await response.blob();
-                  const blobUrl = URL.createObjectURL(blob);
-                  const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
-                  if (newWindow) {
-                    // 창이 열린 후 blob URL 정리
-                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                  }
-                } else {
-                  // fetch 실패 시 직접 열기 (CORS 문제 등)
-                  window.open(viewUrl, '_blank', 'noopener,noreferrer');
-                }
-              } catch (error) {
-                // 오류 발생 시 직접 열기
-                console.warn('Failed to fetch image:', error);
-                window.open(viewUrl, '_blank', 'noopener,noreferrer');
-              }
+              openReadFileImageInNewTab(originalSrc);
             });
             
             linkWrapper.appendChild(link);
