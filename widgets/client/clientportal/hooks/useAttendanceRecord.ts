@@ -43,7 +43,7 @@ export function saveAttendanceRecord(data: AttendanceRecord): void {
 }
 
 export function useAttendanceRecord() {
-  const [record] = useState<AttendanceRecord | null>(() => readFromStorage())
+  const [record, setRecord] = useState<AttendanceRecord | null>(() => readFromStorage())
 
-  return { record }
+  return { record, setRecord }
 }
