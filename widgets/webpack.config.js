@@ -12,6 +12,7 @@ module.exports = {
     knowledgebaseWidget: './client/knowledgebase/widget/index.ts',
     events: './client/events/index.ts',
     eventsWidget: './client/events/widget/index.ts',
+    clientportal: './client/clientportal/index.ts',
   },
 
   output: {
