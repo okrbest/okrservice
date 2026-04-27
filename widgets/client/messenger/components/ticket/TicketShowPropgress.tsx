@@ -3,7 +3,13 @@ import dayjs from "dayjs";
 import xss from "xss";
 
 import { IAttachment, ITicketActivityLog, ITicketComment } from "../../types";
-import { __, readFile } from "../../../utils";
+import {
+  __,
+  openReadFileImageInNewTab,
+  readFile,
+  readFileViewInline,
+  sanitizeAttachmentDownloadBasename,
+} from "../../../utils";
 
 import Button from "../common/Button";
 import Container from "../common/Container";
@@ -87,32 +93,7 @@ const TicketShowProgress: React.FC<Props> = ({
             e.preventDefault();
             e.stopPropagation();
             
-            // URL에서 name 파라미터 제거하여 다운로드 방지
-            let viewUrl = originalSrc;
-            if (viewUrl.includes('&name=')) {
-              viewUrl = viewUrl.split('&name=')[0];
-            }
-            
-            // fetch로 이미지를 가져와서 blob URL로 변환하여 새 탭에서 열기
-            try {
-              const response = await fetch(viewUrl, { mode: 'cors' });
-              if (response.ok) {
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
-                if (newWindow) {
-                  // 창이 열린 후 blob URL 정리
-                  setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                }
-              } else {
-                // fetch 실패 시 직접 열기 (CORS 문제 등)
-                window.open(viewUrl, '_blank', 'noopener,noreferrer');
-              }
-            } catch (error) {
-              // 오류 발생 시 직접 열기
-              console.warn('Failed to fetch image:', error);
-              window.open(viewUrl, '_blank', 'noopener,noreferrer');
-            }
+            openReadFileImageInNewTab(originalSrc);
           });
           
           linkWrapper.appendChild(link);
@@ -132,57 +113,31 @@ const TicketShowProgress: React.FC<Props> = ({
       const fileExtension = attachmentName.split(".").pop()?.toLowerCase() || "";
       const isImage = ["png", "jpeg", "jpg", "gif", "webp", "bmp", "svg"].indexOf(fileExtension) > -1;
       
-      // If name exists, use it. Otherwise extract from URL by removing random ID prefix (21 characters)
-      let downloadName = attachment.name;
-      if (!downloadName && attachment.url) {
-        const urlFileName = attachment.url;
-        downloadName = urlFileName.length > 21 ? urlFileName.substring(21) : urlFileName;
-      }
-      downloadName = downloadName || "file";
+      const rawDownload = (attachment.name || attachment.url || "").trim();
+      let downloadName =
+        sanitizeAttachmentDownloadBasename(rawDownload) || "file";
       
       // Add name parameter to URL for proper filename in download
       const downloadUrl = attachment.url && attachment.url.includes('http') 
         ? attachment.url 
         : `${readFile(attachment.url)}&name=${encodeURIComponent(downloadName)}`;
       
-      // 원본 이미지 보기 URL (name 파라미터 제거)
-      const viewUrl = attachment.url && attachment.url.includes('http')
-        ? attachment.url
-        : readFile(attachment.url);
-      const originalViewUrl = viewUrl.includes('&name=') 
-        ? viewUrl.split('&name=')[0] 
-        : viewUrl;
-      
-      const handleImageClick = async (e: React.MouseEvent) => {
+      const originalViewUrl = readFileViewInline(attachment.url);
+
+      const handleImageClick = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        
-        // fetch로 이미지를 가져와서 blob URL로 변환하여 새 탭에서 열기
-        try {
-          const response = await fetch(originalViewUrl, { mode: 'cors' });
-          if (response.ok) {
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
-            if (newWindow) {
-              // 창이 열린 후 blob URL 정리
-              setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-            }
-          } else {
-            // fetch 실패 시 직접 열기 (CORS 문제 등)
-            window.open(originalViewUrl, '_blank', 'noopener,noreferrer');
-          }
-        } catch (error) {
-          // 오류 발생 시 직접 열기
-          console.warn('Failed to fetch image:', error);
-          window.open(originalViewUrl, '_blank', 'noopener,noreferrer');
-        }
+        openReadFileImageInNewTab(originalViewUrl);
       };
       
       return (
-        <div key={`${attachment.url}-${index}`} className="ticket-attachment">
+        <div
+          key={`${attachment.url}-${index}`}
+          className="ticket-attachment"
+          style={{ width: "100%" }}
+        >
           {isImage ? (
-            <div style={{ marginBottom: '8px' }}>
+            <div style={{ marginBottom: "8px" }}>
               <img
                 src={readFile(attachment.url)}
                 alt={`ticket-image-${index}`}
@@ -193,9 +148,6 @@ const TicketShowProgress: React.FC<Props> = ({
                   display: 'block'
                 }}
                 onClick={handleImageClick}
-                onLoad={() => {
-                  URL.revokeObjectURL(attachment.name);
-                }}
               />
               <div style={{ marginTop: '4px', marginBottom: '8px', textAlign: 'center' }}>
                 <a
@@ -213,10 +165,40 @@ const TicketShowProgress: React.FC<Props> = ({
               </div>
             </div>
           ) : (
-            <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", color: "inherit" }}>
-              <div style={{ textAlign: "center", padding: "10px", cursor: "pointer" }}>
-                <span style={{ fontSize: "48px" }}>{getFileIcon(fileExtension)}</span>
-                <div style={{ fontSize: "12px", marginTop: "5px" }}>{attachment.name}</div>
+            <a
+              href={downloadUrl}
+              download={downloadName}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                display: "block",
+                width: "100%",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "6px 0",
+                  cursor: "pointer",
+                }}
+              >
+                <span style={{ fontSize: "20px", lineHeight: 1, flexShrink: 0 }}>
+                  {getFileIcon(fileExtension)}
+                </span>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    textAlign: "left",
+                    wordBreak: "break-word",
+                    lineHeight: 1.35,
+                  }}
+                >
+                  {downloadName}
+                </div>
               </div>
             </a>
           )}
@@ -280,36 +262,10 @@ const TicketShowProgress: React.FC<Props> = ({
             link.href = '#';
             link.textContent = __('원본 이미지 보기');
             link.style.cssText = 'font-size: 11px; color: #007bff; text-decoration: none; cursor: pointer;';
-            link.addEventListener('click', async (e) => {
+            link.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
-              
-              // URL에서 name 파라미터 제거하여 다운로드 방지
-              let viewUrl = originalSrc;
-              if (viewUrl.includes('&name=')) {
-                viewUrl = viewUrl.split('&name=')[0];
-              }
-              
-              // fetch로 이미지를 가져와서 blob URL로 변환하여 새 탭에서 열기
-              try {
-                const response = await fetch(viewUrl, { mode: 'cors' });
-                if (response.ok) {
-                  const blob = await response.blob();
-                  const blobUrl = URL.createObjectURL(blob);
-                  const newWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
-                  if (newWindow) {
-                    // 창이 열린 후 blob URL 정리
-                    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                  }
-                } else {
-                  // fetch 실패 시 직접 열기 (CORS 문제 등)
-                  window.open(viewUrl, '_blank', 'noopener,noreferrer');
-                }
-              } catch (error) {
-                // 오류 발생 시 직접 열기
-                console.warn('Failed to fetch image:', error);
-                window.open(viewUrl, '_blank', 'noopener,noreferrer');
-              }
+              openReadFileImageInNewTab(originalSrc);
             });
             
             linkWrapper.appendChild(link);
@@ -383,7 +339,16 @@ const TicketShowProgress: React.FC<Props> = ({
               }}
             />
             {attachments && attachments.length > 0 && (
-              <div className="ticket-comment-attachments" style={{ marginTop: "8px", display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              <div
+                className="ticket-comment-attachments"
+                style={{
+                  marginTop: "8px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "stretch",
+                  gap: "8px",
+                }}
+              >
                 {attachments.map((att, idx) => (
                   <Attachment
                     key={idx}

@@ -186,6 +186,107 @@ export const isValidURL = (url: string) => {
 };
 
 /**
+ * 첨부 다운로드 표시명: 스토리지 object key에 붙는 긴 영숫자 접두사를 뗀다.
+ * 예) BgxNdbX…g5난임치료_이미지.png → 난임치료_이미지.png (한글 완성형·자모 모두 인식)
+ */
+export function sanitizeAttachmentDownloadBasename(nameOrUrl: string): string {
+  if (!nameOrUrl || typeof nameOrUrl !== "string") {
+    return nameOrUrl;
+  }
+  let s = nameOrUrl.trim();
+
+  if (s.includes("read-file")) {
+    try {
+      const abs =
+        s.startsWith("http://") || s.startsWith("https://")
+          ? s
+          : `http://placeholder.invalid${s.startsWith("/") ? "" : "/"}${s}`;
+      const u = new URL(abs);
+      if (u.pathname.includes("read-file")) {
+        const key = u.searchParams.get("key");
+        if (key) {
+          s = decodeURIComponent(key);
+        }
+      }
+    } catch {
+      const m = s.match(/[?&]key=([^&]+)/);
+      if (m) {
+        try {
+          s = decodeURIComponent(m[1]);
+        } catch {
+          s = m[1];
+        }
+      }
+    }
+  }
+
+  let pathPart = s.split("?")[0];
+  const baseRaw = pathPart.split("/").pop() || pathPart;
+  let base = baseRaw;
+  try {
+    base = decodeURIComponent(baseRaw);
+  } catch {
+    /* keep base */
+  }
+
+  base = base.replace(/^upload_[^_]+_/, "");
+
+  /** 스토리지 objectId(영숫자·-_ 20자+) 뒤에 한글이 오는 형태 — _만 끼인 경우도 처리 */
+  const hangulIdx = base.search(/\p{Script=Hangul}/u);
+  if (hangulIdx > 0) {
+    const prefix = base.slice(0, hangulIdx).replace(/[_\s-]+$/, "");
+    if (/^[A-Za-z0-9_-]+$/.test(prefix) && prefix.length >= 20) {
+      return base.slice(hangulIdx);
+    }
+  }
+
+  return base;
+}
+
+/**
+ * read-file URL에 name이 없으면 key로부터 표시용 파일명을 넣는다.
+ * (새 탭 저장 시 Content-Disposition이 raw key를 쓰지 않도록)
+ */
+export function ensureFriendlyReadFileNameParam(url: string): string {
+  if (!url || !url.includes("/read-file")) {
+    return url;
+  }
+  try {
+    const abs =
+      url.startsWith("http://") || url.startsWith("https://")
+        ? url
+        : `http://placeholder.invalid${url.startsWith("/") ? "" : "/"}${url}`;
+    const u = new URL(abs);
+    if ((u.searchParams.get("name") || "").trim()) {
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return `${u.origin}${u.pathname}?${u.searchParams.toString()}`;
+      }
+      return `${u.pathname}?${u.searchParams.toString()}`;
+    }
+    const key = u.searchParams.get("key");
+    if (!key) {
+      return url;
+    }
+    let decodedKey: string;
+    try {
+      decodedKey = decodeURIComponent(key);
+    } catch {
+      decodedKey = key;
+    }
+    const friendly = sanitizeAttachmentDownloadBasename(decodedKey);
+    if (friendly) {
+      u.searchParams.set("name", friendly);
+    }
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return `${u.origin}${u.pathname}?${u.searchParams.toString()}`;
+    }
+    return `${u.pathname}?${u.searchParams.toString()}`;
+  } catch {
+    return url;
+  }
+}
+
+/**
  * Request to get file's URL for view and download
  * @param {String} - value
  * @return {String} - URL
@@ -197,12 +298,84 @@ export const readFile = (value: string, width?: number): string => {
     return value;
   }
 
-  let url = `${API_URL}/read-file?key=${value}`;
+  // key는 스토리지 경로라 &, /, 공백, 한글 등이 포함될 수 있음 — 인코딩하지 않으면 다운로드 시 key/name 파싱이 깨져 파일이 손상됨
+  let url = `${API_URL}/read-file?key=${encodeURIComponent(value)}`;
   if (width) {
-    url += `&width=${width}`;
+    url += `&width=${encodeURIComponent(String(width))}`;
   }
 
   return url;
+};
+
+/** read-file URL에 inline=true 설정(name 등 다른 쿼리는 유지) */
+export const readFileUrlForInlineDisplay = (url: string): string => {
+  if (!url || typeof url !== "string") {
+    return url;
+  }
+  if (!url.includes("/read-file")) {
+    return url;
+  }
+  try {
+    const abs =
+      url.startsWith("http://") || url.startsWith("https://")
+        ? url
+        : `http://placeholder.invalid${url.startsWith("/") ? "" : "/"}${url}`;
+    const u = new URL(abs);
+    u.searchParams.set("inline", "true");
+    const qs = u.searchParams.toString();
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return `${u.origin}${u.pathname}${qs ? `?${qs}` : ""}`;
+    }
+    return `${u.pathname}${qs ? `?${qs}` : ""}`;
+  } catch {
+    const base = url.split("#")[0];
+    if (base.includes("inline=true")) {
+      return base;
+    }
+    return base.includes("?")
+      ? `${base}&inline=true`
+      : `${base}?inline=true`;
+  }
+};
+
+/** 새 탭/원본 보기: 서버가 Content-Disposition inline + 시그니처 기반 MIME으로 응답 */
+export const readFileViewInline = (value: string, width?: number): string => {
+  if (!value) {
+    return value;
+  }
+  let out: string;
+  if (value.includes("http") && value.includes("/read-file")) {
+    out = readFileUrlForInlineDisplay(value);
+  } else {
+    const base = readFile(value, width);
+    if (!base) {
+      return base;
+    }
+    if (base.includes("inline=true")) {
+      out = base;
+    } else if (base.includes("http") && !base.includes("/read-file")) {
+      out = base;
+    } else {
+      out = base.includes("?")
+        ? `${base}&inline=true`
+        : `${base}?inline=true`;
+    }
+  }
+  return out.includes("/read-file")
+    ? ensureFriendlyReadFileNameParam(out)
+    : out;
+};
+
+/**
+ * 원본 이미지를 새 탭에서 연다.
+ * fetch→blob URL은 "다른 이름으로 저장" 시 브라우저가 blob을 다시 가져오지 못해
+ * 연결 오류로 실패하는 경우가 많으므로, read-file은 항상 실제 URL로 연다.
+ */
+export const openReadFileImageInNewTab = (src: string): void => {
+  const viewUrl = ensureFriendlyReadFileNameParam(
+    readFileUrlForInlineDisplay(src),
+  );
+  window.open(viewUrl, "_blank", "noopener,noreferrer");
 };
 
 export const checkRule = (rule: IRule, browserInfo: IBrowserInfo) => {

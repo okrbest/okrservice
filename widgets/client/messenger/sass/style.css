@@ -3854,15 +3854,19 @@ select.form-control:focus,
 
 .ticket-progress-container .ticket-progress-content .ticket-attachments {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
   gap: 10px;
   width: 100%;
-  overflow: auto;
+  overflow: visible;
 }
 
 .ticket-progress-container .ticket-progress-content .ticket-attachments img {
-  width: 280px;
-  height: 180px;
-  object-fit: cover;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  max-height: 220px;
+  object-fit: contain;
 }
 
 .ticket-progress-container .ticket-comment-form {

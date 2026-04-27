@@ -939,17 +939,18 @@ const readFromCFImages = async (
     url = `https://imagedelivery.net/${CLOUDFLARE_ACCOUNT_HASH}/${fileName}/w=${width}`;
   }
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     fetch(url)
       .then((res) => {
         if (!res.ok || res.status !== 200) {
           return readFromCR2(key, models);
         }
-        return res.buffer();
+        // 표준 Fetch Response에는 buffer() 없음 — arrayBuffer() 사용
+        return res.arrayBuffer().then((ab) => Buffer.from(ab));
       })
       .then((buffer) => resolve(buffer))
       .catch((_err) => {
-        return readFromCR2(key, models);
+        readFromCR2(key, models).then(resolve).catch(reject);
       });
   });
 };

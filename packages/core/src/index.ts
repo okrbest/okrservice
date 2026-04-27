@@ -47,6 +47,112 @@ function safeContentDisposition(
   const encoded = encodeURIComponent(filename);
   return `${disposition}; filename="${safe}"; filename*=UTF-8''${encoded}`;
 }
+
+const READ_FILE_EXT_TO_MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  gif: "image/gif",
+  webp: "image/webp",
+  svg: "image/svg+xml",
+  bmp: "image/bmp",
+  heic: "image/heic",
+  ico: "image/x-icon",
+  pdf: "application/pdf",
+};
+
+const READ_FILE_MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/gif": ".gif",
+  "image/webp": ".webp",
+  "image/bmp": ".bmp",
+  "image/heic": ".heic",
+  "application/pdf": ".pdf",
+};
+
+function readFileBodyToBuffer(body: unknown): Buffer {
+  if (body == null) {
+    return Buffer.alloc(0);
+  }
+  if (Buffer.isBuffer(body)) {
+    return body;
+  }
+  if (body instanceof Uint8Array) {
+    return Buffer.from(body);
+  }
+  if (typeof body === "string") {
+    return Buffer.from(body, "binary");
+  }
+  return Buffer.alloc(0);
+}
+
+/** 로그인 HTML·에러 페이지 등이 이미지로 저장되는 것 방지 */
+function bufferLooksLikeHtmlDocument(buf: Buffer): boolean {
+  if (!buf.length) {
+    return false;
+  }
+  const head = buf.slice(0, Math.min(600, buf.length)).toString("utf8").trimStart();
+  const lower = head.slice(0, 80).toLowerCase();
+  if (lower.startsWith("<?xml")) {
+    return false;
+  }
+  if (lower.startsWith("<svg")) {
+    return false;
+  }
+  return (
+    lower.startsWith("<!doctype html") ||
+    lower.startsWith("<html") ||
+    lower.startsWith("<head") ||
+    lower.startsWith("<body")
+  );
+}
+
+/** 확장자 없는 스토리지 키(UUID 등) 다운로드 시 macOS 미리보기가 텍스트로 오인하지 않도록 시그니처로 MIME 추론 */
+function sniffMimeFromBuffer(buf: Buffer): string | null {
+  if (!buf || buf.length < 12) {
+    return null;
+  }
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) {
+    return "image/jpeg";
+  }
+  if (
+    buf[0] === 0x89 &&
+    buf[1] === 0x50 &&
+    buf[2] === 0x4e &&
+    buf[3] === 0x47
+  ) {
+    return "image/png";
+  }
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) {
+    return "image/gif";
+  }
+  if (
+    buf.toString("ascii", 0, 4) === "RIFF" &&
+    buf.toString("ascii", 8, 12) === "WEBP"
+  ) {
+    return "image/webp";
+  }
+  if (buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46) {
+    return "application/pdf";
+  }
+  if (buf[0] === 0x42 && buf[1] === 0x4d) {
+    return "image/bmp";
+  }
+  if (
+    buf.length >= 12 &&
+    buf.toString("ascii", 4, 8) === "ftyp"
+  ) {
+    const brand = buf.toString("ascii", 8, 12);
+    if (
+      ["heic", "heix", "hevc", "mif1", "msf1", "heim", "heis"].indexOf(brand) > -1
+    ) {
+      return "image/heic";
+    }
+  }
+  return null;
+}
+
 import { initBroker, sendCommonMessage } from "./messageBroker";
 import { uploader } from "./middlewares/fileMiddleware";
 import {
@@ -310,6 +416,42 @@ app.get(
   })
 );
 
+/** 스토리지 objectId 접두(영숫자·-_ 20자+) 뒤 한글 파일명이 붙은 key에서 제안 파일명만 남김 */
+function stripStoragePrefixBeforeHangulForFilename(
+  base: string,
+  minPrefixLen = 20,
+): string {
+  if (!base || typeof base !== "string") {
+    return base;
+  }
+  const cleaned = base.replace(/^upload_[^_]+_/, "");
+  const idx = cleaned.search(/\p{Script=Hangul}/u);
+  if (idx <= 0) {
+    return cleaned;
+  }
+  const prefix = cleaned.slice(0, idx).replace(/[_\s-]+$/, "");
+  if (/^[A-Za-z0-9_-]+$/.test(prefix) && prefix.length >= minPrefixLen) {
+    return cleaned.slice(idx);
+  }
+  return cleaned;
+}
+
+function readFileDispositionBasename(key: string, name: unknown): string {
+  const nameTrim =
+    name != null && String(name).trim() ? String(name).trim() : "";
+  const rawForLabel = nameTrim
+    ? nameTrim
+    : (() => {
+        try {
+          const decoded = decodeURIComponent(String(key));
+          return decoded.split("/").pop() || decoded;
+        } catch {
+          return String(key).split("/").pop() || String(key);
+        }
+      })();
+  return stripStoragePrefixBeforeHangulForFilename(rawForLabel);
+}
+
 // read file
 app.get("/read-file", async (req: any, res, next) => {
   const subdomain = getSubdomain(req);
@@ -322,10 +464,6 @@ app.get("/read-file", async (req: any, res, next) => {
       return res.send("Invalid key");
     }
 
-    console.log('🔍 read-file - key:', key);
-    console.log('🔍 read-file - name:', name);
-    console.log('🔍 read-file - attachment name:', name || key);
-
     const response = await readFileRequest({
       key,
       subdomain,
@@ -334,33 +472,57 @@ app.get("/read-file", async (req: any, res, next) => {
       width,
     });
 
-    if (inline && inline === "true") {
-      const extension = (key.split(".").pop() || "").toLowerCase();
-      const imageMime: Record<string, string> = {
-        jpg: "image/jpeg",
-        jpeg: "image/jpeg",
-        png: "image/png",
-        gif: "image/gif",
-        webp: "image/webp",
-        svg: "image/svg+xml",
-        bmp: "image/bmp",
-        ico: "image/x-icon",
-      };
-      res.setHeader(
-        "Content-disposition",
-        safeContentDisposition("inline", name && String(name) ? String(name) : key)
-      );
-      res.setHeader("Content-type", imageMime[extension] || `application/${extension}`);
-
-      return res.send(response);
+    const buf = readFileBodyToBuffer(response);
+    if (!buf.length) {
+      return res.status(404).send("Not found");
+    }
+    if (bufferLooksLikeHtmlDocument(buf)) {
+      return res
+        .status(502)
+        .send("Invalid file payload (received HTML instead of binary)");
     }
 
+    const baseName = readFileDispositionBasename(String(key), name);
+    const extFromName = path.extname(baseName).toLowerCase();
+    const extKeyFromName = extFromName.startsWith(".")
+      ? extFromName.slice(1)
+      : "";
+
+    let contentType =
+      extKeyFromName && READ_FILE_EXT_TO_MIME[extKeyFromName]
+        ? READ_FILE_EXT_TO_MIME[extKeyFromName]
+        : null;
+
+    if (!contentType) {
+      const keyStr = String(key);
+      const extFromKey = path.extname(keyStr).toLowerCase();
+      const ek = extFromKey.startsWith(".") ? extFromKey.slice(1) : "";
+      if (ek && READ_FILE_EXT_TO_MIME[ek]) {
+        contentType = READ_FILE_EXT_TO_MIME[ek];
+      }
+    }
+
+    if (!contentType && buf.length) {
+      contentType = sniffMimeFromBuffer(buf);
+    }
+
+    let dispositionName = baseName;
+    const hasExtOnName = Boolean(extFromName);
+    if (!hasExtOnName && contentType && READ_FILE_MIME_TO_EXT[contentType]) {
+      dispositionName = `${baseName}${READ_FILE_MIME_TO_EXT[contentType]}`;
+    }
+
+    const isInline = inline === "true";
     res.setHeader(
       "Content-disposition",
-      safeContentDisposition("attachment", name && String(name) ? String(name) : key)
+      safeContentDisposition(
+        isInline ? "inline" : "attachment",
+        dispositionName,
+      ),
     );
+    res.setHeader("Content-Type", contentType || "application/octet-stream");
 
-    return res.send(response);
+    return res.send(buf);
   } catch (e) {
     if ((e as Error).message.includes("key does not exist")) {
       return res.status(404).send("Not found");
