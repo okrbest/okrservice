@@ -17,6 +17,7 @@ function formatWorkTime(
 }
 
 function openDeeplinkViaWebView(url: string, params: Record<string, string>): void {
+  // window.ReactNativeWebView is injected by the iOS/Android WebView bridge
   const rnWebView = (window as any).ReactNativeWebView
   if (rnWebView?.postMessage) {
     rnWebView.postMessage(JSON.stringify({ type: 'deeplink', url, params }))
@@ -39,7 +40,7 @@ export function AttendanceCard({ record }: Props) {
       <div style={bubbleStyle}>
         <span style={textStyle}>출근 10분 전입니다. 출근 확인 하시겠습니까?</span>
       </div>
-      <button style={ctaStyle} onClick={handleClick}>
+      <button type="button" style={ctaStyle} onClick={handleClick}>
         출근 확인하기
       </button>
     </div>
