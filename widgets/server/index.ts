@@ -102,6 +102,10 @@ app.get('/knowledgebase', (req, res) => {
   });
 });
 
+app.get('/clientportal', (req, res) => {
+  res.render('widget', { type: 'clientportal', env: getEnv(req) });
+});
+
 app.get('/test', (req, res) => {
   const { form_id, brand_id, topic_id, integration_id, type } = req.query;
   const env = getEnv(req);
