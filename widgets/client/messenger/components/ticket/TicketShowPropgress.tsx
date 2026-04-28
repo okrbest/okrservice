@@ -16,27 +16,9 @@ import Container from "../common/Container";
 import Input from "../common/Input";
 import FileUploader from "../common/FileUploader";
 import Attachment from "../common/Attachment";
+import FileTypeIcon from "../common/FileTypeIcon";
 import TicketActivity from "./TicketAcitvity";
 import { useTicket } from "../../context/Ticket";
-
-// 파일 타입별 아이콘
-const getFileIcon = (extension: string): string => {
-  const iconMap: { [key: string]: string } = {
-    pdf: "📄",
-    doc: "📝",
-    docx: "📝",
-    xls: "📊",
-    xlsx: "📊",
-    ppt: "📊",
-    pptx: "📊",
-    txt: "📃",
-    zip: "🗜️",
-    rar: "🗜️",
-    csv: "📈",
-  };
-  
-  return iconMap[extension.toLowerCase()] || "📎";
-};
 
 interface FileWithUrl extends File {
   url?: string;
@@ -166,40 +148,41 @@ const TicketShowProgress: React.FC<Props> = ({
             </div>
           ) : (
             <a
+              className="ticket-attachment-file-row"
               href={downloadUrl}
               download={downloadName}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-                display: "block",
-                width: "100%",
-              }}
+              title={`${downloadName} — ${__("Download")}`}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  padding: "6px 0",
-                  cursor: "pointer",
-                }}
-              >
-                <span style={{ fontSize: "20px", lineHeight: 1, flexShrink: 0 }}>
-                  {getFileIcon(fileExtension)}
-                </span>
-                <div
-                  style={{
-                    fontSize: "12px",
-                    textAlign: "left",
-                    wordBreak: "break-word",
-                    lineHeight: 1.35,
-                  }}
-                >
+              <span className="ticket-attachment-file-icon-wrap">
+                <FileTypeIcon extension={fileExtension} size={44} />
+              </span>
+              <span className="ticket-attachment-file-info">
+                <span className="ticket-attachment-file-name">
                   {downloadName}
-                </div>
-              </div>
+                </span>
+                <span className="ticket-attachment-file-hint">
+                  {__("Download")}
+                </span>
+              </span>
+              <span className="ticket-attachment-file-action" aria-hidden>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M9 18l6-6-6-6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
             </a>
           )}
         </div>
@@ -216,20 +199,26 @@ const TicketShowProgress: React.FC<Props> = ({
           <b>{name} </b>
           <span>{__(requestType || type)}</span>
         </div>
-        {description && (
-          <div
-            ref={descriptionRef}
-            className="ticket-description-content"
-            dangerouslySetInnerHTML={{
-              __html: xss(description.replace(/\n/g, "<br />")),
-            }}
-          />
-        )}
-        {attachments && attachments.length !== 0 && (
-          <div className="ticket-attachments">
-            {renderAttachments(attachments)}
+        {description ? (
+          <div className="ticket-issue-section ticket-issue-section--description">
+            <div className="ticket-issue-section-label">{__("Description")}</div>
+            <div
+              ref={descriptionRef}
+              className="ticket-description-content ticket-issue-section-body"
+              dangerouslySetInnerHTML={{
+                __html: xss(description.replace(/\n/g, "<br />")),
+              }}
+            />
           </div>
-        )}
+        ) : null}
+        {attachments && attachments.length !== 0 ? (
+          <div className="ticket-issue-section ticket-issue-section--attachments">
+            <div className="ticket-issue-section-label">{__("Attachments")}</div>
+            <div className="ticket-attachments ticket-issue-section-body">
+              {renderAttachments(attachments)}
+            </div>
+          </div>
+        ) : null}
       </div>
     );
   };
@@ -333,28 +322,22 @@ const TicketShowProgress: React.FC<Props> = ({
             />
             <div
               ref={(el) => setCommentRef(comment._id, el)}
-              className="comment ticket-comment-content"
+              className="comment ticket-comment-content ticket-comment-body"
               dangerouslySetInnerHTML={{
                 __html: xss((content || "").replace(/\n/g, "<br />")),
               }}
             />
             {attachments && attachments.length > 0 && (
-              <div
-                className="ticket-comment-attachments"
-                style={{
-                  marginTop: "8px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "stretch",
-                  gap: "8px",
-                }}
-              >
-                {attachments.map((att, idx) => (
-                  <Attachment
-                    key={idx}
-                    attachment={{ name: att.name || "", url: att.url || "" }}
-                  />
-                ))}
+              <div className="ticket-comment-attachments ticket-comment-files">
+                <div className="ticket-comment-files-label">{__("Attachments")}</div>
+                <div className="ticket-comment-files-list">
+                  {attachments.map((att, idx) => (
+                    <Attachment
+                      key={idx}
+                      attachment={{ name: att.name || "", url: att.url || "" }}
+                    />
+                  ))}
+                </div>
               </div>
             )}
             <div className="date">
