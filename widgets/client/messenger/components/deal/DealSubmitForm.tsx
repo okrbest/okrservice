@@ -23,6 +23,10 @@ function resolvePrivacyPolicyHref(raw?: string): string {
   return DEFAULT_DEAL_PRIVACY_POLICY_URL;
 }
 
+/** Default subtitle when integration `dealFormIntro` is empty */
+const DEFAULT_DEAL_FORM_INTRO =
+  "문의를 남겨주시면 데모 사이트 오픈과 함께\n도입 방안을 안내해드립니다.";
+
 type CustomField = { _id: string; name: string; label: string; type: string; options?: Array<{ value: string; label: string }> };
 
 type Props = {
@@ -45,6 +49,8 @@ type Props = {
   showPrivacyConsent?: boolean;
   /** Integration-specific header; falls back to i18n "Create a deal" */
   formTitle?: string;
+  /** Subtitle under blue heading; empty uses default Korean copy (line breaks OK) */
+  formIntro?: string;
   /** Privacy policy link; invalid/non-http(s) values fall back to default URL */
   privacyPolicyUrl?: string;
 };
@@ -68,6 +74,7 @@ const DealSubmitForm: React.FC<Props> = ({
   onAgreePrivacyChange,
   showPrivacyConsent = true,
   formTitle,
+  formIntro,
   privacyPolicyUrl,
 }) => {
   const submitText = __("Submit");
@@ -177,6 +184,11 @@ const DealSubmitForm: React.FC<Props> = ({
 
   const useCustomFields = customFields.length > 0;
 
+  const resolvedFormIntro =
+    formIntro != null && String(formIntro).trim() !== ""
+      ? String(formIntro).trim()
+      : DEFAULT_DEAL_FORM_INTRO;
+
   const renderForm = () => {
     return (
       <form id="deal-form" onSubmit={handleSubmit}>
@@ -194,8 +206,8 @@ const DealSubmitForm: React.FC<Props> = ({
                 <h2 style={{ fontSize: "20px", fontWeight: "600", marginBottom: "12px", color: "#1e40af", textAlign: "center" }}>
                   데모 사이트를 통해 직접 확인해보세요
                 </h2>
-                <h2 style={{ fontSize: "16px", fontWeight: "400", color: "#666", lineHeight: "1.6", textAlign: "center" }}>
-                  문의를 남겨주시면 데모 사이트 오픈과 함께 <br /> 도입 방안을 안내해드립니다.
+                <h2 style={{ fontSize: "16px", fontWeight: "400", color: "#666", lineHeight: "1.6", textAlign: "center", whiteSpace: "pre-line" }}>
+                  {resolvedFormIntro}
                 </h2>
               </div>
               <div className="ticket-form-item">
