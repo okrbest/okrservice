@@ -80,6 +80,7 @@ type State = {
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: boolean;
   dealFormTitle?: string;
+  dealFormIntro?: string;
   dealPrivacyPolicyUrl?: string;
   title: string;
   botEndpointUrl?: string;
@@ -181,6 +182,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealRequiredCustomFieldIds: dealData.dealRequiredCustomFieldIds || [],
       dealShowPrivacyConsent: dealData.dealShowPrivacyConsent !== false,
       dealFormTitle: dealData.dealFormTitle || "",
+      dealFormIntro: dealData.dealFormIntro || "",
       dealPrivacyPolicyUrl: dealData.dealPrivacyPolicyUrl || "",
       channelIds: channels.map((item) => item._id) || [],
       color: uiOptions.color || "#6569DF",
@@ -301,6 +303,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealRequiredCustomFieldIds,
       dealShowPrivacyConsent,
       dealFormTitle,
+      dealFormIntro,
       dealPrivacyPolicyUrl,
     } = this.state;
 
@@ -420,6 +423,7 @@ class CreateMessenger extends React.Component<Props, State> {
         dealRequiredCustomFieldIds: dealRequiredCustomFieldIds || [],
         dealShowPrivacyConsent: dealShowPrivacyConsent !== false,
         dealFormTitle: (dealFormTitle || "").trim(),
+        dealFormIntro: (dealFormIntro || "").trim(),
         dealPrivacyPolicyUrl: (dealPrivacyPolicyUrl || "").trim(),
       },
       uiOptions: {
@@ -525,6 +529,7 @@ class CreateMessenger extends React.Component<Props, State> {
       dealRequiredCustomFieldIds = [],
       dealShowPrivacyConsent = true,
       dealFormTitle = "",
+      dealFormIntro = "",
       dealPrivacyPolicyUrl = "",
       panelWidth,
     } = this.state;
@@ -654,6 +659,7 @@ class CreateMessenger extends React.Component<Props, State> {
                   dealRequiredCustomFieldIds={dealRequiredCustomFieldIds || []}
                   dealShowPrivacyConsent={dealShowPrivacyConsent}
                   dealFormTitle={dealFormTitle}
+                  dealFormIntro={dealFormIntro}
                   dealPrivacyPolicyUrl={dealPrivacyPolicyUrl}
                 />
               </Step>

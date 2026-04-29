@@ -24,6 +24,7 @@ type Props = {
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: boolean;
   dealFormTitle?: string;
+  dealFormIntro?: string;
   dealPrivacyPolicyUrl?: string;
   dealFields?: DealField[];
   kind?: "client" | "vendor";
@@ -40,6 +41,7 @@ function General({
   dealRequiredCustomFieldIds = [],
   dealShowPrivacyConsent = true,
   dealFormTitle = "",
+  dealFormIntro = "",
   dealPrivacyPolicyUrl = "",
   dealFields = [],
 }: Props) {
@@ -153,6 +155,26 @@ function General({
                   handleFormChange("dealFormTitle", e.target.value)
                 }
                 placeholder={__("e.g. General inquiry & demo request")}
+              />
+            </FormGroup>
+          )}
+          {dealToggle && (
+            <FormGroup>
+              <ControlLabel>
+                {__("Deal form intro in widget")}
+              </ControlLabel>
+              <p style={{ margin: "4px 0 8px 0", color: "#888", fontSize: "12px" }}>
+                {__(
+                  "Shown below the deal form title. Line breaks are preserved. Leave empty to use the default widget text."
+                )}
+              </p>
+              <FormControl
+                componentClass="textarea"
+                rows={4}
+                value={dealFormIntro}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  handleFormChange("dealFormIntro", e.target.value)
+                }
               />
             </FormGroup>
           )}

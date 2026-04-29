@@ -103,6 +103,8 @@ export interface IDealData {
   dealShowPrivacyConsent?: Boolean;
   /** Messenger deal form header; empty uses default i18n title */
   dealFormTitle?: String;
+  /** Optional subtitle / intro below title in widget deal form; empty uses widget default */
+  dealFormIntro?: String;
   /** Privacy policy URL for deal form consent links; empty keeps widget default */
   dealPrivacyPolicyUrl?: String;
 }
@@ -213,6 +215,7 @@ export interface IDealDataDocument extends Document {
   dealPipelineId?: String;
   dealBoardId?: String;
   dealFormTitle?: String;
+  dealFormIntro?: String;
   dealPrivacyPolicyUrl?: String;
 }
 
@@ -344,6 +347,7 @@ const dealSchema = new Schema(
     dealRequiredCustomFieldIds: { type: [String] },
     dealShowPrivacyConsent: { type: Boolean },
     dealFormTitle: { type: String, optional: true },
+    dealFormIntro: { type: String, optional: true },
     dealPrivacyPolicyUrl: { type: String, optional: true },
   },
   { _id: false }

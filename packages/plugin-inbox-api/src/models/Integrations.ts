@@ -361,6 +361,7 @@ export const loadClass = (models: IModels, subdomain: string) => {
         dealRequiredCustomFieldIds,
         dealShowPrivacyConsent,
         dealFormTitle,
+        dealFormIntro,
         dealPrivacyPolicyUrl
       }: IDealData
     ) {
@@ -378,6 +379,7 @@ export const loadClass = (models: IModels, subdomain: string) => {
               dealRequiredCustomFieldIds,
               dealShowPrivacyConsent,
               dealFormTitle,
+              dealFormIntro,
               dealPrivacyPolicyUrl
             }
           }
