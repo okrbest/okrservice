@@ -119,6 +119,7 @@ export const types = `
     dealRequiredCustomFieldIds: [String]
     dealShowPrivacyConsent: Boolean
     dealFormTitle: String
+    dealFormIntro: String
     dealPrivacyPolicyUrl: String
   }
 

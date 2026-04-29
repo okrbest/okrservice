@@ -25,7 +25,7 @@ function resolvePrivacyPolicyHref(raw?: string): string {
 
 /** Default subtitle when integration `dealFormIntro` is empty */
 const DEFAULT_DEAL_FORM_INTRO =
-  "문의를 남겨주시면 데모 사이트 오픈과 함께\n도입 방안을 안내해드립니다.";
+  "편하게 문의하여 주십시오. 상담을 통해 데모사이트를 개설해 드립니다.\n빠른 검토가 필요하실 경우 010-5940-5240으로 전화해 주셔도 됩니다.";
 
 type CustomField = { _id: string; name: string; label: string; type: string; options?: Array<{ value: string; label: string }> };
 

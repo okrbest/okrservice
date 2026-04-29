@@ -24,6 +24,8 @@ type Props = {
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: boolean;
   dealFormTitle?: string;
+  /** Subtitle / intro below title on widget deal form */
+  dealFormIntro?: string;
   dealPrivacyPolicyUrl?: string;
 };
 

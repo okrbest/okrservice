@@ -42,6 +42,7 @@ type Props = {
   dealRequiredCustomFieldIds?: string[];
   dealShowPrivacyConsent?: boolean;
   dealFormTitle?: string;
+  dealFormIntro?: string;
   dealPrivacyPolicyUrl?: string;
 };
 
@@ -69,6 +70,7 @@ const ConfigSetup: React.FC<Props> = ({
   dealRequiredCustomFieldIds,
   dealShowPrivacyConsent,
   dealFormTitle,
+  dealFormIntro,
   dealPrivacyPolicyUrl,
 }) => {
   return (
@@ -144,6 +146,7 @@ const ConfigSetup: React.FC<Props> = ({
               dealRequiredCustomFieldIds={dealRequiredCustomFieldIds || []}
               dealShowPrivacyConsent={dealShowPrivacyConsent}
               dealFormTitle={dealFormTitle}
+              dealFormIntro={dealFormIntro}
               dealPrivacyPolicyUrl={dealPrivacyPolicyUrl}
             />
           </CollapseContent>
