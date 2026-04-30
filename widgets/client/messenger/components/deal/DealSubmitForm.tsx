@@ -27,6 +27,23 @@ function resolvePrivacyPolicyHref(raw?: string): string {
 const DEFAULT_DEAL_FORM_INTRO =
   "편하게 문의하여 주십시오. 상담을 통해 데모사이트를 개설해 드립니다.\n빠른 검토가 필요하실 경우 010-5940-5240으로 전화해 주셔도 됩니다.";
 
+const DEAL_FORM_INTRO_PHONE_HIGHLIGHT = "010-5940-5240";
+
+function renderFormIntroWithPhoneHighlight(text: string): React.ReactNode {
+  const phone = DEAL_FORM_INTRO_PHONE_HIGHLIGHT;
+  const i = text.indexOf(phone);
+  if (i === -1) {
+    return text;
+  }
+  return (
+    <>
+      {text.slice(0, i)}
+      <span style={{ color: "#1e40af", fontWeight: 600 }}>{phone}</span>
+      {text.slice(i + phone.length)}
+    </>
+  );
+}
+
 type CustomField = { _id: string; name: string; label: string; type: string; options?: Array<{ value: string; label: string }> };
 
 type Props = {
@@ -207,7 +224,7 @@ const DealSubmitForm: React.FC<Props> = ({
                   데모 사이트를 통해 직접 확인해보세요
                 </h2>
                 <h2 style={{ fontSize: "16px", fontWeight: "400", color: "#666", lineHeight: "1.6", textAlign: "center", whiteSpace: "pre-line" }}>
-                  {resolvedFormIntro}
+                  {renderFormIntroWithPhoneHighlight(resolvedFormIntro)}
                 </h2>
               </div>
               <div className="ticket-form-item">
