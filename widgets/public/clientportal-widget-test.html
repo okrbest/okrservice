@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <script>
+      /* file:// 에서는 iframe 이 같은 html 을 file 로 넣으려다 보안 오류·흰 화면이 납니다. HTTP 로 보냅니다. */
+      (function () {
+        if (location.protocol !== 'file:') return
+        var p = new URLSearchParams(location.search || '')
+        var origin = (p.get('widgetHttpOrigin') || 'http://127.0.0.1:3200').replace(
+          /\/$/,
+          ''
+        )
+        p.delete('widgetHttpOrigin')
+        var target = origin + '/static/clientportal-widget-test.html'
+        var q = p.toString()
+        if (q) target += '?' + q
+        target += location.hash || ''
+        location.replace(target)
+      })()
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>클라이언트 포털 위젯 테스트 (정적)</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 20px;
+        max-width: 520px;
+        line-height: 1.5;
+        color: #1a1a1a;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 0 0 8px;
+      }
+      .hint {
+        margin: 0 0 20px;
+        font-size: 0.9rem;
+        color: #555;
+      }
+      form {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: #f6f7f9;
+        border-radius: 10px;
+        border: 1px solid #e2e4e8;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+      input {
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
+      button[type='submit'] {
+        margin-top: 8px;
+        padding: 10px 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        background: #1f3f73;
+        color: #fff;
+        cursor: pointer;
+      }
+      button[type='submit']:hover {
+        opacity: 0.92;
+      }
+      code {
+        font-size: 0.85em;
+        background: #eee;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>클라이언트 포털 위젯 테스트</h1>
+    <p class="hint">
+      이 파일은 브라우저에서 <strong>파일로 직접 열어도</strong> 되지만, 그때는 스크립트 로드가 막히는 경우가 많습니다.
+      <strong>권장:</strong>
+      <a href="http://127.0.0.1:3200/static/clientportal-widget-test.html">http://127.0.0.1:3200/static/clientportal-widget-test.html</a>
+      (위젯 서버가 3200일 때). <code>file://</code> 로 연 경우 자동으로 이 주소로 이동합니다(포트가 다르면 파일을
+      <code>?widgetHttpOrigin=http://127.0.0.1:내포트</code> 와 함께 열거나, 직접 HTTP 주소를 쓰세요). 배포
+      URL을 쓰려면
+      <code>?root=http://localhost:3200</code> 처럼 지정하세요 (5240help.html 처럼 스크립트만 절대 URL이면 file 열기
+      가능).
+    </p>
+    <p class="hint">
+      번들을 받으려면 포트 3200에서 위젯 개발 서버가 떠 있어야 합니다. 보통
+      <code>./bin/okrservice.js dev …</code> 로 전체 띄울 때 <code>configs.json</code>에
+      <code>widgets</code>가 켜져 있으면 pm2가 <code>widgets</code>에서 <code>yarn dev</code>를 같이 실행합니다(그걸
+      수동으로 또 칠 필요는 없습니다). <code>widgets</code>를 설정에서 끈 경우에만
+      <code>cd widgets &amp;&amp; yarn dev</code>가 필요합니다. HTTP로 열 때는
+      <code>http://localhost:3200/static/clientportal-widget-test.html</code> 도 같습니다.
+    </p>
+
+    <p class="hint">
+      <strong>적용 후</strong> 화면 <strong>오른쪽 아래</strong>의 파란 <strong>포털</strong> 버튼을 눌러 패널을
+      엽니다. 개발자 도구 Network는 <strong>상단 컨텍스트를 iframe(고객 포털)</strong>로 바꿔야
+      <code>/graphql</code> 요청이 보입니다. 「포털」클릭만으로는 부모 페이지 네트워크에 새 줄이 없을 수 있습니다
+      (<code>postMessage</code>만 쓰기 때문).
+    </p>
+    <p id="cp-status" class="hint" aria-live="polite"></p>
+
+    <form method="get" action="">
+      <label>
+        이메일
+        <input name="email" type="email" id="cp-email" autocomplete="username" />
+      </label>
+      <label>
+        비밀번호 (code, 선택 — 비우면 이메일만으로 로그인)
+        <input name="code" type="password" id="cp-code" autocomplete="current-password" />
+      </label>
+      <label>
+        clientPortalId (선택)
+        <input name="clientPortalId" id="cp-portal-id" />
+      </label>
+      <label>
+        이름 (선택)
+        <input name="name" id="cp-name" />
+      </label>
+      <button type="submit">적용 후 위젯 로드</button>
+    </form>
+
+    <script>
+      (function () {
+        var p = new URLSearchParams(location.search);
+        function v(id, name) {
+          var el = document.getElementById(id);
+          var q = p.get(name);
+          if (q != null && el) el.value = q;
+        }
+        v('cp-email', 'email');
+        v('cp-code', 'code');
+        if (!p.get('code') && p.get('password')) {
+          var c = document.getElementById('cp-code');
+          if (c) c.value = p.get('password');
+        }
+        v('cp-portal-id', 'clientPortalId');
+        v('cp-name', 'name');
+
+        var email = (document.getElementById('cp-email').value || '').trim();
+        var code = (
+          document.getElementById('cp-code').value ||
+          ''
+        ).trim();
+        var clientPortalId = (
+          document.getElementById('cp-portal-id').value || ''
+        ).trim();
+        var name = (document.getElementById('cp-name').value || '').trim();
+
+        var settingsObj = {};
+        if (email) settingsObj.email = email;
+        if (code) settingsObj.code = code;
+        if (clientPortalId) settingsObj.clientPortalId = clientPortalId;
+        if (name) settingsObj.name = name;
+
+        window.erxesSettings = { clientportal: settingsObj };
+
+        var statusEl = document.getElementById('cp-status');
+        var rootParam = (
+          p.get('root') ||
+          p.get('widgetBase') ||
+          ''
+        ).replace(/\/$/, '');
+        var bases = [];
+        if (rootParam) {
+          bases = [rootParam];
+        } else if (location.protocol === 'file:') {
+          /* file:// 에서 localhost 스크립트가 차단되는 브라우저가 많아 127.0.0.1 을 먼저 둡니다 */
+          bases = ['http://127.0.0.1:3200', 'http://localhost:3200'];
+        } else {
+          bases = [''];
+        }
+
+        var attempt = 0;
+        function loadBundleAttempt() {
+          if (attempt >= bases.length) {
+            if (statusEl) {
+              statusEl.innerHTML =
+                '번들 로드 실패. <strong>가장 권장:</strong> 페이지를 ' +
+                '<a href="http://127.0.0.1:3200/static/clientportal-widget-test.html">http://127.0.0.1:3200/static/clientportal-widget-test.html</a> ' +
+                '로 여세요. <code>file://</code> 로 연 경우 브라우저·확장프로그램이 localhost 스크립트를 막을 수 있습니다. ' +
+                '또는 터미널에서 <code>curl -I http://127.0.0.1:3200/build/clientportalWidget.bundle.js</code> 가 HTTP 200인지 확인하세요.';
+            }
+            return;
+          }
+          var base = bases[attempt];
+          var bundleSrc = base + '/build/clientportalWidget.bundle.js';
+          if (statusEl) {
+            statusEl.textContent =
+              '위젯 번들 요청 (' +
+              (attempt + 1) +
+              '/' +
+              bases.length +
+              '): ' +
+              bundleSrc;
+          }
+          var script = document.createElement('script');
+          script.async = true;
+          script.src = bundleSrc;
+          script.onload = function () {
+            if (statusEl) {
+              statusEl.textContent =
+                '번들 로드됨. 오른쪽 아래 「포털」을 눌러 주세요. (이메일·비밀번호는 적용 후에 반영됩니다)';
+            }
+          };
+          script.onerror = function () {
+            attempt += 1;
+            loadBundleAttempt();
+          };
+          var here = document.getElementsByTagName('script')[0];
+          here.parentNode.insertBefore(script, here);
+        }
+        loadBundleAttempt();
+      })();
+    </script>
+  </body>
+</html>

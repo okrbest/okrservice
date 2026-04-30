@@ -13,6 +13,7 @@ module.exports = {
     events: './client/events/index.ts',
     eventsWidget: './client/events/widget/index.ts',
     clientportal: './client/clientportal/index.ts',
+    clientportalWidget: './client/clientportal/widget/index.ts',
   },
 
   output: {

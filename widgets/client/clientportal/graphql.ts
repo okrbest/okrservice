@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client'
 
 export const LOGIN_MUTATION = gql`
-  mutation ClientPortalLogin($login: String!, $password: String!, $clientPortalId: String!) {
+  mutation ClientPortalLogin($login: String!, $password: String, $clientPortalId: String) {
     clientPortalLogin(login: $login, password: $password, clientPortalId: $clientPortalId)
   }
 `
@@ -72,6 +72,114 @@ export const DELETE_CUSTOMER_NOTIFICATIONS_MUTATION = gql`
   }
 `
 
+export const CLIENT_PORTAL_TICKET_DETAIL_QUERY = gql`
+  query ClientPortalTicketDetail($_id: String!) {
+    clientPortalTicket(_id: $_id) {
+      _id
+      name
+      status
+      description
+      stageId
+      modifiedAt
+      createdAt
+      assignedUserIds
+    }
+  }
+`
+
+export const CLIENT_PORTAL_TICKET_STAGE_META_QUERY = gql`
+  query ClientPortalTicketStageMeta($ticketId: String!) {
+    clientPortalTicketStageMeta(ticketId: $ticketId) {
+      stageId
+      pipelineId
+    }
+  }
+`
+
+export const CLIENT_PORTAL_TICKET_STAGES_QUERY = gql`
+  query ClientPortalGetTicketStages($pipelineId: String!) {
+    clientPortalGetTicketStages(pipelineId: $pipelineId) {
+      _id
+      name
+      pipelineId
+      probability
+    }
+  }
+`
+
+export const CLIENT_PORTAL_TICKET_CONTACTS_QUERY = gql`
+  query ClientPortalTicketContacts($ticketId: String!) {
+    clientPortalTicketContacts(ticketId: $ticketId) {
+      customers {
+        _id
+        firstName
+        lastName
+        primaryEmail
+        primaryPhone
+      }
+      companies {
+        _id
+        primaryName
+        primaryEmail
+        primaryPhone
+      }
+    }
+  }
+`
+
+export const CLIENT_PORTAL_TICKET_COMMENTS_QUERY = gql`
+  query ClientPortalTicketComments($typeId: String!, $type: String!) {
+    clientPortalComments(typeId: $typeId, type: $type) {
+      _id
+      content
+      userType
+      createdAt
+      createdUser {
+        _id
+        firstName
+        lastName
+        fullName
+        email
+      }
+    }
+  }
+`
+
+export const CLIENT_PORTAL_COMMENTS_ADD_MUTATION = gql`
+  mutation ClientPortalCommentsAdd($type: String!, $typeId: String!, $content: String!, $userType: String!) {
+    clientPortalCommentsAdd(type: $type, typeId: $typeId, content: $content, userType: $userType) {
+      _id
+      content
+      userType
+      createdAt
+      createdUser {
+        _id
+        firstName
+        lastName
+        fullName
+        email
+      }
+    }
+  }
+`
+
+export const CLIENT_PORTAL_ASSIGNABLE_MEMBERS_QUERY = gql`
+  query ClientPortalAssignableMembers {
+    clientPortalAssignableMembers {
+      _id
+      firstName
+      lastName
+      email
+    }
+  }
+`
+
+export const CLIENT_PORTAL_TICKET_ASSIGN_MUTATION = gql`
+  mutation ClientPortalTicketAssign($ticketId: String!, $assignedUserIds: [String]!) {
+    clientPortalTicketAssign(ticketId: $ticketId, assignedUserIds: $assignedUserIds)
+  }
+`
+
 export interface Message {
   _id: string
   content: string
@@ -98,4 +206,43 @@ export interface CurrentUser {
   lastName?: string
   erxesCustomerId?: string
   type?: string
+}
+
+export interface CpTicketDetail {
+  _id: string
+  name: string
+  status: string
+  description?: string
+  stageId?: string
+  modifiedAt: string
+  createdAt: string
+  assignedUserIds?: string[]
+}
+
+export interface CpTicketStage {
+  _id: string
+  name: string
+  pipelineId: string
+  probability?: string
+}
+
+export interface CpTicketComment {
+  _id: string
+  content?: string
+  userType?: string
+  createdAt: string
+  createdUser?: {
+    _id: string
+    firstName?: string
+    lastName?: string
+    fullName?: string
+    email?: string
+  }
+}
+
+export interface CpAssignableMember {
+  _id: string
+  firstName?: string
+  lastName?: string
+  email?: string
 }

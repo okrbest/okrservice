@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export interface AttendanceRecord {
   startHour: number
@@ -37,6 +37,7 @@ function readFromStorage(): AttendanceRecord | null {
 export function saveAttendanceRecord(data: AttendanceRecord): void {
   try {
     localStorage.setItem(todayKey(), JSON.stringify(data))
+    window.dispatchEvent(new Event('attendance-record-updated'))
   } catch {
     // localStorage unavailable — silently ignore
   }
@@ -44,6 +45,23 @@ export function saveAttendanceRecord(data: AttendanceRecord): void {
 
 export function useAttendanceRecord() {
   const [record, setRecord] = useState<AttendanceRecord | null>(() => readFromStorage())
+
+  useEffect(() => {
+    function handleStorageEvent(e: StorageEvent) {
+      if (e.key === todayKey()) {
+        setRecord(readFromStorage())
+      }
+    }
+    function handleAttendanceUpdate() {
+      setRecord(readFromStorage())
+    }
+    window.addEventListener('storage', handleStorageEvent)
+    window.addEventListener('attendance-record-updated', handleAttendanceUpdate)
+    return () => {
+      window.removeEventListener('storage', handleStorageEvent)
+      window.removeEventListener('attendance-record-updated', handleAttendanceUpdate)
+    }
+  }, [])
 
   return { record, setRecord }
 }
