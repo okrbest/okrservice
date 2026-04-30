@@ -1,0 +1,57 @@
+/* 플로팅 클라이언트 포털 임베드 (messenger 위젯과 유사한 z-index) */
+.erxes-clientportal-root {
+  position: fixed;
+  z-index: 2147483646;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 12px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.erxes-clientportal-panel {
+  display: none;
+  flex-direction: column;
+  width: min(400px, calc(100vw - 40px));
+  height: min(560px, calc(100vh - 120px));
+  max-height: 85vh;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.erxes-clientportal-panel--open {
+  display: flex;
+}
+
+.erxes-clientportal-frame {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+}
+
+.erxes-clientportal-launcher {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  background: #1f3f73;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.1;
+  padding: 4px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.erxes-clientportal-launcher:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}

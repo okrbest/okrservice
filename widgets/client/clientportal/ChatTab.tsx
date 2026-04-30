@@ -5,7 +5,14 @@ import { useAttendanceRecord } from './hooks/useAttendanceRecord'
 import { AttendanceCard } from './AttendanceCard'
 import { Message } from './graphql'
 
-const INTEGRATION_ID = (window as any).erxesEnv?.INTEGRATION_ID || process.env.INTEGRATION_ID || ''
+const INTEGRATION_ID = ((): string => {
+  const fromEnv =
+    typeof window !== 'undefined' ? (window as any).erxesEnv?.INTEGRATION_ID : undefined
+  if (fromEnv != null && String(fromEnv).trim() !== '') return String(fromEnv).trim()
+  if (typeof process !== 'undefined' && process.env?.INTEGRATION_ID)
+    return String(process.env.INTEGRATION_ID).trim()
+  return ''
+})()
 
 interface Props {
   client: ApolloClient<NormalizedCacheObject>

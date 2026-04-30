@@ -9,7 +9,7 @@ jest.mock('@apollo/client', () => ({
   ApolloProvider: ({ children }: any) => children,
 }))
 
-import { parseConnectMessage, parseNotificationMessage } from '../index'
+import { parseConnectMessage, parseNotificationMessage } from '../bootstrap-logic'
 
 describe('parseConnectMessage', () => {
   it('connect 메시지 파싱', () => {
@@ -32,12 +32,21 @@ describe('parseConnectMessage', () => {
     expect(parseConnectMessage({ type: 'other' })).toBeNull()
   })
 
-  it('email 없으면 null 반환', () => {
-    expect(parseConnectMessage({ type: 'connect', clientPortalId: 'pid' })).toBeNull()
+  it('clientPortalId 없이 connect 가능(단일 포털 서버)', () => {
+    const result = parseConnectMessage({
+      type: 'connect',
+      email: 'user@test.com',
+      code: 'secret',
+    })
+    expect(result).toEqual({
+      email: 'user@test.com',
+      name: '',
+      code: 'secret',
+    })
   })
 
-  it('clientPortalId 없으면 null 반환', () => {
-    expect(parseConnectMessage({ type: 'connect', email: 'a@b.com' })).toBeNull()
+  it('email 없으면 null 반환', () => {
+    expect(parseConnectMessage({ type: 'connect', clientPortalId: 'pid' })).toBeNull()
   })
 })
 

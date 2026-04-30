@@ -2,9 +2,13 @@ import * as React from 'react'
 import { ApolloClient, NormalizedCacheObject } from '@apollo/client'
 import { useCustomerNotifications } from './hooks/useCustomerNotifications'
 import { Notification } from './graphql'
+import { getTicketIdFromNotification, openExternalNotificationLink } from './notificationTicket'
+import { TicketDetailSheet } from './TicketDetailSheet'
 
 interface Props {
   client: ApolloClient<NormalizedCacheObject>
+  /** clientPortalCurrentUser.type === 'staff' */
+  isStaff: boolean
 }
 
 function formatTime(value: string): string {
@@ -20,7 +24,7 @@ function formatTime(value: string): string {
   return `${date.getMonth() + 1}/${date.getDate()}`
 }
 
-export function NotificationsTab({ client }: Props) {
+export function NotificationsTab({ client, isStaff }: Props) {
   const {
     notifications,
     unreadCount,
@@ -34,12 +38,32 @@ export function NotificationsTab({ client }: Props) {
 
   const [isEditing, setIsEditing] = React.useState(false)
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
+  const [ticketDetailId, setTicketDetailId] = React.useState<string | null>(null)
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     )
   }
+
+  const handleNotificationPress = React.useCallback(
+    async (item: Notification) => {
+      try {
+        await markOneRead(item._id)
+      } catch {
+        /* 읽음 처리 실패해도 이동은 시도 */
+      }
+      const tid = getTicketIdFromNotification(item)
+      if (tid) {
+        setTicketDetailId(tid)
+        return
+      }
+      if (item.link?.trim()) {
+        openExternalNotificationLink(item.link)
+      }
+    },
+    [markOneRead]
+  )
 
   const sorted = [...notifications].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -106,10 +130,16 @@ export function NotificationsTab({ client }: Props) {
             isEditing={isEditing}
             isSelected={selectedIds.includes(item._id)}
             onToggleSelect={() => toggleSelect(item._id)}
-            onPress={() => markOneRead(item._id).catch(() => {})}
+            onPrimaryAction={() => handleNotificationPress(item)}
           />
         ))}
       </div>
+      <TicketDetailSheet
+        client={client}
+        ticketId={ticketDetailId}
+        isStaff={isStaff}
+        onClose={() => setTicketDetailId(null)}
+      />
     </div>
   )
 }
@@ -119,23 +149,36 @@ function NotificationItem({
   isEditing,
   isSelected,
   onToggleSelect,
-  onPress,
+  onPrimaryAction,
 }: {
   item: Notification
   isEditing: boolean
   isSelected: boolean
   onToggleSelect: () => void
-  onPress: () => void
+  onPrimaryAction: () => void
 }) {
+  const cursor = isEditing ? 'pointer' : 'pointer'
   return (
     <div
       style={{
         ...itemStyle,
         background: item.isRead ? '#fff' : '#f0f6ff',
         border: item.isRead ? '1px solid #e0e8f0' : '1px solid #2f6fdf',
-        cursor: isEditing ? 'pointer' : item.isRead ? 'default' : 'pointer',
+        cursor,
       }}
-      onClick={isEditing ? onToggleSelect : onPress}
+      onClick={isEditing ? onToggleSelect : onPrimaryAction}
+      onKeyDown={
+        !isEditing
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onPrimaryAction()
+              }
+            }
+          : undefined
+      }
+      role={!isEditing ? 'button' : undefined}
+      tabIndex={!isEditing ? 0 : undefined}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
         {isEditing && (

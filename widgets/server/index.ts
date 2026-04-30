@@ -37,6 +37,29 @@ const getHeaderValue = (value: string | string[] | undefined): string => {
   return value || ''; // Return empty string if undefined
 };
 
+function buildClientPortalWidgetTestLocals(
+  req: express.Request,
+  env: string,
+) {
+  const email = String(req.query.email ?? '');
+  const code = String(req.query.code ?? req.query.password ?? '');
+  const clientPortalId = String(req.query.clientPortalId ?? '');
+  const name = String(req.query.name ?? '');
+  const settingsObj: Record<string, string> = {};
+  if (email) settingsObj.email = email;
+  if (code) settingsObj.code = code;
+  if (clientPortalId) settingsObj.clientPortalId = clientPortalId;
+  if (name) settingsObj.name = name;
+  return {
+    env,
+    email,
+    code,
+    clientPortalId,
+    name,
+    settingsObj,
+  };
+}
+
 // Helper function to generate environment variables based on subdomain
 const getEnv = (req: express.Request) => {
   const {
@@ -106,9 +129,36 @@ app.get('/clientportal', (req, res) => {
   res.render('widget', { type: 'clientportal', env: getEnv(req) });
 });
 
+/** 로컬 테스트 페이지: public 의 HTML (실제 URL은 /static/...) */
+app.get('/clientportal-test', (_req, res) => {
+  res.redirect(302, '/static/clientportal-test.html');
+});
+app.get('/clientportal-test.html', (_req, res) => {
+  res.redirect(302, '/static/clientportal-test.html');
+});
+
+app.get('/clientportal-widget-test.html', (_req, res) => {
+  res.redirect(302, '/static/clientportal-widget-test.html');
+});
+
+/** 클라이언트 포털 임베드(clientportalWidget) 전용 테스트 — 쿼리: email, code, clientPortalId?, name? */
+app.get('/clientportal-widget-test', (req, res) => {
+  res.render(
+    'widget-clientportal-test',
+    buildClientPortalWidgetTestLocals(req, getEnv(req)),
+  );
+});
+
 app.get('/test', (req, res) => {
   const { form_id, brand_id, topic_id, integration_id, type } = req.query;
   const env = getEnv(req);
+
+  if (type === 'clientportal') {
+    return res.render(
+      'widget-clientportal-test',
+      buildClientPortalWidgetTestLocals(req, env),
+    );
+  }
 
   res.render(`widget-${type}-test`, {
     topic_id,

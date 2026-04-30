@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Client portal widget 테스트</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        padding: 16px;
+        background: #f4f4f5;
+      }
+      h1 {
+        font-size: 1.1rem;
+        margin: 0 0 12px;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        margin-bottom: 12px;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        font-size: 12px;
+        color: #444;
+        gap: 4px;
+      }
+      input {
+        min-width: 200px;
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+      button {
+        padding: 8px 14px;
+        border-radius: 6px;
+        border: 1px solid #333;
+        background: #111;
+        color: #fff;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      button.secondary {
+        background: #fff;
+        color: #111;
+      }
+      .frame-wrap {
+        margin-top: 16px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        height: 70vh;
+        min-height: 420px;
+      }
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+      #log {
+        margin-top: 12px;
+        max-height: 120px;
+        overflow: auto;
+        font: 12px/1.4 monospace;
+        background: #1a1a1a;
+        color: #bdbdbd;
+        padding: 8px;
+        border-radius: 6px;
+      }
+      .hint {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 12px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>클라이언트 포털 위젯 테스트</h1>
+    <p class="hint" style="background: #fff3cd; border: 1px solid #ffc107; padding: 10px; border-radius: 6px">
+      <strong>file:// 금지</strong> — HTML을 더블클릭하지 말고 브라우저 주소창에
+      <code>http://localhost:3200/static/clientportal-test.html</code>
+      또는 <code>/clientportal-test</code> · <code>/clientportal-test.html</code> (같은 페이지로 연결)
+    </p>
+    <p class="hint">
+      <strong>Widget root URL</strong>에는 위젯 서버의 <strong>호스트만</strong> 넣으세요(예:
+      <code>http://localhost:3200</code>). 끝에 <code>/clientportal</code>을 붙이면 iframe 주소가 잘못되어 번들이 안
+      뜹니다.
+      <strong>서버에 클라이언트 포털이 정확히 하나</strong>면 clientPortalId는 비워도 됩니다. 포털이 여러 개면 MongoDB
+      <code>_id</code>를 넣어야 합니다. 연결은 iframe이 <code>clientportal-ready</code>를 보낸 뒤에만 시도됩니다.
+    </p>
+
+    <div class="row">
+      <label>
+        Widget root URL
+        <input id="root-url" type="text" placeholder="http://localhost:3200 (호스트만, /clientportal 제외)" autocomplete="off" />
+      </label>
+      <button type="button" class="secondary" id="btn-reload-iframe">iframe 다시 로드</button>
+    </div>
+
+    <div class="row">
+      <label>
+        email (필수)
+        <input id="email" type="email" autocomplete="username" />
+      </label>
+      <label>
+        code (비밀번호)
+        <input id="code" type="password" autocomplete="current-password" />
+      </label>
+      <label>
+        clientPortalId (선택, 포털 여러 개일 때만)
+        <input id="clientPortalId" type="text" autocomplete="off" />
+      </label>
+      <label>
+        name
+        <input id="name" type="text" autocomplete="name" />
+      </label>
+      <button type="button" id="btn-connect">연결 (postMessage)</button>
+    </div>
+
+    <div class="frame-wrap">
+      <iframe id="cp-iframe" title="client portal widget"></iframe>
+    </div>
+
+    <div id="log"></div>
+
+    <script src="clientportal-test.js" defer></script>
+  </body>
+</html>

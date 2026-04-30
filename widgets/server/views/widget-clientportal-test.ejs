@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>클라이언트 포털 위젯 테스트</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        margin: 0;
+        padding: 20px;
+        max-width: 520px;
+        line-height: 1.5;
+        color: #1a1a1a;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 0 0 8px;
+      }
+      .hint {
+        margin: 0 0 20px;
+        font-size: 0.9rem;
+        color: #555;
+      }
+      form {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding: 16px;
+        background: #f6f7f9;
+        border-radius: 10px;
+        border: 1px solid #e2e4e8;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+      input {
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
+      button[type='submit'] {
+        margin-top: 8px;
+        padding: 10px 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        background: #1f3f73;
+        color: #fff;
+        cursor: pointer;
+      }
+      button[type='submit']:hover {
+        opacity: 0.92;
+      }
+      code {
+        font-size: 0.85em;
+        background: #eee;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>클라이언트 포털 위젯 테스트</h1>
+    <p class="hint">
+      값을 입력한 뒤 <strong>적용</strong>하면 우측 하단 <strong>포털</strong> 버튼이 나타납니다. 단일 포털이면
+      <code>clientPortalId</code>는 비워도 됩니다.
+    </p>
+    <p class="hint">
+      이 주소가 계속 로딩만 되면 <code>widgets</code> 폴더에서 <code>yarn dev</code> 로 express가 3200에서
+      떠 있는지 확인하고, 포트를 쓰는 멈춘 <code>node</code> 가 있으면 종료 후 다시 실행하세요. 대안:
+      <a href="/static/clientportal-widget-test.html"><code>/static/clientportal-widget-test.html</code></a>
+    </p>
+
+    <form method="get" action="">
+      <label>
+        이메일
+        <input name="email" type="email" value="<%= email %>" autocomplete="username" />
+      </label>
+      <label>
+        비밀번호 (code)
+        <input name="code" type="password" value="<%= code %>" autocomplete="current-password" />
+      </label>
+      <label>
+        clientPortalId (선택)
+        <input name="clientPortalId" value="<%= clientPortalId %>" />
+      </label>
+      <label>
+        이름 (선택)
+        <input name="name" value="<%= name %>" />
+      </label>
+      <button type="submit">적용 후 위젯 로드</button>
+    </form>
+
+    <script>
+      window.erxesSettings = {
+        clientportal: <%- JSON.stringify(settingsObj) %>,
+      };
+
+      (function () {
+        var script = document.createElement('script');
+        /* 페이지와 동일 출처(예: localhost:3200). ROOT_URL 미설정/다른 포트여도 위젯 번들을 맞는 호스트에서 로드 */
+        script.src = '/build/clientportalWidget.bundle.js';
+        script.async = true;
+        var entry = document.getElementsByTagName('script')[0];
+        entry.parentNode.insertBefore(script, entry);
+      })();
+    </script>
+  </body>
+</html>

@@ -24,6 +24,10 @@
 
     <div id="root"></div>
 
-    <script src="<%= JSON.parse(env).ROOT_URL %>/build/<%= type %>.bundle.js"></script>
+    <%# 같은 호스트에서 번들 제공(로컬에서 ROOT_URL과 접속 URL 불일치 시 404 방지). CDN 분리 시 서버에서 절대경로 주입을 커스터마이징하세요. %>
+    <script
+      src="/build/<%= type %>.bundle.js"
+      onerror="(function(){try{if(window.parent!==window)window.parent.postMessage({type:'widget-bundle-error',widgetType:'<%= type %>',src:'/build/<%= type %>.bundle.js'},'*');}catch(e){}})()"
+    ></script>
   </body>
 </html>

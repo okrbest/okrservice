@@ -8,11 +8,19 @@ type Tab = 'chat' | 'notifications'
 interface Props {
   client: ApolloClient<NormalizedCacheObject>
   erxesCustomerId: string
+  /** clientPortalCurrentUser.type (예: staff → 담당자 UI) */
+  clientPortalUserType?: string
   unreadNotifCount?: number
 }
 
-export function App({ client, erxesCustomerId, unreadNotifCount = 0 }: Props) {
+export function App({
+  client,
+  erxesCustomerId,
+  clientPortalUserType = '',
+  unreadNotifCount = 0,
+}: Props) {
   const [activeTab, setActiveTab] = React.useState<Tab>('chat')
+  const isStaff = String(clientPortalUserType).toLowerCase() === 'staff'
 
   return (
     <div style={containerStyle}>
@@ -55,7 +63,7 @@ export function App({ client, erxesCustomerId, unreadNotifCount = 0 }: Props) {
         {activeTab === 'chat' ? (
           <ChatTab client={client} erxesCustomerId={erxesCustomerId} />
         ) : (
-          <NotificationsTab client={client} />
+          <NotificationsTab client={client} isStaff={isStaff} />
         )}
       </div>
     </div>
