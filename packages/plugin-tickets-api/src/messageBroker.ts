@@ -595,7 +595,7 @@ export const setupMessageConsumers = async () => {
                 data: {
                   receivers: receiverIds,
                   title: "티켓에 새 답변이 등록되었습니다",
-                  content: `${ticket.name || "티켓"}에 새 댓글이 도착했습니다`,
+                  content: `${ticket.name || "티켓"} 댓글을 확인해 주세요`,
                   notifType: "system",
                   link: `/tickets?itemId=${typeId}`,
                   isMobile: true,
