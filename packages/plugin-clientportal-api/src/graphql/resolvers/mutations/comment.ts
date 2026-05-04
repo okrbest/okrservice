@@ -17,18 +17,10 @@ const clientPortalCommentMutations = {
     // Clean the type (e.g., from 's:ticket' to 'ticket')
     const type = rawType.replace(/^s:/, "");
 
-    // Determine  user ID based on user type
-    const userId =
-      userType === "client"
-        ? cpUser
-          ? cpUser._id
-          : (() => {
-              throw new Error("You are not logged in");
-            })()
-        : user._id;
-
     // Ticket comments are stored in tickets service (ticket_comments).
     // If we write to local client_portal_comments, staff-app detail query won't see them.
+    // NOTE: Must run before resolving userId — client portal 직원은 context.user(Erxes)가 없고
+    // cpUser만 있어서, team 분기에서 user._id 접근 시 댓글이 저장되기 전에 예외가 난다.
     if (type === "ticket") {
       const created = await sendTicketsMessage({
         subdomain,
@@ -61,7 +53,12 @@ const clientPortalCommentMutations = {
 
             const receiverIds = cpUsers.map((u: any) => u._id);
             if (receiverIds.length) {
-              const staffName = user?.details?.fullName || user?.firstName || "담당자";
+              const staffName =
+                user?.details?.fullName ||
+                user?.firstName ||
+                [cpUser?.firstName, cpUser?.lastName].filter(Boolean).join(" ") ||
+                cpUser?.email ||
+                "담당자";
               await sendNotification(models, subdomain, {
                 receivers: receiverIds,
                 title: "티켓에 새 답변이 등록되었습니다",
@@ -80,6 +77,18 @@ const clientPortalCommentMutations = {
 
       return created;
     }
+
+    const userId =
+      userType === "client"
+        ? cpUser
+          ? cpUser._id
+          : (() => {
+              throw new Error("You are not logged in");
+            })()
+        : user?._id ||
+          (() => {
+            throw new Error("Staff comment requires Erxes user context");
+          })();
 
     // Create the comment
     const comment = await models.Comments.createComment({
