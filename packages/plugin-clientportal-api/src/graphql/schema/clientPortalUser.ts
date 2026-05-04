@@ -242,7 +242,7 @@ export const mutations = cmsAvailable => `
   clientPortalRegister(${userParams}, clientPortalId: String): String
   clientPortalVerifyOTP(userId: String!, phoneOtp: String, emailOtp: String, password: String): JSON
   clientPortalUsersVerify(userIds: [String]!, type: String): JSON
-  clientPortalLogin(login: String!, password: String!, clientPortalId: String!, deviceToken: String,twoFactor: TwoFactor): JSON
+  clientPortalLogin(login: String!, password: String, clientPortalId: String, deviceToken: String,twoFactor: TwoFactor): JSON
   clientPortalLoginWithPhone(phone: String!, clientPortalId: String!, deviceToken: String): JSON
   clientPortal2FAGetCode(byPhone: Boolean,byEmail:Boolean): JSON
   clientPortal2FADeleteKey(key:String!): JSON

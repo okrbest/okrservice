@@ -26,9 +26,9 @@ import { handleContacts, handleDeviceToken, putActivityLog } from './utils';
 const SALT_WORK_FACTOR = 10;
 
 export interface ILoginParams {
-  clientPortalId: string;
+  clientPortalId?: string;
   login: string;
-  password: string;
+  password?: string;
   deviceToken?: string;
   twoFactor?: { key?: string; device?: string };
 }
@@ -796,7 +796,13 @@ export const loadClientPortalUserClass = (models: IModels) => {
       clientPortalId,
       twoFactor,
     }: ILoginParams) {
-      if (!login || !password || !clientPortalId) {
+      let resolvedPortalId =
+        typeof clientPortalId === 'string' ? clientPortalId.trim() : '';
+      if (!resolvedPortalId) {
+        resolvedPortalId = await models.ClientPortals.getSingletonId();
+      }
+
+      if (!login || !password || !resolvedPortalId) {
         throw new Error('Invalid login');
       }
 
@@ -806,7 +812,7 @@ export const loadClientPortalUserClass = (models: IModels) => {
           { username: { $regex: new RegExp(`^${login}$`, 'i') } },
           { phone: { $regex: new RegExp(`^${login}$`, 'i') } },
         ],
-        clientPortalId,
+        clientPortalId: resolvedPortalId,
       });
 
       if (!user || !user.password) {
@@ -817,7 +823,7 @@ export const loadClientPortalUserClass = (models: IModels) => {
         throw new Error('User is not verified');
       }
 
-      const cp = await models.ClientPortals.getConfig(clientPortalId);
+      const cp = await models.ClientPortals.getConfig(resolvedPortalId);
 
       if (
         cp.manualVerificationConfig &&

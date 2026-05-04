@@ -19,6 +19,14 @@ import { fetchUserFromToki, sendSms } from '../../../utils';
 import { sendCommonMessage } from './../../../messageBroker';
 import { fetchUserFromSocialpay } from '../../../socialpayUtils';
 
+function passwordProvided(password: string | undefined | null): boolean {
+  return (
+    password !== undefined &&
+    password !== null &&
+    String(password).trim() !== ''
+  );
+}
+
 export interface IVerificationParams {
   userId: string;
   emailOtp?: string;
@@ -159,10 +167,39 @@ export const clientPortalUserMutations = {
   clientPortalLogin: async (
     _root,
     args: ILoginParams,
-    { models, res }: IContext
+    { models, res, subdomain }: IContext
   ) => {
+    const { login, password, deviceToken, clientPortalId } = args;
+
+    let resolvedPortalId =
+      typeof clientPortalId === 'string' ? clientPortalId.trim() : '';
+    if (!resolvedPortalId) {
+      resolvedPortalId = await models.ClientPortals.getSingletonId();
+    }
+
+    if (!login || !resolvedPortalId) {
+      throw new Error('Invalid login');
+    }
+
+    if (!passwordProvided(password)) {
+      const clientPortal = await models.ClientPortals.getConfig(
+        resolvedPortalId
+      );
+      const user = await models.ClientPortalUsers.loginWithoutPassword(
+        subdomain,
+        clientPortal,
+        { email: login.trim() },
+        deviceToken
+      );
+      return tokenHandler(user, clientPortal, res, false, true);
+    }
+
     const { user, clientPortal, isPassed2FA } =
-      await models.ClientPortalUsers.login(args);
+      await models.ClientPortalUsers.login({
+        ...args,
+        password: String(password).trim(),
+        clientPortalId: resolvedPortalId,
+      });
 
     return tokenHandler(
       user,

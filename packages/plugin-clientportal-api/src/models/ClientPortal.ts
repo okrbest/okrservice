@@ -16,12 +16,27 @@ import { isEnabled } from '@erxes/api-utils/src/serviceDiscovery';
 import { sendCommonMessage } from '../messageBroker';
 
 export interface IClientPortalModel extends Model<IClientPortalDocument> {
+  getSingletonId(): Promise<string>;
   getConfig(_id: string): Promise<IClientPortalDocument>;
   createOrUpdateConfig(args: IClientPortal): Promise<IClientPortalDocument>;
 }
 
 export const loadClientPortalClass = (models: IModels) => {
   class ClientPortal {
+    /**
+     * DB에 클라이언트 포털이 정확히 하나일 때만 ID 반환. 없거나 여러 개면 에러.
+     */
+    public static async getSingletonId(): Promise<string> {
+      const portals = await models.ClientPortals.find().select('_id').lean();
+      if (portals.length === 0) {
+        throw new Error('Invalid login');
+      }
+      if (portals.length > 1) {
+        throw new Error('Invalid login');
+      }
+      return String(portals[0]._id);
+    }
+
     public static async getConfig(_id: string) {
       const config = await models.ClientPortals.findOne({ _id }).lean();
 
