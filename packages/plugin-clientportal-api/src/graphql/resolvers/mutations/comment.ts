@@ -35,46 +35,7 @@ const clientPortalCommentMutations = {
         isRPC: true,
       });
 
-      // 직원이 댓글 추가 시 → 티켓에 연결된 고객에게 푸시 알림 발송
-      if (userType === "team") {
-        try {
-          const customerIds = await sendCoreMessage({
-            subdomain,
-            action: "conformities.savedConformity",
-            data: { mainType: "ticket", mainTypeId: typeId, relTypes: ["customer"] },
-            isRPC: true,
-            defaultValue: [],
-          });
-
-          if (customerIds?.length) {
-            const cpUsers = await models.ClientPortalUsers.find({
-              erxesCustomerId: { $in: customerIds },
-            }).lean();
-
-            const receiverIds = cpUsers.map((u: any) => u._id);
-            if (receiverIds.length) {
-              const staffName =
-                user?.details?.fullName ||
-                user?.firstName ||
-                [cpUser?.firstName, cpUser?.lastName].filter(Boolean).join(" ") ||
-                cpUser?.email ||
-                "담당자";
-              await sendNotification(models, subdomain, {
-                receivers: receiverIds,
-                title: "티켓에 새 답변이 등록되었습니다",
-                content: `${staffName}: ${content.slice(0, 80)}`,
-                notifType: "system",
-                link: `/tickets?itemId=${typeId}`,
-                isMobile: true,
-                eventData: { ticketId: typeId, type: "ticketComment" },
-              });
-            }
-          }
-        } catch {
-          // 알림 실패가 댓글 등록을 막지 않도록 조용히 처리
-        }
-      }
-
+      // 고객 푸시는 tickets:widgets.commentAdd 에서 한 번만 발송한다 (중복 알림 방지).
       return created;
     }
 
