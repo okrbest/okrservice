@@ -14,6 +14,7 @@ import {
   CpTicketComment,
   CpAssignableMember,
 } from './graphql'
+import { readFile } from '../utils'
 
 interface Props {
   client: ApolloClient<NormalizedCacheObject>
@@ -69,9 +70,83 @@ function formatDateTimeToMinute(value: unknown): string {
   return `${yyyy}-${mm}-${dd} ${hh}:${min}`
 }
 
+function formatAttachmentSize(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return ''
+  if (bytes < 1024) return `${Math.round(bytes)} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
 function memberName(m: CpAssignableMember): string {
   return [m.firstName, m.lastName].filter(Boolean).join(' ') || m.email || m._id
 }
+
+/** 상대 경로·스토리지 key → 게이트웨이 read-file (위젯 호스트로의 잘못된 GET 방지) */
+function ticketAttachmentDownloadHref(urlRaw: string, downloadName: string): string {
+  const u = urlRaw.trim()
+  if (!u) return ''
+  if (/^https?:\/\//i.test(u)) return u
+  const key = u.replace(/^\/+/, '')
+  const base = readFile(key)
+  return `${base}&name=${encodeURIComponent(downloadName)}`
+}
+
+/** 썸네일·미리보기용 (name 파라미터 없음) */
+function ticketAttachmentImageSrc(urlRaw: string): string {
+  const u = urlRaw.trim()
+  if (!u) return ''
+  if (/^https?:\/\//i.test(u)) return u
+  return readFile(u.replace(/^\/+/, ''))
+}
+
+const IMAGE_EXT = new Set(['png', 'jpeg', 'jpg', 'gif', 'webp', 'bmp', 'svg'])
+
+const getFileIconForExtension = (extension: string): string => {
+  const iconMap: Record<string, string> = {
+    pdf: '📄',
+    doc: '📝',
+    docx: '📝',
+    xls: '📊',
+    xlsx: '📊',
+    ppt: '📊',
+    pptx: '📊',
+    txt: '📃',
+    zip: '🗜️',
+    rar: '🗜️',
+    csv: '📈',
+  }
+  return iconMap[extension.toLowerCase()] || '📎'
+}
+
+function extractDownloadNameFromUrl(url: string): string {
+  const last = url.split('/').pop() || url
+  const cleaned = last.replace(/^upload_[^_]*_/, '')
+  try {
+    return decodeURIComponent(cleaned || last)
+  } catch {
+    return cleaned || last
+  }
+}
+
+function attachmentExtension(a: { url?: string | null; name?: string | null; type?: string | null }): string {
+  const mime = (a.type ?? '').toLowerCase()
+  if (mime.startsWith('image/')) {
+    const sub = mime.split('/')[1]
+    if (sub === 'jpeg') return 'jpg'
+    return sub || ''
+  }
+  const attachmentName = String(a.url || a.name || '')
+  return attachmentName.split('.').pop()?.toLowerCase() || ''
+}
+
+function isImageAttachment(a: { url?: string | null; name?: string | null; type?: string | null }): boolean {
+  const mime = (a.type ?? '').toLowerCase()
+  if (mime.startsWith('image/')) return true
+  const ext = attachmentExtension(a)
+  return IMAGE_EXT.has(ext)
+}
+
+type AttachmentItem = NonNullable<CpTicketDetail['attachments']>[number]
 
 export function TicketDetailSheet({ client, ticketId, onClose, isStaff }: Props) {
   const [detail, setDetail] = React.useState<CpTicketDetail | null>(null)
@@ -333,9 +408,25 @@ export function TicketDetailSheet({ client, ticketId, onClose, isStaff }: Props)
               <div ref={scrollRef} style={scrollArea}>
                 <h2 style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 700 }}>{detail.name}</h2>
                 {(customerLine || companyLine) && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-                    {!!customerLine && <span style={badgeLight}>{customerLine}</span>}
-                    {!!companyLine && <span style={badgeDark}>{companyLine}</span>}
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      flexWrap: 'nowrap',
+                      alignItems: 'center',
+                      gap: 8,
+                      marginBottom: 10,
+                      maxWidth: '100%',
+                      overflowX: 'auto',
+                      WebkitOverflowScrolling: 'touch',
+                    }}
+                  >
+                    {!!customerLine && (
+                      <span style={{ ...badgeLight, flexShrink: 0, whiteSpace: 'nowrap' }}>{customerLine}</span>
+                    )}
+                    {!!companyLine && (
+                      <span style={{ ...badgeDark, flexShrink: 0, whiteSpace: 'nowrap' }}>{companyLine}</span>
+                    )}
                   </div>
                 )}
                 {!!currentStageName && (
@@ -397,6 +488,122 @@ export function TicketDetailSheet({ client, ticketId, onClose, isStaff }: Props)
                   </div>
                 )}
 
+                {(detail.attachments ?? []).some(
+                  (a) => a.url != null && String(a.url).trim() !== ''
+                ) && (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#64748b', marginBottom: 8 }}>첨부 파일</div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 10,
+                        width: '100%',
+                      }}
+                    >
+                      {(detail.attachments ?? [])
+                        .filter((a) => a.url != null && String(a.url).trim() !== '')
+                        .map((a: AttachmentItem, idx) => {
+                          const rawUrl = String(a.url).trim()
+                          const trimmedName = a.name != null ? String(a.name).trim() : ''
+                          const label =
+                            trimmedName || (rawUrl ? extractDownloadNameFromUrl(rawUrl) : '') || '파일'
+                          const downloadHref = ticketAttachmentDownloadHref(rawUrl, label)
+                          const sizeLabel =
+                            a.size != null && Number.isFinite(Number(a.size))
+                              ? formatAttachmentSize(Number(a.size))
+                              : ''
+                          const isImg = isImageAttachment(a)
+                          const ext = attachmentExtension(a)
+                          const imgSrc = isImg ? ticketAttachmentImageSrc(rawUrl) : ''
+
+                          return (
+                            <a
+                              key={`${rawUrl}-${idx}`}
+                              href={downloadHref || undefined}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={label}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 12,
+                                width: '100%',
+                                maxWidth: '100%',
+                                boxSizing: 'border-box',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: 10,
+                                padding: '10px 12px',
+                                background: '#fff',
+                                textDecoration: 'none',
+                                color: '#334155',
+                                boxShadow: '0 1px 3px rgba(15, 23, 42, 0.06)',
+                                transition: 'box-shadow 0.15s ease, border-color 0.15s ease',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = '#cbd5e1'
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(15, 23, 42, 0.1)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = '#e2e8f0'
+                                e.currentTarget.style.boxShadow = '0 1px 3px rgba(15, 23, 42, 0.06)'
+                              }}
+                            >
+                              <div
+                                style={{
+                                  flexShrink: 0,
+                                  width: 52,
+                                  height: 52,
+                                  borderRadius: 8,
+                                  overflow: 'hidden',
+                                  background: '#f1f5f9',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  border: '1px solid #e2e8f0',
+                                }}
+                              >
+                                {isImg && imgSrc ? (
+                                  <img
+                                    role="presentation"
+                                    src={imgSrc}
+                                    alt=""
+                                    style={{
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'cover',
+                                      display: 'block',
+                                    }}
+                                  />
+                                ) : (
+                                  <span style={{ fontSize: 26, lineHeight: 1 }} aria-hidden>
+                                    {getFileIconForExtension(ext)}
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div
+                                  style={{
+                                    fontSize: 13,
+                                    fontWeight: 600,
+                                    lineHeight: 1.35,
+                                    wordBreak: 'break-word',
+                                    color: 'rgb(51, 119, 211)',
+                                  }}
+                                >
+                                  {label}
+                                </div>
+                                {sizeLabel ? (
+                                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{sizeLabel}</div>
+                                ) : null}
+                              </div>
+                            </a>
+                          )
+                        })}
+                    </div>
+                  </div>
+                )}
+
                 <div style={{ borderTop: '1px solid #e8ecf2', paddingTop: 10, marginBottom: 8 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>
                     댓글 {comments.length > 0 ? `${comments.length}개` : ''}
@@ -423,7 +630,7 @@ export function TicketDetailSheet({ client, ticketId, onClose, isStaff }: Props)
                         <div style={{ maxWidth: '88%' }}>
                           <div
                             style={{
-                              background: isRight ? '#1f3f73' : '#e8f0fd',
+                              background: isRight ? 'rgb(51, 119, 211)' : '#e8f0fd',
                               color: isRight ? '#fff' : '#1a1a1a',
                               padding: '8px 10px',
                               borderRadius: 8,
@@ -567,7 +774,7 @@ const badgeDark: React.CSSProperties = {
   fontSize: 11,
   padding: '3px 8px',
   borderRadius: 6,
-  background: '#334155',
+  background: 'rgb(51, 119, 211)',
   color: '#fff',
 }
 

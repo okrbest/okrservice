@@ -83,6 +83,12 @@ export const CLIENT_PORTAL_TICKET_DETAIL_QUERY = gql`
       modifiedAt
       createdAt
       assignedUserIds
+      attachments {
+        url
+        name
+        type
+        size
+      }
     }
   }
 `
@@ -208,6 +214,13 @@ export interface CurrentUser {
   type?: string
 }
 
+export interface CpTicketAttachment {
+  url: string
+  name?: string | null
+  type?: string | null
+  size?: number | null
+}
+
 export interface CpTicketDetail {
   _id: string
   name: string
@@ -217,6 +230,7 @@ export interface CpTicketDetail {
   modifiedAt: string
   createdAt: string
   assignedUserIds?: string[]
+  attachments?: CpTicketAttachment[] | null
 }
 
 export interface CpTicketStage {
