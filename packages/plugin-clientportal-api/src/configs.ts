@@ -2,7 +2,6 @@ import { getSubdomain } from '@erxes/api-utils/src/core';
 import * as cookieParser from 'cookie-parser';
 
 import afterMutations from './afterMutations';
-import { startAttendanceScheduler } from './jobs/attendanceScheduler';
 import { generateModels } from './connectionResolver';
 import forms from './forms';
 import resolvers from './graphql/resolvers';
@@ -58,8 +57,8 @@ export default {
   },
   middlewares: [cookieParser(), cpUserMiddleware],
   onServerInit: async () => {
-    const subdomain = process.env.DEFAULT_SUBDOMAIN || 'os'
-    startAttendanceScheduler(subdomain)
+    // 출근 10분 전 FCM 푸시는 사용하지 않음 (스케줄러 비활성화).
+    // 재사용 시: ./jobs/attendanceScheduler 의 startAttendanceScheduler 를 여기서 호출.
   },
   setupMessageConsumers,
 };

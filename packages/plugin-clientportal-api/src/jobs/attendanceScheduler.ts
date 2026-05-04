@@ -2,6 +2,12 @@ import { generateModels } from '../connectionResolver'
 import { sendNotification } from '../utils'
 
 /**
+ * 출근 10분 전 FCM 푸시용 스케줄 로직.
+ * 기본 배포에서는 plugin configs 의 onServerInit 에서 스케줄러를 시작하지 않아
+ * 이 푸시는 발송되지 않습니다. 필요 시 configs.ts 에서 startAttendanceScheduler 를 연결하세요.
+ */
+
+/**
  * 현재 시각(HH:MM)이 출근 10분 전인지 확인
  * NOTE: startHour:startMinute >= 00:10 가정 (자정 전후 경계는 미지원)
  */
