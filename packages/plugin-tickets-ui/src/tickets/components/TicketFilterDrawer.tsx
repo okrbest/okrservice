@@ -199,7 +199,9 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     { label: __("복리후생"), value: "benefits" },
     { label: __("PCOFF"), value: "pcoff" },
     { label: __("전자결재"), value: "approval" },
-    { label: __("시스템"), value: "system" }
+    { label: __("시스템"), value: "system" },
+    { label: __("모바일"), value: "mobile" },
+    { label: __("티그리스"), value: "tigris" },
   ];
 
   const onFunctionCategorySelect = (ops: OnChangeValue<IOption, true>) => {

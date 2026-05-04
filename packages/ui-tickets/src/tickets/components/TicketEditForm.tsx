@@ -466,7 +466,9 @@ export default function TicketEditForm(props: Props) {
       { label: "복리후생", value: "benefits" },
       { label: "PCOFF", value: "pcoff" },
       { label: "전자결재", value: "approval" },
-      { label: "시스템", value: "system" }
+      { label: "시스템", value: "system" },
+      { label: "모바일", value: "mobile" },
+      { label: "티그리스", value: "tigris" },
     ];
 
     const onFunctionCategoryChange = (option) => {
