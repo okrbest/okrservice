@@ -495,7 +495,7 @@ const isDiffValue = (latest, target, field) => {
   return false;
 };
 
-/** assignAlarm 트리거 중복 실행 방지: 같은 티켓+자동화에 대해 이 시간(ms) 내에는 재실행하지 않음 */
+/** description 변경(assignAlarmDescription) 트리거 중복 실행 방지 시간(ms) */
 const ASSIGN_ALARM_COOLDOWN_MS = 10 * 60 * 1000; // 10분
 
 export const calculateExecution = async ({
@@ -607,11 +607,9 @@ export const calculateExecution = async ({
     }
   }
 
-  // assignAlarm 계열: 같은 티켓+자동화에 대해 쿨다운 내 중복 실행 방지
-  // 트리거 소스(본문 수정 vs 고객 댓글)별로 구분해 서로를 막지 않음
+  // description 변경(assignAlarmDescription) 트리거에만 쿨다운 적용
   if (
-    (triggerSource === TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_DESCRIPTION ||
-      triggerSource === TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_COMMENT) &&
+    triggerSource === TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_DESCRIPTION &&
     target?._id
   ) {
     const cooldownSince = new Date(Date.now() - ASSIGN_ALARM_COOLDOWN_MS);
