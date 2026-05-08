@@ -12,6 +12,7 @@ import { getCallData, getTicketData, getDealData, getMessengerData } from "../..
 
 import Item from "./Item";
 import { useRouter } from "../../context/Router";
+import { useTicket } from "../../context/Ticket";
 
 const items = [
   {
@@ -33,6 +34,7 @@ const items = [
 
 function BottomNavBar() {
   const { setActiveRoute, activeRoute } = useRouter();
+  const { unreadTicketCount } = useTicket();
   const callData = getCallData();
   const ticketData = getTicketData();
   const dealData = getDealData();
@@ -88,11 +90,14 @@ function BottomNavBar() {
           }
         }
 
+        const badge = route === "ticket" ? unreadTicketCount : undefined;
+
         return (
           <Item
             key={route}
             isActive={isItemActive(item)}
             handleClick={handleItemClick}
+            badge={badge}
             {...item}
           />
         );
