@@ -146,11 +146,6 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeC
   };
 
   const renderTicketItem = (ticket: TicketItem) => {
-    // 디버깅 로그
-    if (includeCompanyTickets) {
-      console.log('🔔 Rendering ticket:', ticket._id, 'customerName:', ticket.customerName, 'hasCustomerName:', !!ticket.customerName);
-    }
-    
     // 회사 티켓보기 모드일 때는 컴팩트한 리스트 형태로 표시
     if (includeCompanyTickets) {
       return (
@@ -284,6 +279,56 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeC
     );
   };
 
+  const renderNotificationsSection = (unreadTickets: TicketItem[]) => {
+    if (includeCompanyTickets || unreadTickets.length === 0) {
+      return null;
+    }
+
+    return (
+      <div style={{ marginBottom: '16px' }}>
+        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>
+          🔔 {__('새 답변')} ({unreadTickets.length})
+        </h4>
+        {unreadTickets.map((ticket) => (
+          <div
+            key={ticket._id}
+            onClick={() => onTicketClick(ticket)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 14px',
+              marginBottom: '6px',
+              backgroundColor: '#fff8f0',
+              border: '1px solid #ffe0b2',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#fff3e0';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#fff8f0';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: '600', color: '#e65100', whiteSpace: 'nowrap' }}>
+                #{ticket.number}
+              </span>
+              <span style={{ fontSize: '14px', color: '#333' }}>
+                {ticket.name}
+              </span>
+            </div>
+            <span style={{ fontSize: '13px', color: '#e65100', fontWeight: '500', whiteSpace: 'nowrap' }}>
+              {__('새 답변')} →
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const renderContent = () => {
     if (loading) {
       return <div className="loader" />;
@@ -409,6 +454,8 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeC
       );
     }
 
+    const unreadTickets = filteredTickets.filter((t) => t.widgetAlarm === false);
+
     return (
       <div className="ticket-list-container">
         <div className="ticket-list-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -480,6 +527,7 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeC
             />
           </div>
         )}
+        {renderNotificationsSection(unreadTickets)}
         <div className="ticket-list-content">
           {filteredTickets.map(renderTicketItem)}
         </div>
