@@ -41,7 +41,7 @@ type Props = {
 
 const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
   const { setRoute } = useRouter();
-  const { setTicketData } = useTicket();
+  const { setTicketData, setUnreadTicketCount } = useTicket();
   const customerId = connection.data.customerId;
   const [includeCompanyTickets, setIncludeCompanyTickets] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -55,31 +55,34 @@ const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
 
   const [updateWidgetAlarm] = useMutation(UPDATE_WIDGET_ALARM);
 
+  React.useEffect(() => {
+    const tickets = data?.widgetsTicketList || [];
+    const count = tickets.filter((t: TicketItem) => t.widgetAlarm === false).length;
+    setUnreadTicketCount(count);
+  }, [data]);
+
   const handleTicketClick = async (ticket: TicketItem) => {
     // 티켓 데이터를 컨텍스트에 저장
     setTicketData(ticket);
-    
+
     // widgetAlarm이 false인 경우 true로 업데이트
     if (ticket.widgetAlarm === false) {
       try {
-        // GraphQL mutation을 통해 widgetAlarm을 true로 업데이트
         await updateWidgetAlarm({
           variables: { ticketId: ticket._id }
         });
-        
-        console.log('🔔 Widget alarm updated to true for ticket:', ticket._id);
+        setUnreadTicketCount((prev: number) => Math.max(0, prev - 1));
       } catch (error) {
-        console.error('🔔 Failed to update widget alarm:', error);
+        throw new Error('위젯 알람 업데이트에 실패했습니다');
       }
     }
-    
+
     // 티켓 상세 페이지로 이동
     setRoute("ticket-progress");
   };
 
   React.useEffect(() => {
     if (error) {
-      console.error("Failed to fetch tickets:", error);
       alert("Failed to load tickets. Please try again.");
     }
   }, [error]);
@@ -96,14 +99,6 @@ const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
   }
 
   const tickets = data?.widgetsTicketList || [];
-  
-  // 디버깅 로그 추가
-  console.log('🔔 TicketListContainer tickets:', tickets.map((t: TicketItem) => ({ 
-    _id: t._id, 
-    widgetAlarm: t.widgetAlarm,
-    customerName: t.customerName,
-    includeCompanyTickets: includeCompanyTickets
-  })));
 
   return (
     <TicketList
