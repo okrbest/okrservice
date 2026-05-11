@@ -21,6 +21,7 @@ interface TicketContextProps {
   setUnreadTicketCount: React.Dispatch<React.SetStateAction<number>>;
   refetchUnreadCount: () => void;
   hasTickets: boolean;
+  isRegisteredContact: boolean;
 }
 
 const TicketContext = createContext<TicketContextProps | undefined>(undefined);
@@ -62,7 +63,7 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <TicketContext.Provider value={{ ticketData, setTicketData, unreadTicketCount, setUnreadTicketCount, refetchUnreadCount, hasTickets }}>
+    <TicketContext.Provider value={{ ticketData, setTicketData, unreadTicketCount, setUnreadTicketCount, refetchUnreadCount, hasTickets, isRegisteredContact: !!customerId }}>
       {children}
     </TicketContext.Provider>
   );

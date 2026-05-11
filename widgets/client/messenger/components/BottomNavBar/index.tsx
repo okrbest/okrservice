@@ -34,7 +34,7 @@ const items = [
 
 function BottomNavBar() {
   const { setActiveRoute, activeRoute } = useRouter();
-  const { unreadTicketCount, hasTickets } = useTicket();
+  const { unreadTicketCount, hasTickets, isRegisteredContact } = useTicket();
   const callData = getCallData();
   const ticketData = getTicketData();
   const dealData = getDealData();
@@ -71,7 +71,7 @@ function BottomNavBar() {
           return null;
         }
 
-        if (route === "ticket" && !hasTickets) {
+        if (route === "ticket" && !hasTickets && !isRegisteredContact) {
           return null;
         }
 
