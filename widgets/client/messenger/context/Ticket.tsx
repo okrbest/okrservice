@@ -20,6 +20,7 @@ interface TicketContextProps {
   unreadTicketCount: number;
   setUnreadTicketCount: React.Dispatch<React.SetStateAction<number>>;
   refetchUnreadCount: () => void;
+  hasTickets: boolean;
 }
 
 const TicketContext = createContext<TicketContextProps | undefined>(undefined);
@@ -29,6 +30,7 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [ticketData, setTicketData] = useState<any>(null);
   const [unreadTicketCount, setUnreadTicketCount] = useState<number>(0);
+  const [hasTickets, setHasTickets] = useState<boolean>(false);
   const [customerId, setCustomerId] = useState<string | undefined>(
     connection.data?.customerId
   );
@@ -42,6 +44,7 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const tickets = data?.widgetsTicketList || [];
+    setHasTickets(tickets.length > 0);
     const count = tickets.filter((t: any) => t.widgetAlarm === false).length;
     setUnreadTicketCount(count);
   }, [data]);
@@ -59,7 +62,7 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <TicketContext.Provider value={{ ticketData, setTicketData, unreadTicketCount, setUnreadTicketCount, refetchUnreadCount }}>
+    <TicketContext.Provider value={{ ticketData, setTicketData, unreadTicketCount, setUnreadTicketCount, refetchUnreadCount, hasTickets }}>
       {children}
     </TicketContext.Provider>
   );
