@@ -29,8 +29,25 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [ticketData, setTicketData] = useState<any>(null);
   const [unreadTicketCount, setUnreadTicketCount] = useState<number>(0);
+  const [customerId, setCustomerId] = useState<string | undefined>(
+    connection.data?.customerId
+  );
 
-  const customerId = connection.data?.customerId;
+  // connection.data.customerId는 widgetsMessengerConnect 콜백에서 설정됨
+  // React 렌더 사이클 밖이므로 100ms 간격으로 채워질 때까지 감시
+  useEffect(() => {
+    if (customerId) return;
+
+    const intervalId = setInterval(() => {
+      const id = connection.data?.customerId;
+      if (id) {
+        setCustomerId(id);
+        clearInterval(intervalId);
+      }
+    }, 100);
+
+    return () => clearInterval(intervalId);
+  }, [customerId]);
 
   const { data, refetch } = useQuery(TICKET_UNREAD_COUNT_QUERY, {
     variables: { customerId },
