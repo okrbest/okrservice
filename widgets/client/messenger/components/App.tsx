@@ -2,6 +2,7 @@ import * as React from "react";
 
 import MessengerContainer from "../containers/Messenger";
 import { useConversation } from "../context/Conversation";
+import { useTicket } from "../context/Ticket";
 
 type Props = {
   showLauncher: boolean;
@@ -17,6 +18,13 @@ const CLOSE_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="22" heigh
 
 const App: React.FC<Props> = ({ showLauncher }) => {
   const { isMessengerVisible, toggle } = useConversation();
+  const { refetchUnreadCount } = useTicket();
+
+  React.useEffect(() => {
+    if (isMessengerVisible) {
+      refetchUnreadCount();
+    }
+  }, [isMessengerVisible]);
 
   const handleHideWidget = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
