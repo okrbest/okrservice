@@ -5,7 +5,7 @@ interface TicketContextProps {
   ticketData: any;
   setTicketData: (data: any) => void;
   unreadTicketCount: number;
-  setUnreadTicketCount: (count: number) => void;
+  setUnreadTicketCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const TicketContext = createContext<TicketContextProps | undefined>(undefined);
