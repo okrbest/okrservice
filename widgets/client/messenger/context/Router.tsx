@@ -22,6 +22,7 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
     getDealData()?.dealToggle === true && !!getDealData()?.dealStageId;
   const [isZoomed, setIsZoomed] = useState(isDealMode);
   const [initialRouteSet, setInitialRouteSet] = useState(false);
+  const [chatbotMenu, setChatbotMenu] = useState<{ title: string; url: string } | null>(null);
 
   const { setIsInputDisabled, setSelectedSkill, isLoggedIn } = useConfig();
 
@@ -83,6 +84,10 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
+      if (routePath === "chatbot") {
+        setChatbotMenu(null);
+      }
+
       handleRouteChange(routePath);
     }
   };
@@ -141,6 +146,8 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
         goToWebsiteApp,
         isZoomed,
         setIsZoomed,
+        chatbotMenu,
+        setChatbotMenu,
       }}
     >
       {children}

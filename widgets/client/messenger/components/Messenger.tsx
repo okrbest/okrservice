@@ -2,6 +2,8 @@ import * as React from "react";
 
 import { getCallData, getMessengerData } from "../utils/util";
 
+import ChatbotView from "./chatbot/ChatbotView";
+import ChatbotIframeView from "./chatbot/ChatbotIframeView";
 import AccquireInformationContainer from "../containers/AccquireInformation";
 import ArticleDetailContainer from "../containers/faq/ArticleDetail";
 import CallContainer from "../containers/call/CallContainer";
@@ -19,6 +21,7 @@ import TicketSubmitContainer from "../containers/ticket/TicketSubmitForm";
 import DealContainer from "../containers/deal/DealContainer";
 import DealSubmitContainer from "../containers/deal/DealSubmitForm";
 import WebsiteAppDetailContainer from "../containers/websiteApp/WebsiteAppDetail";
+import { useRouter } from "../context/Router";
 
 type Props = {
   activeRoute: string | "";
@@ -35,6 +38,7 @@ function Messenger({
 }: Props) {
   const messengerData = getMessengerData();
   const topicId = messengerData.knowledgeBaseTopicId;
+  const { chatbotMenu } = useRouter();
 
   const WithSupporters = (Component: any) => {
     return (
@@ -48,6 +52,15 @@ function Messenger({
 
   const renderSwitch = () => {
     switch (activeRoute) {
+      case "chatbot":
+        return <ChatbotView />;
+      case "chatbot-iframe":
+        return chatbotMenu ? (
+          <ChatbotIframeView title={chatbotMenu.title} url={chatbotMenu.url} />
+        ) : (
+          <ChatbotView />
+        );
+
       case "allConversations":
         return <ConversationListContainer loading={loading} />;
       case "conversationDetail":

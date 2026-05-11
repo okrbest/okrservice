@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {
-  IconChat,
+  IconChatbot,
   IconHome,
   IconPhone,
   IconQuestionMark,
@@ -20,7 +20,12 @@ const items = [
     icon: IconHome,
     route: "home",
   },
-  { label: "Conversations", icon: IconChat, route: "allConversations" },
+  {
+    label: "Chatbot",
+    icon: IconChatbot,
+    route: "chatbot",
+    additionalRoutes: ["chatbot-iframe"],
+  },
   { label: "Call", icon: IconPhone, route: "call" },
   { label: "Ticket", icon: IconTicket, route: "ticket" },
   { label: "Deal", icon: IconDeal, route: "deal" },
@@ -82,13 +87,9 @@ function BottomNavBar() {
           }
         }
 
-        if (route === "allConversations" && messengerData.showChat === false) {
-          return null;
-        }
-
         // When Deal is on: hide Home, Conversations, Ticket, Help
         if (showDeal) {
-          const hideWhenDealOn = ["home", "allConversations", "ticket", "faqCategories"];
+          const hideWhenDealOn = ["home", "chatbot", "ticket", "faqCategories"];
           if (hideWhenDealOn.includes(route)) {
             return null;
           }
