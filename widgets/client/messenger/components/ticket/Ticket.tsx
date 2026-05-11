@@ -6,6 +6,7 @@ import Button from "../common/Button";
 import Container from "../common/Container";
 import { __ } from "../../../utils";
 import { connection } from "../../connection";
+import { useTicket } from "../../context/Ticket";
 
 type Props = {
   loading: boolean;
@@ -21,6 +22,7 @@ const Ticket: React.FC<Props> = ({
   handleButtonClick,
 }) => {
   const continueText = __("Continue");
+  const { unreadTicketCount } = useTicket();
 
   const renderSubmitForm = () => {
     const submitTicketRoute = connection.data.customerId
@@ -39,7 +41,20 @@ const Ticket: React.FC<Props> = ({
         <div
           className={`${activeRoute === "list" ? "active" : ""} ticket-box`}
           onClick={() => handleSubmit("list")}
+          style={{ position: "relative" }}
         >
+          {unreadTicketCount > 0 && (
+            <span style={{
+              position: "absolute",
+              top: "8px",
+              right: "8px",
+              width: "10px",
+              height: "10px",
+              backgroundColor: "#ff4d4f",
+              borderRadius: "50%",
+              border: "2px solid #fff",
+            }} />
+          )}
           <IconCheckTicket size="30px" />
           <span>{__("Ticket List")}</span>
         </div>
