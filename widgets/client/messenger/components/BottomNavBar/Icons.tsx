@@ -97,6 +97,19 @@ export function IconDeal({ filled }: IconProps) {
   );
 }
 
+export function IconChatbot({ filled }: IconProps) {
+  return (
+    <IconBase filled={filled}>
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        shapeRendering="auto"
+        d="M3 5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V15C21 16.1046 20.1046 17 19 17H13.4142L10.7071 19.7071C10.5196 19.8946 10.2652 20 10 20C9.44772 20 9 19.5523 9 19V17H5C3.89543 17 3 16.1046 3 15V5ZM8 9.5C8 8.94772 8.44772 8.5 9 8.5H9.01C9.56228 8.5 10.01 8.94772 10.01 9.5C10.01 10.0523 9.56228 10.5 9.01 10.5H9C8.44772 10.5 8 10.0523 8 9.5ZM12 8.5C11.4477 8.5 11 8.94772 11 9.5C11 10.0523 11.4477 10.5 12 10.5H12.01C12.5623 10.5 13.01 10.0523 13.01 9.5C13.01 8.94772 12.5623 8.5 12.01 8.5H12ZM14 9.5C14 8.94772 14.4477 8.5 15 8.5H15.01C15.5623 8.5 16.01 8.94772 16.01 9.5C16.01 10.0523 15.5623 10.5 15.01 10.5H15C14.4477 10.5 14 10.0523 14 9.5Z"
+      />
+    </IconBase>
+  );
+}
+
 export function IconQuestionMark({ filled }: IconProps) {
   return (
     <IconBase filled={filled}>
