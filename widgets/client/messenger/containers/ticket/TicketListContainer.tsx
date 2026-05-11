@@ -55,12 +55,6 @@ const TicketListContainer = ({ loading: externalLoading }: Props = {}) => {
 
   const [updateWidgetAlarm] = useMutation(UPDATE_WIDGET_ALARM);
 
-  React.useEffect(() => {
-    const tickets = data?.widgetsTicketList || [];
-    const count = tickets.filter((t: TicketItem) => t.widgetAlarm === false).length;
-    setUnreadTicketCount(count);
-  }, [data, setUnreadTicketCount]);
-
   const handleTicketClick = async (ticket: TicketItem) => {
     // 티켓 데이터를 컨텍스트에 저장
     setTicketData(ticket);
