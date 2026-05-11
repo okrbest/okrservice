@@ -1,7 +1,16 @@
 // TicketContext.tsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useQuery } from "@apollo/client";
-import { TICKET_LIST } from "../graphql/queries";
+import { gql } from "@apollo/client";
+
+const TICKET_UNREAD_COUNT_QUERY = gql`
+  query widgetsTicketUnreadCount($customerId: String!) {
+    widgetsTicketList(customerId: $customerId) {
+      _id
+      widgetAlarm
+    }
+  }
+`;
 import { connection } from "../connection";
 
 interface TicketContextProps {
@@ -23,7 +32,7 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const customerId = connection.data?.customerId;
 
-  const { data } = useQuery(TICKET_LIST, {
+  const { data } = useQuery(TICKET_UNREAD_COUNT_QUERY, {
     variables: { customerId },
     skip: !customerId,
     pollInterval: POLL_INTERVAL_MS,
