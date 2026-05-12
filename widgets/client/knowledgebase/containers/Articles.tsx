@@ -1,6 +1,5 @@
-import gql from "graphql-tag";
+import { gql, useQuery } from "@apollo/client";
 import * as React from "react";
-import { ChildProps, graphql } from "react-apollo";
 import DumbArticles from "../components/Articles";
 import { connection } from "../connection";
 import { IKbArticle } from "../types";
@@ -11,36 +10,30 @@ type QueryResponse = {
   widgetsKnowledgeBaseArticles: IKbArticle[];
 };
 
-const Articles = (props: ChildProps<{}, QueryResponse>) => {
-  const { data } = props;
-
-  if (!data || data.loading) {
-    return null;
-  }
-
-  const extendedProps = {
-    articles: data.widgetsKnowledgeBaseArticles || []
-  };
-
-  return <DumbArticles {...extendedProps} />;
-};
-
-const WithData = graphql<{ searchString: string }, QueryResponse>(
-  gql(queries.kbSearchArticlesQuery),
-  {
-    options: ownProps => ({
+const Articles = ({ searchString }: { searchString: string }) => {
+  const { data, loading } = useQuery<QueryResponse>(
+    gql(queries.kbSearchArticlesQuery),
+    {
       fetchPolicy: "network-only",
       variables: {
         topicId: connection.setting.topic_id,
-        searchString: ownProps.searchString
-      }
-    })
+        searchString,
+      },
+    }
+  );
+
+  if (loading) {
+    return null;
   }
-)(Articles);
+
+  return (
+    <DumbArticles articles={data?.widgetsKnowledgeBaseArticles || []} />
+  );
+};
 
 const WithContext = () => (
   <AppConsumer>
-    {({ searchString }) => <WithData searchString={searchString} />}
+    {({ searchString }) => <Articles searchString={searchString} />}
   </AppConsumer>
 );
 

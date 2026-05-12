@@ -44,7 +44,7 @@ function AppProvider({ children }: Props) {
 
   useEffect(() => {
     if (localStorage) {
-      const currentLocale = localStorage.getItem('locale') || 'en';
+      const currentLocale = localStorage.getItem('locale') || 'ko';
       setLocale(currentLocale, () => null);
     }
     if (userData && userData.clientPortalCurrentUser) {
@@ -128,7 +128,7 @@ function AppProvider({ children }: Props) {
   }
 
   if (config.language && localStorage) {
-    const currentLocale = localStorage.getItem('locale') || 'en';
+    const currentLocale = localStorage.getItem('locale') || 'ko';
 
     if (config.language !== currentLocale) {
       localStorage.setItem('locale', config.language);

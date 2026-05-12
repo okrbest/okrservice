@@ -1,6 +1,5 @@
-import gql from "graphql-tag";
+import { gql, useQuery } from "@apollo/client";
 import * as React from "react";
-import { ChildProps, graphql } from "react-apollo";
 import DumbCategoryDetail from "../components/CategoryDetail";
 import { IKbCategory } from "../types";
 import { AppConsumer } from "./AppContext";
@@ -15,43 +14,38 @@ type QueryResponse = {
   knowledgeBaseCategoryDetail: IKbCategory;
 };
 
-const CategoryDetail = (props: ChildProps<Props, QueryResponse>) => {
-  const { data } = props;
-
-  if (!data) {
-    return null;
-  }
-  if (data.loading) {
-    return <div className="loader bigger top-space" />;
-  }
-  const extendedProps = {
-    ...props,
-    category: data.knowledgeBaseCategoryDetail || null
-  };
-
-  return <DumbCategoryDetail {...extendedProps} />;
-};
-
-const WithData = graphql<Props, QueryResponse>(
-  gql(queries.getKbCategoryQuery),
-  {
-    options: ({ category }) => ({
+const CategoryDetail = ({ goToCategories, category }: Props) => {
+  const { data, loading } = useQuery<QueryResponse>(
+    gql(queries.getKbCategoryQuery),
+    {
       fetchPolicy: "network-only",
       variables: {
-        _id: category ? category._id : ""
-      }
-    })
-  }
-)(CategoryDetail);
+        _id: category ? category._id : "",
+      },
+    }
+  );
 
-const WithContext = () => {
+  if (loading) {
+    return <div className="loader bigger top-space" />;
+  }
+
   return (
-    <AppConsumer>
-      {({ goToCategories, activeCategory }) => (
-        <WithData goToCategories={goToCategories} category={activeCategory} />
-      )}
-    </AppConsumer>
+    <DumbCategoryDetail
+      goToCategories={goToCategories}
+      category={data?.knowledgeBaseCategoryDetail || null}
+    />
   );
 };
+
+const WithContext = () => (
+  <AppConsumer>
+    {({ goToCategories, activeCategory }) => (
+      <CategoryDetail
+        goToCategories={goToCategories}
+        category={activeCategory}
+      />
+    )}
+  </AppConsumer>
+);
 
 export default WithContext;
