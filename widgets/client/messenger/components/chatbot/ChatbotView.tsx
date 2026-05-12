@@ -142,18 +142,26 @@ const ChatbotView: React.FC = () => {
                           type="button"
                           tabIndex={-1}
                           style={{
-                            padding: "7px 14px",
-                            background: isHovered ? primaryColor : "#fff",
-                            color: isHovered ? "#fff" : primaryColor,
-                            border: `1.5px solid ${primaryColor}`,
-                            borderRadius: "20px",
-                            fontSize: "12px",
-                            fontWeight: "600",
+                            width: "100%",
+                            padding: "11px 16px",
+                            background: isHovered
+                              ? `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`
+                              : primaryColor,
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "10px",
+                            fontSize: "13px",
+                            fontWeight: "700",
                             cursor: "pointer",
                             transition: "all 0.15s ease",
                             outline: "none",
                             WebkitAppearance: "none",
                             appearance: "none",
+                            boxShadow: isHovered
+                              ? `0 6px 16px rgba(99,102,241,0.35)`
+                              : `0 2px 8px rgba(99,102,241,0.25)`,
+                            transform: isHovered ? "translateY(-1px)" : "none",
+                            letterSpacing: "0.2px",
                           }}
                           onMouseEnter={() => setHoveredBtn(btnKey)}
                           onMouseLeave={() => setHoveredBtn(null)}
@@ -161,7 +169,7 @@ const ChatbotView: React.FC = () => {
                           onFocus={(e) => e.currentTarget.blur()}
                           onClick={() => handleMenuClick(btn.label, btn.url)}
                         >
-                          {btn.label}
+                          {btn.label} →
                         </button>
                       );
                     })}
