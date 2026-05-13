@@ -20,7 +20,7 @@ function ArticleListContainer(props: Props) {
       searchValue: props.searchValue || '',
       categoryIds: props.categoryId && [props.categoryId],
       topicId: props.topicId || '',
-      isPrivate: props.currentUser ? true : false,
+      isPrivate: true,
     },
   });
 
