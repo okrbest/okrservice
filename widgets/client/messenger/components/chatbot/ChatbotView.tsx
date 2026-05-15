@@ -65,6 +65,15 @@ const BUBBLE_STYLE: React.CSSProperties = {
   maxWidth: "80%",
 };
 
+function formatMessageTime(value?: string): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
 const ChatbotView: React.FC = () => {
   const { setRoute, setChatbotMenu } = useRouter();
   const primaryColor = getColor() || "#6366f1";
@@ -73,6 +82,7 @@ const ChatbotView: React.FC = () => {
   const chatBottomRef = React.useRef<HTMLDivElement>(null);
 
   const scheduledMessages = useChatbotMessages();
+  const [isMenuOpen, setIsMenuOpen] = React.useState(true);
 
   // 새 메시지가 쌓이면 자동으로 맨 아래로 스크롤
   React.useEffect(() => {
@@ -131,8 +141,27 @@ const ChatbotView: React.FC = () => {
               <div style={BOT_AVATAR_STYLE}>🤖</div>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxWidth: "80%" }}>
                 <div style={BUBBLE_STYLE}>{msg.text}</div>
+                {!!msg.shownAt && (
+                  <span
+                    style={{
+                      alignSelf: "flex-end",
+                      fontSize: "10px",
+                      color: "#94a3b8",
+                      marginRight: 2,
+                    }}
+                  >
+                    {formatMessageTime(msg.shownAt)}
+                  </span>
+                )}
                 {msg.buttons && msg.buttons.length > 0 && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "6px",
+                      marginBottom: "10px",
+                    }}
+                  >
                     {msg.buttons.map((btn) => {
                       const btnKey = `${msg.id}-${btn.label}`;
                       const isHovered = hoveredBtn === btnKey;
@@ -142,7 +171,8 @@ const ChatbotView: React.FC = () => {
                           type="button"
                           tabIndex={-1}
                           style={{
-                            width: "100%",
+                            width: "86%",
+                            maxWidth: "260px",
                             padding: "11px 16px",
                             background: isHovered
                               ? `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`
@@ -183,16 +213,55 @@ const ChatbotView: React.FC = () => {
           <div ref={chatBottomRef} />
         </div>
 
-        {/* ── 메뉴 그리드 (고정) ── */}
+        {/* ── 메뉴 그리드 (접기/펼치기) ── */}
         <div
           style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "4px 14px 14px",
-            borderTop: scheduledMessages.length > 0 ? "1px solid #ebebf5" : "none",
+            flexShrink: 0,
+            borderTop: "1px solid #ebebf5",
+            background: "#f5f6fc",
           }}
         >
-          {CHATBOT_MENU_CATEGORIES.map((cat, catIndex) => {
+          {/* 토글 헤더 */}
+          <button
+            type="button"
+            tabIndex={-1}
+            onMouseDown={(e) => e.preventDefault()}
+            onFocus={(e) => e.currentTarget.blur()}
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 16px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              outline: "none",
+              WebkitAppearance: "none",
+              appearance: "none",
+            }}
+          >
+            <span style={{ fontSize: "12px", fontWeight: "600", color: "#6366f1" }}>
+              HR 메뉴
+            </span>
+            <span
+              style={{
+                fontSize: "11px",
+                color: "#94a3b8",
+                transition: "transform 0.2s",
+                display: "inline-block",
+                transform: isMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+              }}
+            >
+              ▲
+            </span>
+          </button>
+
+          {/* 그리드 */}
+          {isMenuOpen && (
+            <div style={{ padding: "0 14px 14px", overflowY: "auto", maxHeight: "260px" }}>
+              {CHATBOT_MENU_CATEGORIES.map((cat, catIndex) => {
             const items = CHATBOT_MENUS.filter((m) => m.category === cat.key);
             const gridCols =
               cat.cols === 2
@@ -252,7 +321,9 @@ const ChatbotView: React.FC = () => {
                 </div>
               </div>
             );
-          })}
+              })}
+            </div>
+          )}
         </div>
       </div>
     </Container>
