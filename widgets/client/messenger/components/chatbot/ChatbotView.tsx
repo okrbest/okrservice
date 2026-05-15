@@ -82,7 +82,7 @@ const ChatbotView: React.FC = () => {
   const chatBottomRef = React.useRef<HTMLDivElement>(null);
 
   const scheduledMessages = useChatbotMessages();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(true);
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   // 새 메시지가 쌓이면 자동으로 맨 아래로 스크롤
   React.useEffect(() => {
@@ -112,13 +112,13 @@ const ChatbotView: React.FC = () => {
         {/* ── 채팅 영역: 인사 + 시간대 메시지 (스크롤) ── */}
         <div
           style={{
+            flex: 1,
+            minHeight: 0,
             overflowY: "auto",
             padding: "16px 16px 8px",
             display: "flex",
             flexDirection: "column",
             gap: "10px",
-            flexShrink: scheduledMessages.length > 0 ? 1 : 0,
-            maxHeight: scheduledMessages.length > 0 ? "50%" : undefined,
           }}
         >
           {/* 봇 인사 말풍선 */}
