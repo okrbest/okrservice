@@ -177,6 +177,7 @@ import { moduleObjects } from "./data/permissions/actions/permission";
 import { getEnabledServices } from "@erxes/api-utils/src/serviceDiscovery";
 import { applyInspectorEndpoints } from "@erxes/api-utils/src/inspect";
 import { handleCoreLogin, handleMagiclink, ssocallback } from "./saas";
+import { graphqlPubsub } from "./pubsub";
 import app from "@erxes/api-utils/src/app";
 import sanitizeFilename from "@erxes/api-utils/src/sanitize-filename";
 import search from "./search";
@@ -677,6 +678,78 @@ app.get("/get-import-file/:fileName", async (req, res) => {
   const filePath = path.join(uploadsFolderPath, sanitizeFileName);
 
   res.sendFile(filePath);
+});
+
+/**
+ * RPA 메시지 수신 API
+ * KiwiBox 서버가 배치 실행 결과를 POST 한다.
+ * Content-Type: application/x-www-form-urlencoded
+ * Body: rpaCode, messageCode, message, loginId, overtime
+ */
+const RPA_CODE_ALIASES: Record<string, string> = {
+  HR_GO_TO_WORK: 'HR_RPA_100',
+  HR_GET_OFF_WORK: 'HR_RPA_090',
+};
+
+const VALID_RPA_CODES = new Set([
+  'HR_RPA_090', 'HR_RPA_100', 'HR_RPA_110',
+  'HR_RPA_120', 'HR_RPA_130', 'HR_RPA_140', 'HR_RPA_800',
+]);
+
+app.post('/api/rpa/messages', async (req, res) => {
+  try {
+    const subdomain = getSubdomain(req);
+    const models = await generateModels(subdomain);
+
+    const {
+      rpaCode: rawRpaCode,
+      messageCode = '',
+      message = '',
+      loginId = '',
+      overtime = '0',
+    } = req.body as Record<string, string>;
+
+    // 별칭 정규화
+    const rpaCode = RPA_CODE_ALIASES[rawRpaCode] ?? rawRpaCode;
+
+    // loginId 필수 검증
+    if (!loginId) {
+      return res.status(400).json({ ok: false, error: 'loginId is required' });
+    }
+
+    // 알 수 없는 rpaCode 는 기록은 하되 경고만 남김
+    if (!VALID_RPA_CODES.has(rpaCode)) {
+      console.warn(`[RPA] Unknown rpaCode received: ${rawRpaCode}`);
+    }
+
+    // DB 저장
+    const saved = await models.RpaMessages.createRpaMessage({
+      loginId,
+      rpaCode,
+      messageCode,
+      message: message.substring(0, 4000),
+      overtime,
+      receivedAt: new Date(),
+    });
+
+    // WebSocket push — 해당 loginId 위젯으로 실시간 전달
+    await graphqlPubsub.publish('rpaMessageReceived', {
+      rpaMessageReceived: {
+        _id: saved._id,
+        loginId,
+        rpaCode,
+        messageCode,
+        message: saved.message,
+        overtime,
+        receivedAt: saved.receivedAt,
+      },
+    });
+
+    return res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error('[RPA] Error processing RPA message:', e);
+    return res.status(200).json({ ok: false });
+  }
 });
 
 app.get("/plugins/enabled/:name", async (req, res) => {

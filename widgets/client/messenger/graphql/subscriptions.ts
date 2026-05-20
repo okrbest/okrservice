@@ -48,10 +48,25 @@ const adminMessageInserted = `
   }
 `;
 
-export { 
-  CLOUDFLARE_CALL_RECEIVED, 
+const rpaMessageReceived = `
+  subscription rpaMessageReceived($loginId: String!) {
+    rpaMessageReceived(loginId: $loginId) {
+      _id
+      loginId
+      rpaCode
+      messageCode
+      message
+      overtime
+      receivedAt
+    }
+  }
+`;
+
+export {
+  CLOUDFLARE_CALL_RECEIVED,
   conversationMessageInserted,
   adminMessageInserted,
-  conversationChanged,  
-  conversationBotTypingStatus
+  conversationChanged,
+  conversationBotTypingStatus,
+  rpaMessageReceived,
 };

@@ -150,6 +150,8 @@ import {
   mutations as ProductRuleMutations
 } from './productRule';
 
+import { types as RpaTypes, subscriptions as RpaSubscriptions } from './rpa';
+
 export let types = ({ inboxEnabled }) => {
   return `
   scalar JSON
@@ -207,6 +209,7 @@ export let types = ({ inboxEnabled }) => {
   ${RateTypes}
   ${BundleTypes}
   ${ProductRuleTypes}
+  ${RpaTypes}
   `;
 };
 
@@ -276,6 +279,8 @@ export let subscriptions = `
   onboardingChanged(userId: String!): OnboardingNotification
 
   userChanged(userId: String): JSON
+
+  ${RpaSubscriptions}
 `;
 
 export default { types, queries, mutations, subscriptions };

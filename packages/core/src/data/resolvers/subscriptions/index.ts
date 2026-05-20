@@ -1,9 +1,11 @@
 import robot from './robot';
 import users from './users';
+import rpa from './rpa';
 
 let subscriptions: any = {
   ...robot,
-  ...users
+  ...users,
+  ...rpa,
 };
 
 const { NODE_ENV } = process.env;

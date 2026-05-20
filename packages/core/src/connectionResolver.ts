@@ -164,6 +164,8 @@ import {
 
 import { IProductRuleModel, loadProductRuleClass } from './db/models/ProductRules';
 import { IProductRuleDocument } from './db/models/definitions/productRules';
+import { IRpaMessageModel, loadRpaMessageClass } from './db/models/RpaMessages';
+import { IRpaMessageDocument } from './db/models/definitions/rpaMessages';
 
 export interface IModels {
   Users: IUserModel;
@@ -209,6 +211,7 @@ export interface IModels {
   BundleCondition: IBundleConditionModel;
   BundleRule: IBundleRuleModel;
   ProductRules: IProductRuleModel;
+  RpaMessages: IRpaMessageModel;
 }
 
 export interface IContext extends IMainContext {
@@ -410,6 +413,11 @@ export const loadClasses = (
   models.ProductRules = db.model<IProductRuleDocument, IProductRuleModel>(
     'product_rules',
     loadProductRuleClass(models, subdomain)
+  );
+
+  models.RpaMessages = db.model<IRpaMessageDocument, IRpaMessageModel>(
+    'rpa_messages',
+    loadRpaMessageClass(models)
   );
 
   return models;

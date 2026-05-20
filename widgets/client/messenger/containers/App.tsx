@@ -15,6 +15,7 @@ import { MessageProvider } from "../context/Message";
 import { RoomProvider } from "./call/RoomProvider";
 import { RouterProvider } from "../context/Router";
 import { TicketProvider } from "../context/Ticket";
+import { RpaMessageProvider } from "../context/RpaMessage";
 import client from "../../apollo-client";
 import { getMessengerData } from "../utils/util";
 
@@ -33,7 +34,9 @@ const App = () => {
               <MessageProvider>
                 <RoomProvider>
                   <TicketProvider>
-                    <DumbApp showLauncher={showLauncher} />
+                    <RpaMessageProvider>
+                      <DumbApp showLauncher={showLauncher} />
+                    </RpaMessageProvider>
                   </TicketProvider>
                 </RoomProvider>
               </MessageProvider>
