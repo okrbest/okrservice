@@ -4,6 +4,24 @@ import { CHATBOT_MENUS, CHATBOT_MENU_CATEGORIES } from "./chatbotMenus";
 import { useRouter } from "../../context/Router";
 import { getColor } from "../../utils/util";
 import { useChatbotMessages } from "./useChatbotMessages";
+import { useRpaMessages } from "../../context/RpaMessage";
+
+// rpaCode 별로 노출할 5240 바로가기 버튼 매핑
+const RPA_BUTTON_MAP: Record<string, { label: string; url: string }[]> = {
+  HR_RPA_090: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
+  HR_RPA_100: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
+  HR_RPA_110: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
+  HR_RPA_120: [
+    { label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" },
+    { label: "연장근무신청", url: "https://api.5240.cloud/MobileOvertimeAppl.do" },
+  ],
+  HR_RPA_130: [
+    { label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" },
+    { label: "연장근무신청", url: "https://api.5240.cloud/MobileOvertimeAppl.do" },
+  ],
+  HR_RPA_140: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
+  HR_RPA_800: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
+};
 
 const DIVIDER_STYLE: React.CSSProperties = {
   height: "1px",
@@ -82,14 +100,13 @@ const ChatbotView: React.FC = () => {
   const chatBottomRef = React.useRef<HTMLDivElement>(null);
 
   const scheduledMessages = useChatbotMessages();
+  const { rpaMessages } = useRpaMessages();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   // 새 메시지가 쌓이면 자동으로 맨 아래로 스크롤
   React.useEffect(() => {
-    if (scheduledMessages.length > 0) {
-      chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [scheduledMessages.length]);
+    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [scheduledMessages.length, rpaMessages.length]);
 
   const handleMenuClick = (title: string, url: string) => {
     setChatbotMenu({ title, url });
@@ -190,6 +207,70 @@ const ChatbotView: React.FC = () => {
                             boxShadow: isHovered
                               ? `0 6px 16px rgba(99,102,241,0.35)`
                               : `0 2px 8px rgba(99,102,241,0.25)`,
+                            transform: isHovered ? "translateY(-1px)" : "none",
+                            letterSpacing: "0.2px",
+                          }}
+                          onMouseEnter={() => setHoveredBtn(btnKey)}
+                          onMouseLeave={() => setHoveredBtn(null)}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onFocus={(e) => e.currentTarget.blur()}
+                          onClick={() => handleMenuClick(btn.label, btn.url)}
+                        >
+                          {btn.label} →
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {/* RPA 실시간 메시지 (KiwiBox 배치 → 서버 push) */}
+          {rpaMessages.map((msg) => (
+            <div
+              key={msg._id}
+              style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+            >
+              <div style={BOT_AVATAR_STYLE}>🤖</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxWidth: "80%" }}>
+                <div style={BUBBLE_STYLE}>{msg.message}</div>
+                {!!msg.receivedAt && (
+                  <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
+                    {formatMessageTime(msg.receivedAt)}
+                  </span>
+                )}
+                {/* rpaCode 에 따라 관련 5240 화면 바로가기 버튼 */}
+                {RPA_BUTTON_MAP[msg.rpaCode] && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
+                    {RPA_BUTTON_MAP[msg.rpaCode].map((btn) => {
+                      const btnKey = `${msg._id}-${btn.label}`;
+                      const isHovered = hoveredBtn === btnKey;
+                      return (
+                        <button
+                          key={btnKey}
+                          type="button"
+                          tabIndex={-1}
+                          style={{
+                            width: "86%",
+                            maxWidth: "260px",
+                            padding: "11px 16px",
+                            background: isHovered
+                              ? `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`
+                              : primaryColor,
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "10px",
+                            fontSize: "13px",
+                            fontWeight: "700",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                            outline: "none",
+                            WebkitAppearance: "none",
+                            appearance: "none",
+                            boxShadow: isHovered
+                              ? "0 6px 16px rgba(99,102,241,0.35)"
+                              : "0 2px 8px rgba(99,102,241,0.25)",
                             transform: isHovered ? "translateY(-1px)" : "none",
                             letterSpacing: "0.2px",
                           }}
