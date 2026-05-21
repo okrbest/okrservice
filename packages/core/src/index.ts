@@ -680,6 +680,11 @@ app.get("/get-import-file/:fileName", async (req, res) => {
   res.sendFile(filePath);
 });
 
+// Gateway subscription plugin (RPA)
+app.get('/subscriptionPlugin.js', (_req, res) => {
+  res.sendFile(path.resolve(__dirname, 'graphql', 'subscriptionPlugin.js'));
+});
+
 /**
  * RPA 메시지 수신 API
  * KiwiBox 서버가 배치 실행 결과를 POST 한다.
@@ -789,7 +794,7 @@ httpServer.listen(PORT, async () => {
   await join({
     name: "core",
     port: PORT,
-    hasSubscriptions: false,
+    hasSubscriptions: true,
     meta: {
       isSearchable: true,
       logs: { providesActivityLog: true, consumers: logs },
