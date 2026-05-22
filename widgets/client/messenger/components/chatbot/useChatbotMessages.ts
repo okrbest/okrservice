@@ -44,7 +44,10 @@ export function useChatbotMessages() {
 
         if (now >= notifyAt) {
           shownIds.current.add(msg.id);
-          newMessages.push(msg);
+          newMessages.push({
+            ...msg,
+            shownAt: now.toISOString(),
+          });
         }
       }
 
