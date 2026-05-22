@@ -10,6 +10,10 @@ export const types = `
   }
 `;
 
+export const queries = `
+  rpaMessages(loginId: String!, limit: Int): [RpaMessage]
+`;
+
 export const subscriptions = `
   rpaMessageReceived(loginId: String!): RpaMessage
 `;

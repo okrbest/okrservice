@@ -384,3 +384,17 @@ export {
   widgetsGetDealFields,
   MESSAGE_FIELDS,
 };
+
+export const rpaMessagesQuery = `
+  query RpaMessages($loginId: String!, $limit: Int) {
+    rpaMessages(loginId: $loginId, limit: $limit) {
+      _id
+      loginId
+      rpaCode
+      messageCode
+      message
+      overtime
+      receivedAt
+    }
+  }
+`;
