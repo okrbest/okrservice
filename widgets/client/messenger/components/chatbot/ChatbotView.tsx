@@ -23,6 +23,7 @@ const RPA_BUTTON_MAP: Record<string, { label: string; url: string }[]> = {
   HR_RPA_800: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
 };
 
+
 const DIVIDER_STYLE: React.CSSProperties = {
   height: "1px",
   background: "linear-gradient(90deg, #e0e0f0 0%, transparent 100%)",
@@ -90,6 +91,10 @@ function formatMessageTime(value?: string): string {
   const hh = String(date.getHours()).padStart(2, "0");
   const mm = String(date.getMinutes()).padStart(2, "0");
   return `${hh}:${mm}`;
+}
+
+function getRpaDisplayText(msg: { message?: string }): string {
+  return msg.message || "알림이 도착했습니다.";
 }
 
 const ChatbotView: React.FC = () => {
@@ -234,7 +239,7 @@ const ChatbotView: React.FC = () => {
             >
               <div style={BOT_AVATAR_STYLE}>🤖</div>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxWidth: "80%" }}>
-                <div style={BUBBLE_STYLE}>{msg.message}</div>
+                <div style={BUBBLE_STYLE}>{getRpaDisplayText(msg)}</div>
                 {!!msg.receivedAt && (
                   <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
                     {formatMessageTime(msg.receivedAt)}

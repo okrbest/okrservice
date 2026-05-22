@@ -5530,3 +5530,14 @@ select.form-control:focus,
     display: none !important;
   }
 }
+
+/* Chatbot menu buttons: prevent browser default black focus ring/border */
+.chatbot-menu-button,
+.chatbot-menu-button:hover,
+.chatbot-menu-button:focus,
+.chatbot-menu-button:focus-visible,
+.chatbot-menu-button:active {
+  outline: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
