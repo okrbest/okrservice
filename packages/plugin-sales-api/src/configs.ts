@@ -25,6 +25,8 @@ import dashboards from './dashboards';
 import payment from './payment';
 import reports from './reports/reports';
 import app from '@erxes/api-utils/src/app';
+import { handleSheetWebhook } from './googleSheetsSync';
+import type { SheetWebhookPayload } from './googleSheetsSync';
 
 import { NOTIFICATION_MODULES } from './constants';
 import templates from './templates';
@@ -101,6 +103,37 @@ export default {
       })
     );
 
+
+    app.post(
+      '/sheets-webhook',
+      routeErrorHandling(async (req: any, res) => {
+        const secret = req.headers['x-sheets-secret'];
+        const expectedSecret = process.env.SHEETS_WEBHOOK_SECRET || '';
+
+        if (!expectedSecret || secret !== expectedSecret) {
+          return res.status(401).json({ ok: false, reason: 'unauthorized' });
+        }
+
+        const { dealId, columnName, newValue, sheetEditedAt } =
+          req.body as SheetWebhookPayload;
+
+        if (!dealId || !columnName || newValue === undefined || !sheetEditedAt) {
+          return res.status(400).json({ ok: false, reason: 'missing_fields' });
+        }
+
+        const subdomain = getSubdomain(req);
+        const models = await generateModels(subdomain);
+
+        const result = await handleSheetWebhook(models, subdomain, {
+          dealId,
+          columnName,
+          newValue: String(newValue),
+          sheetEditedAt,
+        });
+
+        return res.json(result);
+      })
+    );
     console.log('Debug ....');
   },
   setupMessageConsumers
