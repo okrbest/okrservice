@@ -150,7 +150,7 @@ import {
   mutations as ProductRuleMutations
 } from './productRule';
 
-import { types as RpaTypes, subscriptions as RpaSubscriptions } from './rpa';
+import { types as RpaTypes, queries as RpaQueries, subscriptions as RpaSubscriptions } from './rpa';
 
 export let types = ({ inboxEnabled }) => {
   return `
@@ -244,6 +244,7 @@ export let queries = `
   ${RateQueries}
   ${BundleQueries}
   ${ProductRuleQueries}
+  ${RpaQueries}
 `;
 
 export let mutations = `

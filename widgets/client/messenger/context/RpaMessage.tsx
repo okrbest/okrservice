@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import client from '../../apollo-client';
 import { connection } from '../connection';
 import { rpaMessageReceived } from '../graphql/subscriptions';
+import { rpaMessagesQuery } from '../graphql/queries';
 
 export interface RpaMessageItem {
   _id: string;
@@ -23,14 +24,34 @@ const RpaMessageContext = createContext<RpaMessageContextProps>({ rpaMessages: [
 export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [rpaMessages, setRpaMessages] = useState<RpaMessageItem[]>([]);
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
+  const loadedRef = useRef(false);
 
   useEffect(() => {
-    // customerId 가 생길 때까지 대기 — connection.data 는 비동기로 채워짐
-    const trySubscribe = () => {
-      const loginId = connection.data?.email;
-      if (!loginId) return;
+    const resolveLoginId = () => {
+      const loginId = (connection.data?.email || connection.setting?.email || '').trim();
+      return loginId || null;
+    };
 
-      if (subscriptionRef.current) return; // 이미 구독 중
+    const loadHistory = async (loginId: string) => {
+      if (loadedRef.current) return;
+      loadedRef.current = true;
+      try {
+        const result = await client.query({
+          query: gql(rpaMessagesQuery),
+          variables: { loginId, limit: 20 },
+          fetchPolicy: 'network-only',
+        });
+        const msgs: RpaMessageItem[] = result.data?.rpaMessages || [];
+        if (msgs.length > 0) {
+          setRpaMessages(msgs);
+        }
+      } catch (err) {
+        console.error('[RPA] History load error:', err);
+      }
+    };
+
+    const trySubscribe = (loginId: string) => {
+      if (subscriptionRef.current) return;
 
       subscriptionRef.current = client
         .subscribe({
@@ -41,7 +62,10 @@ export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           next({ data }: { data: { rpaMessageReceived: RpaMessageItem } }) {
             const msg = data?.rpaMessageReceived;
             if (msg) {
-              setRpaMessages((prev) => [...prev, msg]);
+              setRpaMessages((prev) => {
+                if (prev.some((m) => m._id === msg._id)) return prev;
+                return [...prev, msg];
+              });
             }
           },
           error(err: Error) {
@@ -50,12 +74,21 @@ export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         });
     };
 
-    trySubscribe();
+    const init = (loginId: string) => {
+      loadHistory(loginId);
+      trySubscribe(loginId);
+    };
+
+    const loginId = resolveLoginId();
+    if (loginId) {
+      init(loginId);
+    }
 
     // connection.data 가 늦게 세팅될 경우 대비해 짧은 폴링
     const interval = setInterval(() => {
-      if (connection.data?.email && !subscriptionRef.current) {
-        trySubscribe();
+      const id = resolveLoginId();
+      if (id && !subscriptionRef.current) {
+        init(id);
         clearInterval(interval);
       }
     }, 2000);
