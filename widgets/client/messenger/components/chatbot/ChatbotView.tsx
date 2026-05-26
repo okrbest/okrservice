@@ -6,7 +6,7 @@ import { getColor } from "../../utils/util";
 import { useChatbotMessages } from "./useChatbotMessages";
 import { useRpaMessages } from "../../context/RpaMessage";
 
-const HR_BASE = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_HR_BASE_URL) ?? '';
+const HR_BASE = process.env.HR_BASE_URL ?? '';
 
 // rpaCode 별로 노출할 5240 바로가기 버튼 매핑
 const RPA_BUTTON_MAP: Record<string, { label: string; url: string }[]> = {

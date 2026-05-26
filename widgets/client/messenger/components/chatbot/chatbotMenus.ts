@@ -1,4 +1,4 @@
-const HR_BASE = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_HR_BASE_URL) ?? '';
+const HR_BASE = process.env.HR_BASE_URL ?? '';
 
 export interface ChatbotMenu {
   id: string;
