@@ -3,17 +3,25 @@ import { IRpaMessage, IRpaMessageDocument, rpaMessageSchema } from './definition
 import { IModels } from '../../connectionResolver';
 
 export interface IRpaMessageModel extends Model<IRpaMessageDocument> {
-  createRpaMessage(doc: IRpaMessage): Promise<IRpaMessageDocument>;
+  createRpaMessage(doc: IRpaMessage): Promise<IRpaMessageDocument | null>;
   getRpaMessagesByLoginId(loginId: string, limit?: number): Promise<IRpaMessageDocument[]>;
 }
 
 export const loadRpaMessageClass = (models: IModels) => {
   class RpaMessage {
-    public static async createRpaMessage(doc: IRpaMessage): Promise<IRpaMessageDocument> {
-      return models.RpaMessages.create({
-        ...doc,
-        receivedAt: new Date(),
-      });
+    public static async createRpaMessage(doc: IRpaMessage): Promise<IRpaMessageDocument | null> {
+      try {
+        return await models.RpaMessages.create({
+          ...doc,
+          messageCode: doc.messageCode || undefined,
+          receivedAt: new Date(),
+        });
+      } catch (e: any) {
+        if (e.code === 11000) {
+          return null;
+        }
+        throw e;
+      }
     }
 
     public static async getRpaMessagesByLoginId(

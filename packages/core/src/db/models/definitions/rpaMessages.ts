@@ -38,3 +38,8 @@ export const rpaMessageSchema = new Schema({
   receivedAt: field({ type: Date, label: 'Received at' }),
   buttons: field({ type: [rpaButtonSchema], label: 'Buttons', default: [] }),
 });
+
+rpaMessageSchema.index(
+  { loginId: 1, messageCode: 1 },
+  { unique: true, sparse: true },
+);
