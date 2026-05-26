@@ -7,9 +7,13 @@ const CLIENT_ID = 'e2e-test-client';
 export default async function globalTeardown() {
   await mongoose.connect(MONGO_URL);
 
-  const db = mongoose.connection.db!;
-  await db.collection('clients').deleteMany({ clientId: CLIENT_ID });
-  await db.collection('rpa_messages').deleteMany({ loginId: LOGIN_ID });
-
-  await mongoose.disconnect();
+  try {
+    const db = mongoose.connection.db!;
+    // Remove seeded test client
+    await db.collection('clients').deleteMany({ clientId: CLIENT_ID });
+    // Remove RPA messages created by tests (tests use loginId = LOGIN_ID)
+    await db.collection('rpa_messages').deleteMany({ loginId: LOGIN_ID });
+  } finally {
+    await mongoose.disconnect();
+  }
 }
