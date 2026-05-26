@@ -151,6 +151,7 @@ import {
 } from './productRule';
 
 import { types as RpaTypes, queries as RpaQueries, subscriptions as RpaSubscriptions } from './rpa';
+import { types as SuggestionTypes, queries as SuggestionQueries } from './suggestions';
 
 export let types = ({ inboxEnabled }) => {
   return `
@@ -210,6 +211,7 @@ export let types = ({ inboxEnabled }) => {
   ${BundleTypes}
   ${ProductRuleTypes}
   ${RpaTypes}
+  ${SuggestionTypes}
   `;
 };
 
@@ -245,6 +247,7 @@ export let queries = `
   ${BundleQueries}
   ${ProductRuleQueries}
   ${RpaQueries}
+  ${SuggestionQueries}
 `;
 
 export let mutations = `
