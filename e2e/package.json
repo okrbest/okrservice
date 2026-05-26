@@ -1,0 +1,15 @@
+{
+  "name": "e2e",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "bcryptjs": "^2.4.3",
+    "mongoose": "^8.0.0",
+    "nanoid": "^3.3.7",
+    "@types/bcryptjs": "^2.4.6"
+  }
+}
