@@ -46,15 +46,28 @@ test('WebSocket 강제 종료 후 재연결되어 새 메시지를 수신한다'
     return iframe?.src ?? '';
   });
 
+  // iframe을 blank로 설정
+  await page.evaluate(() => {
+    const iframe = document.getElementById('erxes-messenger-iframe') as HTMLIFrameElement;
+    if (iframe) iframe.src = 'about:blank';
+  });
+
+  // iframe이 실제로 about:blank로 바뀔 때까지 대기
+  await page.waitForFunction(
+    () => {
+      const el = document.getElementById('erxes-messenger-iframe') as HTMLIFrameElement;
+      return el?.src === 'about:blank' || el?.contentDocument?.location?.href === 'about:blank';
+    },
+    { timeout: 5_000 }
+  );
+
+  // 원래 URL 복원
   await page.evaluate((src) => {
     const iframe = document.getElementById('erxes-messenger-iframe') as HTMLIFrameElement;
-    if (iframe) {
-      iframe.src = 'about:blank';
-      setTimeout(() => { iframe.src = src; }, 300);
-    }
+    if (iframe) iframe.src = src;
   }, originalSrc);
 
-  // 4. iframe 재로드 후 위젯 재초기화 대기
+  // 4. iframe 재로드 후 위젯 재초기화 대기 (bundle re-parse + WS reconnect)
   await frame.getByText('Chatbot').waitFor({ timeout: 20_000 });
   await frame.getByText('Chatbot').click();
 
