@@ -735,6 +735,7 @@ app.post('/api/rpa/messages', async (req, res) => {
       message: message.substring(0, 4000),
       overtime,
       receivedAt: new Date(),
+      buttons: [],
     });
 
     // WebSocket push — 해당 loginId 위젯으로 실시간 전달

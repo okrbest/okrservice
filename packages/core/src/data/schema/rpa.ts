@@ -1,4 +1,9 @@
 export const types = `
+  type RpaButton {
+    label: String
+    path: String
+  }
+
   type RpaMessage {
     _id: String
     loginId: String
@@ -7,6 +12,7 @@ export const types = `
     message: String
     overtime: String
     receivedAt: Date
+    buttons: [RpaButton]
   }
 `;
 

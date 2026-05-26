@@ -1,6 +1,11 @@
 import { Document, Schema } from 'mongoose';
 import { field } from './utils';
 
+export interface IRpaButton {
+  label: string;
+  path: string;
+}
+
 export interface IRpaMessage {
   loginId: string;
   rpaCode: string;
@@ -8,11 +13,20 @@ export interface IRpaMessage {
   message: string;
   overtime: string;
   receivedAt: Date;
+  buttons: IRpaButton[];
 }
 
 export interface IRpaMessageDocument extends IRpaMessage, Document {
   _id: string;
 }
+
+const rpaButtonSchema = new Schema(
+  {
+    label: field({ type: String, label: '버튼 텍스트' }),
+    path: field({ type: String, label: '5240 경로' }),
+  },
+  { _id: false },
+);
 
 export const rpaMessageSchema = new Schema({
   _id: field({ pkey: true }),
@@ -22,4 +36,5 @@ export const rpaMessageSchema = new Schema({
   message: field({ type: String, label: 'Message body' }),
   overtime: field({ type: String, label: 'Overtime minutes', optional: true }),
   receivedAt: field({ type: Date, label: 'Received at' }),
+  buttons: { type: [rpaButtonSchema], default: [] },
 });
