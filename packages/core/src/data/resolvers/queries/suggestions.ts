@@ -68,9 +68,10 @@ const SUGGESTION_DICT: SuggestionItem[] = [
 const suggestionQueries = {
   chatbotSuggestions(
     _root: any,
-    { keyword }: { keyword: string; chatbotId?: string },
+    { keyword, chatbotId }: { keyword: string; chatbotId?: string },
     _context: any,
   ): SuggestionItem[] {
+    // chatbotId: 향후 멀티테넌트 사전 분기를 위해 파라미터를 받아두나, 현재는 미사용
     if (!keyword || keyword.length < 2) {
       return [];
     }
