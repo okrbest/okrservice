@@ -395,6 +395,10 @@ export const rpaMessagesQuery = `
       message
       overtime
       receivedAt
+      buttons {
+        label
+        path
+      }
     }
   }
 `;

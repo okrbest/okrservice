@@ -58,6 +58,10 @@ const rpaMessageReceived = `
       message
       overtime
       receivedAt
+      buttons {
+        label
+        path
+      }
     }
   }
 `;

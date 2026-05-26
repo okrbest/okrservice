@@ -13,6 +13,7 @@ export interface RpaMessageItem {
   message: string;
   overtime: string;
   receivedAt: string;
+  buttons: Array<{ label: string; path: string }>;
 }
 
 interface RpaMessageContextProps {
