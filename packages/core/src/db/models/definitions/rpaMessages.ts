@@ -13,7 +13,7 @@ export interface IRpaMessage {
   message: string;
   overtime: string;
   receivedAt: Date;
-  buttons: IRpaButton[];
+  buttons?: IRpaButton[];
 }
 
 export interface IRpaMessageDocument extends IRpaMessage, Document {
@@ -23,7 +23,7 @@ export interface IRpaMessageDocument extends IRpaMessage, Document {
 const rpaButtonSchema = new Schema(
   {
     label: field({ type: String, label: '버튼 텍스트' }),
-    path: field({ type: String, label: '5240 경로' }),
+    path: field({ type: String, label: '버튼 경로' }),
   },
   { _id: false },
 );
@@ -36,5 +36,5 @@ export const rpaMessageSchema = new Schema({
   message: field({ type: String, label: 'Message body' }),
   overtime: field({ type: String, label: 'Overtime minutes', optional: true }),
   receivedAt: field({ type: Date, label: 'Received at' }),
-  buttons: { type: [rpaButtonSchema], default: [] },
+  buttons: field({ type: [rpaButtonSchema], label: 'Buttons', default: [] }),
 });

@@ -748,6 +748,7 @@ app.post('/api/rpa/messages', async (req, res) => {
         message: saved.message,
         overtime,
         receivedAt: saved.receivedAt,
+        buttons: saved.buttons ?? [],
       },
     });
 
