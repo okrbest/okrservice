@@ -50,10 +50,7 @@ test('같은 messageCode로 2번 POST해도 메시지가 1개만 표시된다', 
   const res2 = await postRpaMessage(request, messageCode);
   expect(res2.status()).toBe(200);
 
-  // 5. 잠시 대기 후 메시지 개수 확인
-  await page.waitForTimeout(2_000);
-
-  // RPA 메시지 텍스트가 정확히 1개만 존재해야 함
-  const msgCount = await frame.getByText('출근 알림 테스트').count();
-  expect(msgCount).toBe(1);
+  // 5. 메시지가 정확히 1개만 존재해야 함 (중복 방지 검증)
+  // toHaveCount는 지정 timeout 안에 조건이 맞을 때까지 polling함
+  await expect(frame.getByText('출근 알림 테스트')).toHaveCount(1, { timeout: 5_000 });
 });
