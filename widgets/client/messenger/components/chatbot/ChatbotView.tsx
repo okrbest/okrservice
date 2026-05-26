@@ -8,7 +8,10 @@ import { useRpaMessages } from "../../context/RpaMessage";
 import Suggestions from "./Suggestions";
 import { useSuggestions, SuggestionItem } from "../../intent/suggestions";
 import { buildHrUrl } from "./getHrBaseUrl";
-import { useChatbotButtonMessages } from "../../context/ChatbotButtonMessages";
+import { useChatbotButtonMessages, ChatbotButtonCardMessage } from "../../context/ChatbotButtonMessages";
+import { resolveRpaButtons } from "./rpaButtons";
+import { ScheduledMessage } from "./chatbotMessages";
+import { RpaMessageItem } from "../../context/RpaMessage";
 
 
 const DIVIDER_STYLE: React.CSSProperties = {
@@ -142,8 +145,46 @@ function formatMessageTime(value?: string): string {
   return `${hh}:${mm}`;
 }
 
+function getMessageTimestamp(value?: string): number {
+  if (!value) {
+    return 0;
+  }
+
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
 function getRpaDisplayText(msg: { message?: string }): string {
   return msg.message || "알림이 도착했습니다.";
+}
+
+type TimelineItem =
+  | { kind: "scheduled"; sortKey: number; data: ScheduledMessage }
+  | { kind: "rpa"; sortKey: number; data: RpaMessageItem }
+  | { kind: "suggestion"; sortKey: number; data: ChatbotButtonCardMessage };
+
+function buildTimelineItems(
+  scheduledMessages: ScheduledMessage[],
+  rpaMessages: RpaMessageItem[],
+  buttonCardMessages: ChatbotButtonCardMessage[],
+): TimelineItem[] {
+  return [
+    ...scheduledMessages.map((msg) => ({
+      kind: "scheduled" as const,
+      sortKey: getMessageTimestamp(msg.shownAt),
+      data: msg,
+    })),
+    ...rpaMessages.map((msg) => ({
+      kind: "rpa" as const,
+      sortKey: getMessageTimestamp(msg.receivedAt),
+      data: msg,
+    })),
+    ...buttonCardMessages.map((msg) => ({
+      kind: "suggestion" as const,
+      sortKey: getMessageTimestamp(msg.createdAt),
+      data: msg,
+    })),
+  ].sort((a, b) => a.sortKey - b.sortKey);
 }
 
 const ChatbotView: React.FC = () => {
@@ -162,10 +203,15 @@ const ChatbotView: React.FC = () => {
 
   const suggestions = useSuggestions(inputValue);
 
+  const timelineItems = React.useMemo(
+    () => buildTimelineItems(scheduledMessages, rpaMessages, buttonCardMessages),
+    [scheduledMessages, rpaMessages, buttonCardMessages]
+  );
+
   // 새 메시지가 쌓이면 자동으로 맨 아래로 스크롤
   React.useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [scheduledMessages.length, rpaMessages.length, buttonCardMessages.length]);
+  }, [timelineItems.length]);
 
   const handleMenuClick = (title: string, pathOrUrl: string) => {
     setChatbotMenu({ title, url: buildHrUrl(pathOrUrl) });
@@ -221,73 +267,116 @@ const ChatbotView: React.FC = () => {
             </div>
           </div>
 
-          {/* 시간대별 메시지 (누적) */}
-          {scheduledMessages.map((msg) => (
-            <div
-              key={msg.id}
-              style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
-            >
-              <div style={BOT_AVATAR_STYLE}>🤖</div>
-              <div style={MESSAGE_COLUMN_STYLE}>
-                <div style={BUBBLE_STYLE}>{msg.text}</div>
-                {!!msg.shownAt && (
-                  <span
-                    style={{
-                      alignSelf: "flex-end",
-                      fontSize: "10px",
-                      color: "#94a3b8",
-                      marginRight: 2,
-                    }}
-                  >
-                    {formatMessageTime(msg.shownAt)}
-                  </span>
-                )}
-                {msg.buttons && msg.buttons.length > 0 && (
-                  <div style={ACTION_BUTTON_ROW_STYLE}>
+          {/* 시간순 통합 메시지 (예약 / RPA / 추천단어) */}
+          {timelineItems.map((item) => {
+            if (item.kind === "scheduled") {
+              const msg = item.data;
+              return (
+                <div
+                  key={`scheduled-${msg.id}`}
+                  style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+                >
+                  <div style={BOT_AVATAR_STYLE}>🤖</div>
+                  <div style={MESSAGE_COLUMN_STYLE}>
+                    <div style={BUBBLE_STYLE}>{msg.text}</div>
+                    {!!msg.shownAt && (
+                      <span
+                        style={{
+                          alignSelf: "flex-end",
+                          fontSize: "10px",
+                          color: "#94a3b8",
+                          marginRight: 2,
+                        }}
+                      >
+                        {formatMessageTime(msg.shownAt)}
+                      </span>
+                    )}
+                    {msg.buttons && msg.buttons.length > 0 && (
+                      <div style={ACTION_BUTTON_ROW_STYLE}>
+                        {msg.buttons.map((btn) => {
+                          const btnKey = `${msg.id}-${btn.label}`;
+                          const isHovered = hoveredBtn === btnKey;
+                          return (
+                            <button
+                              key={btnKey}
+                              type="button"
+                              tabIndex={-1}
+                              style={createActionButtonStyle(primaryColor, isHovered)}
+                              onMouseEnter={() => setHoveredBtn(btnKey)}
+                              onMouseLeave={() => setHoveredBtn(null)}
+                              onMouseDown={(e) => e.preventDefault()}
+                              onFocus={(e) => e.currentTarget.blur()}
+                              onClick={() => handleMenuClick(btn.label, btn.url)}
+                            >
+                              {btn.label} →
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            }
+
+            if (item.kind === "rpa") {
+              const msg = item.data;
+              const actionButtons = resolveRpaButtons(msg.rpaCode, msg.buttons);
+              return (
+                <div
+                  key={`rpa-${msg._id}`}
+                  style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+                >
+                  <div style={BOT_AVATAR_STYLE}>🤖</div>
+                  <div style={MESSAGE_COLUMN_STYLE}>
+                    <div style={BUBBLE_STYLE}>{getRpaDisplayText(msg)}</div>
+                    {!!msg.receivedAt && (
+                      <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
+                        {formatMessageTime(msg.receivedAt)}
+                      </span>
+                    )}
+                    {actionButtons.length > 0 && (
+                      <div style={ACTION_BUTTON_ROW_STYLE}>
+                        {actionButtons.map((btn) => {
+                          const btnKey = `${msg._id}-${btn.label}`;
+                          const isHovered = hoveredBtn === btnKey;
+                          return (
+                            <button
+                              key={btnKey}
+                              type="button"
+                              tabIndex={-1}
+                              style={createActionButtonStyle(primaryColor, isHovered)}
+                              onMouseEnter={() => setHoveredBtn(btnKey)}
+                              onMouseLeave={() => setHoveredBtn(null)}
+                              onMouseDown={(e) => e.preventDefault()}
+                              onFocus={(e) => e.currentTarget.blur()}
+                              onClick={() => handleMenuClick(btn.label, btn.path)}
+                            >
+                              {btn.label} →
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            }
+
+            const msg = item.data;
+            return (
+              <div
+                key={`suggestion-${msg.id}`}
+                style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+              >
+                <div style={BOT_AVATAR_STYLE}>🤖</div>
+                <div style={MESSAGE_COLUMN_STYLE}>
+                  <div style={BUBBLE_STYLE}>
+                    <strong>{msg.label}</strong> 관련 메뉴입니다.
+                  </div>
+                  <div style={ACTION_BUTTON_GROUP_STYLE}>
                     {msg.buttons.map((btn) => {
                       const btnKey = `${msg.id}-${btn.label}`;
-                      const isHovered = hoveredBtn === btnKey;
-                      return (
-                        <button
-                          key={btnKey}
-                          type="button"
-                          tabIndex={-1}
-                          style={createActionButtonStyle(primaryColor, isHovered)}
-                          onMouseEnter={() => setHoveredBtn(btnKey)}
-                          onMouseLeave={() => setHoveredBtn(null)}
-                          onMouseDown={(e) => e.preventDefault()}
-                          onFocus={(e) => e.currentTarget.blur()}
-                          onClick={() => handleMenuClick(btn.label, btn.url)}
-                        >
-                          {btn.label} →
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {/* RPA 실시간 메시지 (KiwiBox 배치 → 서버 push) */}
-          {rpaMessages.map((msg) => (
-            <div
-              key={msg._id}
-              style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
-            >
-              <div style={BOT_AVATAR_STYLE}>🤖</div>
-              <div style={MESSAGE_COLUMN_STYLE}>
-                <div style={BUBBLE_STYLE}>{getRpaDisplayText(msg)}</div>
-                {!!msg.receivedAt && (
-                  <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
-                    {formatMessageTime(msg.receivedAt)}
-                  </span>
-                )}
-                {/* rpaCode 에 따라 관련 5240 화면 바로가기 버튼 */}
-                {msg.buttons && msg.buttons.length > 0 && (
-                  <div style={ACTION_BUTTON_ROW_STYLE}>
-                    {msg.buttons.map((btn) => {
-                      const btnKey = `${msg._id}-${btn.label}`;
                       const isHovered = hoveredBtn === btnKey;
                       return (
                         <button
@@ -306,49 +395,13 @@ const ChatbotView: React.FC = () => {
                       );
                     })}
                   </div>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {/* 추천단어 선택 후 버튼 카드 메시지 */}
-          {buttonCardMessages.map((msg) => (
-            <div
-              key={msg.id}
-              style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
-            >
-              <div style={BOT_AVATAR_STYLE}>🤖</div>
-              <div style={MESSAGE_COLUMN_STYLE}>
-                <div style={BUBBLE_STYLE}>
-                  <strong>{msg.label}</strong> 관련 메뉴입니다.
+                  <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
+                    {formatMessageTime(msg.createdAt)}
+                  </span>
                 </div>
-                <div style={ACTION_BUTTON_GROUP_STYLE}>
-                  {msg.buttons.map((btn) => {
-                    const btnKey = `${msg.id}-${btn.label}`;
-                    const isHovered = hoveredBtn === btnKey;
-                    return (
-                      <button
-                        key={btnKey}
-                        type="button"
-                        tabIndex={-1}
-                        style={createActionButtonStyle(primaryColor, isHovered)}
-                        onMouseEnter={() => setHoveredBtn(btnKey)}
-                        onMouseLeave={() => setHoveredBtn(null)}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onFocus={(e) => e.currentTarget.blur()}
-                        onClick={() => handleMenuClick(btn.label, btn.path)}
-                      >
-                        {btn.label} →
-                      </button>
-                    );
-                  })}
-                </div>
-                <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
-                  {formatMessageTime(msg.createdAt)}
-                </span>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* 자동 스크롤 앵커 */}
           <div ref={chatBottomRef} />

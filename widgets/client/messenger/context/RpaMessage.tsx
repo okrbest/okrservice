@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import gql from 'graphql-tag';
 import client from '../../apollo-client';
+import { getLocalStorageItem } from '../../common';
 import { connection } from '../connection';
 import { rpaMessageReceived } from '../graphql/subscriptions';
-import { rpaMessagesQuery } from '../graphql/queries';
+import { customerDetail, rpaMessagesQuery } from '../graphql/queries';
+import { resolveRpaButtons } from '../components/chatbot/rpaButtons';
 
 export interface RpaMessageItem {
   _id: string;
@@ -22,37 +24,105 @@ interface RpaMessageContextProps {
 
 const RpaMessageContext = createContext<RpaMessageContextProps>({ rpaMessages: [] });
 
+function resolveLoginIdFromStorage(): string | null {
+  const fromSetting = String(connection.setting?.email || '').trim();
+  if (fromSetting) {
+    return fromSetting;
+  }
+
+  const fromData = String(connection.data?.email || '').trim();
+  if (fromData) {
+    return fromData;
+  }
+
+  const notifiedType = getLocalStorageItem('getNotifiedType');
+  const notifiedValue = getLocalStorageItem('getNotifiedValue');
+  if (notifiedType === 'email' && notifiedValue) {
+    return String(notifiedValue).trim();
+  }
+
+  return null;
+}
+
+async function fetchCustomerLoginId(): Promise<string | null> {
+  const customerId =
+    connection.data?.customerId || getLocalStorageItem('customerId');
+  if (!customerId) {
+    return null;
+  }
+
+  try {
+    const result = await client.query({
+      query: gql(customerDetail),
+      variables: { customerId },
+      fetchPolicy: 'network-only',
+    });
+    const customer = result.data?.widgetsTicketCustomerDetail;
+    const email = customer?.email || customer?.emails?.[0];
+    return email ? String(email).trim() : null;
+  } catch (err) {
+    console.error('[RPA] Customer email lookup error:', err);
+    return null;
+  }
+}
+
+async function resolveLoginId(): Promise<string | null> {
+  const fromStorage = resolveLoginIdFromStorage();
+  if (fromStorage) {
+    return fromStorage;
+  }
+
+  return fetchCustomerLoginId();
+}
+
+function normalizeRpaMessage(msg: RpaMessageItem): RpaMessageItem {
+  return {
+    ...msg,
+    buttons: resolveRpaButtons(msg.rpaCode, msg.buttons),
+  };
+}
+
 export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [rpaMessages, setRpaMessages] = useState<RpaMessageItem[]>([]);
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
-  const loadedRef = useRef(false);
+  const loadedLoginIdRef = useRef<string | null>(null);
+  const activeLoginIdRef = useRef<string | null>(null);
+  const resolvingRef = useRef(false);
 
   useEffect(() => {
-    const resolveLoginId = () => {
-      const loginId = (connection.data?.email || connection.setting?.email || '').trim();
-      return loginId || null;
+    const teardownSubscription = () => {
+      subscriptionRef.current?.unsubscribe();
+      subscriptionRef.current = null;
     };
 
     const loadHistory = async (loginId: string) => {
-      if (loadedRef.current) return;
-      loadedRef.current = true;
+      if (loadedLoginIdRef.current === loginId) {
+        return;
+      }
+
       try {
         const result = await client.query({
           query: gql(rpaMessagesQuery),
           variables: { loginId, limit: 20 },
           fetchPolicy: 'network-only',
         });
-        const msgs: RpaMessageItem[] = result.data?.rpaMessages || [];
-        if (msgs.length > 0) {
-          setRpaMessages(msgs);
-        }
+        const msgs: RpaMessageItem[] = (result.data?.rpaMessages || []).map(
+          normalizeRpaMessage
+        );
+        loadedLoginIdRef.current = loginId;
+        setRpaMessages(msgs);
       } catch (err) {
         console.error('[RPA] History load error:', err);
       }
     };
 
     const trySubscribe = (loginId: string) => {
-      if (subscriptionRef.current) return;
+      if (subscriptionRef.current && activeLoginIdRef.current === loginId) {
+        return;
+      }
+
+      teardownSubscription();
+      activeLoginIdRef.current = loginId;
 
       subscriptionRef.current = client
         .subscribe({
@@ -62,42 +132,77 @@ export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         .subscribe({
           next({ data }: { data: { rpaMessageReceived: RpaMessageItem } }) {
             const msg = data?.rpaMessageReceived;
-            if (msg) {
-              setRpaMessages((prev) => {
-                if (prev.some((m) => m._id === msg._id)) return prev;
-                return [...prev, msg];
-              });
+            if (!msg) {
+              return;
             }
+
+            const normalized = normalizeRpaMessage(msg);
+            setRpaMessages((prev) => {
+              if (prev.some((m) => m._id === normalized._id)) {
+                return prev;
+              }
+              return [...prev, normalized];
+            });
           },
           error(err: Error) {
             console.error('[RPA] Subscription error:', err);
+            teardownSubscription();
           },
         });
     };
 
-    const init = (loginId: string) => {
-      loadHistory(loginId);
+    const init = async (loginId: string) => {
+      if (activeLoginIdRef.current && activeLoginIdRef.current !== loginId) {
+        teardownSubscription();
+        loadedLoginIdRef.current = null;
+        setRpaMessages([]);
+      }
+
+      await loadHistory(loginId);
       trySubscribe(loginId);
     };
 
-    const loginId = resolveLoginId();
-    if (loginId) {
-      init(loginId);
-    }
-
-    // connection.data 가 늦게 세팅될 경우 대비해 짧은 폴링
-    const interval = setInterval(() => {
-      const id = resolveLoginId();
-      if (id && !subscriptionRef.current) {
-        init(id);
-        clearInterval(interval);
+    const bootstrap = async () => {
+      if (resolvingRef.current) {
+        return false;
       }
+
+      resolvingRef.current = true;
+      try {
+        const loginId = await resolveLoginId();
+        if (loginId) {
+          await init(loginId);
+          return true;
+        }
+        return false;
+      } finally {
+        resolvingRef.current = false;
+      }
+    };
+
+    bootstrap();
+
+    const interval = setInterval(async () => {
+      const loginId = await resolveLoginId();
+      if (!loginId) {
+        return;
+      }
+
+      if (
+        loadedLoginIdRef.current === loginId &&
+        subscriptionRef.current
+      ) {
+        clearInterval(interval);
+        return;
+      }
+
+      await init(loginId);
     }, 2000);
 
     return () => {
       clearInterval(interval);
-      subscriptionRef.current?.unsubscribe();
-      subscriptionRef.current = null;
+      teardownSubscription();
+      activeLoginIdRef.current = null;
     };
   }, []);
 
