@@ -5,8 +5,8 @@ import { useRouter } from "../../context/Router";
 import { getColor } from "../../utils/util";
 import { useChatbotMessages } from "./useChatbotMessages";
 import { useRpaMessages } from "../../context/RpaMessage";
-import Suggestions from './Suggestions';
-import { useSuggestions, SuggestionItem } from '../../intent/suggestions';
+import Suggestions from "./Suggestions";
+import { useSuggestions, SuggestionItem } from "../../intent/suggestions";
 
 const HR_BASE = process.env.HR_BASE_URL ?? '';
 
@@ -119,7 +119,9 @@ const ChatbotView: React.FC = () => {
   const { rpaMessages } = useRpaMessages();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState('');
+  const [inputFocused, setInputFocused] = React.useState(false);
   const [buttonCardMessages, setButtonCardMessages] = React.useState<ButtonCardMessage[]>([]);
+  const suggestionIdRef = React.useRef(0);
 
   const suggestions = useSuggestions(inputValue);
 
@@ -137,7 +139,7 @@ const ChatbotView: React.FC = () => {
     setButtonCardMessages((prev) => [
       ...prev,
       {
-        id: `suggestion-${Date.now()}`,
+        id: `suggestion-${(suggestionIdRef.current += 1)}`,
         label: item.label,
         buttons: item.buttons.map((btn) => ({
           label: btn.label,
@@ -413,7 +415,7 @@ const ChatbotView: React.FC = () => {
             placeholder="HR 메뉴를 검색하세요 (예: 출근, 휴가)"
             style={{
               width: "100%",
-              border: "1.5px solid #e0e0f4",
+              border: `1.5px solid ${inputFocused ? primaryColor : "#e0e0f4"}`,
               borderRadius: "8px",
               padding: "8px 12px",
               fontSize: "13px",
@@ -422,12 +424,8 @@ const ChatbotView: React.FC = () => {
               boxSizing: "border-box",
               background: "#f9f9ff",
             }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = "#6366f1";
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = "#e0e0f4";
-            }}
+            onFocus={() => setInputFocused(true)}
+            onBlur={() => setInputFocused(false)}
           />
         </div>
 
