@@ -741,6 +741,11 @@ app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
       buttons,
     });
 
+    // 중복 메시지 — 이미 처리됨, 5240에 성공 응답
+    if (!saved) {
+      return res.status(200).json({ ok: true });
+    }
+
     // WebSocket push — 해당 loginId 위젯으로 실시간 전달
     await graphqlPubsub.publish('rpaMessageReceived', {
       rpaMessageReceived: {
