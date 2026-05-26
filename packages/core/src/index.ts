@@ -721,7 +721,7 @@ app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
 
     // loginId 필수 검증
     if (!loginId) {
-      return res.status(400).json({ ok: false, error: 'loginId is required' });
+      return res.status(400).json({ code: 'INVALID_REQUEST', message: 'loginId is required' });
     }
 
     // 알 수 없는 rpaCode 는 기록은 하되 경고만 남김
@@ -763,7 +763,7 @@ app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
     return res.status(200).json({ ok: true });
   } catch (e) {
     console.error('[RPA] Error processing RPA message:', e);
-    return res.status(200).json({ ok: false });
+    return res.status(200).json({ code: 'INTERNAL_ERROR', message: 'Internal server error' });
   }
 });
 
