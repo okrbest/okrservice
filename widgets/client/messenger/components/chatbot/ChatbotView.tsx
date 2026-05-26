@@ -10,23 +10,6 @@ import { useSuggestions, SuggestionItem } from "../../intent/suggestions";
 import { buildHrUrl } from "./getHrBaseUrl";
 import { useChatbotButtonMessages } from "../../context/ChatbotButtonMessages";
 
-// rpaCode 별로 노출할 5240 바로가기 버튼 매핑
-const RPA_BUTTON_MAP: Record<string, { label: string; path: string }[]> = {
-  HR_RPA_090: [{ label: "출퇴근 체크", path: "/MobileMain.do" }],
-  HR_RPA_100: [{ label: "출퇴근 체크", path: "/MobileMain.do" }],
-  HR_RPA_110: [{ label: "출퇴근 체크", path: "/MobileMain.do" }],
-  HR_RPA_120: [
-    { label: "출퇴근 체크",   path: "/MobileMain.do" },
-    { label: "연장근무신청",  path: "/MobileOvertimeAppl.do" },
-  ],
-  HR_RPA_130: [
-    { label: "출퇴근 체크",   path: "/MobileMain.do" },
-    { label: "연장근무신청",  path: "/MobileOvertimeAppl.do" },
-  ],
-  HR_RPA_140: [{ label: "출퇴근 체크", path: "/MobileMain.do" }],
-  HR_RPA_800: [{ label: "출퇴근 체크", path: "/MobileMain.do" }],
-};
-
 
 const DIVIDER_STYLE: React.CSSProperties = {
   height: "1px",
@@ -301,9 +284,9 @@ const ChatbotView: React.FC = () => {
                   </span>
                 )}
                 {/* rpaCode 에 따라 관련 5240 화면 바로가기 버튼 */}
-                {RPA_BUTTON_MAP[msg.rpaCode] && (
+                {msg.buttons && msg.buttons.length > 0 && (
                   <div style={ACTION_BUTTON_ROW_STYLE}>
-                    {RPA_BUTTON_MAP[msg.rpaCode].map((btn) => {
+                    {msg.buttons.map((btn) => {
                       const btnKey = `${msg._id}-${btn.label}`;
                       const isHovered = hoveredBtn === btnKey;
                       return (
