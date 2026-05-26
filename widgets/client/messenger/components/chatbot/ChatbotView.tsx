@@ -5,6 +5,8 @@ import { useRouter } from "../../context/Router";
 import { getColor } from "../../utils/util";
 import { useChatbotMessages } from "./useChatbotMessages";
 import { useRpaMessages } from "../../context/RpaMessage";
+import Suggestions from './Suggestions';
+import { useSuggestions, SuggestionItem } from '../../intent/suggestions';
 
 const HR_BASE = process.env.HR_BASE_URL ?? '';
 
@@ -99,6 +101,13 @@ function getRpaDisplayText(msg: { message?: string }): string {
   return msg.message || "알림이 도착했습니다.";
 }
 
+interface ButtonCardMessage {
+  id: string;
+  label: string;
+  buttons: { label: string; url: string }[];
+  createdAt: string;
+}
+
 const ChatbotView: React.FC = () => {
   const { setRoute, setChatbotMenu } = useRouter();
   const primaryColor = getColor() || "#6366f1";
@@ -109,15 +118,35 @@ const ChatbotView: React.FC = () => {
   const scheduledMessages = useChatbotMessages();
   const { rpaMessages } = useRpaMessages();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState('');
+  const [buttonCardMessages, setButtonCardMessages] = React.useState<ButtonCardMessage[]>([]);
+
+  const suggestions = useSuggestions(inputValue);
 
   // 새 메시지가 쌓이면 자동으로 맨 아래로 스크롤
   React.useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [scheduledMessages.length, rpaMessages.length]);
+  }, [scheduledMessages.length, rpaMessages.length, buttonCardMessages.length]);
 
   const handleMenuClick = (title: string, url: string) => {
     setChatbotMenu({ title, url });
     setRoute("chatbot-iframe");
+  };
+
+  const handleSuggestionSelect = (item: SuggestionItem) => {
+    setButtonCardMessages((prev) => [
+      ...prev,
+      {
+        id: `suggestion-${Date.now()}`,
+        label: item.label,
+        buttons: item.buttons.map((btn) => ({
+          label: btn.label,
+          url: `${HR_BASE}${btn.url}`,
+        })),
+        createdAt: new Date().toISOString(),
+      },
+    ]);
+    setInputValue('');
   };
 
   return (
@@ -297,8 +326,109 @@ const ChatbotView: React.FC = () => {
             </div>
           ))}
 
+          {/* 추천단어 선택 후 버튼 카드 메시지 */}
+          {buttonCardMessages.map((msg) => (
+            <div
+              key={msg.id}
+              style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+            >
+              <div style={BOT_AVATAR_STYLE}>🤖</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxWidth: "80%" }}>
+                <div style={BUBBLE_STYLE}>
+                  <strong>{msg.label}</strong> 관련 메뉴입니다.
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "10px" }}>
+                  {msg.buttons.map((btn) => {
+                    const btnKey = `${msg.id}-${btn.label}`;
+                    const isHovered = hoveredBtn === btnKey;
+                    return (
+                      <button
+                        key={btnKey}
+                        type="button"
+                        tabIndex={-1}
+                        style={{
+                          width: "86%",
+                          maxWidth: "260px",
+                          padding: "11px 16px",
+                          background: isHovered
+                            ? `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`
+                            : primaryColor,
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "10px",
+                          fontSize: "13px",
+                          fontWeight: "700",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                          outline: "none",
+                          WebkitAppearance: "none",
+                          appearance: "none",
+                          boxShadow: isHovered
+                            ? "0 6px 16px rgba(99,102,241,0.35)"
+                            : "0 2px 8px rgba(99,102,241,0.25)",
+                          transform: isHovered ? "translateY(-1px)" : "none",
+                          letterSpacing: "0.2px",
+                        }}
+                        onMouseEnter={() => setHoveredBtn(btnKey)}
+                        onMouseLeave={() => setHoveredBtn(null)}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onFocus={(e) => e.currentTarget.blur()}
+                        onClick={() => handleMenuClick(btn.label, btn.url)}
+                      >
+                        {btn.label} →
+                      </button>
+                    );
+                  })}
+                </div>
+                <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
+                  {formatMessageTime(msg.createdAt)}
+                </span>
+              </div>
+            </div>
+          ))}
+
           {/* 자동 스크롤 앵커 */}
           <div ref={chatBottomRef} />
+        </div>
+
+        {/* ── 텍스트 입력 + 추천단어 드롭다운 ── */}
+        <div
+          style={{
+            flexShrink: 0,
+            borderTop: "1px solid #ebebf5",
+            background: "#fff",
+            padding: "8px 12px",
+            position: "relative",
+          }}
+        >
+          <Suggestions
+            items={suggestions}
+            onSelect={handleSuggestionSelect}
+            onClose={() => setInputValue('')}
+          />
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="HR 메뉴를 검색하세요 (예: 출근, 휴가)"
+            style={{
+              width: "100%",
+              border: "1.5px solid #e0e0f4",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "13px",
+              color: "#374151",
+              outline: "none",
+              boxSizing: "border-box",
+              background: "#f9f9ff",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = "#6366f1";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = "#e0e0f4";
+            }}
+          />
         </div>
 
         {/* ── 메뉴 그리드 (접기/펼치기) ── */}
