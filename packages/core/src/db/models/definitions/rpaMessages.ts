@@ -9,7 +9,7 @@ export interface IRpaButton {
 export interface IRpaMessage {
   loginId: string;
   rpaCode: string;
-  messageCode: string;
+  messageCode?: string;
   message: string;
   overtime: string;
   receivedAt: Date;
@@ -39,6 +39,8 @@ export const rpaMessageSchema = new Schema({
   buttons: field({ type: [rpaButtonSchema], label: 'Buttons', default: [] }),
 });
 
+// messageCode가 undefined/null인 문서는 인덱스에서 제외 (sparse)
+// — 빈 messageCode(근무 알림 등)는 중복 체크 없이 매번 저장 허용
 rpaMessageSchema.index(
   { loginId: 1, messageCode: 1 },
   { unique: true, sparse: true },

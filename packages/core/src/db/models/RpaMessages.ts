@@ -13,11 +13,11 @@ export const loadRpaMessageClass = (models: IModels) => {
       try {
         return await models.RpaMessages.create({
           ...doc,
-          messageCode: doc.messageCode || undefined,
+          messageCode: doc.messageCode !== '' ? doc.messageCode : undefined,
           receivedAt: new Date(),
         });
       } catch (e: any) {
-        if (e.code === 11000) {
+        if (e?.code === 11000) {
           return null;
         }
         throw e;
