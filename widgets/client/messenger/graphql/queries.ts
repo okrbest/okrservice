@@ -398,3 +398,16 @@ export const rpaMessagesQuery = `
     }
   }
 `;
+
+export const chatbotSuggestionsQuery = `
+  query ChatbotSuggestions($keyword: String!, $chatbotId: String) {
+    chatbotSuggestions(keyword: $keyword, chatbotId: $chatbotId) {
+      keyword
+      label
+      buttons {
+        label
+        url
+      }
+    }
+  }
+`;
