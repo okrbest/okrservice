@@ -25,12 +25,14 @@ describe('Suggestions', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('항목 클릭 시 onSelect가 해당 item과 함께 호출된다', () => {
+  it('항목 클릭 시 onSelect가 해당 item과 함께 호출되고 onClose도 호출된다', () => {
     const onSelect = jest.fn();
+    const onClose = jest.fn();
     const { getByText } = render(
-      <Suggestions items={items} onSelect={onSelect} onClose={jest.fn()} />,
+      <Suggestions items={items} onSelect={onSelect} onClose={onClose} />,
     );
     fireEvent.click(getByText('출근'));
     expect(onSelect).toHaveBeenCalledWith(items[0]);
+    expect(onClose).toHaveBeenCalled();
   });
 });
