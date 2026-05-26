@@ -37,6 +37,7 @@ import exchangeRates from './exchangeRates';
 import bundle from './bundle';
 import productRule from './productRules';
 import rpa from './rpa';
+import suggestions from './suggestions';
 
 export default {
   ...users,
@@ -74,4 +75,5 @@ export default {
   ...bundle,
   ...productRule,
   ...rpa,
+  ...suggestions,
 };
