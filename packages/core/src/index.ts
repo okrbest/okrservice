@@ -174,6 +174,7 @@ import templates from "./templates";
 import imports from "./imports";
 import exporter from "./exporter";
 import { moduleObjects } from "./data/permissions/actions/permission";
+import { getIntentButtons } from "./data/resolvers/queries/intent";
 import { getEnabledServices } from "@erxes/api-utils/src/serviceDiscovery";
 import { applyInspectorEndpoints } from "@erxes/api-utils/src/inspect";
 import { handleCoreLogin, handleMagiclink, ssocallback } from "./saas";
@@ -728,6 +729,7 @@ app.post('/api/rpa/messages', async (req, res) => {
     }
 
     // DB 저장
+    const buttons = getIntentButtons(rpaCode);
     const saved = await models.RpaMessages.createRpaMessage({
       loginId,
       rpaCode,
@@ -735,7 +737,7 @@ app.post('/api/rpa/messages', async (req, res) => {
       message: message.substring(0, 4000),
       overtime,
       receivedAt: new Date(),
-      buttons: [],
+      buttons,
     });
 
     // WebSocket push — 해당 loginId 위젯으로 실시간 전달
