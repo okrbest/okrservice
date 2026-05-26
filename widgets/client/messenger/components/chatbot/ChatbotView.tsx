@@ -6,21 +6,23 @@ import { getColor } from "../../utils/util";
 import { useChatbotMessages } from "./useChatbotMessages";
 import { useRpaMessages } from "../../context/RpaMessage";
 
+const HR_BASE = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_HR_BASE_URL) ?? '';
+
 // rpaCode 별로 노출할 5240 바로가기 버튼 매핑
 const RPA_BUTTON_MAP: Record<string, { label: string; url: string }[]> = {
-  HR_RPA_090: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
-  HR_RPA_100: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
-  HR_RPA_110: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
+  HR_RPA_090: [{ label: "출퇴근 체크", url: `${HR_BASE}/MobileMain.do` }],
+  HR_RPA_100: [{ label: "출퇴근 체크", url: `${HR_BASE}/MobileMain.do` }],
+  HR_RPA_110: [{ label: "출퇴근 체크", url: `${HR_BASE}/MobileMain.do` }],
   HR_RPA_120: [
-    { label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" },
-    { label: "연장근무신청", url: "https://api.5240.cloud/MobileOvertimeAppl.do" },
+    { label: "출퇴근 체크",   url: `${HR_BASE}/MobileMain.do` },
+    { label: "연장근무신청",  url: `${HR_BASE}/MobileOvertimeAppl.do` },
   ],
   HR_RPA_130: [
-    { label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" },
-    { label: "연장근무신청", url: "https://api.5240.cloud/MobileOvertimeAppl.do" },
+    { label: "출퇴근 체크",   url: `${HR_BASE}/MobileMain.do` },
+    { label: "연장근무신청",  url: `${HR_BASE}/MobileOvertimeAppl.do` },
   ],
-  HR_RPA_140: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
-  HR_RPA_800: [{ label: "출퇴근 체크", url: "https://api.5240.cloud/MobileMain.do" }],
+  HR_RPA_140: [{ label: "출퇴근 체크", url: `${HR_BASE}/MobileMain.do` }],
+  HR_RPA_800: [{ label: "출퇴근 체크", url: `${HR_BASE}/MobileMain.do` }],
 };
 
 
