@@ -68,6 +68,7 @@ const getEnv = (req: express.Request) => {
     API_SUBSCRIPTIONS_URL = '',
     CALLS_APP_ID = '',
     CALLS_APP_SECRET = '',
+    HR_BASE_URL = '',
   } = process.env;
 
   const replaceSubdomain = (url: string, subdomain: string) => {
@@ -91,6 +92,7 @@ const getEnv = (req: express.Request) => {
       API_SUBSCRIPTIONS_URL: replaceSubdomain(API_SUBSCRIPTIONS_URL, subdomain),
       CALLS_APP_ID: replaceSubdomain(CALLS_APP_ID, subdomain),
       CALLS_APP_SECRET: replaceSubdomain(CALLS_APP_SECRET, subdomain),
+      HR_BASE_URL,
     });
   }
 
@@ -101,6 +103,7 @@ const getEnv = (req: express.Request) => {
     API_SUBSCRIPTIONS_URL,
     CALLS_APP_ID,
     CALLS_APP_SECRET,
+    HR_BASE_URL,
   });
 };
 

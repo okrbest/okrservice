@@ -7,24 +7,24 @@ import { useChatbotMessages } from "./useChatbotMessages";
 import { useRpaMessages } from "../../context/RpaMessage";
 import Suggestions from "./Suggestions";
 import { useSuggestions, SuggestionItem } from "../../intent/suggestions";
-
-const HR_BASE = process.env.HR_BASE_URL ?? '';
+import { buildHrUrl } from "./getHrBaseUrl";
+import { useChatbotButtonMessages } from "../../context/ChatbotButtonMessages";
 
 // rpaCode 별로 노출할 5240 바로가기 버튼 매핑
-const RPA_BUTTON_MAP: Record<string, { label: string; url: string }[]> = {
-  HR_RPA_090: [{ label: "출퇴근 체크", url: `${HR_BASE}/MobileMain.do` }],
-  HR_RPA_100: [{ label: "출퇴근 체크", url: `${HR_BASE}/MobileMain.do` }],
-  HR_RPA_110: [{ label: "출퇴근 체크", url: `${HR_BASE}/MobileMain.do` }],
+const RPA_BUTTON_MAP: Record<string, { label: string; path: string }[]> = {
+  HR_RPA_090: [{ label: "출퇴근 체크", path: "/MobileMain.do" }],
+  HR_RPA_100: [{ label: "출퇴근 체크", path: "/MobileMain.do" }],
+  HR_RPA_110: [{ label: "출퇴근 체크", path: "/MobileMain.do" }],
   HR_RPA_120: [
-    { label: "출퇴근 체크",   url: `${HR_BASE}/MobileMain.do` },
-    { label: "연장근무신청",  url: `${HR_BASE}/MobileOvertimeAppl.do` },
+    { label: "출퇴근 체크",   path: "/MobileMain.do" },
+    { label: "연장근무신청",  path: "/MobileOvertimeAppl.do" },
   ],
   HR_RPA_130: [
-    { label: "출퇴근 체크",   url: `${HR_BASE}/MobileMain.do` },
-    { label: "연장근무신청",  url: `${HR_BASE}/MobileOvertimeAppl.do` },
+    { label: "출퇴근 체크",   path: "/MobileMain.do" },
+    { label: "연장근무신청",  path: "/MobileOvertimeAppl.do" },
   ],
-  HR_RPA_140: [{ label: "출퇴근 체크", url: `${HR_BASE}/MobileMain.do` }],
-  HR_RPA_800: [{ label: "출퇴근 체크", url: `${HR_BASE}/MobileMain.do` }],
+  HR_RPA_140: [{ label: "출퇴근 체크", path: "/MobileMain.do" }],
+  HR_RPA_800: [{ label: "출퇴근 체크", path: "/MobileMain.do" }],
 };
 
 
@@ -77,6 +77,15 @@ const BOT_AVATAR_STYLE: React.CSSProperties = {
   flexShrink: 0,
 };
 
+const MESSAGE_COLUMN_STYLE: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+  flex: 1,
+  minWidth: 0,
+  maxWidth: "calc(100% - 36px)",
+};
+
 const BUBBLE_STYLE: React.CSSProperties = {
   background: "#fff",
   borderRadius: "4px 14px 14px 14px",
@@ -85,8 +94,61 @@ const BUBBLE_STYLE: React.CSSProperties = {
   color: "#374151",
   lineHeight: 1.55,
   boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
-  maxWidth: "80%",
+  maxWidth: "100%",
+  width: "fit-content",
+  alignSelf: "flex-start",
 };
+
+const ACTION_BUTTON_GROUP_STYLE: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "4px",
+  marginBottom: "10px",
+  alignSelf: "flex-start",
+  alignItems: "flex-start",
+  width: "fit-content",
+  maxWidth: "100%",
+};
+
+const ACTION_BUTTON_ROW_STYLE: React.CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "6px",
+  marginBottom: "10px",
+  alignSelf: "flex-start",
+  width: "fit-content",
+  maxWidth: "100%",
+};
+
+function createActionButtonStyle(
+  primaryColor: string,
+  isHovered: boolean
+): React.CSSProperties {
+  return {
+    width: "fit-content",
+    maxWidth: "100%",
+    padding: "10px 18px",
+    background: isHovered
+      ? `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`
+      : primaryColor,
+    color: "#fff",
+    border: "none",
+    borderRadius: "10px",
+    fontSize: "13px",
+    fontWeight: "700",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    outline: "none",
+    WebkitAppearance: "none",
+    appearance: "none",
+    boxShadow: isHovered
+      ? "0 6px 16px rgba(99,102,241,0.35)"
+      : "0 2px 8px rgba(99,102,241,0.25)",
+    transform: isHovered ? "translateY(-1px)" : "none",
+    letterSpacing: "0.2px",
+    whiteSpace: "nowrap",
+  };
+}
 
 function formatMessageTime(value?: string): string {
   if (!value) return "";
@@ -101,13 +163,6 @@ function getRpaDisplayText(msg: { message?: string }): string {
   return msg.message || "알림이 도착했습니다.";
 }
 
-interface ButtonCardMessage {
-  id: string;
-  label: string;
-  buttons: { label: string; url: string }[];
-  createdAt: string;
-}
-
 const ChatbotView: React.FC = () => {
   const { setRoute, setChatbotMenu } = useRouter();
   const primaryColor = getColor() || "#6366f1";
@@ -117,11 +172,10 @@ const ChatbotView: React.FC = () => {
 
   const scheduledMessages = useChatbotMessages();
   const { rpaMessages } = useRpaMessages();
+  const { buttonCardMessages, addButtonCardMessage } = useChatbotButtonMessages();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState('');
   const [inputFocused, setInputFocused] = React.useState(false);
-  const [buttonCardMessages, setButtonCardMessages] = React.useState<ButtonCardMessage[]>([]);
-  const suggestionIdRef = React.useRef(0);
 
   const suggestions = useSuggestions(inputValue);
 
@@ -130,24 +184,19 @@ const ChatbotView: React.FC = () => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [scheduledMessages.length, rpaMessages.length, buttonCardMessages.length]);
 
-  const handleMenuClick = (title: string, url: string) => {
-    setChatbotMenu({ title, url });
+  const handleMenuClick = (title: string, pathOrUrl: string) => {
+    setChatbotMenu({ title, url: buildHrUrl(pathOrUrl) });
     setRoute("chatbot-iframe");
   };
 
   const handleSuggestionSelect = (item: SuggestionItem) => {
-    setButtonCardMessages((prev) => [
-      ...prev,
-      {
-        id: `suggestion-${(suggestionIdRef.current += 1)}`,
-        label: item.label,
-        buttons: item.buttons.map((btn) => ({
-          label: btn.label,
-          url: `${HR_BASE}${btn.url}`,
-        })),
-        createdAt: new Date().toISOString(),
-      },
-    ]);
+    addButtonCardMessage({
+      label: item.label,
+      buttons: item.buttons.map((btn) => ({
+        label: btn.label,
+        path: btn.url,
+      })),
+    });
     setInputValue('');
   };
 
@@ -179,11 +228,13 @@ const ChatbotView: React.FC = () => {
           {/* 봇 인사 말풍선 */}
           <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
             <div style={BOT_AVATAR_STYLE}>🤖</div>
+            <div style={MESSAGE_COLUMN_STYLE}>
             <div style={BUBBLE_STYLE}>
               안녕하세요! 👋
               <br />
               <strong style={{ color: primaryColor }}>HR 시스템</strong>의
               주요 기능을 바로 이용하세요.
+            </div>
             </div>
           </div>
 
@@ -194,7 +245,7 @@ const ChatbotView: React.FC = () => {
               style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
             >
               <div style={BOT_AVATAR_STYLE}>🤖</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxWidth: "80%" }}>
+              <div style={MESSAGE_COLUMN_STYLE}>
                 <div style={BUBBLE_STYLE}>{msg.text}</div>
                 {!!msg.shownAt && (
                   <span
@@ -209,14 +260,7 @@ const ChatbotView: React.FC = () => {
                   </span>
                 )}
                 {msg.buttons && msg.buttons.length > 0 && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "6px",
-                      marginBottom: "10px",
-                    }}
-                  >
+                  <div style={ACTION_BUTTON_ROW_STYLE}>
                     {msg.buttons.map((btn) => {
                       const btnKey = `${msg.id}-${btn.label}`;
                       const isHovered = hoveredBtn === btnKey;
@@ -225,29 +269,7 @@ const ChatbotView: React.FC = () => {
                           key={btnKey}
                           type="button"
                           tabIndex={-1}
-                          style={{
-                            width: "86%",
-                            maxWidth: "260px",
-                            padding: "11px 16px",
-                            background: isHovered
-                              ? `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`
-                              : primaryColor,
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: "10px",
-                            fontSize: "13px",
-                            fontWeight: "700",
-                            cursor: "pointer",
-                            transition: "all 0.15s ease",
-                            outline: "none",
-                            WebkitAppearance: "none",
-                            appearance: "none",
-                            boxShadow: isHovered
-                              ? `0 6px 16px rgba(99,102,241,0.35)`
-                              : `0 2px 8px rgba(99,102,241,0.25)`,
-                            transform: isHovered ? "translateY(-1px)" : "none",
-                            letterSpacing: "0.2px",
-                          }}
+                          style={createActionButtonStyle(primaryColor, isHovered)}
                           onMouseEnter={() => setHoveredBtn(btnKey)}
                           onMouseLeave={() => setHoveredBtn(null)}
                           onMouseDown={(e) => e.preventDefault()}
@@ -271,7 +293,7 @@ const ChatbotView: React.FC = () => {
               style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
             >
               <div style={BOT_AVATAR_STYLE}>🤖</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxWidth: "80%" }}>
+              <div style={MESSAGE_COLUMN_STYLE}>
                 <div style={BUBBLE_STYLE}>{getRpaDisplayText(msg)}</div>
                 {!!msg.receivedAt && (
                   <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
@@ -280,7 +302,7 @@ const ChatbotView: React.FC = () => {
                 )}
                 {/* rpaCode 에 따라 관련 5240 화면 바로가기 버튼 */}
                 {RPA_BUTTON_MAP[msg.rpaCode] && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
+                  <div style={ACTION_BUTTON_ROW_STYLE}>
                     {RPA_BUTTON_MAP[msg.rpaCode].map((btn) => {
                       const btnKey = `${msg._id}-${btn.label}`;
                       const isHovered = hoveredBtn === btnKey;
@@ -289,34 +311,12 @@ const ChatbotView: React.FC = () => {
                           key={btnKey}
                           type="button"
                           tabIndex={-1}
-                          style={{
-                            width: "86%",
-                            maxWidth: "260px",
-                            padding: "11px 16px",
-                            background: isHovered
-                              ? `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`
-                              : primaryColor,
-                            color: "#fff",
-                            border: "none",
-                            borderRadius: "10px",
-                            fontSize: "13px",
-                            fontWeight: "700",
-                            cursor: "pointer",
-                            transition: "all 0.15s ease",
-                            outline: "none",
-                            WebkitAppearance: "none",
-                            appearance: "none",
-                            boxShadow: isHovered
-                              ? "0 6px 16px rgba(99,102,241,0.35)"
-                              : "0 2px 8px rgba(99,102,241,0.25)",
-                            transform: isHovered ? "translateY(-1px)" : "none",
-                            letterSpacing: "0.2px",
-                          }}
+                          style={createActionButtonStyle(primaryColor, isHovered)}
                           onMouseEnter={() => setHoveredBtn(btnKey)}
                           onMouseLeave={() => setHoveredBtn(null)}
                           onMouseDown={(e) => e.preventDefault()}
                           onFocus={(e) => e.currentTarget.blur()}
-                          onClick={() => handleMenuClick(btn.label, btn.url)}
+                          onClick={() => handleMenuClick(btn.label, btn.path)}
                         >
                           {btn.label} →
                         </button>
@@ -335,11 +335,11 @@ const ChatbotView: React.FC = () => {
               style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
             >
               <div style={BOT_AVATAR_STYLE}>🤖</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxWidth: "80%" }}>
+              <div style={MESSAGE_COLUMN_STYLE}>
                 <div style={BUBBLE_STYLE}>
                   <strong>{msg.label}</strong> 관련 메뉴입니다.
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "10px" }}>
+                <div style={ACTION_BUTTON_GROUP_STYLE}>
                   {msg.buttons.map((btn) => {
                     const btnKey = `${msg.id}-${btn.label}`;
                     const isHovered = hoveredBtn === btnKey;
@@ -348,34 +348,12 @@ const ChatbotView: React.FC = () => {
                         key={btnKey}
                         type="button"
                         tabIndex={-1}
-                        style={{
-                          width: "86%",
-                          maxWidth: "260px",
-                          padding: "11px 16px",
-                          background: isHovered
-                            ? `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`
-                            : primaryColor,
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "10px",
-                          fontSize: "13px",
-                          fontWeight: "700",
-                          cursor: "pointer",
-                          transition: "all 0.15s ease",
-                          outline: "none",
-                          WebkitAppearance: "none",
-                          appearance: "none",
-                          boxShadow: isHovered
-                            ? "0 6px 16px rgba(99,102,241,0.35)"
-                            : "0 2px 8px rgba(99,102,241,0.25)",
-                          transform: isHovered ? "translateY(-1px)" : "none",
-                          letterSpacing: "0.2px",
-                        }}
+                        style={createActionButtonStyle(primaryColor, isHovered)}
                         onMouseEnter={() => setHoveredBtn(btnKey)}
                         onMouseLeave={() => setHoveredBtn(null)}
                         onMouseDown={(e) => e.preventDefault()}
                         onFocus={(e) => e.currentTarget.blur()}
-                        onClick={() => handleMenuClick(btn.label, btn.url)}
+                        onClick={() => handleMenuClick(btn.label, btn.path)}
                       >
                         {btn.label} →
                       </button>
@@ -528,7 +506,7 @@ const ChatbotView: React.FC = () => {
                         onFocus={(e) => e.currentTarget.blur()}
                         onMouseEnter={() => setHoveredId(menu.id)}
                         onMouseLeave={() => setHoveredId(null)}
-                        onClick={() => handleMenuClick(menu.label, menu.url)}
+                        onClick={() => handleMenuClick(menu.label, menu.path)}
                       >
                         {menu.label}
                       </button>
