@@ -28,6 +28,7 @@ import {
 } from "./data/utils";
 
 import { debugBase, debugError, debugInit } from "./debuggers";
+import { validateRpaClient } from "./middlewares/validateRpaClient";
 
 /** RFC 5987: Content-Disposition filename에 한글/특수문자 시 헤더 규격 위반 방지 */
 function safeContentDisposition(
@@ -702,7 +703,7 @@ const VALID_RPA_CODES = new Set([
   'HR_RPA_120', 'HR_RPA_130', 'HR_RPA_140', 'HR_RPA_800',
 ]);
 
-app.post('/api/rpa/messages', async (req, res) => {
+app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
   try {
     const subdomain = getSubdomain(req);
     const models = await generateModels(subdomain);
