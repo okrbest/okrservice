@@ -18,9 +18,11 @@ describe('getIntentButtons', () => {
     expect(buttons[1]).toEqual({ label: '연장근무신청', path: '/MobileOvertimeAppl.do' });
   });
 
-  it('HR_RPA_130 → 두 버튼 반환', () => {
+  it('HR_RPA_130 → 출퇴근 체크 + 연장근무신청 두 버튼 반환', () => {
     const buttons = getIntentButtons('HR_RPA_130');
     expect(buttons).toHaveLength(2);
+    expect(buttons[0]).toEqual({ label: '출퇴근 체크', path: '/MobileMain.do' });
+    expect(buttons[1]).toEqual({ label: '연장근무신청', path: '/MobileOvertimeAppl.do' });
   });
 
   it('HR_RPA_140 → 출퇴근 체크 버튼 반환', () => {

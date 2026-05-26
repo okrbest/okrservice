@@ -26,6 +26,5 @@ const INTENT_MAP: Record<string, IntentButton[]> = {
  * 알 수 없는 코드는 빈 배열 반환.
  */
 export function getIntentButtons(rpaCode: string): IntentButton[] {
-  const buttons = INTENT_MAP[rpaCode];
-  return buttons !== undefined ? buttons : [];
+  return [...(INTENT_MAP[rpaCode] || [])];
 }
