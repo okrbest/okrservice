@@ -1,6 +1,6 @@
 # RPA API 에러 코드 표준화 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** `POST /api/rpa/messages` 핸들러의 에러 응답 포맷을 `{ ok, error }` 에서 `{ code, message }` 로 변경하여 `validateRpaClient` 미들웨어와 일관성을 맞춘다.
 
@@ -46,7 +46,7 @@ app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
 
 ---
 
-- [ ] **Step 1: loginId 누락 에러 응답 변경**
+- [x] **Step 1: loginId 누락 에러 응답 변경**
 
 `packages/core/src/index.ts`에서 아래 줄을 찾아 변경:
 
@@ -60,7 +60,7 @@ return res.status(400).json({ ok: false, error: 'loginId is required' });
 return res.status(400).json({ code: 'INVALID_REQUEST', message: 'loginId is required' });
 ```
 
-- [ ] **Step 2: catch 블록 에러 응답 변경**
+- [x] **Step 2: catch 블록 에러 응답 변경**
 
 같은 파일에서 catch 블록 마지막 줄 변경:
 
@@ -76,7 +76,7 @@ return res.status(200).json({ code: 'INTERNAL_ERROR', message: 'Internal server 
 
 HTTP 상태 코드 `200` 은 그대로 유지 — 5240이 2xx 외 응답 시 재시도할 수 있으므로.
 
-- [ ] **Step 3: TypeScript 빌드 확인**
+- [x] **Step 3: TypeScript 빌드 확인**
 
 ```bash
 cd /Users/shin-yeji/okrservice/packages/core
@@ -85,7 +85,7 @@ npx tsc --noEmit 2>&1 | head -20
 
 Expected: 오류 없음
 
-- [ ] **Step 4: 커밋**
+- [x] **Step 4: 커밋**
 
 ```bash
 git add packages/core/src/index.ts

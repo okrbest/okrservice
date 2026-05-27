@@ -1,6 +1,6 @@
 # RPA 메시지 멱등성 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** `POST /api/rpa/messages`에서 동일한 `(loginId, messageCode)` 조합의 RPA 메시지가 중복 저장되지 않도록 MongoDB sparse unique 인덱스와 duplicate key 에러 처리를 추가한다.
 
@@ -60,7 +60,7 @@ public static async createRpaMessage(doc: IRpaMessage): Promise<IRpaMessageDocum
 
 ---
 
-- [ ] **Step 1: 테스트 파일 작성 (실패 상태)**
+- [x] **Step 1: 테스트 파일 작성 (실패 상태)**
 
 ```typescript
 // packages/core/src/__tests__/db/models/RpaMessages.test.ts
@@ -142,7 +142,7 @@ describe('RpaMessages.createRpaMessage', () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 반드시 실패해야 함**
+- [x] **Step 2: 테스트 실행 — 반드시 실패해야 함**
 
 ```bash
 cd /Users/shin-yeji/okrservice/packages/core
@@ -151,7 +151,7 @@ yarn test --testPathPattern=RpaMessages --no-coverage 2>&1 | tail -20
 
 Expected: `TypeError` 또는 assertion 실패 (null 반환 로직 없음)
 
-- [ ] **Step 3: rpaMessages.ts에 sparse unique 인덱스 추가**
+- [x] **Step 3: rpaMessages.ts에 sparse unique 인덱스 추가**
 
 `packages/core/src/db/models/definitions/rpaMessages.ts` 파일 맨 끝 (`rpaMessageSchema` 정의 닫힌 후)에 추가:
 
@@ -211,7 +211,7 @@ rpaMessageSchema.index(
 );
 ```
 
-- [ ] **Step 4: RpaMessages.ts — createRpaMessage 멱등성 처리**
+- [x] **Step 4: RpaMessages.ts — createRpaMessage 멱등성 처리**
 
 `packages/core/src/db/models/RpaMessages.ts` 전체:
 
@@ -258,7 +258,7 @@ export const loadRpaMessageClass = (models: IModels) => {
 };
 ```
 
-- [ ] **Step 5: 테스트 실행 — 전부 통과해야 함**
+- [x] **Step 5: 테스트 실행 — 전부 통과해야 함**
 
 ```bash
 cd /Users/shin-yeji/okrservice/packages/core
@@ -267,7 +267,7 @@ yarn test --testPathPattern=RpaMessages --no-coverage 2>&1 | tail -20
 
 Expected: `5 passed`
 
-- [ ] **Step 6: TypeScript 빌드 확인**
+- [x] **Step 6: TypeScript 빌드 확인**
 
 ```bash
 cd /Users/shin-yeji/okrservice/packages/core
@@ -276,7 +276,7 @@ npx tsc --noEmit 2>&1 | head -20
 
 Expected: 오류 없음
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add packages/core/src/db/models/definitions/rpaMessages.ts \
@@ -320,7 +320,7 @@ return res.status(200).json({ ok: true });
 
 ---
 
-- [ ] **Step 1: saved === null 조기 반환 추가**
+- [x] **Step 1: saved === null 조기 반환 추가**
 
 `createRpaMessage` 호출 직후, WebSocket publish 직전에 추가:
 
@@ -359,7 +359,7 @@ await graphqlPubsub.publish('rpaMessageReceived', {
 return res.status(200).json({ ok: true });
 ```
 
-- [ ] **Step 2: TypeScript 빌드 확인**
+- [x] **Step 2: TypeScript 빌드 확인**
 
 ```bash
 cd /Users/shin-yeji/okrservice/packages/core
@@ -368,7 +368,7 @@ npx tsc --noEmit 2>&1 | head -20
 
 Expected: 오류 없음
 
-- [ ] **Step 3: 커밋**
+- [x] **Step 3: 커밋**
 
 ```bash
 git add packages/core/src/index.ts

@@ -1,6 +1,6 @@
 # 챗봇 추천단어 + 딥링크 iframe 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 채팅 입력창에 2글자 이상 입력 시 서버 API로 추천단어 조회 → 드롭다운 표시 → 클릭 시 봇 버블 + 버튼 카드 추가 → 버튼 클릭 시 5240 iframe 열기
 
@@ -34,7 +34,7 @@
 - Create: `packages/core/src/data/schema/suggestions.ts`
 - Modify: `packages/core/src/data/schema/index.ts`
 
-- [ ] **Step 1: schema 파일 생성**
+- [x] **Step 1: schema 파일 생성**
 
 ```typescript
 // packages/core/src/data/schema/suggestions.ts
@@ -56,7 +56,7 @@ export const queries = `
 `;
 ```
 
-- [ ] **Step 2: schema/index.ts에 import + 등록**
+- [x] **Step 2: schema/index.ts에 import + 등록**
 
 `packages/core/src/data/schema/index.ts` 에서 `RpaTypes` 아래에 추가:
 
@@ -75,7 +75,7 @@ import { types as SuggestionTypes, queries as SuggestionQueries } from './sugges
   ${SuggestionQueries}
 ```
 
-- [ ] **Step 3: TypeScript 빌드 확인**
+- [x] **Step 3: TypeScript 빌드 확인**
 
 ```bash
 cd packages/core && npx tsc --noEmit 2>&1 | head -20
@@ -83,7 +83,7 @@ cd packages/core && npx tsc --noEmit 2>&1 | head -20
 
 오류 없으면 다음 단계 진행.
 
-- [ ] **Step 4: 커밋**
+- [x] **Step 4: 커밋**
 
 ```bash
 git add packages/core/src/data/schema/suggestions.ts packages/core/src/data/schema/index.ts
@@ -99,7 +99,7 @@ git commit -m "feat(suggestions): GraphQL 스키마 추가 — SuggestionItem, c
 - Create: `packages/core/src/data/resolvers/queries/__tests__/suggestions.test.ts`
 - Modify: `packages/core/src/data/resolvers/queries/index.ts`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```typescript
 // packages/core/src/data/resolvers/queries/__tests__/suggestions.test.ts
@@ -148,7 +148,7 @@ describe('chatbotSuggestions', () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 cd packages/core && npx jest --testPathPattern="suggestions.test" --no-coverage 2>&1 | tail -20
@@ -156,7 +156,7 @@ cd packages/core && npx jest --testPathPattern="suggestions.test" --no-coverage 
 
 Expected: `Cannot find module '../suggestions'`
 
-- [ ] **Step 3: resolver 구현**
+- [x] **Step 3: resolver 구현**
 
 ```typescript
 // packages/core/src/data/resolvers/queries/suggestions.ts
@@ -243,7 +243,7 @@ const suggestionQueries = {
 export default suggestionQueries;
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 cd packages/core && npx jest --testPathPattern="suggestions.test" --no-coverage 2>&1 | tail -20
@@ -251,7 +251,7 @@ cd packages/core && npx jest --testPathPattern="suggestions.test" --no-coverage 
 
 Expected: `5 passed`
 
-- [ ] **Step 5: index.ts에 resolver 등록**
+- [x] **Step 5: index.ts에 resolver 등록**
 
 `packages/core/src/data/resolvers/queries/index.ts` 에서 `import rpa from './rpa';` 아래에 추가:
 
@@ -265,13 +265,13 @@ import suggestions from './suggestions';
   ...suggestions,
 ```
 
-- [ ] **Step 6: TypeScript 빌드 확인**
+- [x] **Step 6: TypeScript 빌드 확인**
 
 ```bash
 cd packages/core && npx tsc --noEmit 2>&1 | head -20
 ```
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add packages/core/src/data/resolvers/queries/suggestions.ts \
@@ -288,7 +288,7 @@ git commit -m "feat(suggestions): chatbotSuggestions resolver — prefix 매칭 
 - Modify: `widgets/client/messenger/graphql/queries.ts`
 - Create: `widgets/client/messenger/intent/suggestions.ts`
 
-- [ ] **Step 1: graphql/queries.ts에 쿼리 추가**
+- [x] **Step 1: graphql/queries.ts에 쿼리 추가**
 
 `widgets/client/messenger/graphql/queries.ts` 파일 맨 끝에 추가:
 
@@ -307,7 +307,7 @@ export const chatbotSuggestionsQuery = `
 `;
 ```
 
-- [ ] **Step 2: intent 디렉토리 생성 + 훅 파일 작성**
+- [x] **Step 2: intent 디렉토리 생성 + 훅 파일 작성**
 
 ```typescript
 // widgets/client/messenger/intent/suggestions.ts
@@ -365,7 +365,7 @@ export function useSuggestions(keyword: string, chatbotId?: string): SuggestionI
 }
 ```
 
-- [ ] **Step 3: TypeScript 확인**
+- [x] **Step 3: TypeScript 확인**
 
 ```bash
 cd widgets && npx tsc --noEmit 2>&1 | grep -E "intent/suggestions|chatbotSuggestions" | head -10
@@ -373,7 +373,7 @@ cd widgets && npx tsc --noEmit 2>&1 | grep -E "intent/suggestions|chatbotSuggest
 
 오류 없으면 다음 단계.
 
-- [ ] **Step 4: 커밋**
+- [x] **Step 4: 커밋**
 
 ```bash
 git add widgets/client/messenger/graphql/queries.ts \
@@ -389,7 +389,7 @@ git commit -m "feat(suggestions): 위젯 useSuggestions 훅 + GraphQL 쿼리"
 - Create: `widgets/client/messenger/components/chatbot/Suggestions.tsx`
 - Create: `widgets/client/messenger/components/chatbot/__tests__/Suggestions.test.tsx`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 // widgets/client/messenger/components/chatbot/__tests__/Suggestions.test.tsx
@@ -431,7 +431,7 @@ describe('Suggestions', () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 cd widgets && npx jest --testPathPattern="Suggestions.test" --no-coverage 2>&1 | tail -20
@@ -439,7 +439,7 @@ cd widgets && npx jest --testPathPattern="Suggestions.test" --no-coverage 2>&1 |
 
 Expected: `Cannot find module '../Suggestions'`
 
-- [ ] **Step 3: Suggestions 컴포넌트 구현**
+- [x] **Step 3: Suggestions 컴포넌트 구현**
 
 ```tsx
 // widgets/client/messenger/components/chatbot/Suggestions.tsx
@@ -525,7 +525,7 @@ const Suggestions: React.FC<SuggestionsProps> = ({ items, onSelect, onClose }) =
 export default Suggestions;
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 cd widgets && npx jest --testPathPattern="Suggestions.test" --no-coverage 2>&1 | tail -20
@@ -533,7 +533,7 @@ cd widgets && npx jest --testPathPattern="Suggestions.test" --no-coverage 2>&1 |
 
 Expected: `3 passed`
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add widgets/client/messenger/components/chatbot/Suggestions.tsx \
@@ -549,7 +549,7 @@ git commit -m "feat(suggestions): Suggestions 드롭다운 컴포넌트"
 - Modify: `widgets/client/messenger/components/chatbot/chatbotMenus.ts`
 - Modify: `widgets/client/messenger/components/chatbot/ChatbotView.tsx`
 
-- [ ] **Step 1: chatbotMenus.ts URL 환경변수로 교체**
+- [x] **Step 1: chatbotMenus.ts URL 환경변수로 교체**
 
 `chatbotMenus.ts` 파일 맨 위에 추가:
 
@@ -602,7 +602,7 @@ export const CHATBOT_MENUS: ChatbotMenu[] = [
 ];
 ```
 
-- [ ] **Step 2: ChatbotView.tsx RPA_BUTTON_MAP URL 환경변수로 교체**
+- [x] **Step 2: ChatbotView.tsx RPA_BUTTON_MAP URL 환경변수로 교체**
 
 `ChatbotView.tsx` 파일 맨 위(import 아래)에 추가:
 
@@ -630,13 +630,13 @@ const RPA_BUTTON_MAP: Record<string, { label: string; url: string }[]> = {
 };
 ```
 
-- [ ] **Step 3: TypeScript 확인**
+- [x] **Step 3: TypeScript 확인**
 
 ```bash
 cd widgets && npx tsc --noEmit 2>&1 | grep -E "chatbotMenus|ChatbotView" | head -10
 ```
 
-- [ ] **Step 4: 커밋**
+- [x] **Step 4: 커밋**
 
 ```bash
 git add widgets/client/messenger/components/chatbot/chatbotMenus.ts \
@@ -651,7 +651,7 @@ git commit -m "fix(chatbot): URL 하드코딩 제거 — VITE_HR_BASE_URL 환경
 **Files:**
 - Modify: `widgets/client/messenger/components/chatbot/ChatbotView.tsx`
 
-- [ ] **Step 1: import + 타입 추가**
+- [x] **Step 1: import + 타입 추가**
 
 `ChatbotView.tsx` import 블록에 추가:
 
@@ -671,7 +671,7 @@ interface ButtonCardMessage {
 }
 ```
 
-- [ ] **Step 2: 컴포넌트 내부 state + 훅 추가**
+- [x] **Step 2: 컴포넌트 내부 state + 훅 추가**
 
 `ChatbotView` 컴포넌트 함수 내, 기존 `const [isMenuOpen, ...]` 바로 아래에 추가:
 
@@ -683,7 +683,7 @@ const inputWrapperRef = React.useRef<HTMLDivElement>(null);
 const suggestions = useSuggestions(inputValue);
 ```
 
-- [ ] **Step 3: 추천 클릭 핸들러 추가**
+- [x] **Step 3: 추천 클릭 핸들러 추가**
 
 `handleMenuClick` 함수 바로 아래에 추가:
 
@@ -705,7 +705,7 @@ const handleSuggestionSelect = (item: SuggestionItem) => {
 };
 ```
 
-- [ ] **Step 4: 스크롤 effect에 buttonCardMessages 추가**
+- [x] **Step 4: 스크롤 effect에 buttonCardMessages 추가**
 
 기존:
 ```typescript
@@ -721,7 +721,7 @@ React.useEffect(() => {
 }, [scheduledMessages.length, rpaMessages.length, buttonCardMessages.length]);
 ```
 
-- [ ] **Step 5: 채팅 영역에 buttonCardMessages 렌더링 추가**
+- [x] **Step 5: 채팅 영역에 buttonCardMessages 렌더링 추가**
 
 `{/* 자동 스크롤 앵커 */}` 바로 위(RPA 메시지 블록 아래)에 추가:
 
@@ -788,7 +788,7 @@ React.useEffect(() => {
 ))}
 ```
 
-- [ ] **Step 6: 메뉴 그리드 위(하단 고정 영역)에 입력창 + 드롭다운 추가**
+- [x] **Step 6: 메뉴 그리드 위(하단 고정 영역)에 입력창 + 드롭다운 추가**
 
 `{/* ── 메뉴 그리드 (접기/펼치기) ── */}` 블록 바로 위에 추가:
 
@@ -835,7 +835,7 @@ React.useEffect(() => {
 </div>
 ```
 
-- [ ] **Step 7: TypeScript 빌드 확인**
+- [x] **Step 7: TypeScript 빌드 확인**
 
 ```bash
 cd widgets && npx tsc --noEmit 2>&1 | grep "ChatbotView" | head -10
@@ -843,7 +843,7 @@ cd widgets && npx tsc --noEmit 2>&1 | grep "ChatbotView" | head -10
 
 오류 없으면 다음 단계.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 git add widgets/client/messenger/components/chatbot/ChatbotView.tsx
@@ -854,7 +854,7 @@ git commit -m "feat(suggestions): ChatbotView에 입력창 + 추천단어 드롭
 
 ## Task 7: 전체 테스트 실행 + 최종 확인
 
-- [ ] **Step 1: 서버 resolver 테스트 전체 실행**
+- [x] **Step 1: 서버 resolver 테스트 전체 실행**
 
 ```bash
 cd packages/core && npx jest --testPathPattern="suggestions" --no-coverage 2>&1 | tail -20
@@ -862,7 +862,7 @@ cd packages/core && npx jest --testPathPattern="suggestions" --no-coverage 2>&1 
 
 Expected: `5 passed`
 
-- [ ] **Step 2: 위젯 Suggestions 컴포넌트 테스트 전체 실행**
+- [x] **Step 2: 위젯 Suggestions 컴포넌트 테스트 전체 실행**
 
 ```bash
 cd widgets && npx jest --testPathPattern="Suggestions" --no-coverage 2>&1 | tail -20
@@ -870,7 +870,7 @@ cd widgets && npx jest --testPathPattern="Suggestions" --no-coverage 2>&1 | tail
 
 Expected: `3 passed`
 
-- [ ] **Step 3: 동작 수동 확인 체크리스트**
+- [x] **Step 3: 동작 수동 확인 체크리스트**
 
 위젯을 실행하고 다음을 확인:
 1. 입력창에 `출` 입력 → 드롭다운 미표시 (1글자)
@@ -880,7 +880,7 @@ Expected: `3 passed`
 5. HR 메뉴 그리드 버튼 클릭 → 여전히 정상 동작
 6. RPA 메시지 버튼 클릭 → 여전히 정상 동작
 
-- [ ] **Step 4: 최종 커밋 (필요 시)**
+- [x] **Step 4: 최종 커밋 (필요 시)**
 
 모든 테스트 통과, 동작 확인 후 이미 각 태스크에서 커밋됨.
 전체 작업 완료.
