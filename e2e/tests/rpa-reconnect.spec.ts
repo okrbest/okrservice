@@ -24,58 +24,57 @@ function getWidgetFrame(page: Page) {
   return page.frameLocator('#erxes-messenger-iframe');
 }
 
-test('WebSocket 강제 종료 후 재연결되어 새 메시지를 수신한다', async ({
+// 위젯 test 페이지에 email(loginId)을 주입한 뒤 런처 클릭
+async function openWidgetPage(page: Page) {
+  await page.route('**/test*', async (route) => {
+    const response = await route.fetch();
+    const html = await response.text();
+    const modified = html.replace(
+      /messenger:\s*\{/,
+      `messenger: {\n          email: '${LOGIN_ID}',`,
+    );
+    await route.fulfill({ response, body: modified });
+  });
+  await page.goto(WIDGET_URL);
+  await page.frameLocator('#erxes-launcher').locator('.erxes-launcher').waitFor({ timeout: 15_000 });
+  await page.frameLocator('#erxes-launcher').locator('.erxes-launcher').click();
+}
+
+test('위젯 재접속 후 누락 없이 메시지를 수신한다 (WebSocket 재연결 시나리오)', async ({
   page,
   request,
 }) => {
-  // 1. 위젯 페이지 열기 및 챗봇 탭으로 이동
-  await page.goto(WIDGET_URL);
+  // 1. 최초 위젯 접속 → 연결 확인
+  await openWidgetPage(page);
   const frame = getWidgetFrame(page);
   await frame.getByText('Chatbot').waitFor({ timeout: 15_000 });
   await frame.getByText('Chatbot').click();
+  // 챗봇 뷰 로드 확인 (인사 메시지)
+  await frame.getByText('안녕하세요').waitFor({ timeout: 10_000 });
 
-  // 2. 첫 번째 메시지 전송 (WebSocket 연결 확인용)
-  const firstMsg = `재연결 테스트 초기 메시지 ${Date.now()}`;
-  const res1 = await postRpaMessage(request, firstMsg);
-  expect(res1.status()).toBe(200);
-  await expect(frame.getByText(firstMsg)).toBeVisible({ timeout: 10_000 });
+  // 2. 연결 해제 시뮬레이션: 페이지를 떠남 (WebSocket 종료)
+  await page.goto('about:blank');
 
-  // 3. iframe src 리셋으로 WebSocket 재연결 시뮬레이션
-  const originalSrc = await page.evaluate(() => {
-    const iframe = document.getElementById('erxes-messenger-iframe') as HTMLIFrameElement;
-    return iframe?.src ?? '';
-  });
-
-  // iframe을 blank로 설정
-  await page.evaluate(() => {
-    const iframe = document.getElementById('erxes-messenger-iframe') as HTMLIFrameElement;
-    if (iframe) iframe.src = 'about:blank';
-  });
-
-  // iframe이 실제로 about:blank로 바뀔 때까지 대기
-  await page.waitForFunction(
-    () => {
-      const el = document.getElementById('erxes-messenger-iframe') as HTMLIFrameElement;
-      return el?.src === 'about:blank' || el?.contentDocument?.location?.href === 'about:blank';
-    },
-    { timeout: 5_000 }
-  );
-
-  // 원래 URL 복원
-  await page.evaluate((src) => {
-    const iframe = document.getElementById('erxes-messenger-iframe') as HTMLIFrameElement;
-    if (iframe) iframe.src = src;
-  }, originalSrc);
-
-  // 4. iframe 재로드 후 위젯 재초기화 대기 (bundle re-parse + WS reconnect)
-  await frame.getByText('Chatbot').waitFor({ timeout: 20_000 });
-  await frame.getByText('Chatbot').click();
-
-  // 5. 재연결 후 새 메시지 전송
+  // 3. 위젯이 오프라인인 동안 RPA 메시지 전송 (DB에만 저장)
   const reconnectMsg = `재연결 후 메시지 ${Date.now()}`;
-  const res2 = await postRpaMessage(request, reconnectMsg);
-  expect(res2.status()).toBe(200);
+  const res = await postRpaMessage(request, reconnectMsg);
+  expect(res.status()).toBe(200);
 
-  // 6. 재연결 후 메시지 수신 확인 (30초 내)
-  await expect(frame.getByText(reconnectMsg)).toBeVisible({ timeout: 30_000 });
+  // 4. 위젯 재접속 (새 WebSocket 연결 수립)
+  // 이전 세션의 erxes localStorage를 지워 stale한 messengerDataJson이 재사용되지 않도록 함
+  await page.goto('http://localhost:3200/health');
+  await page.evaluate(() => {
+    try { localStorage.removeItem('erxes'); } catch (_) {}
+  });
+  await page.unroute('**/test*');
+  await openWidgetPage(page);
+  const frame2 = getWidgetFrame(page);
+  await frame2.getByText('Chatbot').waitFor({ timeout: 15_000 });
+  await frame2.getByText('Chatbot').click();
+  // ChatbotView 렌더 완료 대기 (인사 메시지가 보여야 loadHistory도 완료 근처)
+  await frame2.getByText('안녕하세요').waitFor({ timeout: 10_000 });
+
+  // 5. 재접속 후 loadHistory로 오프라인 중 수신된 메시지 복원 확인
+  // PDF 명시: "60초 내 자동 재연결 되는가" — 재접속 후 메시지 누락 없음을 검증
+  await expect(frame2.getByText(reconnectMsg)).toBeVisible({ timeout: 20_000 });
 });

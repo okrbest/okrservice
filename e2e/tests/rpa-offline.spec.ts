@@ -24,6 +24,22 @@ function getWidgetFrame(page: Page) {
   return page.frameLocator('#erxes-messenger-iframe');
 }
 
+// 위젯 test 페이지에 email(loginId)을 주입한 뒤 런처 클릭
+async function openWidgetPage(page: Page) {
+  await page.route('**/test*', async (route) => {
+    const response = await route.fetch();
+    const html = await response.text();
+    const modified = html.replace(
+      /messenger:\s*\{/,
+      `messenger: {\n          email: '${LOGIN_ID}',`,
+    );
+    await route.fulfill({ response, body: modified });
+  });
+  await page.goto(WIDGET_URL);
+  await page.frameLocator('#erxes-launcher').locator('.erxes-launcher').waitFor({ timeout: 15_000 });
+  await page.frameLocator('#erxes-launcher').locator('.erxes-launcher').click();
+}
+
 test('위젯 열기 전에 도착한 RPA 메시지가 히스토리로 표시된다', async ({
   page,
   request,
@@ -34,10 +50,10 @@ test('위젯 열기 전에 도착한 RPA 메시지가 히스토리로 표시된�
   const res = await postRpaMessage(request, offlineMsg);
   expect(res.status()).toBe(200);
 
-  // 2. 위젯 페이지 열기
-  await page.goto(WIDGET_URL);
+  // 2. 위젯 페이지 열기 (email 주입 + 런처 클릭)
+  await openWidgetPage(page);
 
-  // 3. 위젯 iframe 로드 대기 및 챗봇 탭 클릭
+  // 3. messenger iframe 내 챗봇 탭 대기 및 클릭
   const frame = getWidgetFrame(page);
   await frame.getByText('Chatbot').waitFor({ timeout: 15_000 });
   await frame.getByText('Chatbot').click();

@@ -5,10 +5,10 @@ const LOGIN_ID = 'e2e-user@test.com';
 const CLIENT_ID = 'e2e-test-client';
 
 export default async function globalTeardown() {
-  await mongoose.connect(MONGO_URL);
+  const conn = await mongoose.connect(MONGO_URL);
 
   try {
-    const db = mongoose.connection.db!;
+    const db = conn.connection.db!;
     // Remove seeded test client
     await db.collection('clients').deleteMany({ clientId: CLIENT_ID });
     // Remove RPA messages created by tests (tests use loginId = LOGIN_ID)
