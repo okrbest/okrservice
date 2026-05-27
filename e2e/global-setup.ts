@@ -14,7 +14,7 @@ export default async function globalSetup() {
     // 0. rpa_messages sparse unique 인덱스 보장
     // 기존 중복 데이터 제거 후 인덱스 생성 (같은 loginId+messageCode 중 가장 최신 1개 유지)
     const dupPipeline = [
-      { $match: { messageCode: { $ne: null, $exists: true, $ne: '' } } },
+      { $match: { messageCode: { $exists: true, $nin: [null, ''] } } },
       { $sort: { receivedAt: -1 } },
       {
         $group: {
