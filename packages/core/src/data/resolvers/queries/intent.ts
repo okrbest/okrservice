@@ -19,6 +19,10 @@ const INTENT_MAP: Record<string, IntentButton[]> = {
   ],
   HR_RPA_140: [{ label: '출퇴근 체크', path: '/MobileMain.do' }],
   HR_RPA_800: [{ label: '출퇴근 체크', path: '/MobileMain.do' }],
+  HR_APPROVAL_REQUEST: [{ label: '결재함', path: '/MobileApprovalBox.do' }],
+  HR_APPROVAL_COMPLETED: [{ label: '결재함', path: '/MobileApprovalBox.do' }],
+  HR_APPROVAL_WITHDRAW: [{ label: '결재함', path: '/MobileApprovalBox.do' }],
+  HR_APPROVAL_RETURN: [{ label: '결재함', path: '/MobileApprovalBox.do' }],
 };
 
 /**

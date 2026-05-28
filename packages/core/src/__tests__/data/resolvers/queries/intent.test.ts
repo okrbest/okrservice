@@ -37,6 +37,22 @@ describe('getIntentButtons', () => {
     expect(getIntentButtons('HR_RPA_110')).toEqual([]);
   });
 
+  it('HR_APPROVAL_REQUEST → 결재함 버튼 반환', () => {
+    expect(getIntentButtons('HR_APPROVAL_REQUEST')).toEqual([{ label: '결재함', path: '/MobileApprovalBox.do' }]);
+  });
+
+  it('HR_APPROVAL_COMPLETED → 결재함 버튼 반환', () => {
+    expect(getIntentButtons('HR_APPROVAL_COMPLETED')).toEqual([{ label: '결재함', path: '/MobileApprovalBox.do' }]);
+  });
+
+  it('HR_APPROVAL_WITHDRAW → 결재함 버튼 반환', () => {
+    expect(getIntentButtons('HR_APPROVAL_WITHDRAW')).toEqual([{ label: '결재함', path: '/MobileApprovalBox.do' }]);
+  });
+
+  it('HR_APPROVAL_RETURN → 결재함 버튼 반환', () => {
+    expect(getIntentButtons('HR_APPROVAL_RETURN')).toEqual([{ label: '결재함', path: '/MobileApprovalBox.do' }]);
+  });
+
   it('알 수 없는 rpaCode → 빈 배열', () => {
     expect(getIntentButtons('UNKNOWN_CODE')).toEqual([]);
   });

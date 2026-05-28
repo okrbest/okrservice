@@ -701,6 +701,7 @@ const RPA_CODE_ALIASES: Record<string, string> = {
 const VALID_RPA_CODES = new Set([
   'HR_RPA_090', 'HR_RPA_100', 'HR_RPA_110',
   'HR_RPA_120', 'HR_RPA_130', 'HR_RPA_140', 'HR_RPA_800',
+  'HR_APPROVAL_REQUEST', 'HR_APPROVAL_COMPLETED', 'HR_APPROVAL_WITHDRAW', 'HR_APPROVAL_RETURN',
 ]);
 
 app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
