@@ -23,7 +23,10 @@ export const wsLink = new GraphQLWsLink(createClient({
   url: API_SUBSCRIPTIONS_URL,
   lazyCloseTimeout: 30000,
   retryAttempts: 100,
-  retryWait: () => new Promise(resolve => setTimeout(resolve, 1000)),
+  retryWait: async (retries: number) => {
+    const delay = Math.min(1000 * Math.pow(2, retries), 30000);
+    await new Promise(resolve => setTimeout(resolve, delay));
+  },
   connectionParams: () => {
     const params: any = {};
     params.messengerDataJson = getLocalStorageItem('messengerDataJson');

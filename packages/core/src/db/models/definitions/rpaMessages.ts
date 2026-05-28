@@ -12,6 +12,9 @@ export interface IRpaMessage {
   messageCode?: string;
   message: string;
   overtime: string;
+  startTime?: string;
+  endTime?: string;
+  userType?: string;
   receivedAt: Date;
   buttons?: IRpaButton[];
 }
@@ -35,6 +38,9 @@ export const rpaMessageSchema = new Schema({
   messageCode: field({ type: String, label: 'Message code' }),
   message: field({ type: String, label: 'Message body' }),
   overtime: field({ type: String, label: 'Overtime minutes', optional: true }),
+  startTime: field({ type: String, label: 'Start time (yyyymmddhh24mi)', optional: true }),
+  endTime: field({ type: String, label: 'End time (yyyymmddhh24mi)', optional: true }),
+  userType: field({ type: String, label: 'User type (EXCEPTION | GENERAL)', optional: true }),
   receivedAt: field({ type: Date, label: 'Received at' }),
   buttons: field({ type: [rpaButtonSchema], label: 'Buttons', default: [] }),
 });

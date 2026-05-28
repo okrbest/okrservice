@@ -61,6 +61,17 @@ describe('RpaMessages.createRpaMessage', () => {
     );
   });
 
+  it('startTime, endTime, userType 전달 시 create에 그대로 포함', async () => {
+    const saved = { _id: '3', ...baseDoc, startTime: '202601010900', endTime: '202601011800', userType: 'GENERAL' };
+    mockCreate.mockResolvedValue(saved);
+
+    await getCreateFn()({ ...baseDoc, startTime: '202601010900', endTime: '202601011800', userType: 'GENERAL' });
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ startTime: '202601010900', endTime: '202601011800', userType: 'GENERAL' }),
+    );
+  });
+
   it('같은 loginId + 다른 messageCode → create 각각 호출', async () => {
     mockCreate
       .mockResolvedValueOnce({ _id: '1', messageCode: 'MSG_001' } as any)

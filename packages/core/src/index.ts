@@ -715,6 +715,9 @@ app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
       message = '',
       loginId = '',
       overtime = '0',
+      startTime = '',
+      endTime = '',
+      userType = '',
     } = req.body as Record<string, string>;
 
     // 별칭 정규화
@@ -725,9 +728,15 @@ app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
       return res.status(400).json({ code: 'INVALID_REQUEST', message: 'loginId is required' });
     }
 
-    // 알 수 없는 rpaCode 는 기록은 하되 경고만 남김
+    // 알 수 없는 rpaCode → 4001 에러
     if (!VALID_RPA_CODES.has(rpaCode)) {
-      console.warn(`[RPA] Unknown rpaCode received: ${rawRpaCode}`);
+      return res.status(200).json({ code: '4001', message: 'INVALID_RPA_CODE' });
+    }
+
+    // loginId 미등록 → 4004 (Customers 컬렉션에서 email로 조회)
+    const existingCustomer = await models.Customers.findOne({ emails: loginId });
+    if (!existingCustomer) {
+      return res.status(200).json({ code: '4004', message: 'USER_NOT_FOUND' });
     }
 
     // DB 저장
@@ -738,6 +747,9 @@ app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
       messageCode,
       message: message.substring(0, 4000),
       overtime,
+      startTime: startTime || undefined,
+      endTime: endTime || undefined,
+      userType: userType || undefined,
       receivedAt: new Date(),
       buttons,
     });
