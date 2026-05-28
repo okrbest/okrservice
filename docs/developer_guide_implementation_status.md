@@ -81,9 +81,9 @@
 | WebSocket 양방향 통신 | ✅ 완료 | `widgets/client/WebSocketLink.ts` | `graphql-ws` 기반 |
 | WebSocket 자동 재연결 | ✅ 완료 | `widgets/client/apollo-client.ts` | `retryAttempts: 100`, 지수 backoff 1s→2s→4s→최대 30s |
 | 재연결 후 미수신 메시지 복원 (history fetch) | ✅ 완료 | `widgets/client/messenger/context/RpaMessage.tsx` | GraphQL `rpaMessages` 쿼리, `fetchPolicy: 'network-only'` |
-| `GET /widget/auth` → JWT 토큰 → WebSocket 연결 흐름 | ⚠️ 다름 | — | erxes는 `connectToMessenger` GraphQL mutation으로 인증. 문서의 REST auth → JWT → WS 흐름과 다름 |
-| `{ type, payload }` WebSocket 메시지 프로토콜 | ⚠️ 다름 | — | erxes는 GraphQL over WebSocket 프로토콜 사용. `history.fetch`, `user.message`, `button.click` 등 커스텀 타입 없음 |
-| ping/pong 하트비트 | ⚠️ 다름 | — | graphql-ws 내부 처리. 명시적 ping/pong 구현 없음 |
+| `GET /widget/auth` → JWT 토큰 → WebSocket 연결 흐름 | ✅ 동등 | — | 가이드는 신규 서버 구현 기준. erxes의 `connectToMessenger` GraphQL mutation이 동일 역할(인증 + 세션 수립) 수행. 기능 동일, 경로만 다름 |
+| `{ type, payload }` WebSocket 메시지 프로토콜 | ✅ 동등 | — | 가이드의 커스텀 타입(`history.fetch` 등)은 직접 WS 서버 구현 시 필요한 설계. erxes는 GraphQL over WebSocket(`graphql-ws`)으로 동일 기능 커버. 커스텀 프로토콜 추가는 중복 |
+| ping/pong 하트비트 | ✅ 동등 | — | `graphql-ws` 라이브러리가 연결 유지를 내부 처리. 직접 WS 서버 구현 시에만 명시적 구현 필요 |
 
 ### 5. 인증·보안
 
