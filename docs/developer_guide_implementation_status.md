@@ -67,8 +67,8 @@
 | 요구사항 | 상태 | 구현 위치 | 비고 |
 |---|---|---|---|
 | 5240 페이지 우하단 채팅 UI (플로팅 버튼 + 패널) | ✅ 완료 | `widgets/client/messenger/` | erxes 위젯 구조 활용 |
-| `<script src="...loader.js" data-chatbot-id="...">` 임베드 | ⚠️ 다름 | `widgets/server/views/widget-messenger-test.ejs` | loader.js 없음. `messengerWidget.bundle.js` 직접 로드 방식 |
-| loginId 자동 획득 (5240 로그인 세션에서) | ⚠️ 부분 | `widgets/client/messenger/context/RpaMessage.tsx` | `connection.setting.email` → localStorage 순서. 쿠키 직접 파싱 없음 |
+| `<script src="...loader.js" data-chatbot-id="...">` 임베드 | ⚠️ 배포 시 필요 | `widgets/server/views/widget-messenger-test.ejs` | 현재 `messengerWidget.bundle.js` 직접 로드. 5240 실 임베드 시 한 줄 삽입 + chatbot-id attribute 전달을 위해 loader.js 구현 필요 |
+| loginId 자동 획득 (5240 로그인 세션에서) | ❌ 미완료 | `widgets/client/messenger/context/RpaMessage.tsx` | 쿠키/`window.parent`에서 loginId를 읽는 로직 없음. 초회 방문 시 사용자가 이메일 수동 입력 필요. 5240 운영팀과 쿠키 키 이름 협의 후 구현 필요 |
 | rpaCode 기반 버튼 카드 렌더 | ✅ 완료 | `widgets/client/messenger/components/chatbot/ChatbotView.tsx` | |
 | 추천단어 자동완성 (2글자 이상) | ✅ 완료 | `widgets/client/messenger/components/chatbot/Suggestions.tsx` | |
 | 버튼 클릭 → 5240 딥링크 iframe/팝업 | ✅ 완료 | `widgets/client/messenger/components/chatbot/ChatbotIframeView.tsx` | iframe 우선, 차단 시 "새 창으로 열기" popup fallback |
@@ -117,6 +117,8 @@
 
 | 항목 | 우선순위 | 내용 |
 |---|---|---|
+| loginId 자동 획득 (쿠키 파싱) | 상 | 5240 운영팀과 쿠키 키 이름 협의 후 `document.cookie` / `window.parent`에서 loginId 읽는 로직 구현 |
+| loader.js 구현 | 중 | 5240 페이지 임베드용. `data-chatbot-id` attribute 읽어 위젯 동적 주입 |
 | 통합/부하 테스트 | 하 | 5240 staging 연동 후 작성 |
 
 ### 운영/인프라 협의 사항 (코드 작업 아님)
