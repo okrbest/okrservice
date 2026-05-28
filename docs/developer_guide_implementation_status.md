@@ -1,7 +1,7 @@
 # 개발자 가이드 구현 현황
 
 > 기준 문서: `docs/02.developer_guide.pdf` (2026-05-22)
-> 작성일: 2026-05-28
+> 작성일: 2026-05-28 / 최종 업데이트: 2026-05-28
 
 ---
 
@@ -37,14 +37,14 @@
 | `POST /chatbot/api/v1/rpa/{chatbotId}/messages` 엔드포인트 | ⚠️ 변경 | `packages/core/src/index.ts:706` | 경로를 `POST /api/rpa/messages` 로 구현. chatbotId는 URL path 대신 body의 `clientId`로 식별 |
 | `clientId + secret` body 인증 | ✅ 완료 | `packages/core/src/middlewares/validateRpaClient.ts` | bcrypt 검증 + IP 화이트리스트 |
 | `rpaCode`, `messageCode`, `message`, `loginId`, `overtime` 파싱 | ✅ 완료 | `packages/core/src/index.ts:710~720` | |
-| `startTime`, `endTime`, `userType` 파싱/저장 | ❌ 미구현 | — | 문서 §2.2에 명시된 필드. 현재 파싱 안 함 |
+| `startTime`, `endTime`, `userType` 파싱/저장 | ✅ 완료 | `packages/core/src/index.ts`, `db/models/definitions/rpaMessages.ts` | |
 | form-urlencoded Content-Type | ✅ 완료 | `express.urlencoded` 미들웨어 | |
 | 응답 `{ "code": "0", "message": "OK" }` | ✅ 완료 | `packages/core/src/index.ts:762` | |
 | rpaCode 별칭 처리 (`HR_GO_TO_WORK` → `HR_RPA_100` 등) | ✅ 완료 | `packages/core/src/index.ts:697~720` | |
 | HR/근태 배치 rpaCode 7종 (`HR_RPA_090`~`HR_RPA_800`) | ✅ 완료 | `VALID_RPA_CODES` Set | |
-| 결재 상시 rpaCode 4종 (`HR_APPROVAL_REQUEST` 등) | ❌ 미구현 | — | 문서 §2.2 결재 배치 테이블. `VALID_RPA_CODES`에 없음 |
-| 알 수 없는 rpaCode → `code: 4001, INVALID_RPA_CODE` | ⚠️ 부분 | `packages/core/src/index.ts:728` | 현재 `console.warn`만 하고 200 반환. 문서는 4001 에러 응답 |
-| 알 수 없는 loginId → `code: 4004, USER_NOT_FOUND` | ❌ 미구현 | — | 현재 loginId 존재 여부 검증 없음, 그냥 저장 |
+| 결재 상시 rpaCode 4종 (`HR_APPROVAL_REQUEST` 등) | ✅ 완료 | `packages/core/src/index.ts`, `data/resolvers/queries/intent.ts` | `VALID_RPA_CODES` + intent 매핑 추가 |
+| 알 수 없는 rpaCode → `code: 4001, INVALID_RPA_CODE` | ✅ 완료 | `packages/core/src/index.ts` | |
+| 알 수 없는 loginId → `code: 4004, USER_NOT_FOUND` | ✅ 완료 | `packages/core/src/index.ts` | `Customers` 컬렉션 email 조회 후 반환 |
 | 중복 호출 → `code: 0` + 기존 messageId 반환 | ⚠️ 부분 | `packages/core/src/index.ts` | 멱등성은 구현됨. 단, 기존 messageId 반환은 안 함 |
 
 ### 2.3~2.5 서버 내부 구조
@@ -71,7 +71,7 @@
 | loginId 자동 획득 (5240 로그인 세션에서) | ⚠️ 부분 | `widgets/client/messenger/context/RpaMessage.tsx` | `connection.setting.email` → localStorage 순서. 쿠키 직접 파싱 없음 |
 | rpaCode 기반 버튼 카드 렌더 | ✅ 완료 | `widgets/client/messenger/components/chatbot/ChatbotView.tsx` | |
 | 추천단어 자동완성 (2글자 이상) | ✅ 완료 | `widgets/client/messenger/components/chatbot/Suggestions.tsx` | |
-| 버튼 클릭 → 5240 딥링크 iframe/팝업 | ✅ 완료 | `widgets/client/messenger/components/chatbot/ChatbotIframeView.tsx` | iframe 우선, 차단 시 popup fallback 미구현 |
+| 버튼 클릭 → 5240 딥링크 iframe/팝업 | ✅ 완료 | `widgets/client/messenger/components/chatbot/ChatbotIframeView.tsx` | iframe 우선, 차단 시 "새 창으로 열기" popup fallback |
 | HR_BASE_URL 환경변수로 딥링크 URL 조합 | ✅ 완료 | `widgets/client/messenger/components/chatbot/getHrBaseUrl.ts` | |
 
 ### 4.1~4.5 서버 ↔ 위젯 통신
@@ -79,7 +79,7 @@
 | 요구사항 | 상태 | 구현 위치 | 비고 |
 |---|---|---|---|
 | WebSocket 양방향 통신 | ✅ 완료 | `widgets/client/WebSocketLink.ts` | `graphql-ws` 기반 |
-| WebSocket 자동 재연결 | ✅ 완료 | `widgets/client/apollo-client.ts:25~26` | `retryAttempts: 100`. 단, backoff 간격이 1s 고정 (문서는 1s→2s→4s→최대 30s 지수 backoff) |
+| WebSocket 자동 재연결 | ✅ 완료 | `widgets/client/apollo-client.ts` | `retryAttempts: 100`, 지수 backoff 1s→2s→4s→최대 30s |
 | 재연결 후 미수신 메시지 복원 (history fetch) | ✅ 완료 | `widgets/client/messenger/context/RpaMessage.tsx` | GraphQL `rpaMessages` 쿼리, `fetchPolicy: 'network-only'` |
 | `GET /widget/auth` → JWT 토큰 → WebSocket 연결 흐름 | ⚠️ 다름 | — | erxes는 `connectToMessenger` GraphQL mutation으로 인증. 문서의 REST auth → JWT → WS 흐름과 다름 |
 | `{ type, payload }` WebSocket 메시지 프로토콜 | ⚠️ 다름 | — | erxes는 GraphQL over WebSocket 프로토콜 사용. `history.fetch`, `user.message`, `button.click` 등 커스텀 타입 없음 |
@@ -94,7 +94,7 @@
 | CORS 허용 | ✅ 완료 | `widgets/server/index.ts` | `cors()` 미들웨어 |
 | CSP / X-Frame-Options (5240 frame-ancestors 허용) | ❌ 미구현 | — | 5240 운영팀에 `frame-ancestors` 허용 요청 필요 (운영 협의 사항) |
 | XSS 방지 (`dangerouslySetInnerHTML` 금지) | ✅ 완료 | — | React 기본 이스케이프 사용 |
-| 민감정보 로깅 금지 | ⚠️ 부분 | — | `console.warn`에 rawRpaCode 노출 있음 |
+| 민감정보 로깅 금지 | ✅ 완료 | — | 알 수 없는 rpaCode는 4001 반환으로 처리, warn 로그 제거 |
 | HTTPS 강제 | ❌ 미완료 | — | 인프라 배포 시 적용 (코드 작업 아님) |
 
 ---
@@ -117,12 +117,6 @@
 
 | 항목 | 우선순위 | 내용 |
 |---|---|---|
-| `startTime`, `endTime`, `userType` 파싱 | 중 | RPA API body에서 3개 필드 파싱·저장 미구현 |
-| 결재 rpaCode 4종 지원 | 중 | `HR_APPROVAL_REQUEST`, `HR_APPROVAL_COMPLETED`, `HR_APPROVAL_WITHDRAW`, `HR_APPROVAL_RETURN` → VALID_RPA_CODES 추가 + intent 매핑 |
-| 알 수 없는 rpaCode → `4001` 에러 반환 | 하 | 현재 경고 로그만. 문서 §6.1은 `code: 4001, INVALID_RPA_CODE` |
-| `USER_NOT_FOUND` (`4004`) 처리 | 하 | loginId 존재 여부 검증 후 미등록 시 알림 기록 |
-| WebSocket backoff 지수 증가 | 하 | `retryWait` 1s 고정 → 1s→2s→4s→최대 30s 로 변경 |
-| iframe 차단 시 `window.open` 팝업 fallback | 하 | CSP로 iframe 차단될 경우 popup으로 전환 로직 |
 | 통합/부하 테스트 | 하 | 5240 staging 연동 후 작성 |
 
 ### 운영/인프라 협의 사항 (코드 작업 아님)
