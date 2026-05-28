@@ -10,11 +10,63 @@ type Props = {
 const ChatbotIframeView: React.FC<Props> = ({ title, url }) => {
   const { setRoute } = useRouter();
   const [blocked, setBlocked] = React.useState(false);
+  const [authError, setAuthError] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'UNAUTHORIZED' || event.data?.status === 401) {
+        setAuthError(true);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   const handleOpenPopup = (e: React.MouseEvent) => {
     e.preventDefault();
     window.open(url, '_blank', 'width=480,height=650,menubar=no,status=no,resizable=yes');
   };
+
+  if (authError) {
+    return (
+      <Container
+        title={title}
+        withBottomNavBar={true}
+        onBackButton={() => setRoute("chatbot")}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            gap: "16px",
+            padding: "24px",
+            textAlign: "center",
+          }}
+        >
+          <p style={{ fontSize: "14px", color: "#555", margin: 0 }}>
+            세션이 만료되었습니다. 새 창에서 로그인 후 다시 이용해주세요.
+          </p>
+          <button
+            onClick={handleOpenPopup}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#6f80ff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "14px",
+              cursor: "pointer",
+            }}
+          >
+            새 창으로 열기
+          </button>
+        </div>
+      </Container>
+    );
+  }
 
   if (blocked) {
     return (
