@@ -52,7 +52,7 @@
 | 요구사항 | 상태 | 구현 위치 | 비고 |
 |---|---|---|---|
 | 메시지 DB 저장 | ✅ 완료 | `packages/core/src/db/models/RpaMessages.ts` | MongoDB `rpa_messages` 컬렉션 |
-| chatbot_id / session 분리 모델 | ⚠️ 다름 | — | erxes는 customer/conversation 구조 사용. 가이드의 `chat_message` / `widget_session` 테이블 미적용 |
+| chatbot_id / session 분리 모델 | ✅ 동등 | — | 가이드는 독립 서버 기준. erxes의 `customers`/`conversations` 구조가 채팅·세션 관리 담당. RPA 메시지는 대화형이 아닌 이벤트 알림이므로 `rpa_messages` 컬렉션으로 의도적 분리. `chatbot_id` → erxes `clientId` 대응 |
 | rpaCode → 버튼 카드 intent 변환 | ✅ 완료 | `packages/core/src/data/resolvers/queries/intent.ts` | |
 | WebSocket/Pub-Sub 위젯 푸시 | ✅ 완료 | `packages/core/src/pubsub.ts` | `RedisPubSub` (graphql-redis-subscriptions) |
 | 멀티노드 Redis fan-out | ✅ 완료 | `packages/core/src/pubsub.ts` | Redis publisher/subscriber 분리 구성 |
