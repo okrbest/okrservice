@@ -47,10 +47,10 @@ const ChatbotIframeView: React.FC<Props> = ({ title, url }) => {
           }}
         >
           <p style={{ fontSize: "14px", color: "#555", margin: 0 }}>
-            세션이 만료되었습니다. 새 창에서 로그인 후 다시 이용해주세요.
+            세션이 만료되었습니다.<br />5240 페이지를 새로고침하거나 다시 로그인해주세요.
           </p>
           <button
-            onClick={handleOpenPopup}
+            onClick={() => window.top?.location.reload()}
             style={{
               padding: "10px 20px",
               backgroundColor: "#6f80ff",
@@ -61,7 +61,7 @@ const ChatbotIframeView: React.FC<Props> = ({ title, url }) => {
               cursor: "pointer",
             }}
           >
-            새 창으로 열기
+            페이지 새로고침
           </button>
         </div>
       </Container>
