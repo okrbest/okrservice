@@ -241,7 +241,7 @@
 |---|---|---|
 | WebSocket 끊김 → 지수 backoff 재연결 | ✅ 완료 | 1s→2s→4s→최대 30s |
 | 재연결 성공 시 history fetch로 누락 메시지 복원 | ✅ 완료 | |
-| 딥링크 호출 후 5240 화면 401 → 사용자 안내 | ✅ 완료 | `ChatbotIframeView.tsx` — 5240이 `postMessage({ type: 'UNAUTHORIZED' })` 전송 시 "세션 만료" 안내 + 새 창 버튼 표시 |
+| 딥링크 호출 후 5240 화면 401 → 사용자 안내 | ⚠️ 부분 | `ChatbotIframeView.tsx` — 5240이 `postMessage({ type: 'UNAUTHORIZED' })` 전송 시 "세션 만료" 안내 + 페이지 새로고침 버튼 표시. **5240 측 postMessage 추가 요청 필요** |
 
 ---
 
@@ -265,7 +265,7 @@
 |---|---|---|---|
 | loginId 자동 획득 (쿠키 파싱) | 상 | §3.8 | 5240 운영팀과 쿠키 키 이름 협의 후 `document.cookie` / `window.parent`에서 loginId 읽는 로직 구현 |
 | loader.js 구현 | 중 | §3.2 | 5240 페이지 임베드용. `data-chatbot-id` attribute 읽어 위젯 동적 주입 |
-| 딥링크 401 사용자 안내 | ✅ 완료 | §6.2 | `ChatbotIframeView.tsx` `postMessage` 수신 시 세션 만료 안내 UI |
+| 딥링크 401 사용자 안내 | ⚠️ 부분 | §6.2 | 위젯 수신 코드 완료. 5240 측에 `postMessage({ type: 'UNAUTHORIZED' })` 추가 요청 필요 |
 | 통합/부하 테스트 | 하 | §7 | 5240 staging 연동 후 작성 |
 
 ### 운영/인프라 협의 사항 (코드 작업 아님)
