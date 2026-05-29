@@ -18,7 +18,7 @@
 |---|---|---|---|
 | 0 | 5240 측과 RPA API 인증/Content-Type/재시도 정책 합의, 샘플 페이로드 확인 | ✅ 완료 | `clientId + secret` body 인증 방식 확정, form-urlencoded 확인 |
 | 1 | 서버: RPA API 스켈레톤 + DB 스키마 + Postman으로 200 OK 확인 | ✅ 완료 | `POST /api/rpa/messages` 구현, MongoDB `rpa_messages` 컬렉션 |
-| 2 | 위젯: 5240 mock 페이지에 빈 채팅 UI 임베드, loader.js 작동 확인 | ✅ 완료 | erxes 위젯 스크립트 임베드 방식, Chatbot 탭 UI 구현 |
+| 2 | 위젯: 5240 mock 페이지에 빈 채팅 UI 임베드, loader.js 작동 확인 | ⚠️ 부분 완료 | UI 임베드 완료. 후속 작업 2가지: ① loader.js (5240 페이지 1줄 임베드용, 현재 bundle 직접 로드로 대체 테스트 중) ② loginId 자동 획득 (5240 쿠키 키 이름 확인 후 `document.cookie` 파싱 구현 필요 — 0번 합의 시 같이 확인 필요) |
 | 3 | 서버: 메시지 저장 + intent 변환(rpaCode → buttonCard) + REST 이력 조회 | ✅ 완료 | `getIntentButtons()`, `rpaMessages` GraphQL 쿼리 |
 | 4 | 위젯: WebSocket 연결 + 메시지 수신 → 버튼 카드 렌더 | ✅ 완료 | GraphQL subscription, `ChatbotView` 버튼 카드 렌더 |
 | 5 | 위젯: 추천단어 자동완성 + 버튼 클릭 → 딥링크 iframe | ✅ 완료 | `Suggestions.tsx`, `useSuggestions`, `ChatbotIframeView` |
