@@ -1,0 +1,202 @@
+openapi: 3.0.3
+info:
+  title: 서비스데스크 RPA API
+  description: |
+    5240(KiwiBox) RPA 서버가 배치 실행 결과를 서비스데스크로 전송하는 API.
+    수신된 메시지는 DB에 저장되고, 해당 사용자의 위젯으로 실시간 푸시됩니다.
+  version: 1.0.0
+
+servers:
+  - url: /api/rpa
+    description: 서비스데스크 서버
+
+security:
+  - rpaClientAuth: []
+
+paths:
+  /messages:
+    post:
+      summary: RPA 메시지 수신
+      description: |
+        RPA 배치 실행 결과를 수신해 DB에 저장하고 위젯으로 실시간 푸시합니다.
+
+        **멱등성**: `loginId + messageCode` 조합이 동일하면 중복 저장하지 않고 `{ ok: true }` 반환합니다.
+        `messageCode`가 빈 문자열이면 멱등성을 적용하지 않습니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RpaMessageRequest'
+            examples:
+              출근알림:
+                summary: 출근 알림 (HR_RPA_100)
+                value:
+                  clientId: my-rpa-client
+                  secret: my-secret
+                  rpaCode: HR_RPA_100
+                  loginId: user@company.com
+                  messageCode: BATCH-20260601-001
+                  message: 출근 알림
+                  overtime: "0"
+              연장근무알림:
+                summary: 연장근무 알림 (HR_RPA_120)
+                value:
+                  clientId: my-rpa-client
+                  secret: my-secret
+                  rpaCode: HR_RPA_120
+                  loginId: user@company.com
+                  messageCode: BATCH-20260601-002
+                  message: 연장근무 발생
+                  overtime: "30"
+                  startTime: "202606011800"
+                  endTime: "202606011830"
+                  userType: GENERAL
+                  buttonName: 연장근무 확인하기
+              결재요청:
+                summary: 결재 요청 (HR_APPROVAL_REQUEST)
+                value:
+                  clientId: my-rpa-client
+                  secret: my-secret
+                  rpaCode: HR_APPROVAL_REQUEST
+                  loginId: user@company.com
+                  messageCode: APPROVAL-20260601-001
+                  message: 결재 요청이 도착했습니다
+                  overtime: "0"
+      responses:
+        '200':
+          description: 처리 결과
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RpaMessageResponse'
+              examples:
+                성공:
+                  value:
+                    ok: true
+                중복:
+                  value:
+                    ok: true
+                잘못된rpaCode:
+                  value:
+                    code: "4001"
+                    message: INVALID_RPA_CODE
+                미등록loginId:
+                  value:
+                    code: "4004"
+                    message: USER_NOT_FOUND
+                내부오류:
+                  value:
+                    code: INTERNAL_ERROR
+                    message: Internal server error
+        '400':
+          description: 필수 파라미터 누락
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: INVALID_REQUEST
+                message: loginId is required
+        '401':
+          description: 인증 실패 (clientId/secret 불일치 또는 IP 미허용)
+
+components:
+  securitySchemes:
+    rpaClientAuth:
+      type: apiKey
+      in: header
+      name: X-Client-Id
+      description: |
+        `clientId`와 `secret`을 요청 body에 포함해 인증합니다.
+        IP 화이트리스트 검증도 함께 수행합니다.
+
+  schemas:
+    RpaMessageRequest:
+      type: object
+      required:
+        - clientId
+        - secret
+        - rpaCode
+        - loginId
+        - messageCode
+        - message
+        - overtime
+      properties:
+        clientId:
+          type: string
+          description: RPA 클라이언트 식별자
+          example: my-rpa-client
+        secret:
+          type: string
+          description: RPA 클라이언트 시크릿
+          example: my-secret
+        rpaCode:
+          type: string
+          description: |
+            RPA 이벤트 코드. 아래 값 허용:
+            - `HR_RPA_090` ~ `HR_RPA_800` (근태 배치 7종)
+            - `HR_APPROVAL_REQUEST`, `HR_APPROVAL_COMPLETED`, `HR_APPROVAL_WITHDRAW`, `HR_APPROVAL_RETURN` (결재 상시 4종)
+            - 별칭: `HR_GO_TO_WORK` → `HR_RPA_100`, `HR_GET_OFF_WORK` → `HR_RPA_090`
+          example: HR_RPA_100
+        loginId:
+          type: string
+          description: 수신 대상 사용자 이메일 (서비스데스크 등록 고객 email과 일치해야 함)
+          example: user@company.com
+        messageCode:
+          type: string
+          description: |
+            멱등성 키. 동일한 `loginId + messageCode` 조합은 중복 저장하지 않음.
+            빈 문자열이면 멱등성 미적용 (매번 저장).
+          example: BATCH-20260601-001
+        message:
+          type: string
+          description: 위젯에 표시할 메시지 본문 (최대 4000자)
+          example: 출근 알림
+        overtime:
+          type: string
+          description: 연장근무 시간 (분)
+          example: "0"
+        startTime:
+          type: string
+          description: 근무 시작 시각 (yyyymmddhh24mi)
+          example: "202606010900"
+        endTime:
+          type: string
+          description: 근무 종료 시각 (yyyymmddhh24mi)
+          example: "202606011800"
+        userType:
+          type: string
+          description: 사용자 유형
+          enum: [EXCEPTION, GENERAL]
+          example: GENERAL
+        buttonName:
+          type: string
+          description: |
+            버튼 표시 텍스트 오버라이드. 값이 있으면 rpaCode 기본 버튼 label을 이 값으로 대체.
+            없으면 rpaCode 기본 label 사용.
+          example: 출근 확인하기
+
+    RpaMessageResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          description: 정상 처리 시 true
+        code:
+          type: string
+          description: 에러 코드 (정상 시 없음)
+          enum: ["4001", "4004", "INTERNAL_ERROR"]
+        message:
+          type: string
+          description: 에러 메시지 (정상 시 없음)
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          example: INVALID_REQUEST
+        message:
+          type: string
+          example: loginId is required

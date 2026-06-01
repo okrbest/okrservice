@@ -176,6 +176,8 @@ import imports from "./imports";
 import exporter from "./exporter";
 import { moduleObjects } from "./data/permissions/actions/permission";
 import { getIntentButtons, applyButtonName } from "./data/resolvers/queries/intent";
+import * as swaggerUi from "swagger-ui-express";
+import * as yaml from "js-yaml";
 import { getEnabledServices } from "@erxes/api-utils/src/serviceDiscovery";
 import { applyInspectorEndpoints } from "@erxes/api-utils/src/inspect";
 import { handleCoreLogin, handleMagiclink, ssocallback } from "./saas";
@@ -686,6 +688,20 @@ app.get("/get-import-file/:fileName", async (req, res) => {
 app.get('/subscriptionPlugin.js', (_req, res) => {
   res.sendFile(path.resolve(__dirname, 'graphql', 'subscriptionPlugin.js'));
 });
+
+/**
+ * RPA API Swagger UI
+ * GET /api/rpa/docs
+ */
+const rpaApiSpec = yaml.load(
+  fs.readFileSync(path.resolve(__dirname, "private/rpa-api.yaml"), "utf8")
+) as object;
+
+app.use(
+  "/api/rpa/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(rpaApiSpec, { customSiteTitle: "서비스데스크 RPA API" })
+);
 
 /**
  * RPA 메시지 수신 API
