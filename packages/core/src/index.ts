@@ -175,7 +175,7 @@ import templates from "./templates";
 import imports from "./imports";
 import exporter from "./exporter";
 import { moduleObjects } from "./data/permissions/actions/permission";
-import { getIntentButtons } from "./data/resolvers/queries/intent";
+import { getIntentButtons, applyButtonName } from "./data/resolvers/queries/intent";
 import { getEnabledServices } from "@erxes/api-utils/src/serviceDiscovery";
 import { applyInspectorEndpoints } from "@erxes/api-utils/src/inspect";
 import { handleCoreLogin, handleMagiclink, ssocallback } from "./saas";
@@ -690,8 +690,8 @@ app.get('/subscriptionPlugin.js', (_req, res) => {
 /**
  * RPA 메시지 수신 API
  * KiwiBox 서버가 배치 실행 결과를 POST 한다.
- * Content-Type: application/x-www-form-urlencoded
- * Body: rpaCode, messageCode, message, loginId, overtime
+ * Content-Type: application/json
+ * Body: rpaCode, messageCode, message, loginId, overtime, startTime, endTime, userType, buttonName
  */
 const RPA_CODE_ALIASES: Record<string, string> = {
   HR_GO_TO_WORK: 'HR_RPA_100',
@@ -718,6 +718,7 @@ app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
       startTime = '',
       endTime = '',
       userType = '',
+      buttonName = '',
     } = req.body as Record<string, string>;
 
     // 별칭 정규화
@@ -740,7 +741,7 @@ app.post('/api/rpa/messages', validateRpaClient, async (req, res) => {
     }
 
     // DB 저장
-    const buttons = getIntentButtons(rpaCode);
+    const buttons = applyButtonName(getIntentButtons(rpaCode), buttonName);
     const saved = await models.RpaMessages.createRpaMessage({
       loginId,
       rpaCode,

@@ -32,3 +32,12 @@ const INTENT_MAP: Record<string, IntentButton[]> = {
 export function getIntentButtons(rpaCode: string): IntentButton[] {
   return [...(INTENT_MAP[rpaCode] || [])];
 }
+
+/**
+ * buttonName이 주어지면 버튼 전체의 label을 덮어쓴다.
+ * 빈 문자열이면 원본 그대로 반환.
+ */
+export function applyButtonName(buttons: IntentButton[], buttonName: string): IntentButton[] {
+  if (!buttonName) return buttons;
+  return buttons.map(b => ({ ...b, label: buttonName }));
+}

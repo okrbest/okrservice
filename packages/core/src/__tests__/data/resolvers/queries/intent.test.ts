@@ -1,4 +1,4 @@
-import { getIntentButtons } from '../../../../data/resolvers/queries/intent';
+import { getIntentButtons, applyButtonName } from '../../../../data/resolvers/queries/intent';
 
 describe('getIntentButtons', () => {
   it('HR_RPA_100 → 출퇴근 체크 버튼 반환', () => {
@@ -59,5 +59,38 @@ describe('getIntentButtons', () => {
 
   it('빈 문자열 → 빈 배열', () => {
     expect(getIntentButtons('')).toEqual([]);
+  });
+});
+
+describe('applyButtonName', () => {
+  it('buttonName 전달 시 모든 버튼 label 오버라이드', () => {
+    const buttons = getIntentButtons('HR_RPA_100');
+    expect(applyButtonName(buttons, '출근하기')).toEqual([
+      { label: '출근하기', path: '/MobileMain.do' },
+    ]);
+  });
+
+  it('buttonName 전달 시 버튼 여러 개 전체 오버라이드', () => {
+    const buttons = getIntentButtons('HR_RPA_120');
+    const result = applyButtonName(buttons, '확인하기');
+    expect(result).toEqual([
+      { label: '확인하기', path: '/MobileMain.do' },
+      { label: '확인하기', path: '/MobileOvertimeAppl.do' },
+    ]);
+  });
+
+  it('빈 buttonName → 원본 반환', () => {
+    const buttons = getIntentButtons('HR_RPA_100');
+    expect(applyButtonName(buttons, '')).toEqual(buttons);
+  });
+
+  it('빈 버튼 배열 + buttonName → 빈 배열', () => {
+    expect(applyButtonName([], '무언가')).toEqual([]);
+  });
+
+  it('원본 buttons 객체를 변경하지 않음 (불변성)', () => {
+    const buttons = getIntentButtons('HR_RPA_100');
+    applyButtonName(buttons, '변경');
+    expect(buttons[0].label).toBe('출퇴근 체크');
   });
 });
