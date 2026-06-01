@@ -48,7 +48,8 @@
 | `clientId + secret` body 인증 | ✅ 완료 | `packages/core/src/middlewares/validateRpaClient.ts` | bcrypt 검증 + IP 화이트리스트 |
 | `rpaCode`, `messageCode`, `message`, `loginId`, `overtime` 파싱 | ✅ 완료 | `packages/core/src/index.ts` | |
 | `startTime`, `endTime`, `userType` 파싱/저장 | ✅ 완료 | `packages/core/src/index.ts`, `db/models/definitions/rpaMessages.ts` | |
-| form-urlencoded Content-Type | ✅ 완료 | `express.urlencoded` 미들웨어 | |
+| `buttonName` 파싱 — 값이 있으면 버튼 label 오버라이드 | ✅ 완료 | `packages/core/src/index.ts`, `data/resolvers/queries/intent.ts` `applyButtonName()` | |
+| JSON Body (`application/json`) | ✅ 완료 | `express.json()` 글로벌 미들웨어 | form-urlencoded → JSON으로 변경 |
 | 응답 `{ "code": "0", "message": "OK" }` | ✅ 완료 | `packages/core/src/index.ts` | |
 | rpaCode 별칭 처리 (`HR_GO_TO_WORK` → `HR_RPA_100` 등) | ✅ 완료 | `packages/core/src/index.ts` | |
 | HR/근태 배치 rpaCode 7종 (`HR_RPA_090`~`HR_RPA_800`) | ✅ 완료 | `VALID_RPA_CODES` Set | |
@@ -89,6 +90,7 @@
 | 실시간 채널 | WebSocket (Socket.IO 또는 native) | graphql-ws | erxes 기존 스택 |
 | 메시지 브로커 | Redis Pub/Sub | Redis Pub/Sub (graphql-redis-subscriptions) | 동일 |
 | 캐시 | Redis | Redis | 동일 |
+| RPA API Body 형식 | — | `application/json` | form-urlencoded → JSON으로 변경 |
 
 ---
 
