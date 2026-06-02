@@ -10,9 +10,6 @@ servers:
   - url: /api/rpa
     description: 서비스데스크 서버
 
-security:
-  - rpaClientAuth: []
-
 paths:
   /messages:
     post:
@@ -20,7 +17,9 @@ paths:
       description: |
         RPA 배치 실행 결과를 수신해 DB에 저장하고 위젯으로 실시간 푸시합니다.
 
-        **멱등성**: `loginId + messageCode` 조합이 동일하면 중복 저장하지 않고 `{ ok: true }` 반환합니다.
+        **인증**: `clientId` + `secret`을 request body에 포함. 별도 인증 헤더 없음. IP 화이트리스트 병행 검증.
+
+        **멱등성**: `loginId + messageCode` 조합이 동일하면 중복 저장하지 않고 성공 응답 반환.
         `messageCode`가 빈 문자열이면 멱등성을 적용하지 않습니다.
       requestBody:
         required: true
@@ -30,29 +29,28 @@ paths:
               $ref: '#/components/schemas/RpaMessageRequest'
             examples:
               출근알림:
-                summary: 출근 알림 (HR_RPA_100)
+                summary: 출근체크 + PC-ON (5240이 HR_PC_ON으로 전송)
                 value:
                   clientId: my-rpa-client
                   secret: my-secret
-                  rpaCode: HR_RPA_100
+                  rpaCode: HR_PC_ON
                   loginId: user@company.com
-                  messageCode: BATCH-20260601-001
-                  message: 출근 알림
+                  messageCode: TAA_100
+                  message: 출근체크가 필요합니다.
                   overtime: "0"
               연장근무알림:
-                summary: 연장근무 알림 (HR_RPA_120)
+                summary: 퇴근체크/연장 (5240이 HR_GET_OFF_WORK로 전송)
                 value:
                   clientId: my-rpa-client
                   secret: my-secret
-                  rpaCode: HR_RPA_120
+                  rpaCode: HR_GET_OFF_WORK
                   loginId: user@company.com
-                  messageCode: BATCH-20260601-002
-                  message: 연장근무 발생
+                  messageCode: TAA_120
+                  message: 연장근무가 발생했습니다.
                   overtime: "30"
                   startTime: "202606011800"
                   endTime: "202606011830"
                   userType: GENERAL
-                  buttonName: 연장근무 확인하기
               결재요청:
                 summary: 결재 요청 (HR_APPROVAL_REQUEST)
                 value:
@@ -60,8 +58,8 @@ paths:
                   secret: my-secret
                   rpaCode: HR_APPROVAL_REQUEST
                   loginId: user@company.com
-                  messageCode: APPROVAL-20260601-001
-                  message: 결재 요청이 도착했습니다
+                  messageCode: MSG-20260601-001
+                  message: 결재 요청이 도착했습니다.
                   overtime: "0"
       responses:
         '200':
@@ -102,15 +100,6 @@ paths:
           description: 인증 실패 (clientId/secret 불일치 또는 IP 미허용)
 
 components:
-  securitySchemes:
-    rpaClientAuth:
-      type: apiKey
-      in: header
-      name: X-Client-Id
-      description: |
-        `clientId`와 `secret`을 요청 body에 포함해 인증합니다.
-        IP 화이트리스트 검증도 함께 수행합니다.
-
   schemas:
     RpaMessageRequest:
       type: object
@@ -150,9 +139,12 @@ components:
         messageCode:
           type: string
           description: |
-            멱등성 키. 동일한 `loginId + messageCode` 조합은 중복 저장하지 않음.
+            메시지 분류 코드. 5240이 생성하여 전송.
+            - 배치(getChatbotQueueList): content 토큰 (예: `TAA_100`)
+            - 결재(getChatbotPushQueueList): msgId 자체
+            서비스데스크는 이 값을 멱등성 키로 활용 — 동일한 `loginId + messageCode` 조합은 중복 저장하지 않음.
             빈 문자열이면 멱등성 미적용 (매번 저장).
-          example: BATCH-20260601-001
+          example: TAA_100
         message:
           type: string
           description: 위젯에 표시할 메시지 본문 (최대 4000자)
@@ -177,7 +169,8 @@ components:
         buttonName:
           type: string
           description: |
-            버튼 표시 텍스트 오버라이드. 값이 있으면 rpaCode 기본 버튼 label을 이 값으로 대체.
+            **서비스데스크 확장 파라미터** (5240 원본 스펙에 없음).
+            값이 있으면 rpaCode 기본 버튼 label을 이 값으로 대체.
             없으면 rpaCode 기본 label 사용.
           example: 출근 확인하기
 
