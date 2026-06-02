@@ -50,8 +50,8 @@
 | `startTime`, `endTime`, `userType` 파싱/저장 | ✅ 완료 | `packages/core/src/index.ts`, `db/models/definitions/rpaMessages.ts` | |
 | `buttonName` 파싱 — 값이 있으면 버튼 label 오버라이드 | ✅ 완료 | `packages/core/src/index.ts`, `data/resolvers/queries/intent.ts` `applyButtonName()` | |
 | JSON Body (`application/json`) | ✅ 완료 | `express.json()` 글로벌 미들웨어 | form-urlencoded → JSON으로 변경 |
-| 응답 `{ "code": "0", "message": "OK" }` | ✅ 완료 | `packages/core/src/index.ts` | |
-| rpaCode 별칭 처리 (`HR_GO_TO_WORK` → `HR_RPA_100` 등) | ✅ 완료 | `packages/core/src/index.ts` | |
+| 응답 `{ "code": "0", "message": "OK" }` | ⚠️ 부분 | `packages/core/src/index.ts` | 정상 시 `{ ok: true }` 반환. 5240이 응답 본문을 사용하지 않아 기능상 무관하나 문서 스펙과 다름 |
+| rpaCode 별칭 처리 (developer_guide §2.2 기준 4종) | ✅ 완료 | `packages/core/src/index.ts` | `HR_PC_ON`→`HR_RPA_100`, `HR_PC_OFF`→`HR_RPA_800`, `HR_GET_OFF_WORK`→`HR_RPA_120`, `HR_GO_TO_WORK`→`HR_RPA_100` |
 | HR/근태 배치 rpaCode 7종 (`HR_RPA_090`~`HR_RPA_800`) | ✅ 완료 | `VALID_RPA_CODES` Set | |
 | 결재 상시 rpaCode 4종 (`HR_APPROVAL_REQUEST` 등) | ✅ 완료 | `packages/core/src/index.ts`, `data/resolvers/queries/intent.ts` | `VALID_RPA_CODES` + intent 매핑 추가 |
 | 알 수 없는 rpaCode → `code: 4001, INVALID_RPA_CODE` | ✅ 완료 | `packages/core/src/index.ts` | |
