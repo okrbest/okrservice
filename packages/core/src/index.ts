@@ -710,8 +710,10 @@ app.use(
  * Body: rpaCode, messageCode, message, loginId, overtime, startTime, endTime, userType, buttonName
  */
 const RPA_CODE_ALIASES: Record<string, string> = {
-  HR_GO_TO_WORK: 'HR_RPA_100',
-  HR_GET_OFF_WORK: 'HR_RPA_090',
+  HR_GO_TO_WORK: 'HR_RPA_100',   // PRD 호환
+  HR_PC_ON: 'HR_RPA_100',        // 5240 실제 전송 코드 (developer_guide §2.2)
+  HR_GET_OFF_WORK: 'HR_RPA_120', // 5240이 HR_RPA_120/130/140 모두 이 코드로 전송 (developer_guide §2.2)
+  HR_PC_OFF: 'HR_RPA_800',       // 5240 실제 전송 코드 (developer_guide §2.2)
 };
 
 const VALID_RPA_CODES = new Set([

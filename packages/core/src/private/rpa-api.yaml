@@ -135,10 +135,14 @@ components:
           type: string
           description: |
             RPA 이벤트 코드. 아래 값 허용:
-            - `HR_RPA_090` ~ `HR_RPA_800` (근태 배치 7종)
+            - `HR_RPA_090` ~ `HR_RPA_800` (근태 배치 7종, 정규 코드)
             - `HR_APPROVAL_REQUEST`, `HR_APPROVAL_COMPLETED`, `HR_APPROVAL_WITHDRAW`, `HR_APPROVAL_RETURN` (결재 상시 4종)
-            - 별칭: `HR_GO_TO_WORK` → `HR_RPA_100`, `HR_GET_OFF_WORK` → `HR_RPA_090`
-          example: HR_RPA_100
+            - 별칭 (5240이 실제로 전송하는 코드):
+              - `HR_PC_ON` → `HR_RPA_100` (출근체크 + PC-ON)
+              - `HR_PC_OFF` → `HR_RPA_800` (PC 종료)
+              - `HR_GET_OFF_WORK` → `HR_RPA_120` (퇴근체크/연장 — HR_RPA_120/130/140 공통 별칭)
+              - `HR_GO_TO_WORK` → `HR_RPA_100` (PRD 호환)
+          example: HR_PC_ON
         loginId:
           type: string
           description: 수신 대상 사용자 이메일 (서비스데스크 등록 고객 email과 일치해야 함)
