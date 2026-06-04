@@ -21,9 +21,7 @@ export const getEnv = () => {
   const subdomain = getSubdomain();
 
   const getItem = (name: string) => {
-    const fromProcess =
-      typeof process !== 'undefined' && process.env ? process.env[name] : undefined;
-    const value = wenv[name] || fromProcess || '';
+    const value = wenv[name] || process.env[name] || "";
     // Only replace '<subdomain>' if it exists in the value
     if (value.includes("<subdomain>")) {
       return value.replace("<subdomain>", subdomain);

@@ -136,6 +136,8 @@ const TicketItem: React.FC<Props> = (props) => {
       pcoff: { bg: '#e0f2fe', text: '#0369a1' },
       approval: { bg: '#eff4ff', text: '#1e3a8a' },
       system: { bg: '#fff4ed', text: '#c2410c' },
+      mobile: { bg: '#ecfeff', text: '#0e7490' },
+      tigris: { bg: '#f0fdf4', text: '#15803d' },
     };
 
     return colorMap[functionCategory] || { bg: '#f5f5f5', text: '#616161' };
@@ -165,6 +167,10 @@ const TicketItem: React.FC<Props> = (props) => {
         return '전자결재';
       case 'system':
         return '시스템';
+      case 'mobile':
+        return '모바일';
+      case 'tigris':
+        return '티그리스';
       default:
         return functionCategory;
     }

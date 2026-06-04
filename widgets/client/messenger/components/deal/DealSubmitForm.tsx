@@ -397,7 +397,7 @@ const DealSubmitForm: React.FC<Props> = ({
                       cursor: "pointer",
                       fontSize: "14px",
                       fontWeight: 600,
-                      color: "rgb(51, 119, 211)",
+                      color: "#334155",
                       userSelect: "none",
                     }}
                   >

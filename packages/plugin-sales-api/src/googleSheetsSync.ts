@@ -193,9 +193,11 @@ async function getDealListCustomFields(
   return list;
 }
 
-async function getCustomerDateFieldIds(subdomain: string): Promise<{
+async function getCustomerSpecialFieldIds(subdomain: string): Promise<{
   mailSentDateFieldId: string | null;
   lastContactDateFieldId: string | null;
+  sendStatusFieldId: string | null;
+  errorMessageFieldId: string | null;
 }> {
   const groups = await sendCoreMessage({
     subdomain,
@@ -207,6 +209,8 @@ async function getCustomerDateFieldIds(subdomain: string): Promise<{
 
   let mailSentDateFieldId: string | null = null;
   let lastContactDateFieldId: string | null = null;
+  let sendStatusFieldId: string | null = null;
+  let errorMessageFieldId: string | null = null;
 
   for (const group of Array.isArray(groups) ? groups : []) {
     const fields = await sendCoreMessage({
@@ -233,9 +237,52 @@ async function getCustomerDateFieldIds(subdomain: string): Promise<{
       ) {
         lastContactDateFieldId = f._id;
       }
+      if (name === "발송상태") sendStatusFieldId = f._id;
+      if (name === "오류메시지") errorMessageFieldId = f._id;
     }
   }
-  return { mailSentDateFieldId, lastContactDateFieldId };
+  return { mailSentDateFieldId, lastContactDateFieldId, sendStatusFieldId, errorMessageFieldId };
+}
+
+async function getDealSpecialFieldIds(
+  subdomain: string,
+  pipelineId: string
+): Promise<{ sendStatusFieldId: string | null; errorMessageFieldId: string | null }> {
+  const groups = await sendCoreMessage({
+    subdomain,
+    action: "fieldsGroups.find",
+    data: {
+      query: {
+        contentType: "sales:deal",
+        $or: [
+          { "config.pipelineIds": { $in: [pipelineId] } },
+          { "config.pipelineIds": { $size: 0 } },
+          { "config.boardsPipelines.pipelineIds": { $in: [pipelineId] } },
+        ],
+      },
+    },
+    isRPC: true,
+    defaultValue: [],
+  });
+
+  let sendStatusFieldId: string | null = null;
+  let errorMessageFieldId: string | null = null;
+
+  for (const group of Array.isArray(groups) ? groups : []) {
+    const fields = await sendCoreMessage({
+      subdomain,
+      action: "fields.find",
+      data: { query: { groupId: group._id } },
+      isRPC: true,
+      defaultValue: [],
+    });
+    for (const f of Array.isArray(fields) ? fields : []) {
+      const name = ((f.text || f.name) || "").trim();
+      if (name === "발송상태") sendStatusFieldId = f._id;
+      if (name === "오류메시지") errorMessageFieldId = f._id;
+    }
+  }
+  return { sendStatusFieldId, errorMessageFieldId };
 }
 
 /**
@@ -339,11 +386,21 @@ export async function syncDealsToGoogleSheet(
     undefined
   );
 
-  const [dealCustomFields, { mailSentDateFieldId, lastContactDateFieldId }] =
-    await Promise.all([
-      getDealListCustomFields(subdomain, pipelineId),
-      getCustomerDateFieldIds(subdomain),
-    ]);
+  const [
+    dealCustomFields,
+    { mailSentDateFieldId, lastContactDateFieldId, sendStatusFieldId: customerSendStatusFieldId, errorMessageFieldId: customerErrorMessageFieldId },
+    { sendStatusFieldId: dealSendStatusFieldId, errorMessageFieldId: dealErrorMessageFieldId },
+  ] = await Promise.all([
+    getDealListCustomFields(subdomain, pipelineId),
+    getCustomerSpecialFieldIds(subdomain),
+    getDealSpecialFieldIds(subdomain, pipelineId),
+  ]);
+
+  // 발송상태·오류메시지: 딜 커스텀 필드 우선, 없으면 고객 커스텀 필드
+  const sendStatusFieldId = dealSendStatusFieldId ?? customerSendStatusFieldId;
+  const errorMessageFieldId = dealErrorMessageFieldId ?? customerErrorMessageFieldId;
+  const sendStatusIsDeal = !!dealSendStatusFieldId;
+  const errorMessageIsDeal = !!dealErrorMessageFieldId;
 
   // 첨부파일 링크용: 프론트 fileBaseUrl → 요청 origin → core/config → env → 기본 도메인 순. 항상 절대 URL이 되도록 마지막에 기본 도메인 사용
   const fileBaseUrlFromClient = params.fileBaseUrl?.trim() || "";
@@ -396,6 +453,8 @@ export async function syncDealsToGoogleSheet(
 
   const headers = [
     "메일발송일",
+    "발송상태",
+    "오류메시지",
     "직전소통일",
     "제목",
     "내용",
@@ -406,6 +465,8 @@ export async function syncDealsToGoogleSheet(
     "안내자",
     ...Array.from({ length: MAX_ATTACHMENT_COLUMNS }, (_, i) => `첨부파일${i + 1}`),
     ...dealCustomFields.map((f) => f.text),
+    "deal_id",
+    "erxes_updated_at",
   ];
 
   const rows: string[][] = [headers];
@@ -447,8 +508,17 @@ export async function syncDealsToGoogleSheet(
     const companyNames =
       companies.map((c) => c.primaryName || "-").join(", ") || "-";
 
+    const sendStatusValue = sendStatusIsDeal
+      ? getDealCustomFieldValue(item.customFieldsData, sendStatusFieldId!)
+      : getCustomerCustomFieldValue(customers, sendStatusFieldId);
+    const errorMessageValue = errorMessageIsDeal
+      ? getDealCustomFieldValue(item.customFieldsData, errorMessageFieldId!)
+      : getCustomerCustomFieldValue(customers, errorMessageFieldId);
+
     rows.push([
       getCustomerCustomFieldValue(customers, mailSentDateFieldId),
+      sendStatusValue,
+      errorMessageValue,
       getCustomerCustomFieldValue(customers, lastContactDateFieldId),
       item.name || "",
       stripHtml(item.description || ""),
@@ -461,6 +531,8 @@ export async function syncDealsToGoogleSheet(
       ...dealCustomFields.map((f) =>
         getDealCustomFieldValue(item.customFieldsData, f._id)
       ),
+      String(item._id || ""),
+      item.modifiedAt ? new Date(item.modifiedAt).toISOString() : "",
     ]);
   }
 
@@ -524,6 +596,9 @@ export async function syncDealsToGoogleSheet(
     );
     const sheetId = sheet?.properties?.sheetId;
     if (typeof sheetId === "number") {
+      const totalCols = headers.length;
+      const hiddenStartCol = totalCols - 2; // deal_id, erxes_updated_at (0-indexed)
+
       await sheets.spreadsheets.batchUpdate({
         spreadsheetId,
         requestBody: {
@@ -548,6 +623,18 @@ export async function syncDealsToGoogleSheet(
                   },
                 },
                 fields: "userEnteredFormat.backgroundColor,userEnteredFormat.textFormat.bold",
+              },
+            },
+            {
+              updateDimensionProperties: {
+                range: {
+                  sheetId,
+                  dimension: "COLUMNS",
+                  startIndex: hiddenStartCol,
+                  endIndex: totalCols,
+                },
+                properties: { hiddenByUser: true },
+                fields: "hiddenByUser",
               },
             },
           ],

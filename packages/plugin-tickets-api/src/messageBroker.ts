@@ -560,60 +560,6 @@ export const setupMessageConsumers = async () => {
         );
         
         console.log('✅ Widget alarm and emailSent set to false - Send Email button enabled');
-
-        // 직원(또는 내부 사용자) 댓글 시, 티켓에 연결된 고객 앱으로 모바일 푸시를 보낸다.
-        try {
-          const customerIds = await sendCoreMessage({
-            subdomain,
-            action: "conformities.savedConformity",
-            data: {
-              mainType: "ticket",
-              mainTypeId: typeId,
-              relTypes: ["customer"],
-            },
-            isRPC: true,
-            defaultValue: [],
-          });
-
-          if (customerIds?.length) {
-            const receiverIds = await sendMessage({
-              serviceName: "clientportal",
-              subdomain,
-              action: "clientPortalUsers.getIds",
-              data: {
-                erxesCustomerId: { $in: customerIds },
-              },
-              isRPC: true,
-              defaultValue: [],
-            });
-
-            if (receiverIds?.length) {
-              await sendMessage({
-                serviceName: "clientportal",
-                subdomain,
-                action: "sendNotification",
-                data: {
-                  receivers: receiverIds,
-                  title: "티켓에 새 답변이 등록되었습니다",
-                  content: `${ticket.name || "티켓"} 댓글을 확인해 주세요`,
-                  notifType: "system",
-                  link: `/tickets?itemId=${typeId}`,
-                  isMobile: true,
-                  mobileConfig: {
-                    channelId: "fcm_fallback_notification_channel",
-                    sound: "default",
-                  },
-                  eventData: {
-                    ticketId: typeId,
-                    type: "ticketComment",
-                  },
-                },
-              });
-            }
-          }
-        } catch (pushError) {
-          console.error("❌ Failed to send customer mobile push for staff comment:", pushError);
-        }
         
         // 🔥 자동 이메일 발송 비활성화 - 수동 버튼으로만 발송
         // if (wasWidgetAlarmTrue) {

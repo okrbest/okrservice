@@ -38,198 +38,6 @@ import {
   sendNotificationsMessage,
 } from "../../../messageBroker";
 import { TICKET_AUTOMATION_TRIGGER_SOURCE } from "../../../constants";
-import { sendMessage } from "@erxes/api-utils/src/core";
-
-const RESOLVED_PROBABILITY = "Resolved";
-const NEW_TICKET_PROBABILITY = "10%";
-
-const notifyStaffNewTicketIssued = async (
-  models: IModels,
-  subdomain: string,
-  ticket: { _id: string; name?: string; description?: string },
-  stage: { _id: string; pipelineId: string },
-  currentUser?: IUserDocument
-) => {
-  const pipeline = await models.Pipelines.getPipeline(stage.pipelineId);
-
-  const receiverIds = Array.from(
-    new Set([ ...((pipeline as any)?.newTicketNotifyUserIds || []) ])
-  ).filter((id) => id);
-
-  if (!receiverIds.length) return;
-
-  sendNotificationsMessage({
-    subdomain,
-    action: "send",
-    data: {
-      createdUser: currentUser,
-      title: "새로운 티켓이 발급되었습니다",
-      contentType: "ticket",
-      contentTypeId: ticket._id,
-      notifType: "ticketAdd",
-      action: "새로운 티켓이 발급되었습니다",
-      content: ticket?.name || "새 티켓",
-      link: `/ticket/board?id=${pipeline.boardId}&pipelineId=${pipeline._id}&itemId=${ticket._id}`,
-      itemName: ticket?.name,
-      itemDescription: ticket?.description,
-      receivers: receiverIds,
-    },
-  });
-
-  sendCoreMessage({
-    subdomain: "os",
-    action: "sendMobileNotification",
-    data: {
-      title: "새로운 티켓이 발급되었습니다",
-      body: ticket?.name || "새 티켓",
-      receivers: receiverIds,
-      data: {
-        type: "ticket",
-        id: ticket._id,
-      },
-    },
-  });
-};
-
-const notifyCustomerTicketResolved = async (
-  models: IModels,
-  subdomain: string,
-  ticket: { _id: string; name?: string },
-  oldStageId?: string,
-  newStageId?: string
-) => {
-  if (!ticket?._id || !oldStageId || !newStageId || oldStageId === newStageId) return;
-
-  const [oldStage, newStage] = await Promise.all([
-    models.Stages.findOne({ _id: oldStageId }).lean(),
-    models.Stages.findOne({ _id: newStageId }).lean(),
-  ]);
-
-  const enteredResolved =
-    newStage?.probability === RESOLVED_PROBABILITY &&
-    oldStage?.probability !== RESOLVED_PROBABILITY;
-
-  if (!enteredResolved) return;
-
-  const customerIds = await sendCoreMessage({
-    subdomain,
-    action: "conformities.savedConformity",
-    data: {
-      mainType: "ticket",
-      mainTypeId: ticket._id,
-      relTypes: ["customer"],
-    },
-    isRPC: true,
-    defaultValue: [],
-  });
-
-  if (!customerIds?.length) return;
-
-  const receiverIds = await sendMessage({
-    serviceName: "clientportal",
-    subdomain,
-    action: "clientPortalUsers.getIds",
-    data: {
-      erxesCustomerId: { $in: customerIds },
-    },
-    isRPC: true,
-    defaultValue: [],
-  });
-
-  if (!receiverIds?.length) return;
-
-  const resolvedMessage = `${ticket?.name || "티켓"} 문의 처리 및 답변 완료 되었습니다`;
-
-  await sendMessage({
-    serviceName: "clientportal",
-    subdomain,
-    action: "sendNotification",
-    data: {
-      receivers: receiverIds,
-      title: resolvedMessage,
-      content: resolvedMessage,
-      notifType: "system",
-      link: `/tickets?itemId=${ticket._id}`,
-      isMobile: true,
-      mobileConfig: {
-        channelId: "fcm_fallback_notification_channel",
-        sound: "default",
-      },
-      eventData: {
-        ticketId: ticket._id,
-        type: "ticketResolved",
-      },
-    },
-  });
-};
-
-const notifyCustomerTicketDescriptionUpdated = async (
-  models: IModels,
-  subdomain: string,
-  ticket: { _id: string; name?: string },
-  oldDescription?: string,
-  newDescription?: string
-) => {
-  if (!ticket?._id) return;
-
-  const before = oldDescription ?? "";
-  const after = newDescription ?? "";
-  if (before === after) return;
-
-  const customerIds = await sendCoreMessage({
-    subdomain,
-    action: "conformities.savedConformity",
-    data: {
-      mainType: "ticket",
-      mainTypeId: ticket._id,
-      relTypes: ["customer"],
-    },
-    isRPC: true,
-    defaultValue: [],
-  });
-
-  if (!customerIds?.length) return;
-
-  const receiverIds = await sendMessage({
-    serviceName: "clientportal",
-    subdomain,
-    action: "clientPortalUsers.getIds",
-    data: {
-      erxesCustomerId: { $in: customerIds },
-    },
-    isRPC: true,
-    defaultValue: [],
-  });
-
-  if (!receiverIds?.length) return;
-
-  const descriptionUpdatedTitle = "티켓에 새 답변이 등록되었습니다";
-  const descriptionUpdatedMessage = `${
-    ticket?.name || "티켓"
-  } `;
-
-  await sendMessage({
-    serviceName: "clientportal",
-    subdomain,
-    action: "sendNotification",
-    data: {
-      receivers: receiverIds,
-      title: descriptionUpdatedTitle,
-      content: descriptionUpdatedMessage,
-      notifType: "system",
-      link: `/tickets?itemId=${ticket._id}`,
-      isMobile: true,
-      mobileConfig: {
-        channelId: "fcm_fallback_notification_channel",
-        sound: "default",
-      },
-      eventData: {
-        ticketId: ticket._id,
-        type: "ticketDescriptionUpdated",
-      },
-    },
-  });
-};
 
 export const itemResolver = async (
   models: IModels,
@@ -349,16 +157,6 @@ export const itemsAdd = async (
 
   const item = await createModel(extendedDoc);
   const stage = await models.Stages.getStage(item.stageId);
-
-  if (type === "ticket" && stage?.probability === NEW_TICKET_PROBABILITY) {
-    await notifyStaffNewTicketIssued(
-      models,
-      subdomain,
-      item as any,
-      stage as any,
-      user
-    );
-  }
 
   await createConformity(subdomain, {
     mainType: type,
@@ -503,11 +301,6 @@ export const itemsEdit = async (
   user: IUserDocument,
   modelUpate
 ) => {
-  const isTicketDescriptionChanged =
-    type === "ticket" &&
-    Object.prototype.hasOwnProperty.call(doc, "description") &&
-    doc.description !== oldItem?.description;
-
   const extendedDoc = {
     ...doc,
     modifiedAt: new Date(),
@@ -516,7 +309,12 @@ export const itemsEdit = async (
 
   // description 변경 시 manualEmailRequest는 변경하지 않음 (Send Email 버튼을 눌렀을 때만 변경)
   // extendedDoc에서 manualEmailRequest를 제거하여 기존 값 유지 (단, Send Email 버튼 클릭 시에는 제외)
-  if (isTicketDescriptionChanged && doc.manualEmailRequest !== true) {
+  if (
+    type === "ticket" &&
+    doc.description &&
+    doc.description !== oldItem?.description &&
+    doc.manualEmailRequest !== true  // Send Email 버튼 클릭이 아닌 경우에만 제거
+  ) {
     // description 변경 시 manualEmailRequest를 제거하여 기존 값 유지
     if (extendedDoc.manualEmailRequest !== undefined) {
       delete extendedDoc.manualEmailRequest;
@@ -550,7 +348,11 @@ export const itemsEdit = async (
   // 티켓의 description이 수정된 경우 widgetAlarm을 false로, emailSent도 false로 설정 (버튼 활성화)
   let shouldSkipAutomationTrigger = false; // putUpdateLog에서 자동화 트리거 스킵 플래그
   
-  if (isTicketDescriptionChanged) {
+  if (
+    type === "ticket" &&
+    doc.description &&
+    doc.description !== oldItem.description
+  ) {
     // widgetAlarm이 true에서 false로 바뀌는지 확인
     const wasWidgetAlarmTrue = (oldItem as any).widgetAlarm === true;
     const updateFields: any = { emailSent: false }; // emailSent는 항상 false로 리셋
@@ -737,11 +539,7 @@ export const itemsEdit = async (
 
   await sendNotifications(models, subdomain, notificationDoc);
 
-  if (
-    type !== "ticket" &&
-    !notificationDoc.invitedUsers &&
-    !notificationDoc.removedUsers
-  ) {
+  if (!notificationDoc.invitedUsers && !notificationDoc.removedUsers) {
     sendCoreMessage({
       subdomain: "os",
       action: "sendMobileNotification",
@@ -778,23 +576,6 @@ export const itemsEdit = async (
   );
 
   const updatedStage = await models.Stages.getStage(updatedItem.stageId);
-  if (type === "ticket") {
-    await notifyCustomerTicketDescriptionUpdated(
-      models,
-      subdomain,
-      updatedItem as any,
-      oldItem.description,
-      updatedItem.description
-    );
-
-    await notifyCustomerTicketResolved(
-      models,
-      subdomain,
-      updatedItem as any,
-      oldItem.stageId,
-      updatedItem.stageId
-    );
-  }
 
   if (doc.tagIds || doc.startDate || doc.closeDate || doc.name) {
     graphqlPubsub.publish(`ticketsPipelinesChanged:${stage.pipelineId}`, {
@@ -1006,7 +787,7 @@ export const itemsChange = async (
     contentType: type,
   });
 
-  if (type !== "ticket" && item?.assignedUserIds && item?.assignedUserIds?.length > 0) {
+  if (item?.assignedUserIds && item?.assignedUserIds?.length > 0) {
     sendCoreMessage({
       subdomain: "os",
       action: "sendMobileNotification",

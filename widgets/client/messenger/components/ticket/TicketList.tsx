@@ -279,56 +279,6 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeC
     );
   };
 
-  const renderNotificationsSection = (unreadTickets: TicketItem[]) => {
-    if (includeCompanyTickets || unreadTickets.length === 0) {
-      return null;
-    }
-
-    return (
-      <div style={{ marginBottom: '16px' }}>
-        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: '600', color: '#333' }}>
-          🔔 {__('새 답변')} ({unreadTickets.length})
-        </h4>
-        {unreadTickets.map((ticket) => (
-          <div
-            key={ticket._id}
-            onClick={() => onTicketClick(ticket)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 14px',
-              marginBottom: '6px',
-              backgroundColor: '#fff8f0',
-              border: '1px solid #ffe0b2',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#fff3e0';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#fff8f0';
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '13px', fontWeight: '600', color: '#e65100', whiteSpace: 'nowrap' }}>
-                #{ticket.number}
-              </span>
-              <span style={{ fontSize: '14px', color: '#333' }}>
-                {ticket.name}
-              </span>
-            </div>
-            <span style={{ fontSize: '13px', color: '#e65100', fontWeight: '500', whiteSpace: 'nowrap' }}>
-              {__('새 답변')} →
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
   const renderContent = () => {
     if (loading) {
       return <div className="loader" />;
@@ -527,7 +477,6 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeC
             />
           </div>
         )}
-        {renderNotificationsSection(unreadTickets)}
         <div className="ticket-list-content">
           {filteredTickets.map(renderTicketItem)}
         </div>
