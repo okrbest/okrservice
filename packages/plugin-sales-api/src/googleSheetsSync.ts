@@ -600,3 +600,240 @@ export function triggerGoogleSheetSyncIfConfigured(
     }
   }, delayMs);
 }
+
+// ──────────────────────────────────────────────────────────────
+// 시트 → erxes 역방향 동기화 (Apps Script webhook 처리)
+// ──────────────────────────────────────────────────────────────
+
+export interface SheetWebhookPayload {
+  dealId: string;
+  columnName: string;
+  newValue: string;
+  sheetEditedAt: string; // ISO 8601
+}
+
+export type SheetWebhookResult =
+  | { ok: true }
+  | { ok: false; reason: "conflict" | "readonly_column" | "deal_not_found" | "field_not_found" | "unknown_error" };
+
+const READONLY_COLUMNS = new Set([
+  "첨부파일1", "첨부파일2", "첨부파일3",
+  "deal_id", "erxes_updated_at",
+]);
+
+type FixedTarget =
+  | { target: "deal"; field: "name" | "description" }
+  | { target: "customer"; field: "primaryPhone" | "primaryEmail" | "firstName" }
+  | { target: "company"; field: "primaryName" }
+  | { target: "deal_assignedUsers"; field: "assignedUserIds" };
+
+const FIXED_COLUMN_MAP: Record<string, FixedTarget> = {
+  "제목":        { target: "deal", field: "name" },
+  "내용":        { target: "deal", field: "description" },
+  "담당자":      { target: "customer", field: "firstName" },
+  "회사명":      { target: "company", field: "primaryName" },
+  "연락처":      { target: "customer", field: "primaryPhone" },
+  "E-MAIL 주소": { target: "customer", field: "primaryEmail" },
+  "안내자":      { target: "deal_assignedUsers", field: "assignedUserIds" },
+};
+
+/**
+ * Apps Script가 시트 편집 감지 후 호출하는 webhook 처리.
+ * 충돌 판단(수정 시간 비교) 후 erxes 딜/고객/회사 데이터 업데이트.
+ */
+export async function handleSheetWebhook(
+  models: IModels,
+  subdomain: string,
+  payload: SheetWebhookPayload
+): Promise<SheetWebhookResult> {
+  const { dealId, columnName, newValue, sheetEditedAt } = payload;
+
+  if (READONLY_COLUMNS.has(columnName)) {
+    return { ok: false, reason: "readonly_column" };
+  }
+
+  const deal = await models.Deals.findOne({ _id: dealId }).lean();
+  if (!deal) return { ok: false, reason: "deal_not_found" };
+
+  const dealModifiedAt = (deal as any).modifiedAt ? new Date((deal as any).modifiedAt).getTime() : 0;
+  const sheetEditedAtMs = new Date(sheetEditedAt).getTime();
+  if (dealModifiedAt > sheetEditedAtMs) {
+    return { ok: false, reason: "conflict" };
+  }
+
+  try {
+    const fixed = FIXED_COLUMN_MAP[columnName];
+    if (fixed) {
+      await applyFixedColumnUpdate(models, subdomain, deal, fixed, newValue);
+      return { ok: true };
+    }
+
+    const updated = await applyCustomFieldUpdate(models, subdomain, deal, columnName, newValue);
+    if (!updated) return { ok: false, reason: "field_not_found" };
+
+    return { ok: true };
+  } catch (_e) {
+    return { ok: false, reason: "unknown_error" };
+  }
+}
+
+async function applyFixedColumnUpdate(
+  models: IModels,
+  subdomain: string,
+  deal: any,
+  fixed: FixedTarget,
+  newValue: string
+): Promise<void> {
+  const now = new Date();
+
+  if (fixed.target === "deal") {
+    await models.Deals.updateOne(
+      { _id: deal._id },
+      { $set: { [fixed.field]: newValue, modifiedAt: now } }
+    );
+    return;
+  }
+
+  if (fixed.target === "deal_assignedUsers") {
+    const users = await sendCoreMessage({
+      subdomain,
+      action: "users.find",
+      data: {
+        query: {},
+        fields: { _id: 1, details: 1, email: 1, username: 1 },
+        limit: 500,
+      },
+      isRPC: true,
+      defaultValue: [],
+    });
+    const names = newValue.split(",").map((n) => n.trim()).filter(Boolean);
+    const matchedIds = (Array.isArray(users) ? users : [])
+      .filter((u: any) => {
+        const full = u.details?.fullName || u.email || u.username || "";
+        return names.some((n) => full.includes(n) || n.includes(full));
+      })
+      .map((u: any) => u._id);
+    await models.Deals.updateOne(
+      { _id: deal._id },
+      { $set: { assignedUserIds: matchedIds, modifiedAt: now } }
+    );
+    return;
+  }
+
+  const customerIds: string[] = deal.customerIds || [];
+  const companyIds: string[] = deal.companyIds || [];
+
+  if (fixed.target === "customer" && customerIds.length > 0) {
+    await sendCoreMessage({
+      subdomain,
+      action: "contacts:customers.updateCustomer",
+      data: { _id: customerIds[0], doc: { [fixed.field]: newValue } },
+      isRPC: true,
+      defaultValue: null,
+    });
+  }
+
+  if (fixed.target === "company" && companyIds.length > 0) {
+    await sendCoreMessage({
+      subdomain,
+      action: "contacts:companies.updateCompany",
+      data: { _id: companyIds[0], doc: { [fixed.field]: newValue } },
+      isRPC: true,
+      defaultValue: null,
+    });
+  }
+}
+
+async function applyCustomFieldUpdate(
+  models: IModels,
+  subdomain: string,
+  deal: any,
+  columnName: string,
+  newValue: string
+): Promise<boolean> {
+  const now = new Date();
+
+  const stage = await models.Stages.findOne({ _id: deal.stageId }).lean();
+  const pipelineId = (stage as any)?.pipelineId || "";
+
+  const dealGroups = await sendCoreMessage({
+    subdomain,
+    action: "fieldsGroups.find",
+    data: {
+      query: {
+        contentType: "sales:deal",
+        $or: [
+          { "config.pipelineIds": { $in: [pipelineId] } },
+          { "config.pipelineIds": { $size: 0 } },
+          { "config.boardsPipelines.pipelineIds": { $in: [pipelineId] } },
+        ],
+      },
+    },
+    isRPC: true,
+    defaultValue: [],
+  });
+
+  for (const group of Array.isArray(dealGroups) ? dealGroups : []) {
+    const fields = await sendCoreMessage({
+      subdomain,
+      action: "fields.find",
+      data: { query: { groupId: group._id } },
+      isRPC: true,
+      defaultValue: [],
+    });
+    const matched = (Array.isArray(fields) ? fields : []).find(
+      (f: any) => ((f.text || f.name) || "").trim() === columnName
+    );
+    if (matched) {
+      const existing: any[] = Array.isArray(deal.customFieldsData) ? deal.customFieldsData : [];
+      const updated = existing.filter((d: any) => d.field !== matched._id);
+      updated.push({ field: matched._id, value: newValue });
+      await models.Deals.updateOne(
+        { _id: deal._id },
+        { $set: { customFieldsData: updated, modifiedAt: now } }
+      );
+      return true;
+    }
+  }
+
+  const customerIds: string[] = deal.customerIds || [];
+  if (customerIds.length === 0) return false;
+
+  const customerGroups = await sendCoreMessage({
+    subdomain,
+    action: "fieldsGroups.find",
+    data: { query: { contentType: "core:customer" } },
+    isRPC: true,
+    defaultValue: [],
+  });
+
+  for (const group of Array.isArray(customerGroups) ? customerGroups : []) {
+    const fields = await sendCoreMessage({
+      subdomain,
+      action: "fields.find",
+      data: { query: { groupId: group._id } },
+      isRPC: true,
+      defaultValue: [],
+    });
+    const matched = (Array.isArray(fields) ? fields : []).find(
+      (f: any) => ((f.text || f.name) || "").trim() === columnName
+    );
+    if (matched) {
+      await sendCoreMessage({
+        subdomain,
+        action: "contacts:customers.updateCustomer",
+        data: {
+          _id: customerIds[0],
+          doc: {
+            customFieldsData: [{ field: matched._id, value: newValue }],
+          },
+        },
+        isRPC: true,
+        defaultValue: null,
+      });
+      return true;
+    }
+  }
+
+  return false;
+}
