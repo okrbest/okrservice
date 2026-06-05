@@ -105,7 +105,10 @@ const PipelineForm = (props: Props) => {
     pipeline ? (pipeline.adminPageEnabled || false) : false
   );
 
-  const is5240 = window.location.hostname.includes('5240');
+  const is5240 =
+    window.location.hostname.includes('5240') ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1';
 
   useEffect(() => {
     setStages((props.stages || []).map(stage => ({ ...stage })));
