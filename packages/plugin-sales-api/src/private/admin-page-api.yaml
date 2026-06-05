@@ -1,0 +1,371 @@
+openapi: 3.0.3
+info:
+  title: 영업 파이프라인 관리 웹페이지 연동 API
+  description: |
+    Erxes 영업 파이프라인과 외부 관리 웹페이지 간 연동 API.
+
+    ## 인증
+    모든 요청에 `X-ADMIN-SECRET` 헤더 필요.
+    시크릿 값은 Erxes 파이프라인 설정의 **관리 웹페이지 시크릿 키**와 동일해야 합니다.
+
+    ## 전송 필드
+    연동 대상 필드는 다음 8개로 고정됩니다:
+    `직전소통일`, `안내자`, `관심모듈`, `진행`, `데모생성`, `견적`, `미팅`, `비고`
+
+  version: 1.0.0
+
+servers:
+  - url: https://5240help.okrbiz.com/pl:sales
+    description: 프로덕션 서버 (Sales 플러그인)
+
+components:
+  securitySchemes:
+    AdminSecret:
+      type: apiKey
+      in: header
+      name: X-ADMIN-SECRET
+      description: 파이프라인 설정에서 지정한 시크릿 키
+
+  schemas:
+    DealFields:
+      type: object
+      description: 연동 대상 딜 필드 8개
+      properties:
+        직전소통일:
+          type: string
+          example: "2026-06-04"
+        안내자:
+          type: string
+          description: 담당 유저 이름 (여러 명이면 쉼표 구분)
+          example: "홍길동, 김철수"
+        관심모듈:
+          type: string
+          example: "ERP"
+        진행:
+          type: string
+          example: "계약 협의 중"
+        데모생성:
+          type: string
+          example: "완료"
+        견적:
+          type: string
+          example: "500만원"
+        미팅:
+          type: string
+          example: "2026-06-10 오후 2시"
+        비고:
+          type: string
+          example: "대표 직접 참여 요청"
+
+    DealSyncPush:
+      type: object
+      description: Erxes → 관리 웹페이지 Push 페이로드
+      required:
+        - event
+        - dealId
+        - stageId
+        - stageName
+        - pipelineId
+        - deal
+        - modifiedAt
+      properties:
+        event:
+          type: string
+          enum: [created, updated, moved]
+          example: "updated"
+        dealId:
+          type: string
+          example: "abc123"
+        stageId:
+          type: string
+          example: "stage_001"
+        stageName:
+          type: string
+          example: "계약완료"
+        pipelineId:
+          type: string
+          example: "pipe_001"
+        deal:
+          $ref: '#/components/schemas/DealFields'
+        modifiedAt:
+          type: string
+          format: date-time
+          example: "2026-06-05T10:00:00.000Z"
+
+    AdminWebhookRequest:
+      type: object
+      required:
+        - dealId
+        - changes
+      properties:
+        dealId:
+          type: string
+          example: "abc123"
+        changes:
+          type: object
+          description: 수정된 필드만 포함 (8개 필드 중 변경된 것만)
+          additionalProperties:
+            type: string
+          example:
+            안내자: "홍길동"
+            비고: "계약 조건 재검토 필요"
+
+    AdminWebhookResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        updatedFields:
+          type: array
+          items:
+            type: string
+          example: ["안내자", "비고"]
+        deal:
+          $ref: '#/components/schemas/DealFields'
+
+    SendMailRequest:
+      type: object
+      required:
+        - dealId
+      properties:
+        dealId:
+          type: string
+          example: "abc123"
+
+    SendMailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          enum: [UNAUTHORIZED, MISSING_FIELDS, DEAL_NOT_FOUND]
+          example: "UNAUTHORIZED"
+
+security:
+  - AdminSecret: []
+
+paths:
+  /admin-deal-webhook:
+    post:
+      summary: 딜 수정 수신 (웹페이지 → Erxes)
+      description: |
+        관리자가 웹페이지에서 딜을 수정했을 때 호출합니다.
+        수정된 필드만 `changes`에 담아 전송하면 Erxes DB에 반영됩니다.
+        처리 완료 후 최신 딜 데이터 8개 필드를 응답으로 반환합니다.
+
+        충돌 감지 없이 덮어씁니다.
+      security:
+        - AdminSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminWebhookRequest'
+            examples:
+              단일 필드 수정:
+                summary: 비고 하나만 수정
+                value:
+                  dealId: "abc123"
+                  changes:
+                    비고: "추가 미팅 필요"
+              다중 필드 수정:
+                summary: 여러 필드 동시 수정
+                value:
+                  dealId: "abc123"
+                  changes:
+                    안내자: "홍길동"
+                    진행: "계약 협의 중"
+                    견적: "500만원"
+      responses:
+        '200':
+          description: 업데이트 성공 (최신 딜 데이터 반환)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminWebhookResponse'
+              example:
+                success: true
+                updatedFields: ["안내자", "진행", "견적"]
+                deal:
+                  직전소통일: "2026-06-04"
+                  안내자: "홍길동"
+                  관심모듈: "ERP"
+                  진행: "계약 협의 중"
+                  데모생성: "완료"
+                  견적: "500만원"
+                  미팅: "2026-06-10 오후 2시"
+                  비고: ""
+        '400':
+          description: 필수 필드 누락
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "MISSING_FIELDS"
+        '401':
+          description: 인증 실패 (시크릿 키 불일치)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "UNAUTHORIZED"
+        '404':
+          description: 딜을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "DEAL_NOT_FOUND"
+
+  /admin-deal-send-mail:
+    post:
+      summary: 수동 메일 발송 트리거 (웹페이지 → Erxes)
+      description: |
+        관리 웹페이지의 수동 메일 버튼 클릭 시 호출합니다.
+        Erxes 자동화 트리거 `sales:deal.manualMail`을 발화합니다.
+        실제 메일 발송은 Erxes 자동화 설정에서 정의된 템플릿과 조건에 따라 처리됩니다.
+
+        **Erxes 자동화 설정 필요**: Erxes UI → 자동화 → 트리거 `Manual mail trigger` 선택 후 이메일 액션 설정.
+      security:
+        - AdminSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMailRequest'
+            example:
+              dealId: "abc123"
+      responses:
+        '200':
+          description: 트리거 발화 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendMailResponse'
+              example:
+                success: true
+        '400':
+          description: dealId 누락
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "MISSING_FIELDS"
+        '401':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "UNAUTHORIZED"
+        '404':
+          description: 딜을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "DEAL_NOT_FOUND"
+
+  /deals/sync:
+    post:
+      summary: 딜 변경 수신 (Erxes → 관리 웹페이지)
+      description: |
+        **관리 웹페이지 팀이 구현해야 하는 엔드포인트입니다.**
+
+        Erxes에서 딜이 생성/수정/이동될 때 이 URL로 자동 Push합니다.
+        파이프라인 설정의 `관리 웹페이지 URL`에 입력된 주소 + `/deals/sync` 경로로 호출됩니다.
+
+        **활성화 조건**: 파이프라인 설정에서 `관리 웹페이지 연동` 체크박스 활성화 필요.
+      security:
+        - AdminSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DealSyncPush'
+            examples:
+              딜 생성:
+                summary: 새 딜이 생성됐을 때
+                value:
+                  event: "created"
+                  dealId: "abc123"
+                  stageId: "stage_001"
+                  stageName: "신규 문의"
+                  pipelineId: "pipe_001"
+                  deal:
+                    직전소통일: ""
+                    안내자: "홍길동"
+                    관심모듈: "ERP"
+                    진행: ""
+                    데모생성: ""
+                    견적: ""
+                    미팅: ""
+                    비고: ""
+                  modifiedAt: "2026-06-05T10:00:00.000Z"
+              딜 수정:
+                summary: 딜이 수정됐을 때
+                value:
+                  event: "updated"
+                  dealId: "abc123"
+                  stageId: "stage_002"
+                  stageName: "계약 협의"
+                  pipelineId: "pipe_001"
+                  deal:
+                    직전소통일: "2026-06-04"
+                    안내자: "홍길동"
+                    관심모듈: "ERP"
+                    진행: "계약 협의 중"
+                    데모생성: "완료"
+                    견적: "500만원"
+                    미팅: "2026-06-10 오후 2시"
+                    비고: ""
+                  modifiedAt: "2026-06-05T11:30:00.000Z"
+              딜 이동:
+                summary: 딜이 다른 스테이지로 이동됐을 때
+                value:
+                  event: "moved"
+                  dealId: "abc123"
+                  stageId: "stage_003"
+                  stageName: "계약완료"
+                  pipelineId: "pipe_001"
+                  deal:
+                    직전소통일: "2026-06-05"
+                    안내자: "홍길동"
+                    관심모듈: "ERP"
+                    진행: "계약 완료"
+                    데모생성: "완료"
+                    견적: "500만원"
+                    미팅: ""
+                    비고: "계약서 서명 완료"
+                  modifiedAt: "2026-06-05T14:00:00.000Z"
+      responses:
+        '200':
+          description: 정상 수신 (관리 웹페이지가 반환해야 하는 응답)
+          content:
+            application/json:
+              example:
+                ok: true
