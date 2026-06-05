@@ -15,8 +15,10 @@ info:
   version: 1.0.0
 
 servers:
+  - url: http://localhost:4000/pl:sales
+    description: 로컬 개발 서버
   - url: https://5240help.okrbiz.com/pl:sales
-    description: 프로덕션 서버 (Sales 플러그인)
+    description: 프로덕션 서버
 
 components:
   securitySchemes:

@@ -88,6 +88,14 @@ export default {
   },
   middlewares: [(serverTiming as any)()],
   onServerInit: async () => {
+    app.use('/deals', (req: any, res: any, next: any) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-ADMIN-SECRET, erxes-subdomain');
+      if (req.method === 'OPTIONS') return res.sendStatus(204);
+      next();
+    });
+
     app.get(
       '/file-export',
       routeErrorHandling(async (req: any, res) => {
