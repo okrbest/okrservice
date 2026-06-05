@@ -96,16 +96,6 @@ const ACTION_BUTTON_GROUP_STYLE: React.CSSProperties = {
   maxWidth: "100%",
 };
 
-const ACTION_BUTTON_ROW_STYLE: React.CSSProperties = {
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "6px",
-  marginBottom: "10px",
-  alignSelf: "flex-start",
-  width: "fit-content",
-  maxWidth: "100%",
-};
-
 function createActionButtonStyle(
   primaryColor: string,
   isHovered: boolean
@@ -279,20 +269,8 @@ const ChatbotView: React.FC = () => {
                   <div style={BOT_AVATAR_STYLE}>🤖</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={BUBBLE_STYLE}>{msg.text}</div>
-                    {!!msg.shownAt && (
-                      <span
-                        style={{
-                          alignSelf: "flex-end",
-                          fontSize: "10px",
-                          color: "#94a3b8",
-                          marginRight: 2,
-                        }}
-                      >
-                        {formatMessageTime(msg.shownAt)}
-                      </span>
-                    )}
                     {msg.buttons && msg.buttons.length > 0 && (
-                      <div style={ACTION_BUTTON_ROW_STYLE}>
+                      <div style={ACTION_BUTTON_GROUP_STYLE}>
                         {msg.buttons.map((btn) => {
                           const btnKey = `${msg.id}-${btn.label}`;
                           const isHovered = hoveredBtn === btnKey;
@@ -314,6 +292,18 @@ const ChatbotView: React.FC = () => {
                         })}
                       </div>
                     )}
+                    {!!msg.shownAt && (
+                      <span
+                        style={{
+                          alignSelf: "flex-end",
+                          fontSize: "10px",
+                          color: "#94a3b8",
+                          marginRight: 2,
+                        }}
+                      >
+                        {formatMessageTime(msg.shownAt)}
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -330,13 +320,8 @@ const ChatbotView: React.FC = () => {
                   <div style={BOT_AVATAR_STYLE}>🤖</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={BUBBLE_STYLE}>{getRpaDisplayText(msg)}</div>
-                    {!!msg.receivedAt && (
-                      <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
-                        {formatMessageTime(msg.receivedAt)}
-                      </span>
-                    )}
                     {actionButtons.length > 0 && (
-                      <div style={ACTION_BUTTON_ROW_STYLE}>
+                      <div style={ACTION_BUTTON_GROUP_STYLE}>
                         {actionButtons.map((btn) => {
                           const btnKey = `${msg._id}-${btn.label}`;
                           const isHovered = hoveredBtn === btnKey;
@@ -357,6 +342,11 @@ const ChatbotView: React.FC = () => {
                           );
                         })}
                       </div>
+                    )}
+                    {!!msg.receivedAt && (
+                      <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
+                        {formatMessageTime(msg.receivedAt)}
+                      </span>
                     )}
                   </div>
                 </div>
