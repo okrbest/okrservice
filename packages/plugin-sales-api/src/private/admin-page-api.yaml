@@ -315,6 +315,13 @@ paths:
         파이프라인 설정에서 **관리 웹페이지 연동** 체크박스가 활성화된 경우에만 전송됩니다.
       security:
         - AdminSecret: []
+      parameters:
+        - in: header
+          name: X-ADMIN-SECRET
+          required: true
+          schema:
+            type: string
+          description: 파이프라인 설정의 시크릿 키. Erxes가 요청 시 자동으로 포함해서 전송합니다. 수신 측에서 이 값을 검증하세요.
       requestBody:
         required: true
         content:
