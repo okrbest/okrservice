@@ -183,16 +183,13 @@ async function resolveDealFieldIds(
   return result;
 }
 
-export async function buildAdminPagePayload(
-  models: IModels,
+async function buildAdminPagePayload(
   subdomain: string,
   deal: any,
-  event: AdminPageSyncEvent
+  event: AdminPageSyncEvent,
+  pipelineId: string,
+  stageName: string
 ): Promise<AdminPageSyncPayload> {
-  const stage = await models.Stages.findOne({ _id: deal.stageId }).lean() as any;
-  const pipelineId: string = stage?.pipelineId || "";
-  const stageName: string = stage?.name || "";
-
   const [assignedUserNames, lastContactDate, dealFieldIds] = await Promise.all([
     resolveAssignedUserNames(subdomain, deal.assignedUserIds || []),
     resolveLastContactDate(subdomain, deal.customerIds || []),
@@ -261,8 +258,11 @@ export async function syncDealToAdminPage(
 
   if (!adminPageUrl) return;
 
-  const payload = await buildAdminPagePayload(models, subdomain, deal, event);
+  const stageName: string = stage?.name || "";
+  const payload = await buildAdminPagePayload(subdomain, deal, event, pipelineId, stageName);
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
   try {
     const response = await fetch(`${adminPageUrl}/deals/sync`, {
       method: "POST",
@@ -271,23 +271,22 @@ export async function syncDealToAdminPage(
         ...(adminPageSecret ? { "X-ADMIN-SECRET": adminPageSecret } : {}),
       },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     });
 
     if (!response.ok) {
-      console.error(
-        `[Admin Page Sync] HTTP ${response.status} for deal ${deal._id}:`,
-        await response.text().catch(() => "(no body)")
-      );
+      await response.text().catch(() => undefined);
     }
-  } catch (error) {
-    console.error(`[Admin Page Sync] Request failed for deal ${deal._id}:`, error);
+  } catch (_error) {
+    // 백그라운드 처리 - 에러 무시
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
 export function triggerAdminPageSyncIfConfigured(
   models: IModels,
   subdomain: string,
-  pipelineId: string,
   dealId: string,
   event: AdminPageSyncEvent
 ): void {
