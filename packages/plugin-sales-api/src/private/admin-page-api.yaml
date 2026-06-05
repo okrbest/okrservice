@@ -167,6 +167,13 @@ paths:
         충돌 감지 없이 덮어씁니다.
       security:
         - AdminSecret: []
+      parameters:
+        - in: header
+          name: X-ADMIN-SECRET
+          required: true
+          schema:
+            type: string
+          description: 파이프라인 설정의 시크릿 키
       requestBody:
         required: true
         content:
@@ -247,6 +254,13 @@ paths:
         **Erxes 자동화 설정 필요**: Erxes UI → 자동화 → 트리거 `Manual mail trigger` 선택 후 이메일 액션 설정.
       security:
         - AdminSecret: []
+      parameters:
+        - in: header
+          name: X-ADMIN-SECRET
+          required: true
+          schema:
+            type: string
+          description: 파이프라인 설정의 시크릿 키
       requestBody:
         required: true
         content:
