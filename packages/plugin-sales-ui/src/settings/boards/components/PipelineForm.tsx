@@ -95,6 +95,18 @@ const PipelineForm = (props: Props) => {
   const [branchIds, setBranchIds] = useState(
     pipeline ? pipeline.branchIds : []
   );
+  const [adminPageUrl, setAdminPageUrl] = useState(
+    pipeline ? (pipeline.adminPageUrl || '') : ''
+  );
+  const [adminPageSecret, setAdminPageSecret] = useState(
+    pipeline ? (pipeline.adminPageSecret || '') : ''
+  );
+  const [adminPageEnabled, setAdminPageEnabled] = useState(
+    pipeline ? (pipeline.adminPageEnabled || false) : false
+  );
+
+  const is5240 = window.location.hostname.includes('5240');
+
   useEffect(() => {
     setStages((props.stages || []).map(stage => ({ ...stage })));
   }, [props.stages]);
@@ -169,7 +181,10 @@ const PipelineForm = (props: Props) => {
       nameConfig,
       departmentIds,
       tagId,
-      branchIds
+      branchIds,
+      adminPageUrl,
+      adminPageSecret,
+      adminPageEnabled
     };
   };
 
@@ -487,6 +502,47 @@ const PipelineForm = (props: Props) => {
         </FormGroup>
 
         {renderDominantUsers()}
+
+        {is5240 && (
+          <>
+            <FormGroup>
+              <ControlLabel>관리 웹페이지 연동</ControlLabel>
+              <FormControl
+                componentclass='checkbox'
+                checked={adminPageEnabled}
+                onChange={(e: React.FormEvent<HTMLElement>) =>
+                  setAdminPageEnabled((e.currentTarget as HTMLInputElement).checked)
+                }
+              />
+              <span style={{ marginLeft: '8px', fontSize: '12px', color: '#666' }}>
+                활성화 시 딜 변경사항을 관리 웹페이지로 자동 전송합니다.
+              </span>
+            </FormGroup>
+            <FormGroup>
+              <ControlLabel>관리 웹페이지 URL</ControlLabel>
+              <FormControl
+                name='adminPageUrl'
+                value={adminPageUrl}
+                onChange={(e: React.FormEvent<HTMLElement>) =>
+                  setAdminPageUrl((e.currentTarget as HTMLInputElement).value)
+                }
+                placeholder='https://your-admin-page.com'
+              />
+            </FormGroup>
+            <FormGroup>
+              <ControlLabel>관리 웹페이지 시크릿 키</ControlLabel>
+              <FormControl
+                name='adminPageSecret'
+                type='password'
+                value={adminPageSecret}
+                onChange={(e: React.FormEvent<HTMLElement>) =>
+                  setAdminPageSecret((e.currentTarget as HTMLInputElement).value)
+                }
+                placeholder='X-ADMIN-SECRET 값'
+              />
+            </FormGroup>
+          </>
+        )}
 
         <FormGroup>
           <ControlLabel>Stages</ControlLabel>

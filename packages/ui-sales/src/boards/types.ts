@@ -98,6 +98,10 @@ export interface IPipeline {
   paymentIds?: string[];
   paymentTypes?: any[];
   erxesAppToken?: string;
+
+  adminPageUrl?: string;
+  adminPageSecret?: string;
+  adminPageEnabled?: boolean;
 }
 
 export interface IBoard {
