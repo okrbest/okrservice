@@ -150,10 +150,13 @@ export default {
         const models = await generateModels(subdomain);
 
         const result = await handleAdminPageWebhook(models, subdomain, secret, dealId, changes);
+
+        if (result.statusCode) {
+          return res.status(result.statusCode).json(result);
+        }
         return res.json(result);
       })
     );
-    console.log('Debug ....');
   },
   setupMessageConsumers
 };
