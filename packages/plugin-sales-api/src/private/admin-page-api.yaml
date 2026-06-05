@@ -154,7 +154,7 @@ security:
   - AdminSecret: []
 
 paths:
-  /admin-deal-webhook:
+  /deals/dbupdate:
     post:
       summary: 딜 수정 수신 (웹페이지 → Erxes)
       description: |
@@ -233,7 +233,7 @@ paths:
                 success: false
                 error: "DEAL_NOT_FOUND"
 
-  /admin-deal-send-mail:
+  /deals/send-mail:
     post:
       summary: 수동 메일 발송 트리거 (웹페이지 → Erxes)
       description: |
@@ -289,16 +289,27 @@ paths:
                 success: false
                 error: "DEAL_NOT_FOUND"
 
-  /deals/sync:
+  /deals/web-push:
     post:
       summary: 딜 변경 수신 (Erxes → 관리 웹페이지)
       description: |
-        **관리 웹페이지 팀이 구현해야 하는 엔드포인트입니다.**
+        ## 웹페이지 팀 구현 필요
 
-        Erxes에서 딜이 생성/수정/이동될 때 이 URL로 자동 Push합니다.
-        파이프라인 설정의 `관리 웹페이지 URL`에 입력된 주소 + `/deals/sync` 경로로 호출됩니다.
+        이 엔드포인트는 **관리 웹페이지 서버에 만들어야 하는 API**입니다.
 
-        **활성화 조건**: 파이프라인 설정에서 `관리 웹페이지 연동` 체크박스 활성화 필요.
+        ### 동작 방식
+        Erxes에서 딜이 생성/수정/이동될 때, Erxes 서버가 아래 페이로드를 이 URL로 자동으로 POST 요청을 보냅니다.
+        웹페이지 팀은 이 요청을 받아서 자체 DB에 저장하거나 화면을 업데이트하면 됩니다.
+
+        ### 설정 방법
+        Erxes 파이프라인 설정에서 **관리 웹페이지 URL** 항목에 웹페이지 서버 주소를 입력합니다.
+        예: `https://admin.example.com` 입력 시 → Erxes가 `https://admin.example.com/deals/web-push` 로 자동 전송
+
+        ### 인증
+        요청 헤더의 `X-ADMIN-SECRET` 값이 파이프라인에 설정한 시크릿 키와 동일한지 검증하세요.
+
+        ### 활성화 조건
+        파이프라인 설정에서 **관리 웹페이지 연동** 체크박스가 활성화된 경우에만 전송됩니다.
       security:
         - AdminSecret: []
       requestBody:

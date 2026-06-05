@@ -100,7 +100,7 @@ export async function syncDealToAdminPage(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
   try {
-    const response = await fetch(`${adminPageUrl}/deals/sync`, {
+    const response = await fetch(`${adminPageUrl}/deals/web-push`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

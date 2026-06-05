@@ -137,7 +137,7 @@ export default {
     );
 
     app.post(
-      '/admin-deal-webhook',
+      '/deals/dbupdate',
       routeErrorHandling(async (req: any, res) => {
         const secret = (req.headers['x-admin-secret'] as string) || '';
         const { dealId, changes } = req.body;
@@ -159,7 +159,7 @@ export default {
     );
 
     app.post(
-      '/admin-deal-send-mail',
+      '/deals/send-mail',
       routeErrorHandling(async (req: any, res) => {
         const secret = (req.headers['x-admin-secret'] as string) || '';
         const { dealId } = req.body;
