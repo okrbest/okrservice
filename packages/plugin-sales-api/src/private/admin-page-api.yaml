@@ -158,8 +158,10 @@ paths:
     post:
       summary: 딜 수정 수신 (웹페이지 → Erxes)
       description: |
-        관리자가 웹페이지에서 딜을 수정했을 때 호출합니다.
-        수정된 필드만 `changes`에 담아 전송하면 Erxes DB에 반영됩니다.
+        ## 웹페이지 팀이 호출하는 API
+
+        관리자가 웹페이지에서 딜 필드를 수정하고 저장할 때, **웹페이지 팀 코드가 이 API를 호출**합니다.
+        수정된 필드만 `changes`에 담아서 요청을 보내면 Erxes DB에 반영됩니다.
         처리 완료 후 최신 딜 데이터 8개 필드를 응답으로 반환합니다.
 
         충돌 감지 없이 덮어씁니다.
@@ -237,9 +239,10 @@ paths:
     post:
       summary: 수동 메일 발송 트리거 (웹페이지 → Erxes)
       description: |
-        관리 웹페이지의 수동 메일 버튼 클릭 시 호출합니다.
-        Erxes 자동화 트리거 `sales:deal.manualMail`을 발화합니다.
-        실제 메일 발송은 Erxes 자동화 설정에서 정의된 템플릿과 조건에 따라 처리됩니다.
+        ## 웹페이지 팀이 호출하는 API
+
+        관리자가 웹페이지의 **수동 메일 버튼을 클릭**할 때, **웹페이지 팀 코드가 이 API를 호출**합니다.
+        Erxes 자동화 트리거 `sales:deal.manualMail`을 발화하고, 실제 메일 발송은 Erxes 자동화 설정에서 처리됩니다.
 
         **Erxes 자동화 설정 필요**: Erxes UI → 자동화 → 트리거 `Manual mail trigger` 선택 후 이메일 액션 설정.
       security:
