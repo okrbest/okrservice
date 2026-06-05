@@ -148,7 +148,7 @@ async function applyDealCustomFieldUpdate(
     if (matched) {
       const existing: any[] = Array.isArray(deal.customFieldsData) ? deal.customFieldsData : [];
       const updated = existing.filter((d: any) => d.field !== matched._id);
-      updated.push({ field: matched._id, value: newValue });
+      updated.push({ field: matched._id, value: newValue, stringValue: newValue });
       await models.Deals.updateOne(
         { _id: deal._id },
         { $set: { customFieldsData: updated, modifiedAt: new Date() } }
