@@ -21,7 +21,7 @@ export interface AdminWebhookResult {
     미팅: string;
     비고: string;
   };
-  error?: "UNAUTHORIZED" | "MISSING_FIELDS" | "DEAL_NOT_FOUND";
+  error?: "UNAUTHORIZED" | "DEAL_NOT_FOUND";
   statusCode?: number;
 }
 
@@ -204,19 +204,18 @@ async function buildDealPayload(
 
 export interface AdminSendMailResult {
   success: boolean;
-  error?: "UNAUTHORIZED" | "MISSING_FIELDS" | "DEAL_NOT_FOUND";
+  error?: "UNAUTHORIZED" | "DEAL_NOT_FOUND";
   statusCode?: number;
 }
 
-export async function handleAdminDealSendMail(
+async function verifyAdminSecret(
   models: IModels,
-  subdomain: string,
-  secret: string,
-  dealId: string
-): Promise<AdminSendMailResult> {
+  dealId: string,
+  secret: string
+): Promise<{ ok: true; deal: any; pipelineId: string } | { ok: false; statusCode: 401 | 404 }> {
   const deal = await models.Deals.findOne({ _id: dealId }).lean() as any;
   if (!deal) {
-    return { success: false, error: "DEAL_NOT_FOUND", statusCode: 404 };
+    return { ok: false, statusCode: 404 };
   }
 
   const stage = await models.Stages.findOne({ _id: deal.stageId }).lean() as any;
@@ -228,8 +227,25 @@ export async function handleAdminDealSendMail(
 
   const adminPageSecret: string = (pipeline?.adminPageSecret || "").trim();
   if (!adminPageSecret || secret !== adminPageSecret) {
-    return { success: false, error: "UNAUTHORIZED", statusCode: 401 };
+    return { ok: false, statusCode: 401 };
   }
+
+  return { ok: true, deal, pipelineId };
+}
+
+export async function handleAdminDealSendMail(
+  models: IModels,
+  subdomain: string,
+  secret: string,
+  dealId: string
+): Promise<AdminSendMailResult> {
+  const verification = await verifyAdminSecret(models, dealId, secret);
+  if (!verification.ok) {
+    const errorType = verification.statusCode === 404 ? "DEAL_NOT_FOUND" : "UNAUTHORIZED";
+    return { success: false, error: errorType, statusCode: verification.statusCode };
+  }
+
+  const { deal } = verification;
 
   const isAutomationsAvailable = await isEnabled("automations");
   if (isAutomationsAvailable) {
@@ -242,6 +258,8 @@ export async function handleAdminDealSendMail(
         targets: [deal],
       },
       isRPC: false,
+    }).catch(() => {
+      /* fire-and-forget: 실패 무시 */
     });
   }
 
@@ -255,22 +273,13 @@ export async function handleAdminPageWebhook(
   dealId: string,
   changes: Record<string, string>
 ): Promise<AdminWebhookResult> {
-  const deal = await models.Deals.findOne({ _id: dealId }).lean() as any;
-  if (!deal) {
-    return { success: false, error: "DEAL_NOT_FOUND", statusCode: 404 };
+  const verification = await verifyAdminSecret(models, dealId, secret);
+  if (!verification.ok) {
+    const errorType = verification.statusCode === 404 ? "DEAL_NOT_FOUND" : "UNAUTHORIZED";
+    return { success: false, error: errorType, statusCode: verification.statusCode };
   }
 
-  const stage = await models.Stages.findOne({ _id: deal.stageId }).lean() as any;
-  const pipelineId: string = stage?.pipelineId || "";
-
-  const pipeline = pipelineId
-    ? (await models.Pipelines.findOne({ _id: pipelineId }).lean() as any)
-    : null;
-
-  const adminPageSecret: string = (pipeline?.adminPageSecret || "").trim();
-  if (!adminPageSecret || secret !== adminPageSecret) {
-    return { success: false, error: "UNAUTHORIZED", statusCode: 401 };
-  }
+  const { deal, pipelineId } = verification;
 
   const updatedFields: string[] = [];
 
