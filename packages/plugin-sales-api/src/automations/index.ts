@@ -109,6 +109,14 @@ export default {
         description:
           'Start with a blank workflow that triggered off sales pipeline item stage probability',
         isCustom: true
+      },
+      {
+        type: 'sales:deal.manualMail',
+        img: 'automation3.svg',
+        icon: 'piggy-bank',
+        label: 'Manual mail trigger',
+        description:
+          'Triggered when admin clicks the manual mail button on the management page'
       }
     ],
     actions: [

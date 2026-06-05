@@ -1,5 +1,6 @@
 import { IModels } from "./connectionResolver";
-import { sendCoreMessage } from "./messageBroker";
+import { sendCoreMessage, sendCommonMessage } from "./messageBroker";
+import { isEnabled } from "@erxes/api-utils/src/serviceDiscovery";
 import {
   getCustomFieldValue,
   resolveAssignedUserNames,
@@ -199,6 +200,52 @@ async function buildDealPayload(
       ? getCustomFieldValue(customFieldsData, dealFieldIds.비고)
       : "",
   };
+}
+
+export interface AdminSendMailResult {
+  success: boolean;
+  error?: "UNAUTHORIZED" | "MISSING_FIELDS" | "DEAL_NOT_FOUND";
+  statusCode?: number;
+}
+
+export async function handleAdminDealSendMail(
+  models: IModels,
+  subdomain: string,
+  secret: string,
+  dealId: string
+): Promise<AdminSendMailResult> {
+  const deal = await models.Deals.findOne({ _id: dealId }).lean() as any;
+  if (!deal) {
+    return { success: false, error: "DEAL_NOT_FOUND", statusCode: 404 };
+  }
+
+  const stage = await models.Stages.findOne({ _id: deal.stageId }).lean() as any;
+  const pipelineId: string = stage?.pipelineId || "";
+
+  const pipeline = pipelineId
+    ? (await models.Pipelines.findOne({ _id: pipelineId }).lean() as any)
+    : null;
+
+  const adminPageSecret: string = (pipeline?.adminPageSecret || "").trim();
+  if (!adminPageSecret || secret !== adminPageSecret) {
+    return { success: false, error: "UNAUTHORIZED", statusCode: 401 };
+  }
+
+  const isAutomationsAvailable = await isEnabled("automations");
+  if (isAutomationsAvailable) {
+    sendCommonMessage({
+      serviceName: "automations",
+      subdomain,
+      action: "trigger",
+      data: {
+        type: "sales:deal.manualMail",
+        targets: [deal],
+      },
+      isRPC: false,
+    });
+  }
+
+  return { success: true };
 }
 
 export async function handleAdminPageWebhook(

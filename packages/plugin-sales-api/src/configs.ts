@@ -27,7 +27,7 @@ import reports from './reports/reports';
 import app from '@erxes/api-utils/src/app';
 import { handleSheetWebhook } from './googleSheetsSync';
 import type { SheetWebhookPayload } from './googleSheetsSync';
-import { handleAdminPageWebhook } from './adminPageWebhook';
+import { handleAdminPageWebhook, handleAdminDealSendMail } from './adminPageWebhook';
 
 import { NOTIFICATION_MODULES } from './constants';
 import templates from './templates';
@@ -155,6 +155,25 @@ export default {
           return res.status(result.statusCode).json(result);
         }
         return res.json(result);
+      })
+    );
+
+    app.post(
+      '/admin-deal-send-mail',
+      routeErrorHandling(async (req: any, res) => {
+        const secret = (req.headers['x-admin-secret'] as string) || '';
+        const { dealId } = req.body;
+
+        if (!dealId) {
+          return res.status(400).json({ success: false, error: 'MISSING_FIELDS' });
+        }
+
+        const subdomain = getSubdomain(req);
+        const models = await generateModels(subdomain);
+
+        const result = await handleAdminDealSendMail(models, subdomain, secret, dealId);
+        const statusCode = result.statusCode || 200;
+        return res.status(statusCode).json(result);
       })
     );
   },
