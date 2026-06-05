@@ -52,7 +52,6 @@ export const types = () => `
     googleSpreadsheetId: String
     googleSheetName: String
     adminPageUrl: String
-    adminPageSecret: String
     adminPageEnabled: Boolean
     ${commonTypes}
   }

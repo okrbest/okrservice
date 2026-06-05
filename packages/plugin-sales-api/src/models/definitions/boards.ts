@@ -391,7 +391,7 @@ export const pipelineSchema = new Schema({
   googleSheetName: field({ type: String, optional: true, label: 'Google Sheet name' }),
   adminPageUrl: field({ type: String, optional: true, label: 'Admin page URL' }),
   adminPageSecret: field({ type: String, optional: true, label: 'Admin page secret' }),
-  adminPageEnabled: field({ type: Boolean, optional: true, label: 'Admin page enabled' }),
+  adminPageEnabled: field({ type: Boolean, optional: true, default: false, label: 'Admin page enabled' }),
   ...commonFieldsSchema
 });
 
