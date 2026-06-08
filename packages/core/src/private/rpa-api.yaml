@@ -7,8 +7,10 @@ info:
   version: 1.0.0
 
 servers:
-  - url: /api/rpa
-    description: 서비스데스크 서버
+  - url: https://5240help.okrbiz.com/gateway/api/rpa
+    description: 프로덕션 서버
+  - url: http://localhost:4000/api/rpa
+    description: 로컬 개발 서버
 
 paths:
   /messages:

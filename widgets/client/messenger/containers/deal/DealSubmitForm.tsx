@@ -139,7 +139,8 @@ const DealSubmitContainer = (props: Props) => {
       const transformedFiles = files.map((file) => ({
         url: readFile(file.url || ""),
         name: file.name,
-        type: "image",
+        type: file.type || "application/octet-stream",
+        size: file.size,
       }));
 
       const customFieldsDataArr = Object.entries(customFieldsData)

@@ -94,7 +94,8 @@ const TicketSubmitContainer = (props: Props) => {
       const transformedFiles = files.map((file) => ({
         url: readFile(file.url || ""),
         name: file.name,
-        type: "image",
+        type: file.type || "application/octet-stream",
+        size: file.size,
       }));
 
       console.log("[디버그] 티켓 생성 요청 직전", {
