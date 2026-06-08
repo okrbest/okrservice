@@ -24,10 +24,12 @@
 
     <div id="root"></div>
 
-    <%# 같은 호스트에서 번들 제공(로컬에서 ROOT_URL과 접속 URL 불일치 시 404 방지). CDN 분리 시 서버에서 절대경로 주입을 커스터마이징하세요. %>
+    <%# ROOT_URL 기준 절대경로로 번들 로드 — 리버스 프록시 경로 접두사(예: /widgets)를 보존한다.
+        ROOT_URL이 비어 있으면 같은 호스트 루트절대경로로 폴백. %>
+    <% var bundleSrc = ((JSON.parse(env).ROOT_URL || '').replace(/\/$/, '')) + '/build/' + type + '.bundle.js'; %>
     <script
-      src="/build/<%= type %>.bundle.js"
-      onerror="(function(){try{if(window.parent!==window)window.parent.postMessage({type:'widget-bundle-error',widgetType:'<%= type %>',src:'/build/<%= type %>.bundle.js'},'*');}catch(e){}})()"
+      src="<%= bundleSrc %>"
+      onerror="(function(){try{if(window.parent!==window)window.parent.postMessage({type:'widget-bundle-error',widgetType:'<%= type %>',src:'<%= bundleSrc %>'},'*');}catch(e){}})()"
     ></script>
   </body>
 </html>
