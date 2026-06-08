@@ -167,4 +167,4 @@ export interface IPdfAttachment {
   pages: IAttachment[];
 }
 
-// workflow Action 실행 시 사용하는 타입
+// workflow Action 실행 시 사용하는 타입 2026-06-08 추가
