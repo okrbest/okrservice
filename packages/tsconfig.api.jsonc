@@ -15,5 +15,6 @@
     "preserveSymlinks": true,
     "allowSyntheticDefaultImports": true,
     "incremental": true
-  }
+  },
+  "exclude": ["**/__tests__/**", "**/*.test.ts", "**/*.spec.ts", "**/__mocks__/**"]
 }
