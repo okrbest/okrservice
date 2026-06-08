@@ -1,0 +1,95 @@
+<h2>입력창 + 추천단어 UI — 어떤 방식이 맞나요?</h2>
+<p class="subtitle">현재 ChatbotView는 메시지 표시만 합니다. 텍스트 입력 + 추천단어를 어디에 어떻게 붙일지 결정해주세요.</p>
+
+<div class="split" style="align-items:flex-start;gap:24px">
+
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)" style="flex:1;cursor:pointer">
+    <div class="card-body">
+      <h3 style="color:#6366f1;margin-bottom:12px">A — 채팅 입력 + 드롭다운 추천</h3>
+      <div class="mockup" style="max-width:100%">
+        <div class="mockup-header">ChatbotView</div>
+        <div class="mockup-body" style="padding:0;overflow:hidden;background:#f5f6fc">
+          <!-- messages area -->
+          <div style="padding:12px;display:flex;flex-direction:column;gap:8px;min-height:180px">
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:24px;height:24px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:50%;flex-shrink:0"></div>
+              <div style="background:#fff;border-radius:4px 12px 12px 12px;padding:8px 12px;font-size:11px;color:#374151;box-shadow:0 1px 4px rgba(0,0,0,0.07)">안녕하세요! HR 업무를 도와드릴게요.</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:24px;height:24px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:50%;flex-shrink:0"></div>
+              <div style="background:#fff;border-radius:4px 12px 12px 12px;padding:8px 12px;font-size:11px;color:#374151;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
+                <div>출근 체크하기</div>
+                <div style="margin-top:6px;display:flex;gap:4px">
+                  <div style="background:#6366f1;color:#fff;border-radius:6px;padding:4px 8px;font-size:10px">출퇴근 체크</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- suggestions dropdown (appears when typing) -->
+          <div style="position:relative;margin:0 8px 4px">
+            <div style="background:#fff;border:1px solid #e0e0f4;border-radius:10px 10px 0 0;box-shadow:0 -2px 8px rgba(0,0,0,0.06);overflow:hidden">
+              <div style="padding:6px 12px;font-size:10px;color:#94a3b8;border-bottom:1px solid #f0f0f8">추천단어</div>
+              <div style="background:#eef2ff;padding:7px 12px;font-size:11px;color:#6366f1;font-weight:600;cursor:pointer">출근</div>
+              <div style="padding:7px 12px;font-size:11px;color:#374151;cursor:pointer">출장신청</div>
+              <div style="padding:7px 12px;font-size:11px;color:#374151;cursor:pointer">출퇴근변경</div>
+            </div>
+          </div>
+          <!-- input bar -->
+          <div style="background:#fff;border-top:1px solid #ebebf5;padding:8px 10px;display:flex;gap:8px;align-items:center">
+            <input style="flex:1;border:1.5px solid #6366f1;border-radius:8px;padding:6px 10px;font-size:11px;outline:none" value="출" placeholder="메시지 입력..." />
+            <div style="background:#6366f1;color:#fff;border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer">전송</div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>장점</h4><ul><li>친숙한 채팅 UX</li><li>키보드와 인접해 터치 편함</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>추천 목록이 메시지를 가림</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)" style="flex:1;cursor:pointer">
+    <div class="card-body">
+      <h3 style="color:#6366f1;margin-bottom:12px">B — 입력창 위 pill 버튼 추천</h3>
+      <div class="mockup" style="max-width:100%">
+        <div class="mockup-header">ChatbotView</div>
+        <div class="mockup-body" style="padding:0;overflow:hidden;background:#f5f6fc">
+          <!-- messages area -->
+          <div style="padding:12px;display:flex;flex-direction:column;gap:8px;min-height:180px">
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:24px;height:24px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:50%;flex-shrink:0"></div>
+              <div style="background:#fff;border-radius:4px 12px 12px 12px;padding:8px 12px;font-size:11px;color:#374151;box-shadow:0 1px 4px rgba(0,0,0,0.07)">안녕하세요! HR 업무를 도와드릴게요.</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:24px;height:24px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:50%;flex-shrink:0"></div>
+              <div style="background:#fff;border-radius:4px 12px 12px 12px;padding:8px 12px;font-size:11px;color:#374151;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
+                출근 체크하기
+                <div style="margin-top:6px"><div style="display:inline-block;background:#6366f1;color:#fff;border-radius:6px;padding:4px 8px;font-size:10px">출퇴근 체크</div></div>
+              </div>
+            </div>
+          </div>
+          <!-- pill suggestions row -->
+          <div style="background:#fff;border-top:1px solid #f0f0f8;padding:6px 10px;display:flex;gap:6px;flex-wrap:wrap">
+            <div style="background:#eef2ff;border:1.5px solid #6366f1;color:#6366f1;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer">출근</div>
+            <div style="background:#f5f6fc;border:1px solid #ddd;color:#374151;border-radius:20px;padding:4px 10px;font-size:10px;cursor:pointer">출장신청</div>
+            <div style="background:#f5f6fc;border:1px solid #ddd;color:#374151;border-radius:20px;padding:4px 10px;font-size:10px;cursor:pointer">출퇴근변경</div>
+          </div>
+          <!-- input bar -->
+          <div style="background:#fff;border-top:1px solid #ebebf5;padding:8px 10px;display:flex;gap:8px;align-items:center">
+            <input style="flex:1;border:1.5px solid #6366f1;border-radius:8px;padding:6px 10px;font-size:11px;outline:none" value="출" placeholder="메시지 입력..." />
+            <div style="background:#6366f1;color:#fff;border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer">전송</div>
+          </div>
+        </div>
+      </div>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>장점</h4><ul><li>메시지 영역 가리지 않음</li><li>여러 추천 동시에 보임</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>긴 추천 목록은 줄바꿈</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px;text-align:center">클릭해서 선택하거나, 터미널에서 A/B 또는 의견을 알려주세요.</p>

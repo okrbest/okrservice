@@ -51,6 +51,8 @@ export const types = () => `
     erxesAppToken: String
     googleSpreadsheetId: String
     googleSheetName: String
+    adminPageUrl: String
+    adminPageEnabled: Boolean
     ${commonTypes}
   }
 
@@ -203,6 +205,9 @@ const pipelineParams = `
   erxesAppToken: String
   googleSpreadsheetId: String
   googleSheetName: String
+  adminPageUrl: String
+  adminPageSecret: String
+  adminPageEnabled: Boolean
 `;
 
 export const mutations = `

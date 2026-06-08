@@ -494,14 +494,16 @@ class Attachment extends React.Component<Props> {
       case "csv":
         filePreview = this.renderOtherFile(attachment);
         break;
+      case "mp3":
+        filePreview = this.renderMp3File(attachment);
+        break;
       case "doc":
       case "ppt":
       case "psd":
       case "avi":
       case "txt":
       case "rar":
-      case "mp3":
-        filePreview = this.renderMp3File(attachment);
+        filePreview = this.renderOtherFile(attachment, "file-2", true);
         break;
       case "pdf":
       case "png":

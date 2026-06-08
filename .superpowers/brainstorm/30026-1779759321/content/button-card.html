@@ -1,0 +1,58 @@
+<h2>추천단어 클릭 후 — 버튼 카드가 어떻게 보여야 할까요?</h2>
+<p class="subtitle">사용자가 "출근"을 클릭하면 채팅창에 버튼 카드가 추가됩니다. 어떤 형태가 좋을까요?</p>
+
+<div class="cards">
+
+  <!-- Option A: 봇 버블 스타일 -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f5f6fc;padding:16px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <!-- user message -->
+        <div style="display:flex;justify-content:flex-end">
+          <div style="background:#6366f1;color:#fff;border-radius:14px 4px 14px 14px;padding:7px 12px;font-size:11px;max-width:60%">출근</div>
+        </div>
+        <!-- bot button card -->
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <div style="width:24px;height:24px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:50%;flex-shrink:0;font-size:12px;display:flex;align-items:center;justify-content:center">🤖</div>
+          <div style="background:#fff;border-radius:4px 14px 14px 14px;padding:10px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);max-width:75%">
+            <div style="font-size:11px;color:#374151;margin-bottom:8px">출근 관련 메뉴입니다.</div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="background:#6366f1;color:#fff;border-radius:8px;padding:6px 12px;font-size:11px;text-align:center;cursor:pointer">출퇴근 체크</div>
+              <div style="background:#f5f6fc;border:1.5px solid #e0e0f4;color:#6366f1;border-radius:8px;padding:6px 12px;font-size:11px;text-align:center;cursor:pointer">출퇴근변경</div>
+              <div style="background:#f5f6fc;border:1.5px solid #e0e0f4;color:#6366f1;border-radius:8px;padding:6px 12px;font-size:11px;text-align:center;cursor:pointer">근무일정조회</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — 봇 버블 안에 버튼 리스트</h3>
+      <p>사용자 메시지 → 봇이 버튼들을 버블로 응답. 기존 RPA 메시지와 동일한 스타일.</p>
+    </div>
+  </div>
+
+  <!-- Option B: 인라인 pill 버튼 -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f5f6fc;padding:16px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <!-- user message -->
+        <div style="display:flex;justify-content:flex-end">
+          <div style="background:#6366f1;color:#fff;border-radius:14px 4px 14px 14px;padding:7px 12px;font-size:11px;max-width:60%">출근</div>
+        </div>
+        <!-- inline pills row -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;padding:4px 0">
+          <div style="background:#fff;border:1.5px solid #6366f1;color:#6366f1;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;box-shadow:0 1px 4px rgba(99,102,241,0.12)">출퇴근 체크</div>
+          <div style="background:#fff;border:1.5px solid #e0e0f4;color:#374151;border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer">출퇴근변경</div>
+          <div style="background:#fff;border:1.5px solid #e0e0f4;color:#374151;border-radius:20px;padding:5px 12px;font-size:11px;cursor:pointer">근무일정조회</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — 인라인 pill 버튼</h3>
+      <p>봇 버블 없이 버튼만 바로 노출. 가볍고 빠른 느낌. 메시지 흐름에 자연스럽게 섞임.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:8px;text-align:center">클릭하거나 터미널에서 A/B로 알려주세요.</p>

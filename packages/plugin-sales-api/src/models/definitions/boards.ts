@@ -112,6 +112,10 @@ export interface IPipeline extends ICommonFields {
   /** Google 시트 자동 동기화용 */
   googleSpreadsheetId?: string;
   googleSheetName?: string;
+  /** 관리 웹페이지 Push 설정 */
+  adminPageUrl?: string;
+  adminPageSecret?: string;
+  adminPageEnabled?: boolean;
 }
 
 export interface IPipelineDocument extends IPipeline, Document {
@@ -385,6 +389,9 @@ export const pipelineSchema = new Schema({
   erxesAppToken: field({ type: String, label: 'Erxes App token' }),
   googleSpreadsheetId: field({ type: String, optional: true, label: 'Google Spreadsheet ID (auto sync)' }),
   googleSheetName: field({ type: String, optional: true, label: 'Google Sheet name' }),
+  adminPageUrl: field({ type: String, optional: true, label: 'Admin page URL' }),
+  adminPageSecret: field({ type: String, optional: true, label: 'Admin page secret' }),
+  adminPageEnabled: field({ type: Boolean, optional: true, default: false, label: 'Admin page enabled' }),
   ...commonFieldsSchema
 });
 

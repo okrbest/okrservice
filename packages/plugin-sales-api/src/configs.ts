@@ -27,6 +27,7 @@ import reports from './reports/reports';
 import app from '@erxes/api-utils/src/app';
 import { handleSheetWebhook } from './googleSheetsSync';
 import type { SheetWebhookPayload } from './googleSheetsSync';
+import { handleAdminPageWebhook, handleAdminDealSendMail } from './adminPageWebhook';
 
 import { NOTIFICATION_MODULES } from './constants';
 import templates from './templates';
@@ -87,6 +88,14 @@ export default {
   },
   middlewares: [(serverTiming as any)()],
   onServerInit: async () => {
+    app.use('/deals', (req: any, res: any, next: any) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-ADMIN-SECRET, erxes-subdomain');
+      if (req.method === 'OPTIONS') return res.sendStatus(204);
+      next();
+    });
+
     app.get(
       '/file-export',
       routeErrorHandling(async (req: any, res) => {
@@ -134,7 +143,47 @@ export default {
         return res.json(result);
       })
     );
-    console.log('Debug ....');
+
+    app.post(
+      '/deals/dbupdate',
+      routeErrorHandling(async (req: any, res) => {
+        const secret = (req.headers['x-admin-secret'] as string) || '';
+        const { dealId, changes } = req.body;
+
+        if (!dealId || !changes) {
+          return res.status(400).json({ success: false, error: 'MISSING_FIELDS' });
+        }
+
+        const subdomain = getSubdomain(req);
+        const models = await generateModels(subdomain);
+
+        const result = await handleAdminPageWebhook(models, subdomain, secret, dealId, changes);
+
+        if (result.statusCode) {
+          return res.status(result.statusCode).json(result);
+        }
+        return res.json(result);
+      })
+    );
+
+    app.post(
+      '/deals/send-mail',
+      routeErrorHandling(async (req: any, res) => {
+        const secret = (req.headers['x-admin-secret'] as string) || '';
+        const { dealId } = req.body;
+
+        if (!dealId) {
+          return res.status(400).json({ success: false, error: 'MISSING_FIELDS' });
+        }
+
+        const subdomain = getSubdomain(req);
+        const models = await generateModels(subdomain);
+
+        const result = await handleAdminDealSendMail(models, subdomain, secret, dealId);
+        const statusCode = result.statusCode || 200;
+        return res.status(statusCode).json(result);
+      })
+    );
   },
   setupMessageConsumers
 };

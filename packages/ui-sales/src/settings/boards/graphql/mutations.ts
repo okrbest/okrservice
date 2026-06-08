@@ -58,7 +58,10 @@ const commonPipelineParamsDef = `
   $excludeProductIds: [String],
   $paymentIds: [String],
   $paymentTypes: JSON,
-  $erxesAppToken: String
+  $erxesAppToken: String,
+  $adminPageUrl: String,
+  $adminPageSecret: String,
+  $adminPageEnabled: Boolean
 `;
 
 const commonPipelineParams = `
@@ -90,6 +93,9 @@ const commonPipelineParams = `
   paymentIds: $paymentIds
   paymentTypes: $paymentTypes
   erxesAppToken: $erxesAppToken
+  adminPageUrl: $adminPageUrl
+  adminPageSecret: $adminPageSecret
+  adminPageEnabled: $adminPageEnabled
 `;
 
 const pipelineAdd = `

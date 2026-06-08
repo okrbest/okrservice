@@ -21,6 +21,7 @@ import {
   updateName
 } from "./models/utils";
 import { triggerGoogleSheetSyncIfConfigured } from "./googleSheetsSync";
+import { triggerAdminPageSyncIfConfigured } from "./adminPageSync";
 import { getCardItem, convertNestedDate } from "./utils";
 import graphqlPubsub from "@erxes/api-utils/src/graphqlPubsub";
 import {
@@ -306,6 +307,7 @@ export const setupMessageConsumers = async () => {
         if (userForSync) {
           triggerGoogleSheetSyncIfConfigured(models, subdomain, userForSync, stage.pipelineId);
         }
+        triggerAdminPageSyncIfConfigured(models, subdomain, deal._id, "created");
       } catch (_) {}
     }
 
