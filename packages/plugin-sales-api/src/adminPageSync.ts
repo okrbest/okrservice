@@ -72,27 +72,32 @@ async function buildAdminPagePayload(
   };
 }
 
+export interface SyncDealResult {
+  ok: boolean;
+  reason?: string;
+}
+
 export async function syncDealToAdminPage(
   models: IModels,
   subdomain: string,
   deal: any,
   event: AdminPageSyncEvent
-): Promise<void> {
+): Promise<SyncDealResult> {
   const stage = await models.Stages.findOne({ _id: deal.stageId }).lean() as any;
   const pipelineId: string = stage?.pipelineId || "";
 
-  if (!pipelineId) return;
+  if (!pipelineId) return { ok: false, reason: "stage_not_found" };
 
   const pipeline = await models.Pipelines.findOne({ _id: pipelineId }).lean() as any;
-  if (!pipeline) return;
+  if (!pipeline) return { ok: false, reason: "pipeline_not_found" };
 
   const adminPageEnabled: boolean = pipeline.adminPageEnabled ?? false;
-  if (!adminPageEnabled) return;
+  if (!adminPageEnabled) return { ok: false, reason: "admin_page_not_configured" };
 
   const adminPageUrl: string = (pipeline.adminPageUrl || "").trim();
   const adminPageSecret: string = (pipeline.adminPageSecret || "").trim();
 
-  if (!adminPageUrl) return;
+  if (!adminPageUrl) return { ok: false, reason: "admin_page_url_missing" };
 
   const stageName: string = stage?.name || "";
   const payload = await buildAdminPagePayload(subdomain, deal, event, pipelineId, stageName);
@@ -111,10 +116,12 @@ export async function syncDealToAdminPage(
     });
 
     if (!response.ok) {
-      await response.text().catch(() => undefined);
+      const text = await response.text().catch(() => "");
+      return { ok: false, reason: `HTTP ${response.status}${text ? `: ${text}` : ""}` };
     }
-  } catch (_error) {
-    // 백그라운드 처리 - 에러 무시
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, reason: String(error) };
   } finally {
     clearTimeout(timeoutId);
   }
