@@ -8,7 +8,7 @@ import {
   IconTicket,
   IconDeal,
 } from "./Icons";
-import { getCallData, getTicketData, getDealData, getMessengerData } from "../../utils/util";
+import { getCallData, getTicketData, getDealData, getMessengerData, getShowTicket } from "../../utils/util";
 
 import Item from "./Item";
 import { useRouter } from "../../context/Router";
@@ -39,7 +39,8 @@ const items = [
 
 function BottomNavBar() {
   const { setActiveRoute, activeRoute } = useRouter();
-  const { unreadTicketCount, hasTickets, isRegisteredContact } = useTicket();
+  const { unreadTicketCount, hasTickets } = useTicket();
+  const showTicket = getShowTicket();
   const callData = getCallData();
   const ticketData = getTicketData();
   const dealData = getDealData();
@@ -76,7 +77,7 @@ function BottomNavBar() {
           return null;
         }
 
-        if (route === "ticket" && !hasTickets && !isRegisteredContact) {
+        if (route === "ticket" && !showTicket && !hasTickets) {
           return null;
         }
 

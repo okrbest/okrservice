@@ -21,7 +21,6 @@ interface TicketContextProps {
   setUnreadTicketCount: React.Dispatch<React.SetStateAction<number>>;
   refetchUnreadCount: () => void;
   hasTickets: boolean;
-  isRegisteredContact: boolean;
 }
 
 const TicketContext = createContext<TicketContextProps | undefined>(undefined);
@@ -53,7 +52,6 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
   const refetchUnreadCount = () => {
     const id = connection.data?.customerId;
     if (!customerId && id) {
-      // 아직 customerId state가 없으면 세팅 → skip 해제되어 쿼리 자동 실행
       setCustomerId(id);
       return;
     }
@@ -63,7 +61,7 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <TicketContext.Provider value={{ ticketData, setTicketData, unreadTicketCount, setUnreadTicketCount, refetchUnreadCount, hasTickets, isRegisteredContact: !!customerId }}>
+    <TicketContext.Provider value={{ ticketData, setTicketData, unreadTicketCount, setUnreadTicketCount, refetchUnreadCount, hasTickets }}>
       {children}
     </TicketContext.Provider>
   );
