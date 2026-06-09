@@ -90,11 +90,22 @@ export default {
   onServerInit: async () => {
     app.use('/deals', (req: any, res: any, next: any) => {
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-ADMIN-SECRET, erxes-subdomain');
       if (req.method === 'OPTIONS') return res.sendStatus(204);
       next();
     });
+
+    const adminPageMethodNotAllowed = (endpoint: string) => (_req: any, res: any) =>
+      res.status(405).json({
+        success: false,
+        error: 'METHOD_NOT_ALLOWED',
+        message: `POST only. Use /api/sales${endpoint} with X-ADMIN-SECRET header.`,
+        allowedMethods: ['POST', 'OPTIONS'],
+      });
+
+    app.get('/deals/dbupdate', adminPageMethodNotAllowed('/deals/dbupdate'));
+    app.get('/deals/send-mail', adminPageMethodNotAllowed('/deals/send-mail'));
 
     app.get(
       '/file-export',

@@ -704,6 +704,25 @@ app.use(
 );
 
 /**
+ * 영업 파이프라인 관리 웹페이지 연동 API Swagger UI
+ * GET /api/sales/docs
+ */
+const salesAdminPageApiSpec = yaml.load(
+  fs.readFileSync(
+    path.resolve(__dirname, "private/sales-admin-page-api.yaml"),
+    "utf8"
+  )
+) as object;
+
+app.use(
+  "/api/sales/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(salesAdminPageApiSpec, {
+    customSiteTitle: "영업 파이프라인 관리 웹페이지 연동 API",
+  })
+);
+
+/**
  * RPA 메시지 수신 API
  * KiwiBox 서버가 배치 실행 결과를 POST 한다.
  * Content-Type: application/json

@@ -47,7 +47,7 @@ const dealMutations = {
       const stage = await models.Stages.getStage(stageId);
       triggerGoogleSheetSyncIfConfigured(models, subdomain, user, stage.pipelineId);
       if (item?._id) {
-        triggerAdminPageSyncIfConfigured(models, subdomain, item._id, "created");
+        triggerAdminPageSyncIfConfigured(models, subdomain, item._id);
       }
     }
     return item;
@@ -112,7 +112,7 @@ const dealMutations = {
     );
     const stage = await models.Stages.getStage(oldDeal.stageId);
     triggerGoogleSheetSyncIfConfigured(models, subdomain, user, stage.pipelineId);
-    triggerAdminPageSyncIfConfigured(models, subdomain, _id, "updated");
+    triggerAdminPageSyncIfConfigured(models, subdomain, _id);
     return result;
   },
 
@@ -134,7 +134,7 @@ const dealMutations = {
     );
     const stage = await models.Stages.getStage(doc.destinationStageId);
     triggerGoogleSheetSyncIfConfigured(models, subdomain, user, stage.pipelineId);
-    triggerAdminPageSyncIfConfigured(models, subdomain, doc.itemId, "moved");
+    triggerAdminPageSyncIfConfigured(models, subdomain, doc.itemId);
     return result;
   },
 
@@ -527,7 +527,7 @@ const dealMutations = {
     const errors: { dealId: string; reason: string }[] = [];
 
     for (const deal of deals) {
-      const result = await syncDealToAdminPage(models, subdomain, deal, "updated");
+      const result = await syncDealToAdminPage(models, subdomain, deal);
       if (result.ok) {
         pushed++;
       } else {

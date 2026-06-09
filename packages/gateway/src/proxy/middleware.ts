@@ -43,6 +43,17 @@ export async function applyProxiesCoreless(
         onProxyReq,
       }),
     );
+
+    if (target.name === 'sales') {
+      app.use(
+        '^/api/sales/deals',
+        createProxyMiddleware({
+          pathRewrite: { '^/api/sales': '' },
+          target: target.address,
+          onProxyReq,
+        }),
+      );
+    }
   }
 }
 
