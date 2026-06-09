@@ -50,6 +50,10 @@ export const getDealData = (): any => {
   return connection.data.dealData || {};
 };
 
+export const getShowTicket = (): boolean => {
+  return connection.setting?.showTicket === true;
+};
+
 export const isOnline = () => {
   return getMessengerData().isOnline;
 };
