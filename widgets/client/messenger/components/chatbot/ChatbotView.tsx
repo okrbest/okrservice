@@ -433,7 +433,7 @@ const ChatbotView: React.FC = () => {
           />
         </div>
 
-        {/* ── 메뉴 그리드 (접기/펼치기) ── */}
+        {/* ── 메뉴 그리드 (접기/펼치기) ── 비활성화
         <div
           style={{
             flexShrink: 0,
@@ -441,7 +441,6 @@ const ChatbotView: React.FC = () => {
             background: "#f5f6fc",
           }}
         >
-          {/* 토글 헤더 */}
           <button
             type="button"
             tabIndex={-1}
@@ -478,7 +477,6 @@ const ChatbotView: React.FC = () => {
             </span>
           </button>
 
-          {/* 그리드 */}
           {isMenuOpen && (
             <div style={{ padding: "0 14px 14px", overflowY: "auto", maxHeight: "260px" }}>
               {CHATBOT_MENU_CATEGORIES.map((cat, catIndex) => {
@@ -545,6 +543,7 @@ const ChatbotView: React.FC = () => {
             </div>
           )}
         </div>
+        ── 메뉴 그리드 비활성화 끝 ── */}
       </div>
     </Container>
   );
