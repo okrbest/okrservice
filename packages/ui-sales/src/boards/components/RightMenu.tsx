@@ -9,6 +9,7 @@ import {
 import { DATERANGES, PRIORITIES } from "../constants";
 import { TabTitle, Tabs } from "@erxes/ui/src/components/tabs";
 
+import AdminPageSync from "./AdminPageSync";
 import Archive from "./Archive";
 import Button from "@erxes/ui/src/components/Button";
 import ControlLabel from "@erxes/ui/src/components/form/Label";
@@ -412,6 +413,18 @@ export default class RightMenu extends React.Component<Props, State> {
       return <GoogleSheetsSync pipelineId={queryParams.pipelineId} />;
     }
 
+    if (this.state.currentTab === "관리 웹페이지") {
+      const { queryParams, options } = this.props;
+      if (options.type !== "deal" || !queryParams.pipelineId) {
+        return (
+          <TabContent>
+            <p>{__("영업 파이프라인을 선택한 상태에서 사용할 수 있습니다.")}</p>
+          </TabContent>
+        );
+      }
+      return <AdminPageSync pipelineId={queryParams.pipelineId} />;
+    }
+
     const { queryParams, options } = this.props;
 
     return (
@@ -465,6 +478,12 @@ export default class RightMenu extends React.Component<Props, State> {
                   onClick={tabOnClick.bind(this, "Google 시트")}
                 >
                   {__("Google 시트")}
+                </TabTitle>
+                <TabTitle
+                  className={currentTab === "관리 웹페이지" ? "active" : ""}
+                  onClick={tabOnClick.bind(this, "관리 웹페이지")}
+                >
+                  {__("관리 웹페이지")}
                 </TabTitle>
               </Tabs>
               {this.renderTabContent()}

@@ -19,7 +19,7 @@ import {
 } from "./utils";
 import { putActivityLog } from "../../../logUtils";
 import { syncDealsToGoogleSheet, triggerGoogleSheetSyncIfConfigured } from "../../../googleSheetsSync";
-import { triggerAdminPageSyncIfConfigured } from "../../../adminPageSync";
+import { triggerAdminPageSyncIfConfigured, syncDealToAdminPage } from "../../../adminPageSync";
 
 interface IDealsEdit extends IDeal {
   _id: string;
@@ -512,6 +512,32 @@ const dealMutations = {
       fileBaseUrl: effectiveFileBaseUrl,
     });
   },
+
+  async pushPipelineDealsToAdminPage(
+    _root,
+    { pipelineId }: { pipelineId: string },
+    { models, subdomain }: IContext
+  ) {
+    const stages = await models.Stages.find({ pipelineId }).lean();
+    const stageIds = stages.map((s: any) => s._id);
+    const deals = await models.Deals.find({ stageId: { $in: stageIds } }).lean();
+
+    let pushed = 0;
+    let failed = 0;
+    const errors: { dealId: string; reason: string }[] = [];
+
+    for (const deal of deals) {
+      const result = await syncDealToAdminPage(models, subdomain, deal, "updated");
+      if (result.ok) {
+        pushed++;
+      } else {
+        failed++;
+        errors.push({ dealId: String(deal._id), reason: result.reason || "unknown" });
+      }
+    }
+
+    return { success: failed === 0, pushed, failed, errors };
+  },
 };
 
 checkPermission(dealMutations, "dealsAdd", "dealsAdd");
@@ -523,5 +549,6 @@ checkPermission(dealMutations, "dealsRemove", "dealsRemove");
 checkPermission(dealMutations, "dealsWatch", "dealsWatch");
 checkPermission(dealMutations, "dealsArchive", "dealsArchive");
 checkPermission(dealMutations, "syncDealsToGoogleSheet", "showDeals");
+checkPermission(dealMutations, "pushPipelineDealsToAdminPage", "dealsEdit");
 
 export default dealMutations;

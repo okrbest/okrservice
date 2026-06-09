@@ -108,6 +108,20 @@ const syncDealsToGoogleSheet = `
   }
 `;
 
+const pushPipelineDealsToAdminPage = `
+  mutation PushPipelineDealsToAdminPage($pipelineId: String!) {
+    pushPipelineDealsToAdminPage(pipelineId: $pipelineId) {
+      success
+      pushed
+      failed
+      errors {
+        dealId
+        reason
+      }
+    }
+  }
+`;
+
 export default {
   dealsAdd,
   dealsEdit,
@@ -120,4 +134,5 @@ export default {
   dealsCopy,
   confirmLoyalties,
   syncDealsToGoogleSheet,
+  pushPipelineDealsToAdminPage,
 };

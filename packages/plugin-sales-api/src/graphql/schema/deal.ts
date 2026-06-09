@@ -65,6 +65,18 @@ export const types = ({ contacts, clientPortal, loyalty }) => `
     syncedCount: Int!
     message: String!
   }
+
+  type PushDealError {
+    dealId: String!
+    reason: String!
+  }
+
+  type PushDealsToAdminPageResult {
+    success: Boolean!
+    pushed: Int!
+    failed: Int!
+    errors: [PushDealError!]!
+  }
 `;
 
 const dealMutationParams = `
@@ -172,4 +184,5 @@ export const mutations = `
   dealsEditProductData(proccessId: String, dealId: String, dataId: String, doc: JSON): JSON
   dealsDeleteProductData(proccessId: String, dealId: String, dataId: String): JSON
   syncDealsToGoogleSheet(pipelineId: String!, spreadsheetId: String!, sheetName: String, saveToPipeline: Boolean, fileBaseUrl: String): SyncDealsToSheetsResult
+  pushPipelineDealsToAdminPage(pipelineId: String!): PushDealsToAdminPageResult
 `;
