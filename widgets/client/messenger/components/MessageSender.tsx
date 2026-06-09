@@ -232,7 +232,7 @@ const MessageSender: React.FC<Props> = (props) => {
           }}
         />
         {renderFileUploader()}
-        {/* <PersistentMenu messengerData={getMessengerData()} /> */}
+        <PersistentMenu messengerData={getMessengerData()} />
         {renderSendButton()}
       </div>
     </form>
