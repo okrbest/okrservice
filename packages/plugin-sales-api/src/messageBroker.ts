@@ -307,7 +307,7 @@ export const setupMessageConsumers = async () => {
         if (userForSync) {
           triggerGoogleSheetSyncIfConfigured(models, subdomain, userForSync, stage.pipelineId);
         }
-        triggerAdminPageSyncIfConfigured(models, subdomain, deal._id, "created");
+        triggerAdminPageSyncIfConfigured(models, subdomain, deal._id);
       } catch (_) {}
     }
 
