@@ -699,7 +699,7 @@ const rpaApiSpec = yaml.load(
 
 app.use(
   "/api/rpa/docs",
-  swaggerUi.serve,
+  swaggerUi.serveFiles(rpaApiSpec),
   swaggerUi.setup(rpaApiSpec, { customSiteTitle: "서비스데스크 RPA API" })
 );
 
@@ -716,7 +716,7 @@ const salesAdminPageApiSpec = yaml.load(
 
 app.use(
   "/api/sales/docs",
-  swaggerUi.serve,
+  swaggerUi.serveFiles(salesAdminPageApiSpec),
   swaggerUi.setup(salesAdminPageApiSpec, {
     customSiteTitle: "영업 파이프라인 관리 웹페이지 연동 API",
   })
