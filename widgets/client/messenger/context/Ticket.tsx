@@ -35,6 +35,18 @@ export const TicketProvider: React.FC<{ children: React.ReactNode }> = ({
     connection.data?.customerId
   );
 
+  useEffect(() => {
+    if (customerId) return;
+    const interval = setInterval(() => {
+      const id = connection.data?.customerId;
+      if (id) {
+        setCustomerId(id);
+        clearInterval(interval);
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, [customerId]);
+
   const { data, refetch } = useQuery(TICKET_UNREAD_COUNT_QUERY, {
     variables: { customerId },
     skip: !customerId,
