@@ -117,13 +117,13 @@ export const setLocale = (code: string = "en", callBack?: () => void) => {
 };
 
 export const __ = (key: string, options?: any) => {
-  if (key && key.includes(".") && T.texts && typeof T.texts === "object") {
+  if (key && T.texts && typeof T.texts === "object") {
     const texts = T.texts as Record<string, any>;
 
     if (key in texts) {
       const value = texts[key];
       const formatted = T.format(value, options);
-      return formatted ? formatted.toString() : "";
+      return formatted ? formatted.toString() : key;
     }
   }
 
