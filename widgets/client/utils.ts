@@ -99,7 +99,7 @@ export const setLocale = (code: string = "en", callBack?: () => void) => {
 
   import(`../locales/${validCode}.json`)
     .then((translations) => {
-      T.setTexts(translations);
+      T.setTexts((translations as any).default || translations);
       setDayjsLocale(validCode);
 
       if (callBack) {
