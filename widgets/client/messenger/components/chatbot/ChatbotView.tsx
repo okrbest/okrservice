@@ -5,13 +5,13 @@ import { useRouter } from "../../context/Router";
 import { getColor } from "../../utils/util";
 import { useChatbotMessages } from "./useChatbotMessages";
 import { useRpaMessages } from "../../context/RpaMessage";
-import Suggestions from "./Suggestions";
-import { useSuggestions, SuggestionItem } from "../../intent/suggestions";
 import { buildHrUrl } from "./getHrBaseUrl";
 import { useChatbotButtonMessages, ChatbotButtonCardMessage } from "../../context/ChatbotButtonMessages";
 import { resolveRpaButtons } from "./rpaButtons";
 import { ScheduledMessage } from "./chatbotMessages";
 import { RpaMessageItem } from "../../context/RpaMessage";
+import { streamChat } from "./teamplgpt";
+import { connection } from "../../connection";
 
 
 const DIVIDER_STYLE: React.CSSProperties = {
@@ -148,16 +148,27 @@ function getRpaDisplayText(msg: { message?: string }): string {
   return msg.message || "알림이 도착했습니다.";
 }
 
+interface AiMessage {
+  id: string;
+  role: "user" | "bot";
+  text: string;
+  streaming?: boolean;
+}
+
 type TimelineItem =
   | { kind: "scheduled"; sortKey: number; data: ScheduledMessage }
   | { kind: "rpa"; sortKey: number; data: RpaMessageItem }
-  | { kind: "suggestion"; sortKey: number; data: ChatbotButtonCardMessage };
+  | { kind: "suggestion"; sortKey: number; data: ChatbotButtonCardMessage }
+  | { kind: "ai-user"; sortKey: number; data: AiMessage }
+  | { kind: "ai-bot"; sortKey: number; data: AiMessage };
 
 function buildTimelineItems(
   scheduledMessages: ScheduledMessage[],
   rpaMessages: RpaMessageItem[],
   buttonCardMessages: ChatbotButtonCardMessage[],
+  aiMessages: AiMessage[],
 ): TimelineItem[] {
+  const now = Date.now();
   return [
     ...scheduledMessages.map((msg) => ({
       kind: "scheduled" as const,
@@ -174,49 +185,97 @@ function buildTimelineItems(
       sortKey: getMessageTimestamp(msg.createdAt),
       data: msg,
     })),
+    ...aiMessages.map((msg, i) => ({
+      kind: (msg.role === "user" ? "ai-user" : "ai-bot") as "ai-user" | "ai-bot",
+      sortKey: now + i,
+      data: msg,
+    })),
   ].sort((a, b) => a.sortKey - b.sortKey);
 }
+
+const USER_BUBBLE_STYLE: React.CSSProperties = {
+  background: "#6366f1",
+  borderRadius: "14px 4px 14px 14px",
+  padding: "10px 14px",
+  fontSize: "13px",
+  color: "#fff",
+  lineHeight: 1.55,
+  maxWidth: "100%",
+  width: "fit-content",
+  alignSelf: "flex-end",
+  boxShadow: "0 2px 8px rgba(99,102,241,0.2)",
+};
 
 const ChatbotView: React.FC = () => {
   const { setRoute, setChatbotMenu } = useRouter();
   const primaryColor = getColor() || "#6366f1";
-  const [hoveredId, setHoveredId] = React.useState<string | null>(null);
   const [hoveredBtn, setHoveredBtn] = React.useState<string | null>(null);
   const chatBottomRef = React.useRef<HTMLDivElement>(null);
 
   const scheduledMessages = useChatbotMessages();
   const { rpaMessages } = useRpaMessages();
-  const { buttonCardMessages, addButtonCardMessage } = useChatbotButtonMessages();
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const { buttonCardMessages } = useChatbotButtonMessages();
   const [inputValue, setInputValue] = React.useState('');
   const [inputFocused, setInputFocused] = React.useState(false);
+  const [aiMessages, setAiMessages] = React.useState<AiMessage[]>([]);
+  const [isStreaming, setIsStreaming] = React.useState(false);
 
-  const suggestions = useSuggestions(inputValue);
+  const aiConfig = connection.setting?.aiChat ?? {};
+  const sessionId = connection.data?.customerId || "anonymous";
 
   const timelineItems = React.useMemo(
-    () => buildTimelineItems(scheduledMessages, rpaMessages, buttonCardMessages),
-    [scheduledMessages, rpaMessages, buttonCardMessages]
+    () => buildTimelineItems(scheduledMessages, rpaMessages, buttonCardMessages, aiMessages),
+    [scheduledMessages, rpaMessages, buttonCardMessages, aiMessages]
   );
 
-  // 새 메시지가 쌓이면 자동으로 맨 아래로 스크롤
   React.useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [timelineItems.length]);
+  }, [timelineItems.length, aiMessages]);
 
   const handleMenuClick = (title: string, pathOrUrl: string) => {
     setChatbotMenu({ title, url: buildHrUrl(pathOrUrl) });
     setRoute("chatbot-iframe");
   };
 
-  const handleSuggestionSelect = (item: SuggestionItem) => {
-    addButtonCardMessage({
-      label: item.label,
-      buttons: item.buttons.map((btn) => ({
-        label: btn.label,
-        path: btn.url,
-      })),
-    });
+  const handleSend = async () => {
+    const text = inputValue.trim();
+    if (!text || isStreaming) return;
+
+    const userMsg: AiMessage = { id: `u-${Date.now()}`, role: "user", text };
+    const botMsgId = `b-${Date.now()}`;
+    const botMsg: AiMessage = { id: botMsgId, role: "bot", text: "", streaming: true };
+
+    setAiMessages((prev) => [...prev, userMsg, botMsg]);
     setInputValue('');
+    setIsStreaming(true);
+
+    try {
+      let accumulated = "";
+      for await (const chunk of streamChat(text, sessionId, aiConfig)) {
+        if (chunk.error) break;
+        accumulated += chunk.textResponse;
+        setAiMessages((prev) =>
+          prev.map((m) =>
+            m.id === botMsgId ? { ...m, text: accumulated, streaming: !chunk.close } : m
+          )
+        );
+      }
+    } catch (e) {
+      setAiMessages((prev) =>
+        prev.map((m) =>
+          m.id === botMsgId ? { ...m, text: "오류가 발생했습니다. 다시 시도해주세요.", streaming: false } : m
+        )
+      );
+    } finally {
+      setIsStreaming(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   };
 
   return (
@@ -353,72 +412,104 @@ const ChatbotView: React.FC = () => {
               );
             }
 
-            const msg = item.data;
-            return (
-              <div
-                key={`suggestion-${msg.id}`}
-                style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
-              >
-                <div style={BOT_AVATAR_STYLE}>🤖</div>
-                <div style={MESSAGE_COLUMN_STYLE}>
-                  <div style={BUBBLE_STYLE}>
-                    <strong>{msg.label}</strong> 관련 메뉴입니다.
+            if (item.kind === "suggestion") {
+              const msg = item.data;
+              return (
+                <div
+                  key={`suggestion-${msg.id}`}
+                  style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+                >
+                  <div style={BOT_AVATAR_STYLE}>🤖</div>
+                  <div style={MESSAGE_COLUMN_STYLE}>
+                    <div style={BUBBLE_STYLE}>
+                      <strong>{msg.label}</strong> 관련 메뉴입니다.
+                    </div>
+                    <div style={ACTION_BUTTON_GROUP_STYLE}>
+                      {msg.buttons.map((btn) => {
+                        const btnKey = `${msg.id}-${btn.label}`;
+                        const isHovered = hoveredBtn === btnKey;
+                        return (
+                          <button
+                            key={btnKey}
+                            type="button"
+                            tabIndex={-1}
+                            style={createActionButtonStyle(primaryColor, isHovered)}
+                            onMouseEnter={() => setHoveredBtn(btnKey)}
+                            onMouseLeave={() => setHoveredBtn(null)}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onFocus={(e) => e.currentTarget.blur()}
+                            onClick={() => handleMenuClick(btn.label, btn.path)}
+                          >
+                            {btn.label} →
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
+                      {formatMessageTime(msg.createdAt)}
+                    </span>
                   </div>
-                  <div style={ACTION_BUTTON_GROUP_STYLE}>
-                    {msg.buttons.map((btn) => {
-                      const btnKey = `${msg.id}-${btn.label}`;
-                      const isHovered = hoveredBtn === btnKey;
-                      return (
-                        <button
-                          key={btnKey}
-                          type="button"
-                          tabIndex={-1}
-                          style={createActionButtonStyle(primaryColor, isHovered)}
-                          onMouseEnter={() => setHoveredBtn(btnKey)}
-                          onMouseLeave={() => setHoveredBtn(null)}
-                          onMouseDown={(e) => e.preventDefault()}
-                          onFocus={(e) => e.currentTarget.blur()}
-                          onClick={() => handleMenuClick(btn.label, btn.path)}
-                        >
-                          {btn.label} →
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
-                    {formatMessageTime(msg.createdAt)}
-                  </span>
                 </div>
-              </div>
-            );
+              );
+            }
+
+            if (item.kind === "ai-user") {
+              const msg = item.data;
+              return (
+                <div
+                  key={`ai-user-${msg.id}`}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
+                >
+                  <div style={USER_BUBBLE_STYLE}>{msg.text}</div>
+                </div>
+              );
+            }
+
+            if (item.kind === "ai-bot") {
+              const msg = item.data;
+              return (
+                <div
+                  key={`ai-bot-${msg.id}`}
+                  style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+                >
+                  <div style={BOT_AVATAR_STYLE}>🤖</div>
+                  <div style={MESSAGE_COLUMN_STYLE}>
+                    <div style={BUBBLE_STYLE}>
+                      {msg.text || (msg.streaming ? <span style={{ color: "#94a3b8" }}>...</span> : "")}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            return null;
           })}
 
           {/* 자동 스크롤 앵커 */}
           <div ref={chatBottomRef} />
         </div>
 
-        {/* ── 텍스트 입력 + 추천단어 드롭다운 ── */}
+        {/* ── AI 채팅 입력 ── */}
         <div
           style={{
             flexShrink: 0,
             borderTop: "1px solid #ebebf5",
             background: "#fff",
             padding: "8px 12px",
-            position: "relative",
+            display: "flex",
+            gap: "8px",
+            alignItems: "center",
           }}
         >
-          <Suggestions
-            items={suggestions}
-            onSelect={handleSuggestionSelect}
-            onClose={() => setInputValue('')}
-          />
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="HR 메뉴를 검색하세요 (예: 출근, 휴가)"
+            onKeyDown={handleKeyDown}
+            placeholder="메시지를 입력하세요..."
+            disabled={isStreaming}
             style={{
-              width: "100%",
+              flex: 1,
               border: `1.5px solid ${inputFocused ? primaryColor : "#e0e0f4"}`,
               borderRadius: "8px",
               padding: "8px 12px",
@@ -426,11 +517,30 @@ const ChatbotView: React.FC = () => {
               color: "#374151",
               outline: "none",
               boxSizing: "border-box",
-              background: "#f9f9ff",
+              background: isStreaming ? "#f5f5f5" : "#f9f9ff",
             }}
             onFocus={() => setInputFocused(true)}
             onBlur={() => setInputFocused(false)}
           />
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={isStreaming || !inputValue.trim()}
+            style={{
+              flexShrink: 0,
+              background: isStreaming || !inputValue.trim() ? "#c7c7d4" : primaryColor,
+              border: "none",
+              borderRadius: "8px",
+              padding: "8px 14px",
+              color: "#fff",
+              fontSize: "13px",
+              fontWeight: "600",
+              cursor: isStreaming || !inputValue.trim() ? "not-allowed" : "pointer",
+              outline: "none",
+            }}
+          >
+            {isStreaming ? "..." : "전송"}
+          </button>
         </div>
 
         {/* ── 메뉴 그리드 (접기/펼치기) ── 비활성화
