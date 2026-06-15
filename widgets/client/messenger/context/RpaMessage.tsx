@@ -139,9 +139,10 @@ export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ ch
               return;
             }
 
+            // 구독으로 실시간 수신 → 항상 클라이언트 수신 시각 사용
             const normalized = normalizeRpaMessage({
               ...msg,
-              receivedAt: msg.receivedAt || new Date().toISOString(),
+              receivedAt: new Date().toISOString(),
             });
             setRpaMessages((prev) => {
               if (prev.some((m) => m._id === normalized._id)) {
