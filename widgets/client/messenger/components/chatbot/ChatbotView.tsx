@@ -225,11 +225,16 @@ const ChatbotView: React.FC = () => {
   const sessionId = connection.data?.customerId || "anonymous";
   const storageKey = `erxes_ai_chat_${sessionId}`;
 
-  // localStorage에서 이전 대화 복원
+  // localStorage에서 이전 대화 복원 (undefined 텍스트 정리)
   const [aiMessages, setAiMessages] = React.useState<AiMessage[]>(() => {
     try {
       const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed: AiMessage[] = JSON.parse(saved);
+      return parsed.map((m) => ({
+        ...m,
+        text: (m.text ?? "").replace(/^undefined/, ""),
+      }));
     } catch {
       return [];
     }
@@ -266,6 +271,8 @@ const ChatbotView: React.FC = () => {
     const now = Date.now();
     const userMsg: AiMessage = { id: `u-${now}`, role: "user", text, createdAt: now };
     const botMsgId = `b-${now + 1}`;
+    // createdAt은 첫 청크 수신 시점으로 업데이트 — 전송 시점으로 고정하면
+    // 그 사이에 도착한 RPA 메시지보다 위에 정렬됨
     const botMsg: AiMessage = { id: botMsgId, role: "bot", text: "", createdAt: now + 1, streaming: true };
 
     setAiMessages((prev) => [...prev, userMsg, botMsg]);
@@ -274,14 +281,24 @@ const ChatbotView: React.FC = () => {
 
     try {
       let accumulated = "";
+      let firstChunk = true;
       for await (const chunk of streamChat(text, sessionId, aiConfig)) {
         if (chunk.error) break;
         accumulated += chunk.textResponse ?? "";
+        const receivedAt = Date.now();
         setAiMessages((prev) =>
-          prev.map((m) =>
-            m.id === botMsgId ? { ...m, text: accumulated, streaming: !chunk.close } : m
-          )
+          prev.map((m) => {
+            if (m.id !== botMsgId) return m;
+            return {
+              ...m,
+              text: accumulated,
+              streaming: !chunk.close,
+              // 첫 청크 수신 시각으로 createdAt 업데이트
+              createdAt: firstChunk ? receivedAt : m.createdAt,
+            };
+          })
         );
+        firstChunk = false;
       }
     } catch (e) {
       setAiMessages((prev) =>
