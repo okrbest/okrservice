@@ -380,7 +380,7 @@ const TicketShowProgress: React.FC<Props> = ({
         </div>
         <div className="ticket-lbl">
           <label>{__("Ticket status")}:</label>
-          <span className="lbl">{stage?.name}</span>
+          <span className="lbl">{stage?.name ? __(stage.name) : ""}</span>
         </div>
         {renderTicketIssue()}
         {renderTicketLogs()}
