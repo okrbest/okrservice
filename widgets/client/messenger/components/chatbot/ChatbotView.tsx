@@ -292,7 +292,7 @@ const ChatbotView: React.FC = () => {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -516,29 +516,32 @@ const ChatbotView: React.FC = () => {
             flexShrink: 0,
             borderTop: "1px solid #ebebf5",
             background: "#fff",
-            padding: "8px 12px",
+            padding: "12px 14px",
             display: "flex",
             gap: "8px",
-            alignItems: "center",
+            alignItems: "flex-end",
           }}
         >
-          <input
-            type="text"
+          <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="메시지를 입력하세요..."
             disabled={isStreaming}
+            rows={3}
             style={{
               flex: 1,
               border: `1.5px solid ${inputFocused ? primaryColor : "#e0e0f4"}`,
-              borderRadius: "8px",
-              padding: "8px 12px",
+              borderRadius: "10px",
+              padding: "10px 12px",
               fontSize: "13px",
               color: "#374151",
               outline: "none",
               boxSizing: "border-box",
               background: isStreaming ? "#f5f5f5" : "#f9f9ff",
+              resize: "none",
+              lineHeight: 1.5,
+              fontFamily: "inherit",
             }}
             onFocus={() => setInputFocused(true)}
             onBlur={() => setInputFocused(false)}
@@ -551,13 +554,14 @@ const ChatbotView: React.FC = () => {
               flexShrink: 0,
               background: isStreaming || !inputValue.trim() ? "#c7c7d4" : primaryColor,
               border: "none",
-              borderRadius: "8px",
-              padding: "8px 14px",
+              borderRadius: "10px",
+              padding: "10px 16px",
               color: "#fff",
               fontSize: "13px",
               fontWeight: "600",
               cursor: isStreaming || !inputValue.trim() ? "not-allowed" : "pointer",
               outline: "none",
+              height: "42px",
             }}
           >
             {isStreaming ? "..." : "전송"}
