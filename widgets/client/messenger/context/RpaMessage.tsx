@@ -107,7 +107,10 @@ export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           fetchPolicy: 'network-only',
         });
         const msgs: RpaMessageItem[] = (result.data?.rpaMessages || []).map(
-          normalizeRpaMessage
+          (m: RpaMessageItem) => normalizeRpaMessage({
+            ...m,
+            receivedAt: m.receivedAt || new Date().toISOString(),
+          })
         );
         loadedLoginIdRef.current = loginId;
         setRpaMessages(msgs);
@@ -136,7 +139,10 @@ export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ ch
               return;
             }
 
-            const normalized = normalizeRpaMessage(msg);
+            const normalized = normalizeRpaMessage({
+              ...msg,
+              receivedAt: msg.receivedAt || new Date().toISOString(),
+            });
             setRpaMessages((prev) => {
               if (prev.some((m) => m._id === normalized._id)) {
                 return prev;
