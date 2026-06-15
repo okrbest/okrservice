@@ -82,9 +82,10 @@ widgetConnect({
     // save connection info
     connection.data = messengerData;
 
-    // Improve language code setting logic
-    const languageCode =
+    // ko가 아닌 언어는 en으로 처리
+    const rawLanguage =
       connection.setting.language || messengerData.languageCode || "ko";
+    const languageCode = rawLanguage === "ko" ? "ko" : "en";
 
     // set language
     setLocale(languageCode);
