@@ -244,7 +244,7 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeC
           {/* 알림 표시 */}
           {ticket.widgetAlarm === false && (
             <div style={notificationStyles.ticketNotification}>
-              <span style={notificationStyles.notificationIcon}>🔔 새 답변알림</span>
+              <span style={notificationStyles.notificationIcon}>🔔 {__("새 답변알림")}</span>
             </div>
           )}
         </div>
