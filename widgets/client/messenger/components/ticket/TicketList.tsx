@@ -269,7 +269,7 @@ const TicketList: React.FC<Props> = ({ tickets, loading, onTicketClick, includeC
           <div className="ticket-labels">
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <span className={`ticket-status ${getStatusClass(ticket.status)}`}>
-                {ticket.stage?.name || ticket.status}
+                {__(ticket.stage?.name || ticket.status)}
               </span>
               <span className="ticket-type">{__(ticket.requestType || ticket.type)}</span>
             </div>
