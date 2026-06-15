@@ -136,10 +136,11 @@ function formatMessageTime(value?: string): string {
 }
 
 function getMessageTimestamp(value?: string): number {
-  if (!value) {
-    return 0;
-  }
-
+  if (!value) return 0;
+  // unix timestamp (ms) 문자열 처리 e.g. "1749859200000"
+  const numeric = Number(value);
+  if (!Number.isNaN(numeric) && numeric > 0) return numeric;
+  // ISO 문자열 처리
   const time = new Date(value).getTime();
   return Number.isNaN(time) ? 0 : time;
 }
