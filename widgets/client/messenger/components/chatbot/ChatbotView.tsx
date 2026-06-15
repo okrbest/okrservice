@@ -152,6 +152,7 @@ interface AiMessage {
   id: string;
   role: "user" | "bot";
   text: string;
+  createdAt: number;
   streaming?: boolean;
 }
 
@@ -168,7 +169,6 @@ function buildTimelineItems(
   buttonCardMessages: ChatbotButtonCardMessage[],
   aiMessages: AiMessage[],
 ): TimelineItem[] {
-  const now = Date.now();
   return [
     ...scheduledMessages.map((msg) => ({
       kind: "scheduled" as const,
@@ -185,9 +185,9 @@ function buildTimelineItems(
       sortKey: getMessageTimestamp(msg.createdAt),
       data: msg,
     })),
-    ...aiMessages.map((msg, i) => ({
+    ...aiMessages.map((msg) => ({
       kind: (msg.role === "user" ? "ai-user" : "ai-bot") as "ai-user" | "ai-bot",
-      sortKey: now + i,
+      sortKey: msg.createdAt,
       data: msg,
     })),
   ].sort((a, b) => a.sortKey - b.sortKey);
@@ -261,9 +261,10 @@ const ChatbotView: React.FC = () => {
     const text = inputValue.trim();
     if (!text || isStreaming) return;
 
-    const userMsg: AiMessage = { id: `u-${Date.now()}`, role: "user", text };
-    const botMsgId = `b-${Date.now()}`;
-    const botMsg: AiMessage = { id: botMsgId, role: "bot", text: "", streaming: true };
+    const now = Date.now();
+    const userMsg: AiMessage = { id: `u-${now}`, role: "user", text, createdAt: now };
+    const botMsgId = `b-${now + 1}`;
+    const botMsg: AiMessage = { id: botMsgId, role: "bot", text: "", createdAt: now + 1, streaming: true };
 
     setAiMessages((prev) => [...prev, userMsg, botMsg]);
     setInputValue('');
