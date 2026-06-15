@@ -16,6 +16,8 @@ export interface RpaMessageItem {
   overtime: string;
   receivedAt: string;
   buttons: Array<{ label: string; path: string }>;
+  isNew?: boolean; // 현재 세션에서 구독으로 수신된 메시지
+  clientReceivedAt?: number; // 클라이언트가 실제로 수신한 시각 (ms) - 정렬 기준
 }
 
 interface RpaMessageContextProps {
@@ -82,6 +84,58 @@ function normalizeRpaMessage(msg: RpaMessageItem): RpaMessageItem {
   };
 }
 
+const RPA_TIMESTAMPS_STORAGE_KEY = 'erxes_rpa_client_times';
+
+function loadRpaTimestamps(): Map<string, number> {
+  try {
+    const saved = localStorage.getItem(RPA_TIMESTAMPS_STORAGE_KEY);
+    if (!saved) return new Map();
+    return new Map(JSON.parse(saved) as [string, number][]);
+  } catch {
+    return new Map();
+  }
+}
+
+function saveRpaTimestamps(map: Map<string, number>): void {
+  try {
+    localStorage.setItem(RPA_TIMESTAMPS_STORAGE_KEY, JSON.stringify([...map.entries()]));
+  } catch {
+    // localStorage 용량 초과 등 무시
+  }
+}
+
+function toReceivedAtMs(value?: string): number {
+  if (!value) return 0;
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function mergeRpaMessages(
+  fromHistory: RpaMessageItem[],
+  fromState: RpaMessageItem[],
+): RpaMessageItem[] {
+  const stateById = new Map(fromState.map((m) => [m._id, m]));
+  const merged = fromHistory.map((historyMsg) => {
+    const liveMsg = stateById.get(historyMsg._id);
+    if (!liveMsg?.clientReceivedAt) {
+      return historyMsg;
+    }
+    if (!historyMsg.clientReceivedAt || liveMsg.clientReceivedAt > historyMsg.clientReceivedAt) {
+      return {
+        ...historyMsg,
+        clientReceivedAt: liveMsg.clientReceivedAt,
+        isNew: liveMsg.isNew ?? historyMsg.isNew,
+      };
+    }
+    return historyMsg;
+  });
+
+  const mergedIds = new Set(merged.map((m) => m._id));
+  const onlyLive = fromState.filter((m) => !mergedIds.has(m._id));
+
+  return [...merged, ...onlyLive];
+}
+
 export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [rpaMessages, setRpaMessages] = useState<RpaMessageItem[]>([]);
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
@@ -106,14 +160,26 @@ export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           variables: { loginId, limit: 20 },
           fetchPolicy: 'network-only',
         });
-        const msgs: RpaMessageItem[] = (result.data?.rpaMessages || []).map(
+        const rawMsgs: RpaMessageItem[] = (result.data?.rpaMessages || []).map(
           (m: RpaMessageItem) => normalizeRpaMessage({
             ...m,
             receivedAt: m.receivedAt || new Date().toISOString(),
           })
         );
+        // localStorage에서 이전 clientReceivedAt 복원.
+        // 캐시가 없으면 서버 receivedAt 사용 (히스토리는 receivedAt DESC 정렬).
+        const timestamps = loadRpaTimestamps();
+        const msgs = rawMsgs.map((m) => {
+          const cached = timestamps.get(m._id);
+          const clientReceivedAt = cached ?? toReceivedAtMs(m.receivedAt);
+          if (cached === undefined && clientReceivedAt > 0) {
+            timestamps.set(m._id, clientReceivedAt);
+          }
+          return { ...m, clientReceivedAt };
+        });
+        saveRpaTimestamps(timestamps);
         loadedLoginIdRef.current = loginId;
-        setRpaMessages(msgs);
+        setRpaMessages((prev) => mergeRpaMessages(msgs, prev));
       } catch (err) {
         console.error('[RPA] History load error:', err);
       }
@@ -139,17 +205,29 @@ export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ ch
               return;
             }
 
-            // 구독으로 실시간 수신 → 항상 클라이언트 수신 시각 사용
+            // 구독으로 실시간 수신 → 클라이언트 수신 시각 저장 + isNew 플래그
+            const clientReceivedAt = Date.now();
+            const timestamps = loadRpaTimestamps();
+            timestamps.set(msg._id, clientReceivedAt);
+            saveRpaTimestamps(timestamps);
             const normalized = normalizeRpaMessage({
               ...msg,
-              receivedAt: new Date().toISOString(),
+              receivedAt: msg.receivedAt || new Date().toISOString(),
+              isNew: true,
+              clientReceivedAt,
             });
             setRpaMessages((prev) => {
-              const exists = prev.some((m) => m._id === normalized._id);
+              const exists = prev.find((m) => m._id === normalized._id);
               if (exists) {
-                // 히스토리로 이미 로드된 메시지라도 구독으로 오면 receivedAt을 지금으로 갱신
+                // 중복 구독은 최초 화면 표시 시각을 유지
                 return prev.map((m) =>
-                  m._id === normalized._id ? normalized : m
+                  m._id === normalized._id
+                    ? {
+                        ...normalized,
+                        clientReceivedAt: m.clientReceivedAt ?? normalized.clientReceivedAt,
+                        isNew: m.isNew ?? normalized.isNew,
+                      }
+                    : m
                 );
               }
               return [...prev, normalized];

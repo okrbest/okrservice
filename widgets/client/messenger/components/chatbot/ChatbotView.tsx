@@ -150,6 +150,126 @@ function getRpaDisplayText(msg: { message?: string }): string {
   return msg.message || "알림이 도착했습니다.";
 }
 
+function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const pattern = /(\*\*(.+?)\*\*|\*([^*]+)\*|`([^`]+)`)/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+  let i = 0;
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > last) {
+      parts.push(text.slice(last, match.index));
+    }
+    if (match[2] !== undefined) {
+      parts.push(<strong key={`${keyPrefix}-${i++}`}>{match[2]}</strong>);
+    } else if (match[3] !== undefined) {
+      parts.push(<em key={`${keyPrefix}-${i++}`}>{match[3]}</em>);
+    } else if (match[4] !== undefined) {
+      parts.push(
+        <code
+          key={`${keyPrefix}-${i++}`}
+          style={{
+            background: "#f0f0f8",
+            borderRadius: "3px",
+            padding: "1px 5px",
+            fontSize: "12px",
+            fontFamily: "monospace",
+            color: "#6366f1",
+          }}
+        >
+          {match[4]}
+        </code>
+      );
+    }
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) {
+    parts.push(text.slice(last));
+  }
+  return parts;
+}
+
+function renderMarkdown(text: string): React.ReactNode[] {
+  const lines = text.split("\n");
+  const nodes: React.ReactNode[] = [];
+  let listItems: React.ReactNode[] = [];
+
+  const flushList = (key: string) => {
+    if (listItems.length > 0) {
+      nodes.push(
+        <ul key={key} style={{ margin: "4px 0", paddingLeft: "18px" }}>
+          {listItems}
+        </ul>
+      );
+      listItems = [];
+    }
+  };
+
+  lines.forEach((line, idx) => {
+    const h2 = line.match(/^##\s+(.+)/);
+    const h3 = line.match(/^###\s+(.+)/);
+    const bullet = line.match(/^[-*]\s+(.+)/);
+    const numbered = line.match(/^\d+[.)]\s+(.+)/);
+
+    if (h2) {
+      flushList(`list-${idx}`);
+      nodes.push(
+        <div
+          key={idx}
+          style={{
+            fontWeight: 700,
+            fontSize: "13px",
+            color: "#374151",
+            marginTop: "10px",
+            marginBottom: "2px",
+            borderBottom: "1px solid #e5e7eb",
+            paddingBottom: "3px",
+          }}
+        >
+          {renderInline(h2[1], `${idx}`)}
+        </div>
+      );
+    } else if (h3) {
+      flushList(`list-${idx}`);
+      nodes.push(
+        <div
+          key={idx}
+          style={{
+            fontWeight: 600,
+            fontSize: "12.5px",
+            color: "#4b5563",
+            marginTop: "7px",
+            marginBottom: "2px",
+          }}
+        >
+          {renderInline(h3[1], `${idx}`)}
+        </div>
+      );
+    } else if (bullet || numbered) {
+      const content = bullet ? bullet[1] : (numbered as RegExpMatchArray)[1];
+      listItems.push(
+        <li key={idx} style={{ marginBottom: "2px", lineHeight: 1.5 }}>
+          {renderInline(content, `${idx}`)}
+        </li>
+      );
+    } else if (line.trim() === "") {
+      flushList(`list-${idx}`);
+      nodes.push(<div key={idx} style={{ height: "4px" }} />);
+    } else {
+      flushList(`list-${idx}`);
+      nodes.push(
+        <div key={idx} style={{ lineHeight: 1.6 }}>
+          {renderInline(line, `${idx}`)}
+        </div>
+      );
+    }
+  });
+
+  flushList("list-end");
+  return nodes;
+}
+
 interface AiMessage {
   id: string;
   role: "user" | "bot";
@@ -171,6 +291,9 @@ function buildTimelineItems(
   buttonCardMessages: ChatbotButtonCardMessage[],
   aiMessages: AiMessage[],
 ): TimelineItem[] {
+  // 모든 메시지를 클라이언트 실제 수신 시각(화면에 나타난 시각) 기준으로 통합 정렬
+  // RPA: clientReceivedAt (히스토리=로드시각, 구독=수신시각)
+  // AI: createdAt (Date.now() 기반)
   return [
     ...scheduledMessages.map((msg) => ({
       kind: "scheduled" as const,
@@ -179,7 +302,7 @@ function buildTimelineItems(
     })),
     ...rpaMessages.map((msg) => ({
       kind: "rpa" as const,
-      sortKey: getMessageTimestamp(msg.receivedAt),
+      sortKey: msg.clientReceivedAt ?? getMessageTimestamp(msg.receivedAt),
       data: msg,
     })),
     ...buttonCardMessages.map((msg) => ({
@@ -347,12 +470,15 @@ const ChatbotView: React.FC = () => {
           <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
             <div style={BOT_AVATAR_STYLE}>🤖</div>
             <div style={MESSAGE_COLUMN_STYLE}>
-            <div style={BUBBLE_STYLE}>
-              안녕하세요! 👋
-              <br />
-              <strong style={{ color: primaryColor }}>HR 시스템</strong>의
-              주요 기능을 바로 이용하세요.
-            </div>
+              <div style={BUBBLE_STYLE}>
+                안녕하세요! 👋
+                <br />
+                HR 관련 질문을 AI에게 물어보세요.
+                <br />
+                <span style={{ color: "#94a3b8", fontSize: "12px" }}>
+                  예) "연차 신청 방법 알려줘" · "이번 달 급여 확인"
+                </span>
+              </div>
             </div>
           </div>
 
@@ -515,7 +641,11 @@ const ChatbotView: React.FC = () => {
                   <div style={BOT_AVATAR_STYLE}>🤖</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={BUBBLE_STYLE}>
-                      {msg.text || (msg.streaming ? <span style={{ color: "#94a3b8" }}>...</span> : "")}
+                      {msg.text
+                        ? renderMarkdown(msg.text)
+                        : msg.streaming
+                        ? <span style={{ color: "#94a3b8" }}>...</span>
+                        : ""}
                     </div>
                   </div>
                 </div>
@@ -545,7 +675,7 @@ const ChatbotView: React.FC = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="메시지를 입력하세요..."
+            placeholder="궁금한 HR 업무를 자유롭게 물어보세요"
             disabled={isStreaming}
             rows={3}
             style={{
