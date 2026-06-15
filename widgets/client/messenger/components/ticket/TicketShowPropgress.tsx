@@ -286,7 +286,7 @@ const TicketShowProgress: React.FC<Props> = ({
       const { firstName, lastName, email, emails, phone, phones, avatar } =
         createdUser || ({} as any);
 
-      let renderName = "Visitor";
+      let renderName = __("Visitor");
 
       renderName =
         firstName || lastName
@@ -299,7 +299,7 @@ const TicketShowProgress: React.FC<Props> = ({
                 ? phone
                 : phones && phones.length !== 0
                   ? phones?.[0]
-                  : "Unknown";
+                  : __("Unknown");
 
       return (
         <div key={comment._id} className={`ticket-progress-log ${userType}`}>

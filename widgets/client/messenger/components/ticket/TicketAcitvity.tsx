@@ -68,7 +68,7 @@ const TicketActivity: React.FC<Props> = ({ activity }) => {
         return renderDetail(
           activity.contentType,
           <span>
-            <strong>{userName}</strong> created <b>ticket</b>
+            <strong>{userName}</strong> {__("created")} <b>{__("ticket")}</b>
             <div className="date">
               {dayjs(createdAt).format("YYYY-MM-DD, LT")}
             </div>
@@ -79,7 +79,7 @@ const TicketActivity: React.FC<Props> = ({ activity }) => {
         return renderDetail(
           "assignee",
           <span>
-            <strong>{userName}</strong> assigned <b>team member</b>
+            <strong>{userName}</strong> {__("assigned")} <b>{__("team member")}</b>
           </span>
         );
 
@@ -96,7 +96,7 @@ const TicketActivity: React.FC<Props> = ({ activity }) => {
           activity.contentType,
           <span>
             <strong>{userName}</strong>
-            moved <b>{content.text || ""}</b>
+            {__("moved")} <b>{content.text || ""}</b>
           </span>
         );
 
