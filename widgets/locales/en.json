@@ -123,5 +123,6 @@
   "사용안내: 시스템 사용 방법 안내": "Usage guide: Guidance on how to use the system",
   "데이터작업: 데이터 관련 작업 요청": "Data work: Data-related work requests",
   "공개: 회사 내 동료들이 회사 티켓보기에서 볼 수 있습니다": "Public: Your colleagues can see this in Company Tickets",
-  "비공개: 민감한 내용일 경우 비공개로 설정하세요": "Private: Set to private for sensitive content"
+  "비공개: 민감한 내용일 경우 비공개로 설정하세요": "Private: Set to private for sensitive content",
+  "Upload screenshot or your a file here": "Upload a screenshot or file here"
 }
