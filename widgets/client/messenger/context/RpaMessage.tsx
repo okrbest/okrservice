@@ -145,8 +145,12 @@ export const RpaMessageProvider: React.FC<{ children: React.ReactNode }> = ({ ch
               receivedAt: new Date().toISOString(),
             });
             setRpaMessages((prev) => {
-              if (prev.some((m) => m._id === normalized._id)) {
-                return prev;
+              const exists = prev.some((m) => m._id === normalized._id);
+              if (exists) {
+                // 히스토리로 이미 로드된 메시지라도 구독으로 오면 receivedAt을 지금으로 갱신
+                return prev.map((m) =>
+                  m._id === normalized._id ? normalized : m
+                );
               }
               return [...prev, normalized];
             });
