@@ -217,11 +217,31 @@ const ChatbotView: React.FC = () => {
   const { buttonCardMessages } = useChatbotButtonMessages();
   const [inputValue, setInputValue] = React.useState('');
   const [inputFocused, setInputFocused] = React.useState(false);
-  const [aiMessages, setAiMessages] = React.useState<AiMessage[]>([]);
   const [isStreaming, setIsStreaming] = React.useState(false);
 
   const aiConfig = connection.setting?.aiChat ?? {};
   const sessionId = connection.data?.customerId || "anonymous";
+  const storageKey = `erxes_ai_chat_${sessionId}`;
+
+  // localStorage에서 이전 대화 복원
+  const [aiMessages, setAiMessages] = React.useState<AiMessage[]>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // aiMessages 변경 시 localStorage에 저장 (streaming 중인 메시지 제외)
+  React.useEffect(() => {
+    try {
+      const toSave = aiMessages.map((m) => ({ ...m, streaming: false }));
+      localStorage.setItem(storageKey, JSON.stringify(toSave));
+    } catch {
+      // localStorage 용량 초과 등 무시
+    }
+  }, [aiMessages, storageKey]);
 
   const timelineItems = React.useMemo(
     () => buildTimelineItems(scheduledMessages, rpaMessages, buttonCardMessages, aiMessages),
