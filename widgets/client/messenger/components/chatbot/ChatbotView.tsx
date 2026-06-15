@@ -137,10 +137,11 @@ function formatMessageTime(value?: string): string {
 
 function getMessageTimestamp(value?: string): number {
   if (!value) return 0;
-  // unix timestamp (ms) 문자열 처리 e.g. "1749859200000"
   const numeric = Number(value);
-  if (!Number.isNaN(numeric) && numeric > 0) return numeric;
-  // ISO 문자열 처리
+  if (!Number.isNaN(numeric) && numeric > 0) {
+    // seconds 단위이면 ms로 변환 (10^10 미만이면 초 단위로 판단)
+    return numeric < 10_000_000_000 ? numeric * 1000 : numeric;
+  }
   const time = new Date(value).getTime();
   return Number.isNaN(time) ? 0 : time;
 }
@@ -275,7 +276,7 @@ const ChatbotView: React.FC = () => {
       let accumulated = "";
       for await (const chunk of streamChat(text, sessionId, aiConfig)) {
         if (chunk.error) break;
-        accumulated += chunk.textResponse;
+        accumulated += chunk.textResponse ?? "";
         setAiMessages((prev) =>
           prev.map((m) =>
             m.id === botMsgId ? { ...m, text: accumulated, streaming: !chunk.close } : m
