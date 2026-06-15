@@ -131,5 +131,9 @@
   "config": "Configuration change",
   "additional_development": "New development",
   "usage_guide": "Usage guide",
-  "data_work": "Data work"
+  "data_work": "Data work",
+  "요청": "Request",
+  "접수": "Received",
+  "처리중": "In Progress",
+  "완료": "Completed"
 }
