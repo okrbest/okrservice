@@ -11,7 +11,7 @@ import { connect } from './graphql/mutations';
 import { connection } from './connection';
 import { enabledServicesQuery } from '../form/graphql';
 import gql from 'graphql-tag';
-import { setLocale } from '../utils';
+import { setLocale, normalizeLanguageCode } from '../utils';
 import widgetConnect from '../widgetConnect';
 
 const App = asyncComponent(
@@ -85,7 +85,10 @@ widgetConnect({
     const rawLanguage =
       connection.setting.language || messengerData.languageCode || "ko";
     const SUPPORTED_LOCALES = ["ko", "ja"];
-    const languageCode = SUPPORTED_LOCALES.includes(rawLanguage) ? rawLanguage : "en";
+    const normalizedLanguage = normalizeLanguageCode(rawLanguage);
+    const languageCode = SUPPORTED_LOCALES.includes(normalizedLanguage)
+      ? normalizedLanguage
+      : "en";
 
     // set language
     setLocale(languageCode);

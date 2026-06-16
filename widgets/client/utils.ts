@@ -88,6 +88,19 @@ export const requestBrowserInfo = ({
   });
 };
 
+const LANGUAGE_ALIASES: Record<string, string> = {
+  jp: "ja",
+  jpn: "ja",
+  japanese: "ja",
+  kr: "ko",
+  korean: "ko",
+};
+
+export const normalizeLanguageCode = (code?: string): string => {
+  const raw = (code || "ko").toLowerCase().replace(/_/g, "-");
+  return LANGUAGE_ALIASES[raw] || raw;
+};
+
 const setDayjsLocale = (code: string) => {
   import("dayjs/locale/" + code + ".js")
     .then(() => dayjs.locale(code))
@@ -95,7 +108,7 @@ const setDayjsLocale = (code: string) => {
 };
 
 export const setLocale = (code: string = "en", callBack?: () => void) => {
-  const validCode = typeof code === "string" && code ? code : "ko";
+  const validCode = normalizeLanguageCode(typeof code === "string" && code ? code : "ko");
 
   import(`../locales/${validCode}.json`)
     .then((translations) => {
