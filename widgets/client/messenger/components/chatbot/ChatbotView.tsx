@@ -474,10 +474,6 @@ const ChatbotView: React.FC = () => {
                 안녕하세요! 👋
                 <br />
                 HR 관련 질문을 AI에게 물어보세요.
-                <br />
-                <span style={{ color: "#94a3b8", fontSize: "12px" }}>
-                  예) "연차 신청 방법 알려줘" · "이번 달 급여 확인"
-                </span>
               </div>
             </div>
           </div>
@@ -675,7 +671,7 @@ const ChatbotView: React.FC = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="궁금한 HR 업무를 자유롭게 물어보세요"
+            placeholder=""
             disabled={isStreaming}
             rows={3}
             style={{

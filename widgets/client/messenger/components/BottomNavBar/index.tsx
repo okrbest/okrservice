@@ -21,7 +21,13 @@ const items = [
     route: "home",
   },
   {
-    label: "Chatbot",
+    label: (
+      <>
+        Chatbot
+        <br />
+        (준비중)
+      </>
+    ),
     icon: IconChatbot,
     route: "chatbot",
     additionalRoutes: ["chatbot-iframe"],

@@ -5,7 +5,7 @@ import useHover from "../../hooks/useHover";
 import { __ } from "../../../utils";
 
 type Props = {
-  label?: string;
+  label?: string | React.ReactNode;
   icon: (props: IconProps) => React.ReactNode;
   isActive: boolean;
   handleClick: (route: string) => (event: React.MouseEvent) => void;
@@ -45,7 +45,11 @@ const Item: React.FC<Props> = ({ label, icon, isActive, handleClick, route, badg
             {badge > 99 ? "99+" : badge}
           </span>
         ) : null}
-        {label && <span className="nav-label">{__(label)}</span>}
+        {label && (
+          <span className="nav-label">
+            {typeof label === "string" ? __(label) : label}
+          </span>
+        )}
       </m.div>
     </m.li>
   );
