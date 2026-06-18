@@ -38,6 +38,14 @@ const { DOMAIN, WIDGETS_DOMAIN, CLIENT_PORTAL_DOMAINS, ALLOWED_ORIGINS, PORT } =
 
   app.use(userMiddleware);
 
+  // 관리 웹 파일 업로드 CORS preflight — cors() 보다 먼저 등록해야 null(file://) origin도 통과
+  app.options('/api/sales/upload', (_req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-ADMIN-SECRET, erxes-subdomain');
+    return res.sendStatus(204);
+  });
+
   const corsOptions = {
     credentials: true,
     origin: [

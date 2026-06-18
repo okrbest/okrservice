@@ -53,6 +53,7 @@ export const types = () => `
     googleSheetName: String
     adminPageUrl: String
     adminPageEnabled: Boolean
+    adminPageMailFrom: String
     ${commonTypes}
   }
 
@@ -208,6 +209,7 @@ const pipelineParams = `
   adminPageUrl: String
   adminPageSecret: String
   adminPageEnabled: Boolean
+  adminPageMailFrom: String
 `;
 
 export const mutations = `

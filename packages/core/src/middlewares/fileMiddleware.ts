@@ -20,8 +20,12 @@ export const uploader = async (req: any, res, next) => {
 
   const form = new formidable.IncomingForm();
 
-  form.parse(req, async (_error, _fields, response) => {
-    const file: any = response.file || response.upload;
+  form.parse(req, async (formErr, _fields, response) => {
+    const file: any = response && (response.file || response.upload);
+
+    if (formErr || !file) {
+      return res.status(500).send(formErr ? formErr.message : 'No file received');
+    }
 
     let fileResult = file;
 

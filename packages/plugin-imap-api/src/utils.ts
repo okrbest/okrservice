@@ -7,6 +7,7 @@ import {
   sendCoreMessage,
   sendImapMessage,
   sendInboxMessage,
+  sendSalesMessage,
 } from './messageBroker';
 import { IIntegrationDocument } from './models';
 import { throttle } from 'lodash';
@@ -124,6 +125,22 @@ const saveMessages = async (
       messageId: msg.messageId,
     });
 
+    // 관리 웹페이지 연동: 답장 수신 이벤트 발행 (중복 체크 전에 처리)
+    if (msg.inReplyTo || (msg.references && msg.references.length)) {
+      sendSalesMessage({
+        subdomain,
+        action: 'incomingEmail',
+        data: {
+          inReplyTo: msg.inReplyTo || null,
+          references: msg.references || [],
+          subject: msg.subject || '',
+          body: msg.html || msg.text || '',
+          from: msg.from?.value?.[0]?.address || '',
+          date: msg.date ? msg.date.toISOString() : new Date().toISOString(),
+        },
+      });
+    }
+
     if (message) {
       continue;
     }
@@ -235,6 +252,7 @@ const saveMessages = async (
         conversationId,
       },
     });
+
   }
 };
 
@@ -295,7 +313,6 @@ export const listenIntegration = async (
         }
         try {
           const criteria: any = [
-            'UNSEEN',
             ['SINCE', lastFetchDate.toISOString()],
           ];
           const nextLastFetchDate = new Date();

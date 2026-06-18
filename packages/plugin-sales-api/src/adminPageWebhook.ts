@@ -1,11 +1,11 @@
 import { IModels } from "./connectionResolver";
 import { sendCoreMessage, sendCommonMessage } from "./messageBroker";
-import { isEnabled } from "@erxes/api-utils/src/serviceDiscovery";
 import {
   getCustomFieldValue,
   resolveAssignedUserNames,
   resolveDealFieldIds,
   resolveLastContactDate,
+  stripEmailQuote,
 } from "./adminPageUtils";
 
 export interface AdminWebhookResult {
@@ -21,6 +21,34 @@ export interface AdminWebhookResult {
     미팅: string;
     비고: string;
   };
+  error?: "UNAUTHORIZED" | "DEAL_NOT_FOUND";
+  statusCode?: number;
+}
+
+export interface AdminSendMailParams {
+  to: string;
+  cc?: string;
+  subject: string;
+  body: string;
+  attachments?: string[];
+}
+
+export interface AdminSendMailResult {
+  success: boolean;
+  error?: "UNAUTHORIZED" | "DEAL_NOT_FOUND" | "MISSING_FIELDS";
+  statusCode?: number;
+}
+
+export interface AdminHistoryResult {
+  success: boolean;
+  dealId?: string;
+  history?: Array<{
+    type: "수신" | "발신";
+    date: string;
+    subject: string;
+    body: string;
+    attachments?: string[];
+  }>;
   error?: "UNAUTHORIZED" | "DEAL_NOT_FOUND";
   statusCode?: number;
 }
@@ -202,17 +230,11 @@ async function buildDealPayload(
   };
 }
 
-export interface AdminSendMailResult {
-  success: boolean;
-  error?: "UNAUTHORIZED" | "DEAL_NOT_FOUND";
-  statusCode?: number;
-}
-
 async function verifyAdminSecret(
   models: IModels,
   dealId: string,
   secret: string
-): Promise<{ ok: true; deal: any; pipelineId: string } | { ok: false; statusCode: 401 | 404 }> {
+): Promise<{ ok: true; deal: any; pipelineId: string; mailFrom: string } | { ok: false; statusCode: 401 | 404 }> {
   const deal = await models.Deals.findOne({ _id: dealId }).lean() as any;
   if (!deal) {
     return { ok: false, statusCode: 404 };
@@ -230,15 +252,114 @@ async function verifyAdminSecret(
     return { ok: false, statusCode: 401 };
   }
 
-  return { ok: true, deal, pipelineId };
+  return {
+    ok: true,
+    deal,
+    pipelineId,
+    mailFrom: (pipeline?.adminPageMailFrom || "").trim(),
+  };
+}
+
+function formatHistoryDate(): string {
+  return new Date().toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).replace(/\. /g, "-").replace(/\./g, "").replace(",", "");
 }
 
 export async function handleAdminDealSendMail(
   models: IModels,
   subdomain: string,
   secret: string,
-  dealId: string
+  dealId: string,
+  mailParams: AdminSendMailParams
 ): Promise<AdminSendMailResult> {
+  const verification = await verifyAdminSecret(models, dealId, secret);
+  if (!verification.ok) {
+    const errorType = verification.statusCode === 404 ? "DEAL_NOT_FOUND" : "UNAUTHORIZED";
+    return { success: false, error: errorType, statusCode: verification.statusCode };
+  }
+
+  const { deal, mailFrom } = verification;
+
+  if (!mailFrom) {
+    return { success: false, error: "MISSING_FIELDS", statusCode: 400 } as any;
+  }
+
+  // IMAP 플러그인으로 실제 메일 발송
+  const sendResult: any = await sendCommonMessage({
+    serviceName: "imap",
+    subdomain,
+    action: "imapMessage.create",
+    data: {
+      from: mailFrom,
+      to: [mailParams.to],
+      ...(mailParams.cc ? { cc: [mailParams.cc] } : {}),
+      subject: mailParams.subject,
+      body: mailParams.body,
+      attachments: (mailParams.attachments || []).map((url: string) => ({
+        url,
+        name: url.split("/").pop() || url,
+      })),
+    },
+    isRPC: true,
+    defaultValue: null,
+  });
+
+  const sentMessageId: string | null = sendResult?.info?.messageId || null;
+
+  const historyEntry = {
+    type: "발신" as const,
+    date: formatHistoryDate(),
+    subject: mailParams.subject,
+    body: mailParams.body,
+    attachments: mailParams.attachments || [],
+  };
+
+  const existingHistory: any[] = Array.isArray(deal.extraData?.adminPageHistory)
+    ? deal.extraData.adminPageHistory
+    : [];
+
+  const existingSentMessageIds: string[] = Array.isArray(deal.extraData?.adminPageSentMessageIds)
+    ? deal.extraData.adminPageSentMessageIds
+    : [];
+
+  const sentAt = new Date().toISOString().slice(0, 10);
+
+  const newSentMessageIds = sentMessageId
+    ? [...existingSentMessageIds, sentMessageId]
+    : existingSentMessageIds;
+
+  await Promise.all([
+    models.Deals.updateOne(
+      { _id: deal._id },
+      {
+        $set: {
+          "extraData.adminPageHistory": [historyEntry, ...existingHistory],
+          "extraData.mailStatus": "발송완료",
+          "extraData.mailSentAt": sentAt,
+          "extraData.lastContactAt": sentAt,
+          "extraData.adminPageSentMessageIds": newSentMessageIds,
+          modifiedAt: new Date(),
+        },
+      }
+    ),
+    applyLastContactDateUpdate(subdomain, deal, sentAt),
+  ]);
+
+  return { success: true };
+}
+
+export async function handleAdminDealHistory(
+  models: IModels,
+  subdomain: string,
+  secret: string,
+  dealId: string
+): Promise<AdminHistoryResult> {
   const verification = await verifyAdminSecret(models, dealId, secret);
   if (!verification.ok) {
     const errorType = verification.statusCode === 404 ? "DEAL_NOT_FOUND" : "UNAUTHORIZED";
@@ -247,23 +368,58 @@ export async function handleAdminDealSendMail(
 
   const { deal } = verification;
 
-  const isAutomationsAvailable = await isEnabled("automations");
-  if (isAutomationsAvailable) {
-    sendCommonMessage({
-      serviceName: "automations",
-      subdomain,
-      action: "trigger",
-      data: {
-        type: "sales:deal.manualMail",
-        targets: [deal],
-      },
-      isRPC: false,
-    }).catch(() => {
-      /* fire-and-forget: 실패 무시 */
-    });
-  }
+  const storedHistory: any[] = Array.isArray(deal.extraData?.adminPageHistory)
+    ? deal.extraData.adminPageHistory
+    : [];
 
-  return { success: true };
+  // IMAP에서 직접 수신 답장 조회 (SEEN 여부 무관)
+  const sentMessageIds: string[] = Array.isArray(deal.extraData?.adminPageSentMessageIds)
+    ? deal.extraData.adminPageSentMessageIds
+    : [];
+
+  const imapReplies: any[] = sentMessageIds.length
+    ? await sendCommonMessage({
+        serviceName: "imap",
+        subdomain,
+        action: "findIncomingReplies",
+        data: { messageIds: sentMessageIds },
+        isRPC: true,
+        defaultValue: [],
+      })
+    : [];
+
+  // 이미 storedHistory에 있는 수신 이력 subject+date 기준 dedup
+  const storedInboundKeys = new Set(
+    storedHistory
+      .filter((h: any) => h.type === "수신")
+      .map((h: any) => h.subject + "|" + h.date)
+  );
+
+  const newInboundEntries = (Array.isArray(imapReplies) ? imapReplies : [])
+    .map((msg: any) => {
+      const rawBody: string = msg.body || "";
+      const cleanBody = stripEmailQuote(rawBody);
+      const date = new Date(msg.createdAt || Date.now()).toLocaleString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).replace(/\. /g, "-").replace(/\./g, "").replace(",", "");
+      return { type: "수신" as const, date, subject: msg.subject || "", body: cleanBody };
+    })
+    .filter((entry: any) => !storedInboundKeys.has(entry.subject + "|" + entry.date));
+
+  const history = [...newInboundEntries, ...storedHistory].sort((a, b) =>
+    b.date.localeCompare(a.date)
+  );
+
+  return {
+    success: true,
+    dealId,
+    history,
+  };
 }
 
 export async function handleAdminPageWebhook(

@@ -53,6 +53,21 @@ export async function applyProxiesCoreless(
           onProxyReq,
         }),
       );
+
+      app.use(
+        '^/api/sales/upload',
+        createProxyMiddleware({
+          pathRewrite: { '^/api/sales': '' },
+          target: target.address,
+          onProxyReq: (proxyReq, req: any) => {
+            proxyReq.setHeader('hostname', req.hostname);
+            proxyReq.setHeader('userid', req.user ? req.user._id : '');
+          },
+          onProxyRes: (_proxyRes: any, _req: any, res: any) => {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+          },
+        }),
+      );
     }
   }
 }
@@ -64,12 +79,14 @@ export function applyProxyToCore(app: Express, targets: ErxesProxyTarget[]) {
   if (!core) {
     throw new Error('core service not found');
   }
+
+  const coreTarget = NODE_ENV === 'production' ? core.address : 'http://localhost:3300';
+
   app.use('/rpc', forbid);
   app.use(
     '/',
     createProxyMiddleware({
-      target:
-        NODE_ENV === 'production' ? core.address : 'http://localhost:3300',
+      target: coreTarget,
       onProxyReq,
     }),
   );

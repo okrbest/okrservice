@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>홈페이지 문의 관리 (API 테스트)</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --line: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --green: #16a34a;
+      --red: #dc2626;
+      --amber: #d97706;
+      --chip: #eef2ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* 설정 패널 */
+    .config-bar {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+    }
+    .config-bar label { color: #94a3b8; white-space: nowrap; }
+    .config-bar input {
+      background: #334155;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      padding: 5px 8px;
+      color: #f1f5f9;
+      font-size: 13px;
+      width: auto;
+    }
+    .config-bar input#cfgUrl { width: 280px; }
+    .config-bar input#cfgSecret { width: 160px; }
+    .config-bar input#cfgSubdomain { width: 110px; }
+    .config-tag {
+      background: #0f172a;
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: #fbbf24;
+      font-weight: 700;
+    }
+
+    /* API 로그 */
+    .api-log {
+      background: #0f172a;
+      color: #86efac;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 8px 20px;
+      max-height: 120px;
+      overflow-y: auto;
+      border-bottom: 2px solid #1e3a5f;
+    }
+    .api-log .log-err { color: #f87171; }
+    .api-log .log-warn { color: #fbbf24; }
+    .api-log .log-ok { color: #86efac; }
+    .api-log .log-info { color: #7dd3fc; }
+
+    header {
+      padding: 18px 28px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    h1 { margin: 0; font-size: 20px; }
+    .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .toolbar {
+      padding: 16px 28px;
+      display: grid;
+      grid-template-columns: 1.4fr 180px 180px 130px 130px;
+      gap: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      background: white;
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    main { padding: 0 28px 28px; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 1700px; }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 12px;
+    }
+    th {
+      background: #f9fafb;
+      color: #374151;
+      font-weight: 700;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    td { color: #1f2937; }
+    .ellipsis {
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .deal-id {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--muted);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge.sent { background: #dcfce7; color: var(--green); }
+    .badge.pending { background: #fef3c7; color: var(--amber); }
+    .badge.error { background: #fee2e2; color: var(--red); }
+    .badge.module { background: var(--chip); color: #3730a3; }
+    .badge.no-deal { background: #fef3c7; color: #92400e; }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 6px 9px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #eef2ff;
+      color: #3730a3;
+      white-space: nowrap;
+    }
+    button.primary { background: var(--primary); color: white; }
+    button.primary:hover { background: var(--primary-dark); }
+    button.secondary { background: #f3f4f6; color: #111827; }
+    button.danger { background: #fee2e2; color: var(--red); }
+    button.sm { padding: 4px 7px; font-size: 11px; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .actions { display: flex; gap: 4px; flex-wrap: wrap; }
+
+    /* 스피너 */
+    .spin {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border: 2px solid #c7d2fe;
+      border-top-color: #4f46e5;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 모달 */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.5);
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      z-index: 10;
+    }
+    .modal {
+      width: min(720px, 100%);
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.25);
+      overflow: hidden;
+    }
+    .modal header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .modal-body { padding: 16px 20px; max-height: 70vh; overflow-y: auto; }
+    .modal-footer {
+      border-top: 1px solid var(--line);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    label { display: block; font-size: 12px; font-weight: 800; color: #374151; margin: 8px 0 4px; }
+    label .req { color: var(--red); }
+    .history-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .history-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+    .history-type-sent { color: var(--primary); }
+    .history-type-recv { color: var(--green); }
+
+    /* 필드 저장 상태 */
+    .saving { opacity: 0.5; }
+    .saved-ok { border-color: #86efac !important; }
+
+    .notice {
+      padding: 10px 16px;
+      margin: 0 28px 12px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      color: #1e3a8a;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 설정 패널 -->
+<div class="config-bar">
+  <span class="config-tag">API 테스트 모드</span>
+  <label>서버 URL</label>
+  <input id="cfgUrl" placeholder="http://localhost:4000/api/sales" />
+  <label>시크릿</label>
+  <input id="cfgSecret" placeholder="X-ADMIN-SECRET" />
+  <label>Subdomain</label>
+  <input id="cfgSubdomain" placeholder="localhost" />
+  <button class="primary sm" onclick="saveConfig()">설정 저장</button>
+  <button class="sm" style="background:#334155;color:#94a3b8" onclick="toggleLog()">로그 ▾</button>
+</div>
+
+<div class="api-log" id="apiLog"></div>
+
+<header>
+  <div>
+    <h1>홈페이지 문의 관리 <span style="font-size:14px;color:#6b7280;font-weight:400">— API 테스트</span></h1>
+    <div class="subtitle">실제 서비스데스크 API를 호출합니다. 상단에서 서버 URL과 시크릿을 먼저 설정하세요.</div>
+  </div>
+  <div class="actions">
+    <button class="primary" onclick="openCreateModal()">+ 딜 추가</button>
+    <button class="secondary" id="refreshBtn" onclick="refreshDeals()">DB 새로고침</button>
+    <button class="secondary" onclick="exportCsv()">CSV 내보내기</button>
+  </div>
+</header>
+
+<section class="toolbar">
+  <input id="searchInput" placeholder="회사명, 담당자, 이메일, 제목 검색" oninput="renderTable()" />
+  <select id="statusFilter" onchange="renderTable()">
+    <option value="">발송상태 전체</option>
+    <option value="미발송">미발송</option>
+    <option value="발송완료">발송완료</option>
+    <option value="오류">오류</option>
+  </select>
+  <select id="progressFilter" onchange="renderTable()">
+    <option value="">진행 전체</option>
+    <option value="진행">진행</option>
+    <option value="수주">수주</option>
+    <option value="실주">실주</option>
+    <option value="중단">중단</option>
+    <option value="해지">해지</option>
+    <option value="보류">보류</option>
+    <option value="미도입">미도입</option>
+  </select>
+</section>
+
+<div class="notice" id="webPushNotice">
+  📡 <b>web-push 수신 테스트</b>: 딜 생성/삭제 후 서비스데스크가 약 800ms 뒤 콜백을 보냅니다.
+  수신 확인은 <code>node test-admin-server.js</code>를 별도 터미널에서 실행하세요.
+</div>
+
+<main>
+  <section class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Deal ID</th>
+            <th>메일발송일</th>
+            <th>발송상태</th>
+            <th>직전소통일</th>
+            <th>제목</th>
+            <th>내용확인</th>
+            <th>담당자</th>
+            <th>회사명</th>
+            <th>연락처</th>
+            <th>E-MAIL</th>
+            <th>안내자</th>
+            <th>관심모듈</th>
+            <th>진행</th>
+            <th>유입경로</th>
+            <th>직원규모</th>
+            <th>데모생성</th>
+            <th>견적</th>
+            <th>미팅</th>
+            <th>비고</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="leadTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<!-- 딜 추가 모달 -->
+<div id="createModal" class="modal-backdrop">
+  <div class="modal">
+    <header>
+      <h1 style="font-size:17px;margin:0">딜 신규 추가</h1>
+      <div class="subtitle" style="font-size:12px">POST /deals → 서비스데스크 DB에 딜을 생성합니다.</div>
+    </header>
+    <div class="modal-body">
+      <div style="font-weight:800;font-size:12px;color:#374151;margin-bottom:8px">고객 정보</div>
+      <div class="grid-3">
+        <div><label>회사명 <span class="req">*</span></label><input id="c_company" /></div>
+        <div><label>담당자 <span class="req">*</span></label><input id="c_owner" /></div>
+        <div><label>이메일 <span class="req">*</span></label><input id="c_email" type="email" /></div>
+      </div>
+      <div class="grid-3">
+        <div><label>연락처</label><input id="c_phone" /></div>
+        <div><label>직원규모</label>
+          <select id="c_employees">
+            <option value="">선택</option>
+            <option>1~10명</option><option>11~50명</option><option>51~100명</option>
+            <option>101~300명</option><option>301~500명</option><option>500명 이상</option>
+          </select>
+        </div>
+        <div><label>유입경로</label>
+          <select id="c_source">
+            <option value="">선택</option>
+            <option>홈페이지</option><option>검색광고</option><option>SNS</option>
+            <option>지인소개</option><option>전시회</option><option>기타</option>
+          </select>
+        </div>
+      </div>
+      <div style="font-weight:800;font-size:12px;color:#374151;margin:12px 0 4px">문의 내용</div>
+      <div><label>제목</label><input id="c_title" /></div>
+      <div><label>내용</label><textarea id="c_content" style="min-height:80px"></textarea></div>
+      <div style="font-weight:800;font-size:12px;color:#374151;margin:12px 0 4px">영업 정보</div>
+      <div class="grid-3">
+        <div><label>안내자</label><input id="c_guide" placeholder="이름으로 사용자 매핑" /></div>
+        <div><label>관심모듈</label>
+          <select id="c_module">
+            <option value="">선택</option>
+            <option>근태</option><option>급여</option><option>PCOFF</option>
+            <option>인사/조직</option><option>전자계약</option><option>평가</option>
+            <option>교육</option><option>채용</option><option>모바일</option>
+          </select>
+        </div>
+        <div><label>진행</label>
+          <select id="c_progress">
+            <option value="">선택</option>
+            <option>진행</option><option>수주</option><option>실주</option>
+            <option>중단</option><option>해지</option><option>보류</option><option>미도입</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div><label>데모생성</label>
+          <select id="c_demo">
+            <option>미생성</option><option>생성요청</option><option>생성완료</option><option>불필요</option>
+          </select>
+        </div>
+        <div><label>견적</label>
+          <select id="c_quote">
+            <option>미발행</option><option>발행요청</option><option>발행완료</option><option>불필요</option>
+          </select>
+        </div>
+        <div><label>미팅</label>
+          <select id="c_meeting">
+            <option>미정</option><option>일정조율</option><option>예정</option><option>완료</option><option>취소</option>
+          </select>
+        </div>
+      </div>
+      <div><label>비고</label><input id="c_note" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="secondary" onclick="closeModal('createModal')">취소</button>
+      <button class="primary" id="createBtn" onclick="createDeal()">딜 생성 (POST /deals)</button>
+    </div>
+  </div>
+</div>
+
+<!-- 메일 작성 모달 -->
+<div id="mailModal" class="modal-backdrop">
+  <div class="modal">
+    <header>
+      <h1 style="font-size:17px;margin:0">메일 작성</h1>
+      <div class="subtitle" id="mailTarget" style="font-size:12px"></div>
+    </header>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div><label>받는 사람 <span class="req">*</span></label><input id="mailTo" /></div>
+        <div><label>참조</label><input id="mailCc" placeholder="선택" /></div>
+      </div>
+      <label>제목 <span class="req">*</span></label>
+      <input id="mailSubject" />
+      <label>내용 <span class="req">*</span></label>
+      <textarea id="mailBody"></textarea>
+      <label>첨부파일</label>
+      <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+        <input id="mailFileInput" type="file" multiple style="flex:1;padding:6px 8px;font-size:12px" onchange="uploadMailFiles(this)" />
+        <span id="mailUploadSpinner" style="display:none"><span class="spin"></span></span>
+      </div>
+      <div id="mailAttachList" style="display:flex;flex-direction:column;gap:4px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="secondary" onclick="closeModal('mailModal')">취소</button>
+      <button class="primary" id="mailBtn" onclick="sendMail()">발송 (POST /deals/send-mail)</button>
+    </div>
+  </div>
+</div>
+
+<!-- 내용 확인 모달 -->
+<div id="contentModal" class="modal-backdrop">
+  <div class="modal">
+    <header>
+      <h1 style="font-size:17px;margin:0">문의 내용</h1>
+      <div class="subtitle" id="contentTarget" style="font-size:12px"></div>
+    </header>
+    <div class="modal-body">
+      <label>제목</label><div id="contentTitle" class="history-item"></div>
+      <label>내용</label><div id="contentBody" class="history-item"></div>
+      <label>첨부파일</label><div id="contentFiles" class="history-item"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="secondary" onclick="closeModal('contentModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 비고 모달 -->
+<div id="noteModal" class="modal-backdrop">
+  <div class="modal">
+    <header>
+      <h1 style="font-size:17px;margin:0">비고 입력</h1>
+      <div class="subtitle" id="noteTarget" style="font-size:12px"></div>
+    </header>
+    <div class="modal-body">
+      <label>비고</label>
+      <textarea id="noteInput" placeholder="고객 특이사항, 내부 공유 메모 등을 입력하세요."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="danger" onclick="clearNote()">삭제</button>
+      <button class="secondary" onclick="closeModal('noteModal')">취소</button>
+      <button class="primary" id="noteBtn" onclick="saveNote()">저장 (POST /deals/dbupdate)</button>
+    </div>
+  </div>
+</div>
+
+<!-- 소통 이력 모달 -->
+<div id="historyModal" class="modal-backdrop">
+  <div class="modal">
+    <header>
+      <h1 style="font-size:17px;margin:0">소통 이력</h1>
+      <div class="subtitle" id="historyTarget" style="font-size:12px"></div>
+    </header>
+    <div class="modal-body" id="historyBody"></div>
+    <div class="modal-footer">
+      <button class="secondary" onclick="closeModal('historyModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── 설정 ─────────────────────────────────────────────
+let config = {
+  url: localStorage.getItem('cfg_url') || 'http://localhost:4000/api/sales',
+  secret: localStorage.getItem('cfg_secret') || '',
+  subdomain: localStorage.getItem('cfg_subdomain') || 'localhost',
+};
+
+document.getElementById('cfgUrl').value = config.url;
+document.getElementById('cfgSecret').value = config.secret;
+document.getElementById('cfgSubdomain').value = config.subdomain;
+
+function saveConfig() {
+  config.url = document.getElementById('cfgUrl').value.trim().replace(/\/$/, '');
+  config.secret = document.getElementById('cfgSecret').value.trim();
+  config.subdomain = document.getElementById('cfgSubdomain').value.trim();
+  localStorage.setItem('cfg_url', config.url);
+  localStorage.setItem('cfg_secret', config.secret);
+  localStorage.setItem('cfg_subdomain', config.subdomain);
+  log('info', `설정 저장: ${config.url} | subdomain=${config.subdomain}`);
+}
+
+function toggleLog() {
+  const el = document.getElementById('apiLog');
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+
+// ─── 로그 ─────────────────────────────────────────────
+function log(type, msg) {
+  const el = document.getElementById('apiLog');
+  const time = new Date().toLocaleTimeString('ko-KR');
+  const cls = type === 'err' ? 'log-err' : type === 'warn' ? 'log-warn' : type === 'info' ? 'log-info' : 'log-ok';
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = `[${time}] ${msg}`;
+  el.prepend(line);
+  if (el.children.length > 60) el.lastChild?.remove();
+}
+
+// ─── API 헬퍼 ─────────────────────────────────────────
+async function apiCall(method, path, body) {
+  const url = `${config.url}${path}`;
+  log('info', `${method} ${url}`);
+  const opts = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-ADMIN-SECRET': config.secret,
+      'erxes-subdomain': config.subdomain,
+    },
+  };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+
+  try {
+    const res = await fetch(url, opts);
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success !== false) {
+      log('ok', `${res.status} OK → ${JSON.stringify(data).slice(0, 120)}`);
+    } else {
+      log('err', `${res.status} ERR → ${JSON.stringify(data).slice(0, 120)}`);
+    }
+    return { status: res.status, data };
+  } catch (e) {
+    log('err', `네트워크 오류: ${e.message}`);
+    return { status: 0, data: { success: false, error: e.message } };
+  }
+}
+
+// ─── 데이터 ───────────────────────────────────────────
+let leads = [];
+let selectedLeadId = null;
+const debounceTimers = {};
+
+// ─── 테이블 렌더 ──────────────────────────────────────
+function statusBadge(status) {
+  const cls = status === '발송완료' ? 'sent' : status === '오류' ? 'error' : 'pending';
+  return `<span class="badge ${cls}">${status}</span>`;
+}
+
+function renderTable() {
+  const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+  const status = document.getElementById('statusFilter').value;
+  const progress = document.getElementById('progressFilter').value;
+  const tbody = document.getElementById('leadTableBody');
+
+  const filtered = leads.filter(row => {
+    const text = [row.company, row.owner, row.email, row.title, row.module].join(' ').toLowerCase();
+    return (!keyword || text.includes(keyword))
+      && (!status || row.mailStatus === status)
+      && (!progress || row.progress === progress);
+  });
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="20" style="text-align:center;color:var(--muted);padding:32px">
+      딜이 없습니다. 상단 <b>"+ 딜 추가"</b> 버튼으로 생성하세요.
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(row => {
+    const hasDeal = !!row.dealId;
+    const dealIdCell = hasDeal
+      ? `<span class="deal-id" title="${row.dealId}">${row.dealId}</span>`
+      : `<span class="badge no-deal">미연결</span>`;
+
+    return `
+    <tr id="row-${row.id}">
+      <td>${dealIdCell}</td>
+      <td>${row.mailSentAt || '-'}</td>
+      <td>${statusBadge(row.mailStatus)}</td>
+      <td>${row.lastContactAt || '-'}</td>
+      <td class="ellipsis" title="${row.title}">${row.title || '-'}</td>
+      <td>
+        ${row.content
+          ? `<button class="sm" onclick="openContentModal(${row.id})">내용 보기</button>`
+          : `<button class="sm" disabled>내용 없음</button>`}
+      </td>
+      <td>${row.owner}</td>
+      <td>${row.company}</td>
+      <td>${row.phone || '-'}</td>
+      <td>${row.email}</td>
+      <td><input style="width:90px;padding:4px 6px;font-size:12px" value="${row.guide || ''}"
+          onchange="updateFieldDebounced(${row.id}, '안내자', this.value)" /></td>
+      <td>
+        <select style="font-size:12px;padding:4px" onchange="updateFieldDebounced(${row.id}, '관심모듈', this.value)">
+          ${['', '근태','급여','PCOFF','인사/조직','전자계약','평가','교육','채용','모바일']
+            .map(v => `<option ${row.module === v ? 'selected' : ''}>${v}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select style="font-size:12px;padding:4px" onchange="updateFieldDebounced(${row.id}, '진행', this.value)">
+          ${['진행','수주','실주','중단','해지','보류','미도입']
+            .map(v => `<option ${row.progress === v ? 'selected' : ''}>${v}</option>`).join('')}
+        </select>
+      </td>
+      <td>${row.source || '-'}</td>
+      <td>${row.employees || '-'}</td>
+      <td>
+        <select style="font-size:12px;padding:4px" onchange="updateFieldDebounced(${row.id}, '데모생성', this.value)">
+          ${['미생성','생성요청','생성완료','불필요']
+            .map(v => `<option ${row.demo === v ? 'selected' : ''}>${v}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select style="font-size:12px;padding:4px" onchange="updateFieldDebounced(${row.id}, '견적', this.value)">
+          ${['미발행','발행요청','발행완료','불필요']
+            .map(v => `<option ${row.quote === v ? 'selected' : ''}>${v}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select style="font-size:12px;padding:4px" onchange="updateFieldDebounced(${row.id}, '미팅', this.value)">
+          ${['미정','일정조율','예정','완료','취소']
+            .map(v => `<option ${row.meeting === v ? 'selected' : ''}>${v}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        ${row.note
+          ? `<button class="sm" style="background:#7c3aed;color:white" onclick="openNoteModal(${row.id})">비고 보기</button>`
+          : `<button class="sm secondary" onclick="openNoteModal(${row.id})">비고 입력</button>`}
+      </td>
+      <td>
+        <div class="actions">
+          <button class="sm primary" onclick="openMailModal(${row.id})"${!hasDeal ? ' disabled title="dealId 없음"' : ''}>메일</button>
+          <button class="sm" onclick="openHistoryModal(${row.id})"${!hasDeal ? ' disabled title="dealId 없음"' : ''}>이력</button>
+          <button class="sm danger" onclick="deleteDeal(${row.id})">삭제</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── DB 새로고침 ──────────────────────────────────────
+async function refreshDeals() {
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>조회 중...';
+
+  const { status, data } = await apiCall('GET', '/deals');
+
+  btn.disabled = false;
+  btn.innerHTML = 'DB 새로고침';
+
+  if (status === 200 && data.success) {
+    const fetched = data.deals || [];
+    // 기존 목록에 없는 딜은 추가, 있는 딜은 갱신
+    for (const item of fetched) {
+      const existing = leads.find(l => l.dealId === item.dealId);
+      const d = item.deal;
+      if (existing) {
+        existing.company = d.회사명 || existing.company;
+        existing.owner = d.담당자 || existing.owner;
+        existing.phone = d.연락처 || existing.phone;
+        existing.email = d.이메일 || existing.email;
+        existing.employees = d.직원규모 || existing.employees;
+        existing.source = d.유입경로 || existing.source;
+        existing.title = d.제목 || existing.title;
+        existing.content = d.내용 || existing.content;
+        existing.lastContactAt = d.직전소통일 || existing.lastContactAt;
+        existing.guide = d.안내자 || existing.guide;
+        existing.module = d.관심모듈 || existing.module;
+        existing.progress = d.진행 || existing.progress;
+        existing.demo = d.데모생성 || existing.demo;
+        existing.quote = d.견적 || existing.quote;
+        existing.meeting = d.미팅 || existing.meeting;
+        existing.note = d.비고 || existing.note;
+        existing.mailStatus = item.mailStatus || existing.mailStatus;
+        existing.mailSentAt = item.mailSentAt || existing.mailSentAt;
+        existing.lastContactAt = d.직전소통일 || existing.lastContactAt;
+      } else {
+        leads.unshift({
+          id: Date.now() + Math.random(),
+          dealId: item.dealId,
+          mailSentAt: item.mailSentAt || '',
+          mailStatus: item.mailStatus || '미발송',
+          lastContactAt: d.직전소통일 || '',
+          title: d.제목 || '',
+          content: d.내용 || '',
+          owner: d.담당자 || '',
+          company: d.회사명 || '',
+          phone: d.연락처 || '',
+          email: d.이메일 || '',
+          guide: d.안내자 || '',
+          attachments: d.첨부파일 || [],
+          module: d.관심모듈 || '',
+          progress: d.진행 || '',
+          source: d.유입경로 || '',
+          employees: d.직원규모 || '',
+          demo: d.데모생성 || '',
+          quote: d.견적 || '',
+          meeting: d.미팅 || '',
+          note: d.비고 || '',
+        });
+      }
+    }
+    renderTable();
+    log('ok', `DB 새로고침 완료 — ${fetched.length}개 딜 수신`);
+  } else {
+    alert(`조회 실패: ${data.error || '서버 오류'}`);
+  }
+}
+
+// ─── 딜 생성 ──────────────────────────────────────────
+function openCreateModal() {
+  ['c_company','c_owner','c_email','c_phone','c_title','c_content','c_guide','c_note']
+    .forEach(id => document.getElementById(id).value = '');
+  ['c_employees','c_source','c_module','c_progress'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('c_demo').value = '미생성';
+  document.getElementById('c_quote').value = '미발행';
+  document.getElementById('c_meeting').value = '미정';
+  openModal('createModal');
+}
+
+async function createDeal() {
+  const company = document.getElementById('c_company').value.trim();
+  const owner = document.getElementById('c_owner').value.trim();
+  const email = document.getElementById('c_email').value.trim();
+
+  if (!company || !owner || !email) {
+    alert('회사명, 담당자, 이메일은 필수입니다.');
+    return;
+  }
+
+  const btn = document.getElementById('createBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>생성 중...';
+
+  const body = {
+    회사명: company,
+    담당자: owner,
+    이메일: email,
+    연락처: document.getElementById('c_phone').value.trim(),
+    직원규모: document.getElementById('c_employees').value,
+    유입경로: document.getElementById('c_source').value,
+    제목: document.getElementById('c_title').value.trim(),
+    내용: document.getElementById('c_content').value.trim(),
+    첨부파일: [],
+    안내자: document.getElementById('c_guide').value.trim(),
+    관심모듈: document.getElementById('c_module').value,
+    진행: document.getElementById('c_progress').value || '진행',
+    데모생성: document.getElementById('c_demo').value,
+    견적: document.getElementById('c_quote').value,
+    미팅: document.getElementById('c_meeting').value,
+    비고: document.getElementById('c_note').value.trim(),
+  };
+
+  const { status, data } = await apiCall('POST', '/deals', body);
+
+  btn.disabled = false;
+  btn.innerHTML = '딜 생성 (POST /deals)';
+
+  if (status === 200 && data.dealId) {
+    const newLead = {
+      id: Date.now(),
+      dealId: data.dealId,
+      mailSentAt: '', mailStatus: '미발송',
+      lastContactAt: '',
+      title: body.제목,
+      content: body.내용,
+      owner: body.담당자,
+      company: body.회사명,
+      phone: body.연락처,
+      email: body.이메일,
+      guide: body.안내자,
+      attachments: [],
+      module: body.관심모듈,
+      progress: body.진행,
+      source: body.유입경로,
+      employees: body.직원규모,
+      demo: body.데모생성,
+      quote: body.견적,
+      meeting: body.미팅,
+      note: body.비고,
+    };
+    leads.unshift(newLead);
+    renderTable();
+    closeModal('createModal');
+    log('ok', `딜 생성 완료 → dealId: ${data.dealId} (800ms 후 web-push 콜백 예정)`);
+  } else {
+    alert(`생성 실패: ${data.error || data.message || '서버 오류'}`);
+  }
+}
+
+// ─── 딜 삭제 ──────────────────────────────────────────
+async function deleteDeal(id) {
+  const lead = leads.find(x => x.id === id);
+  if (!lead) return;
+
+  if (!lead.dealId) {
+    if (!confirm(`dealId가 없습니다. 로컬 목록에서만 삭제할까요?`)) return;
+    leads = leads.filter(x => x.id !== id);
+    renderTable();
+    return;
+  }
+
+  if (!confirm(`[${lead.company} / ${lead.owner}] 딜을 서비스데스크에서 삭제합니다.`)) return;
+
+  const { status, data } = await apiCall('DELETE', `/deals/${lead.dealId}`);
+  if (status === 200 && data.success) {
+    leads = leads.filter(x => x.id !== id);
+    renderTable();
+    log('ok', `딜 삭제 완료 → dealId: ${lead.dealId} (800ms 후 delete web-push 콜백 예정)`);
+  } else {
+    alert(`삭제 실패: ${data.error || '서버 오류'}`);
+  }
+}
+
+// ─── 필드 수정 (dbupdate) ─────────────────────────────
+function updateFieldDebounced(id, fieldName, value) {
+  const lead = leads.find(x => x.id === id);
+  if (!lead) return;
+
+  // 로컬 상태 업데이트
+  const localMap = { '안내자': 'guide', '관심모듈': 'module', '진행': 'progress', '데모생성': 'demo', '견적': 'quote', '미팅': 'meeting' };
+  if (localMap[fieldName]) lead[localMap[fieldName]] = value;
+
+  if (!lead.dealId) {
+    log('warn', `[로컬만 수정] dealId 없음 — ${fieldName}: ${value}`);
+    return;
+  }
+
+  const key = `${id}_${fieldName}`;
+  clearTimeout(debounceTimers[key]);
+  debounceTimers[key] = setTimeout(() => {
+    apiCall('POST', '/deals/dbupdate', { dealId: lead.dealId, changes: { [fieldName]: value } })
+      .then(({ data }) => {
+        if (data.success) {
+          log('ok', `dbupdate OK — ${fieldName}: ${value}`);
+        }
+      });
+  }, 800);
+}
+
+// ─── 비고 저장 ────────────────────────────────────────
+function openNoteModal(id) {
+  selectedLeadId = id;
+  const lead = leads.find(x => x.id === id);
+  document.getElementById('noteTarget').textContent = `${lead.company} / ${lead.owner}${lead.dealId ? ' / ' + lead.dealId : ''}`;
+  document.getElementById('noteInput').value = lead.note || '';
+  openModal('noteModal');
+}
+
+async function saveNote() {
+  const lead = leads.find(x => x.id === selectedLeadId);
+  const note = document.getElementById('noteInput').value.trim();
+
+  if (lead.dealId) {
+    const btn = document.getElementById('noteBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span>저장 중...';
+    const { data } = await apiCall('POST', '/deals/dbupdate', { dealId: lead.dealId, changes: { 비고: note } });
+    btn.disabled = false;
+    btn.innerHTML = '저장 (POST /deals/dbupdate)';
+    if (!data.success) {
+      alert(`저장 실패: ${data.error}`);
+      return;
+    }
+  } else {
+    log('warn', '로컬만 저장 (dealId 없음)');
+  }
+
+  lead.note = note;
+  closeModal('noteModal');
+  renderTable();
+}
+
+function clearNote() {
+  document.getElementById('noteInput').value = '';
+}
+
+// ─── 메일 발송 ────────────────────────────────────────
+let mailAttachments = [];
+
+function openMailModal(id) {
+  selectedLeadId = id;
+  const lead = leads.find(x => x.id === id);
+  document.getElementById('mailTarget').textContent = `${lead.company} / ${lead.owner} | dealId: ${lead.dealId}`;
+  document.getElementById('mailTo').value = lead.email;
+  document.getElementById('mailCc').value = '';
+  document.getElementById('mailSubject').value = `Re: ${lead.title || '문의'}`;
+  document.getElementById('mailBody').value =
+`${lead.owner}님 안녕하세요.
+
+문의주신 ${lead.module || '서비스'} 관련하여 안내드립니다.
+
+확인 후 편하신 일정으로 회신 주시면 데모 및 상세 상담을 도와드리겠습니다.
+
+감사합니다.`;
+  mailAttachments = [];
+  document.getElementById('mailFileInput').value = '';
+  renderMailAttachments();
+  openModal('mailModal');
+}
+
+async function uploadMailFiles(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+
+  const spinner = document.getElementById('mailUploadSpinner');
+  spinner.style.display = '';
+  input.disabled = true;
+
+  for (const file of files) {
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(`${config.url.replace(/\/api\/sales.*$/, '')}/api/sales/upload`, {
+        method: 'POST',
+        headers: { 'erxes-subdomain': config.subdomain },
+        body: fd,
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const url = await res.text();
+      mailAttachments.push(url.trim());
+      log('ok', `첨부 업로드 완료: ${file.name} → ${url.trim().slice(0, 60)}`);
+    } catch (e) {
+      log('err', `첨부 업로드 실패: ${file.name} — ${e.message}`);
+    }
+  }
+
+  spinner.style.display = 'none';
+  input.disabled = false;
+  input.value = '';
+  renderMailAttachments();
+}
+
+function removeMailAttachment(idx) {
+  mailAttachments.splice(idx, 1);
+  renderMailAttachments();
+}
+
+function renderMailAttachments() {
+  document.getElementById('mailAttachList').innerHTML = mailAttachments.map((url, i) => `
+    <div style="display:flex;align-items:center;gap:6px;background:#f9fafb;border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12px">
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${url}">📎 ${url.split('/').pop() || url}</span>
+      <button type="button" class="danger sm" onclick="removeMailAttachment(${i})">×</button>
+    </div>`).join('');
+}
+
+async function sendMail() {
+  const lead = leads.find(x => x.id === selectedLeadId);
+  const to = document.getElementById('mailTo').value.trim();
+  const subject = document.getElementById('mailSubject').value.trim();
+  const body = document.getElementById('mailBody').value.trim();
+
+  if (!to || !subject || !body) {
+    alert('받는 사람, 제목, 내용은 필수입니다.');
+    return;
+  }
+
+  const btn = document.getElementById('mailBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>발송 중...';
+
+  const { status, data } = await apiCall('POST', '/deals/send-mail', {
+    dealId: lead.dealId,
+    to,
+    cc: document.getElementById('mailCc').value.trim(),
+    subject,
+    body,
+    attachments: mailAttachments,
+  });
+
+  btn.disabled = false;
+  btn.innerHTML = '발송 (POST /deals/send-mail)';
+
+  if (status === 200 && data.success) {
+    lead.mailSentAt = new Date().toISOString().slice(0, 10);
+    lead.mailStatus = '발송완료';
+    lead.lastContactAt = lead.mailSentAt;
+    closeModal('mailModal');
+    renderTable();
+    alert('메일 발송 완료. 소통 이력에 기록됐습니다.');
+  } else {
+    alert(`발송 실패: ${data.error || '서버 오류'}`);
+  }
+}
+
+// ─── 소통 이력 조회 ───────────────────────────────────
+async function openHistoryModal(id) {
+  const lead = leads.find(x => x.id === id);
+  document.getElementById('historyTarget').textContent = `${lead.company} / ${lead.owner} | dealId: ${lead.dealId}`;
+  document.getElementById('historyBody').innerHTML = '<div style="text-align:center;padding:20px"><span class="spin"></span> 이력 조회 중...</div>';
+  openModal('historyModal');
+
+  const { status, data } = await apiCall('GET', `/deals/${lead.dealId}/history`);
+
+  if (status === 200 && data.success) {
+    const history = data.history || [];
+    document.getElementById('historyBody').innerHTML = history.length
+      ? history.map(item => `
+          <div class="history-item">
+            <div class="history-meta">
+              <strong class="${item.type === '발신' ? 'history-type-sent' : 'history-type-recv'}">${item.type}</strong>
+              <span>${item.date}</span>
+            </div>
+            <div><b>${item.subject}</b></div>
+            <p style="margin:6px 0 0;font-size:12px;color:#374151">${item.body.replace(/\n/g, '<br>')}</p>
+          </div>`).join('')
+      : `<p style="text-align:center;color:var(--muted);padding:20px">소통 이력이 없습니다.</p>`;
+  } else {
+    document.getElementById('historyBody').innerHTML =
+      `<p style="color:var(--red);padding:16px">조회 실패: ${data.error || '서버 오류'}</p>`;
+  }
+}
+
+// ─── 내용 확인 ────────────────────────────────────────
+function openContentModal(id) {
+  const lead = leads.find(x => x.id === id);
+  document.getElementById('contentTarget').textContent = `${lead.company} / ${lead.owner}`;
+  document.getElementById('contentTitle').textContent = lead.title || '제목 없음';
+  document.getElementById('contentBody').innerHTML = lead.content
+    ? lead.content.replace(/\n/g, '<br>')
+    : '<span style="color:var(--muted)">내용이 없습니다.</span>';
+  document.getElementById('contentFiles').innerHTML = (lead.attachments || []).length
+    ? lead.attachments.map(f => `<div>📎 ${f}</div>`).join('')
+    : '<span style="color:var(--muted)">첨부파일이 없습니다.</span>';
+  openModal('contentModal');
+}
+
+// ─── CSV 내보내기 ─────────────────────────────────────
+function exportCsv() {
+  const headers = ['Deal ID','메일발송일','발송상태','직전소통일','제목','내용','담당자','회사명','연락처','E-MAIL','안내자','관심모듈','진행','유입경로','직원규모','데모생성','견적','미팅','비고'];
+  const rows = leads.map(r => [
+    r.dealId || '', r.mailSentAt, r.mailStatus, r.lastContactAt, r.title, r.content,
+    r.owner, r.company, r.phone, r.email, r.guide, r.module, r.progress,
+    r.source, r.employees, r.demo, r.quote, r.meeting, r.note,
+  ]);
+  const csv = [headers, ...rows].map(row =>
+    row.map(v => `"${String(v || '').replaceAll('"', '""')}"`).join(',')
+  ).join('\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(blob),
+    download: `leads_${new Date().toISOString().slice(0,10)}.csv`,
+  });
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ─── 모달 유틸 ────────────────────────────────────────
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+// 모달 외부 클릭 닫기
+document.querySelectorAll('.modal-backdrop').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+});
+
+// ─── 초기화 ───────────────────────────────────────────
+log('info', '테스트 페이지 로드 완료. 상단에서 서버 URL과 시크릿을 설정하세요.');
+renderTable();
+</script>
+</body>
+</html>

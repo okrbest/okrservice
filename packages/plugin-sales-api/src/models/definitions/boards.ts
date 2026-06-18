@@ -116,6 +116,7 @@ export interface IPipeline extends ICommonFields {
   adminPageUrl?: string;
   adminPageSecret?: string;
   adminPageEnabled?: boolean;
+  adminPageMailFrom?: string;
 }
 
 export interface IPipelineDocument extends IPipeline, Document {
@@ -392,6 +393,7 @@ export const pipelineSchema = new Schema({
   adminPageUrl: field({ type: String, optional: true, label: 'Admin page URL' }),
   adminPageSecret: field({ type: String, optional: true, label: 'Admin page secret' }),
   adminPageEnabled: field({ type: Boolean, optional: true, default: false, label: 'Admin page enabled' }),
+  adminPageMailFrom: field({ type: String, optional: true, label: 'Admin page mail from' }),
   ...commonFieldsSchema
 });
 

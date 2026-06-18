@@ -104,6 +104,9 @@ const PipelineForm = (props: Props) => {
   const [adminPageEnabled, setAdminPageEnabled] = useState(
     pipeline ? (pipeline.adminPageEnabled || false) : false
   );
+  const [adminPageMailFrom, setAdminPageMailFrom] = useState(
+    pipeline ? (pipeline.adminPageMailFrom || '') : ''
+  );
 
   const is5240 =
     window.location.hostname.includes('5240') ||
@@ -187,7 +190,8 @@ const PipelineForm = (props: Props) => {
       branchIds,
       adminPageUrl,
       adminPageSecret,
-      adminPageEnabled
+      adminPageEnabled,
+      adminPageMailFrom
     };
   };
 
@@ -542,6 +546,17 @@ const PipelineForm = (props: Props) => {
                   setAdminPageSecret((e.currentTarget as HTMLInputElement).value)
                 }
                 placeholder='X-ADMIN-SECRET 값'
+              />
+            </FormGroup>
+            <FormGroup>
+              <ControlLabel>발송 메일 계정 (From)</ControlLabel>
+              <FormControl
+                name='adminPageMailFrom'
+                value={adminPageMailFrom}
+                onChange={(e: React.FormEvent<HTMLElement>) =>
+                  setAdminPageMailFrom((e.currentTarget as HTMLInputElement).value)
+                }
+                placeholder='noreply@example.com'
               />
             </FormGroup>
           </>

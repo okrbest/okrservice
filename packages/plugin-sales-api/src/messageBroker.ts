@@ -29,6 +29,7 @@ import {
   consumeRPCQueue
 } from "@erxes/api-utils/src/messageBroker";
 import { isEnabled } from "@erxes/api-utils/src/serviceDiscovery";
+import { stripEmailQuote } from "./adminPageUtils";
 
 export const setupMessageConsumers = async () => {
   consumeRPCQueue("sales:editItem", async ({ subdomain, data }) => {
@@ -677,6 +678,78 @@ export const setupMessageConsumers = async () => {
       return {
         status: "success"
       };
+    }
+  );
+
+  consumeQueue(
+    "sales:incomingEmail",
+    async ({ subdomain, data: { inReplyTo, references, subject, body: rawBody, from, date } }) => {
+      const body = stripEmailQuote(rawBody || "");
+      try {
+        const models = await generateModels(subdomain);
+
+        const messageIds: string[] = [
+          ...(inReplyTo ? [inReplyTo] : []),
+          ...(Array.isArray(references) ? references : []),
+        ].filter(Boolean);
+
+        if (!messageIds.length) return;
+
+        const deal = await models.Deals.findOne({
+          "extraData.adminPageSentMessageIds": { $in: messageIds },
+        }).lean() as any;
+
+        if (!deal) return;
+
+        // 이미 처리한 수신 메시지 중복 방지
+        const processedIds: string[] = Array.isArray(deal.extraData?.adminPageProcessedIncomingIds)
+          ? deal.extraData.adminPageProcessedIncomingIds
+          : [];
+        const incomingMessageId: string = inReplyTo || (Array.isArray(references) ? references[0] : "") || "";
+        if (incomingMessageId && processedIds.includes(incomingMessageId)) {
+          console.log("[sales] already processed incomingMessageId:", incomingMessageId, "- skip");
+          return;
+        }
+
+        const historyEntry = {
+          type: "수신" as const,
+          date: new Date(date || Date.now()).toLocaleString("ko-KR", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }).replace(/\. /g, "-").replace(/\./g, "").replace(",", ""),
+          subject: subject || "",
+          body: body || "",
+        };
+
+        const existingHistory: any[] = Array.isArray(deal.extraData?.adminPageHistory)
+          ? deal.extraData.adminPageHistory
+          : [];
+
+        const receivedAt = new Date(date || Date.now()).toISOString().slice(0, 10);
+        const newProcessedIds = incomingMessageId
+          ? [...processedIds, incomingMessageId]
+          : processedIds;
+
+        await models.Deals.updateOne(
+          { _id: deal._id },
+          {
+            $set: {
+              "extraData.adminPageHistory": [historyEntry, ...existingHistory],
+              "extraData.lastContactAt": receivedAt,
+              "extraData.adminPageProcessedIncomingIds": newProcessedIds,
+              modifiedAt: new Date(),
+            },
+          }
+        );
+
+        triggerAdminPageSyncIfConfigured(models, subdomain, String(deal._id));
+      } catch (_e) {
+        // 수신 메일 처리 실패 - 무시
+      }
     }
   );
 

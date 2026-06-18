@@ -121,6 +121,18 @@ export const setupMessageConsumers = async () => {
     }
   );
 
+  consumeRPCQueue("imap:findIncomingReplies", async ({ subdomain, data: { messageIds } }) => {
+    const models = await generateModels(subdomain);
+    const messages = await models.Messages.find({
+      type: "INBOX",
+      $or: [
+        { inReplyTo: { $in: messageIds } },
+        { references: { $elemMatch: { $in: messageIds } } },
+      ],
+    }).lean();
+    return { status: "success", data: messages };
+  });
+
   consumeRPCQueue("imap:imapMessage.create", async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
@@ -189,6 +201,13 @@ export const sendInboxMessage = (args: MessageArgsOmitService) => {
 export const sendImapMessage = (args: MessageArgsOmitService) => {
   return sendCommonMessage({
     serviceName: "imap",
+    ...args
+  });
+};
+
+export const sendSalesMessage = (args: MessageArgsOmitService) => {
+  return sendCommonMessage({
+    serviceName: "sales",
     ...args
   });
 };
