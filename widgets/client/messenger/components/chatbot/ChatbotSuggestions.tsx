@@ -100,9 +100,9 @@ const ChatbotSuggestions: React.FC<ChatbotSuggestionsProps> = ({
       {questions.length > 0 && (
         <>
           <div style={SECTION_LABEL_STYLE}>추천 질문</div>
-          {questions.map((q) => (
+          {questions.map((q, idx) => (
             <button
-              key={q}
+              key={`question-${idx}`}
               type="button"
               style={QUESTION_BUTTON_STYLE}
               onMouseDown={(e) => e.preventDefault()}
