@@ -19,6 +19,7 @@ export function useChatbotKeywordSuggestions(input: string): ChatbotSuggestionRe
         return;
       }
 
+      // 첫 번째 매칭 키워드만 사용 (복수 키워드 동시 입력 시 우선순위: KEYWORD_MAP 정의 순)
       const entry = Object.entries(KEYWORD_MAP).find(([keyword]) =>
         input.includes(keyword)
       );

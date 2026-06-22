@@ -345,17 +345,12 @@ const ChatbotView: React.FC = () => {
   const [inputValue, setInputValue] = React.useState('');
   const [inputFocused, setInputFocused] = React.useState(false);
   const [isStreaming, setIsStreaming] = React.useState(false);
-  const [suggestionDismissed, setSuggestionDismissed] = React.useState(false);
+  const [dismissedForValue, setDismissedForValue] = React.useState<string | null>(null);
   const { menus: suggestionMenus, questions: suggestionQuestions } =
     useChatbotKeywordSuggestions(inputValue);
 
-  // inputValue가 바뀌면 dismissed 초기화
-  React.useEffect(() => {
-    setSuggestionDismissed(false);
-  }, [inputValue]);
-
   const showSuggestions =
-    !suggestionDismissed &&
+    dismissedForValue !== inputValue &&
     (suggestionMenus.length > 0 || suggestionQuestions.length > 0);
 
   const aiConfig = connection.setting?.aiChat ?? {};
@@ -414,7 +409,7 @@ const ChatbotView: React.FC = () => {
 
     setAiMessages((prev) => [...prev, userMsg, botMsg]);
     setInputValue('');
-    setSuggestionDismissed(true);
+    setDismissedForValue('');
     setIsStreaming(true);
 
     try {
@@ -688,13 +683,13 @@ const ChatbotView: React.FC = () => {
             questions={showSuggestions ? suggestionQuestions : []}
             onMenuClick={(menu) => {
               handleMenuClick(menu.label, menu.path);
-              setSuggestionDismissed(true);
+              setDismissedForValue(inputValue);
             }}
             onQuestionClick={(q) => {
               setInputValue(q);
-              setSuggestionDismissed(true);
+              setDismissedForValue(q);
             }}
-            onClose={() => setSuggestionDismissed(true)}
+            onClose={() => setDismissedForValue(inputValue)}
           />
           <textarea
             value={inputValue}
