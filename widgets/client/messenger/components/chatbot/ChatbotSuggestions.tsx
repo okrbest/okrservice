@@ -58,16 +58,11 @@ const ChatbotSuggestions: React.FC<ChatbotSuggestionsProps> = ({
   return (
     <div
       style={{
-        position: 'absolute',
-        bottom: '100%',
-        left: 0,
-        right: 0,
+        flexShrink: 0,
         background: '#fff',
         border: '1px solid #e0e0f4',
         borderBottom: 'none',
-        borderRadius: '10px 10px 0 0',
         boxShadow: '0 -2px 8px rgba(0,0,0,0.06)',
-        zIndex: 10,
         overflow: 'hidden',
       }}
     >

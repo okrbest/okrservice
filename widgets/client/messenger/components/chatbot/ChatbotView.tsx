@@ -880,6 +880,21 @@ const ChatbotView: React.FC = () => {
           <div ref={chatBottomRef} />
         </div>
 
+        {/* ── 키워드 추천 팝업 (overflow 클리핑 방지를 위해 입력 div 밖 형제 요소로 배치) ── */}
+        <ChatbotSuggestions
+          menus={showSuggestions ? suggestionMenus : []}
+          questions={showSuggestions ? suggestionQuestions : []}
+          onMenuClick={(menu) => {
+            handleMenuClick(menu.label, menu.path);
+            setDismissedForValue(inputValue);
+          }}
+          onQuestionClick={(q) => {
+            setInputValue(q);
+            setDismissedForValue(q);
+          }}
+          onClose={() => setDismissedForValue(inputValue)}
+        />
+
         {/* ── AI 채팅 입력 ── */}
         <div
           style={{
@@ -890,22 +905,8 @@ const ChatbotView: React.FC = () => {
             display: "flex",
             gap: "8px",
             alignItems: "flex-end",
-            position: "relative",
           }}
         >
-          <ChatbotSuggestions
-            menus={showSuggestions ? suggestionMenus : []}
-            questions={showSuggestions ? suggestionQuestions : []}
-            onMenuClick={(menu) => {
-              handleMenuClick(menu.label, menu.path);
-              setDismissedForValue(inputValue);
-            }}
-            onQuestionClick={(q) => {
-              setInputValue(q);
-              setDismissedForValue(q);
-            }}
-            onClose={() => setDismissedForValue(inputValue)}
-          />
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
