@@ -85,6 +85,13 @@ const BUBBLE_STYLE: React.CSSProperties = {
   alignSelf: "flex-start",
 };
 
+// 마크다운 렌더링 말풍선 — 코드블록 등이 넘치지 않도록 width: 100%
+const MARKDOWN_BUBBLE_STYLE: React.CSSProperties = {
+  ...BUBBLE_STYLE,
+  width: "100%",
+  boxSizing: "border-box" as const,
+};
+
 const ACTION_BUTTON_GROUP_STYLE: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
@@ -152,7 +159,7 @@ function getRpaDisplayText(msg: { message?: string }): string {
 
 function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const pattern = /(\*\*(.+?)\*\*|\*([^*]+)\*|`([^`]+)`)/g;
+  const pattern = /(\*\*(.+?)\*\*|\*([^*]+)\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\))/g;
   let last = 0;
   let match: RegExpExecArray | null;
   let i = 0;
@@ -162,24 +169,41 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
       parts.push(text.slice(last, match.index));
     }
     if (match[2] !== undefined) {
+      // **bold**
       parts.push(<strong key={`${keyPrefix}-${i++}`}>{match[2]}</strong>);
     } else if (match[3] !== undefined) {
+      // *italic*
       parts.push(<em key={`${keyPrefix}-${i++}`}>{match[3]}</em>);
     } else if (match[4] !== undefined) {
+      // `inline code`
       parts.push(
         <code
           key={`${keyPrefix}-${i++}`}
           style={{
-            background: "#f0f0f8",
-            borderRadius: "3px",
+            background: "#eff0fb",
+            borderRadius: "4px",
             padding: "1px 5px",
-            fontSize: "12px",
-            fontFamily: "monospace",
-            color: "#6366f1",
+            fontSize: "11.5px",
+            fontFamily: "'SFMono-Regular', Consolas, monospace",
+            color: "#5b5fc7",
+            border: "1px solid #dde0f5",
           }}
         >
           {match[4]}
         </code>
+      );
+    } else if (match[5] !== undefined && match[6] !== undefined) {
+      // [link text](url)
+      parts.push(
+        <a
+          key={`${keyPrefix}-${i++}`}
+          href={match[6]}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "#6366f1", textDecoration: "underline", textUnderlineOffset: "2px" }}
+        >
+          {match[5]}
+        </a>
       );
     }
     last = match.index + match[0].length;
@@ -190,83 +214,274 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
   return parts;
 }
 
+function isTableSeparator(line: string): boolean {
+  return /^\|[-:\s|]+\|$/.test(line.trim());
+}
+
+function parseTableRow(line: string): string[] {
+  return line
+    .trim()
+    .replace(/^\||\|$/g, "")
+    .split("|")
+    .map((cell) => cell.trim());
+}
+
+function parseColAligns(separatorLine: string): Array<"left" | "center" | "right"> {
+  return separatorLine
+    .trim()
+    .replace(/^\||\|$/g, "")
+    .split("|")
+    .map((cell) => {
+      const c = cell.trim();
+      if (c.startsWith(":") && c.endsWith(":")) return "center";
+      if (c.endsWith(":")) return "right";
+      return "left";
+    });
+}
+
 function renderMarkdown(text: string): React.ReactNode[] {
-  const lines = text.split("\n");
+  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   const nodes: React.ReactNode[] = [];
   let listItems: React.ReactNode[] = [];
+  let listType: "ul" | "ol" = "ul";
+  let inCodeBlock = false;
+  let codeLines: string[] = [];
+  let codeLang = "";
+  let nodeIdx = 0;
 
-  const flushList = (key: string) => {
-    if (listItems.length > 0) {
+  // 테이블 버퍼
+  let tableHeaders: string[] = [];
+  let tableAligns: Array<"left" | "center" | "right"> = [];
+  let tableRows: string[][] = [];
+  let inTable = false;
+
+  const nextKey = () => nodeIdx++;
+
+  const flushList = () => {
+    if (listItems.length === 0) return;
+    const key = `list-${nextKey()}`;
+    if (listType === "ol") {
       nodes.push(
-        <ul key={key} style={{ margin: "4px 0", paddingLeft: "18px" }}>
+        <ol key={key} style={{ margin: "6px 0", paddingLeft: "20px", lineHeight: 1.7 }}>
+          {listItems}
+        </ol>
+      );
+    } else {
+      nodes.push(
+        <ul key={key} style={{ margin: "6px 0", paddingLeft: "20px", lineHeight: 1.7 }}>
           {listItems}
         </ul>
       );
-      listItems = [];
     }
+    listItems = [];
   };
 
-  lines.forEach((line, idx) => {
+  const flushTable = () => {
+    if (tableHeaders.length === 0) return;
+    const key = `table-${nextKey()}`;
+    const cellStyle = (align: "left" | "center" | "right"): React.CSSProperties => ({
+      padding: "6px 10px",
+      textAlign: align,
+      borderBottom: "1px solid #e5e7eb",
+      fontSize: "12px",
+      lineHeight: 1.5,
+      whiteSpace: "pre-wrap" as const,
+      wordBreak: "keep-all" as const,
+    });
+    nodes.push(
+      <div key={key} style={{ overflowX: "auto", margin: "8px 0", WebkitOverflowScrolling: "touch" }}>
+        <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "12px" }}>
+          <thead>
+            <tr style={{ background: "#f0f0fb" }}>
+              {tableHeaders.map((h, ci) => (
+                <th
+                  key={ci}
+                  style={{
+                    ...cellStyle(tableAligns[ci] || "left"),
+                    fontWeight: 700,
+                    color: "#374151",
+                    borderBottom: "2px solid #c7c9ef",
+                    whiteSpace: "nowrap" as const,
+                  }}
+                >
+                  {renderInline(h, `th-${key}-${ci}`)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {tableRows.map((row, ri) => (
+              <tr key={ri} style={{ background: ri % 2 === 0 ? "#fff" : "#f9f9ff" }}>
+                {tableHeaders.map((_, ci) => (
+                  <td key={ci} style={cellStyle(tableAligns[ci] || "left")}>
+                    {renderInline(row[ci] ?? "", `td-${key}-${ri}-${ci}`)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+    tableHeaders = [];
+    tableAligns = [];
+    tableRows = [];
+    inTable = false;
+  };
+
+  const flushCodeBlock = () => {
+    const key = `code-${nextKey()}`;
+    nodes.push(
+      <pre
+        key={key}
+        style={{
+          background: "#1e1e2e",
+          borderRadius: "8px",
+          padding: "12px 14px",
+          overflowX: "auto",
+          margin: "8px 0",
+          fontSize: "11.5px",
+          lineHeight: 1.6,
+          color: "#cdd6f4",
+          fontFamily: "'SFMono-Regular', Consolas, monospace",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
+        {codeLang && (
+          <div style={{ color: "#89b4fa", fontSize: "10px", marginBottom: "6px", opacity: 0.8 }}>
+            {codeLang}
+          </div>
+        )}
+        <code>{codeLines.join("\n")}</code>
+      </pre>
+    );
+    codeLines = [];
+    codeLang = "";
+  };
+
+  lines.forEach((line) => {
+    // 코드 블록 시작/종료
+    const codeBlockFence = line.match(/^```(.*)/);
+    if (codeBlockFence) {
+      if (inCodeBlock) {
+        flushCodeBlock();
+        inCodeBlock = false;
+      } else {
+        flushList();
+        inCodeBlock = true;
+        codeLang = codeBlockFence[1].trim();
+      }
+      return;
+    }
+
+    if (inCodeBlock) {
+      codeLines.push(line);
+      return;
+    }
+
+    // 테이블 처리
+    const isTableRow = line.trim().startsWith("|") && line.trim().endsWith("|");
+    if (isTableRow) {
+      if (isTableSeparator(line)) {
+        // 구분선 행 — 정렬 정보 파싱 (헤더 다음에 오는 행)
+        tableAligns = parseColAligns(line);
+        inTable = true;
+      } else if (!inTable && tableHeaders.length === 0) {
+        // 첫 번째 행 = 헤더
+        flushList();
+        tableHeaders = parseTableRow(line);
+      } else if (inTable) {
+        // 데이터 행
+        tableRows.push(parseTableRow(line));
+      }
+      return;
+    } else if (tableHeaders.length > 0) {
+      // 테이블이 끝남
+      flushTable();
+    }
+
+    const h1 = line.match(/^#\s+(.+)/);
     const h2 = line.match(/^##\s+(.+)/);
     const h3 = line.match(/^###\s+(.+)/);
-    const bullet = line.match(/^[-*]\s+(.+)/);
-    const numbered = line.match(/^\d+[.)]\s+(.+)/);
+    const hr = line.match(/^(-{3,}|\*{3,}|_{3,})$/);
+    const blockquote = line.match(/^>\s*(.*)/);
+    const bullet = line.match(/^[-*+]\s+(.+)/);
+    const numbered = line.match(/^(\d+)[.)]\s+(.+)/);
 
-    if (h2) {
-      flushList(`list-${idx}`);
+    if (h1) {
+      flushList();
       nodes.push(
-        <div
-          key={idx}
-          style={{
-            fontWeight: 700,
-            fontSize: "13px",
-            color: "#374151",
-            marginTop: "10px",
-            marginBottom: "2px",
-            borderBottom: "1px solid #e5e7eb",
-            paddingBottom: "3px",
-          }}
-        >
-          {renderInline(h2[1], `${idx}`)}
+        <div key={nextKey()} style={{ fontWeight: 700, fontSize: "14px", color: "#1f2937", marginTop: "12px", marginBottom: "4px", paddingBottom: "4px", borderBottom: "2px solid #e5e7eb" }}>
+          {renderInline(h1[1], `h1-${nodeIdx}`)}
+        </div>
+      );
+    } else if (h2) {
+      flushList();
+      nodes.push(
+        <div key={nextKey()} style={{ fontWeight: 700, fontSize: "13px", color: "#374151", marginTop: "10px", marginBottom: "3px", paddingBottom: "3px", borderBottom: "1px solid #e5e7eb" }}>
+          {renderInline(h2[1], `h2-${nodeIdx}`)}
         </div>
       );
     } else if (h3) {
-      flushList(`list-${idx}`);
+      flushList();
       nodes.push(
-        <div
-          key={idx}
-          style={{
-            fontWeight: 600,
-            fontSize: "12.5px",
-            color: "#4b5563",
-            marginTop: "7px",
-            marginBottom: "2px",
-          }}
-        >
-          {renderInline(h3[1], `${idx}`)}
+        <div key={nextKey()} style={{ fontWeight: 600, fontSize: "12.5px", color: "#4b5563", marginTop: "8px", marginBottom: "2px" }}>
+          {renderInline(h3[1], `h3-${nodeIdx}`)}
         </div>
       );
-    } else if (bullet || numbered) {
-      const content = bullet ? bullet[1] : (numbered as RegExpMatchArray)[1];
+    } else if (hr) {
+      flushList();
+      nodes.push(<hr key={nextKey()} style={{ border: "none", borderTop: "1px solid #e5e7eb", margin: "8px 0" }} />);
+    } else if (blockquote) {
+      flushList();
+      nodes.push(
+        <div
+          key={nextKey()}
+          style={{
+            borderLeft: "3px solid #6366f1",
+            paddingLeft: "10px",
+            margin: "4px 0",
+            color: "#6b7280",
+            fontStyle: "italic",
+            fontSize: "12.5px",
+            lineHeight: 1.6,
+          }}
+        >
+          {renderInline(blockquote[1], `bq-${nodeIdx}`)}
+        </div>
+      );
+    } else if (bullet) {
+      if (listType === "ol" && listItems.length > 0) flushList();
+      listType = "ul";
       listItems.push(
-        <li key={idx} style={{ marginBottom: "2px", lineHeight: 1.5 }}>
-          {renderInline(content, `${idx}`)}
+        <li key={nodeIdx} style={{ marginBottom: "2px", lineHeight: 1.6 }}>
+          {renderInline(bullet[1], `li-${nodeIdx}`)}
+        </li>
+      );
+    } else if (numbered) {
+      if (listType === "ul" && listItems.length > 0) flushList();
+      listType = "ol";
+      listItems.push(
+        <li key={nodeIdx} style={{ marginBottom: "2px", lineHeight: 1.6 }}>
+          {renderInline(numbered[2], `li-${nodeIdx}`)}
         </li>
       );
     } else if (line.trim() === "") {
-      flushList(`list-${idx}`);
-      nodes.push(<div key={idx} style={{ height: "4px" }} />);
+      flushList();
+      nodes.push(<div key={nextKey()} style={{ height: "5px" }} />);
     } else {
-      flushList(`list-${idx}`);
+      flushList();
       nodes.push(
-        <div key={idx} style={{ lineHeight: 1.6 }}>
-          {renderInline(line, `${idx}`)}
+        <div key={nextKey()} style={{ lineHeight: 1.65 }}>
+          {renderInline(line, `p-${nodeIdx}`)}
         </div>
       );
     }
   });
 
-  flushList("list-end");
+  if (inCodeBlock) flushCodeBlock();
+  if (tableHeaders.length > 0) flushTable();
+  flushList();
   return nodes;
 }
 
@@ -636,11 +851,11 @@ const ChatbotView: React.FC = () => {
                 >
                   <div style={BOT_AVATAR_STYLE}>🤖</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
-                    <div style={BUBBLE_STYLE}>
+                    <div style={MARKDOWN_BUBBLE_STYLE}>
                       {msg.text
                         ? renderMarkdown(msg.text)
                         : msg.streaming
-                        ? <span style={{ color: "#94a3b8" }}>...</span>
+                        ? <span style={{ color: "#94a3b8", fontSize: "18px", letterSpacing: "2px" }}>···</span>
                         : ""}
                     </div>
                   </div>
