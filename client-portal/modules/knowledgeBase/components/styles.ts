@@ -736,8 +736,14 @@ const Modal = styled.div`
 
 export const HeroSearchWrapper = styled.div`
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  padding: 40px 24px;
+  padding: 56px 24px;
   text-align: center;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  margin-left: -50vw;
+  margin-top: -32px;
+  margin-bottom: 32px;
 
   h2 {
     color: #fff;

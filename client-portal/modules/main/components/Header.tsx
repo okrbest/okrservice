@@ -262,14 +262,12 @@ function Header({
       headingSpacing={headingSpacing}
     >
       {renderTopHeader()}
-      <BottomComponent>
-        <h3>
-          {config.description
-            ? config.description
-            : 'What we can help you with'}
-        </h3>
-        {headerBottomComponent && headerBottomComponent}
-      </BottomComponent>
+      {(config.description || headerBottomComponent) && (
+        <BottomComponent>
+          {config.description && <h3>{config.description}</h3>}
+          {headerBottomComponent}
+        </BottomComponent>
+      )}
       <Modal
         content={() => (
           <LoginContainer
