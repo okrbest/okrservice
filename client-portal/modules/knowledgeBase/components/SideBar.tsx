@@ -85,6 +85,12 @@ function SideBar({ parentCategories, category }: Props) {
   return (
     <SidebarNav>
       <p className="nav-label">카테고리</p>
+      <Link href="/knowledge-base">
+        <a className="nav-item">
+          <span className="material-icons">apps</span>
+          <span>전체보기</span>
+        </a>
+      </Link>
       {parentCategories.map((cat) => (
         <React.Fragment key={cat._id}>
           {renderItem(cat)}
