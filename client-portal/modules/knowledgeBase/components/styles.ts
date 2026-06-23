@@ -734,6 +734,86 @@ const Modal = styled.div`
   }
 `;
 
+export const HeroSearchWrapper = styled.div`
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 40px 24px;
+  text-align: center;
+
+  h2 {
+    color: #fff;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .search-box {
+    position: relative;
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+
+    input {
+      flex: 1;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px 0 0 12px;
+      font-size: 14px;
+      outline: none;
+      color: #1e293b;
+
+      &::placeholder {
+        color: #94a3b8;
+      }
+    }
+
+    button {
+      padding: 0 24px;
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 0 12px 12px 0;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+
+      &:hover {
+        background: #2563eb;
+      }
+    }
+  }
+`;
+
+export const AutocompleteList = styled.ul`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 88px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+  z-index: 100;
+`;
+
+export const AutocompleteItem = styled.li`
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    background: #f1f5f9;
+    color: #2563eb;
+  }
+`;
+
 export {
   Header,
   CategoryItem,
