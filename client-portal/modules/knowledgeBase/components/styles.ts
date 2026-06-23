@@ -957,6 +957,40 @@ export const RightPanelSection = styled.div`
   }
 `;
 
+export const KbThreeCol = styled.div`
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-top: 16px;
+`;
+
+export const KbLeftCol = styled.div`
+  width: 220px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+`;
+
+export const KbCenterCol = styled.div`
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px 28px;
+`;
+
+export const KbRightCol = styled.div`
+  width: 180px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+
+  @media (max-width: 1100px) {
+    display: none;
+  }
+`;
+
 export {
   Header,
   CategoryItem,

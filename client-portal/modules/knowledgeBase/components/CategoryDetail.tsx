@@ -1,16 +1,17 @@
-import { Col, Container, Row } from 'react-bootstrap';
-import { Config, IUser, Topic } from '../../types';
-
+import React from 'react';
+import { Container } from 'react-bootstrap';
+import { Config, IKbCategory, Topic } from '../../types';
 import ArticleListContainer from '../containers/ArticleList';
 import { Card } from '../../styles/cards';
-import React from 'react';
 import SectionHeader from '../../common/SectionHeader';
 import SideBar from './SideBar';
-import { SidebarList } from './styles';
+import KbRightPanel from './KbRightPanel';
+import { SidebarList, KbThreeCol, KbLeftCol, KbCenterCol, KbRightCol } from './styles';
 import { getConfigColor } from '../../common/utils';
+import { IUser } from '../../types';
 
 type Props = {
-  category: any;
+  category: IKbCategory;
   loading: boolean;
   topic: Topic;
   config: Config;
@@ -24,9 +25,8 @@ function CategoryDetail({ topic, category, config, currentUser }: Props) {
         categories={topic.parentCategories}
         selectedCat={category}
       />
-
-      <Row className="category-detail">
-        <Col md={4}>
+      <KbThreeCol>
+        <KbLeftCol>
           <Card>
             <SidebarList baseColor={getConfigColor(config, 'baseColor')}>
               <SideBar
@@ -36,15 +36,20 @@ function CategoryDetail({ topic, category, config, currentUser }: Props) {
               />
             </SidebarList>
           </Card>
-        </Col>
-        <Col md={8}>
+        </KbLeftCol>
+
+        <KbCenterCol>
           <ArticleListContainer
             categoryId={category._id}
             config={config}
             currentUser={currentUser}
           />
-        </Col>
-      </Row>
+        </KbCenterCol>
+
+        <KbRightCol>
+          <KbRightPanel topicId={topic._id} config={config} />
+        </KbRightCol>
+      </KbThreeCol>
     </Container>
   );
 }
