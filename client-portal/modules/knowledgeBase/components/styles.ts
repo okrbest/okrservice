@@ -871,6 +871,46 @@ export const CategoryBadge = styled.span`
   font-weight: 500;
 `;
 
+export const ArticleListWrapper = styled.div`
+  width: 100%;
+`;
+
+export const ResultBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 13px;
+  color: #6b7280;
+
+  strong {
+    color: #2563eb;
+    font-weight: 700;
+  }
+
+  .sort-group {
+    display: flex;
+    gap: 12px;
+  }
+`;
+
+export const SortButton = styledTS<{ active?: boolean }>(styled.button)`
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  cursor: pointer;
+  color: ${(props) => (props.active ? '#111827' : '#9ca3af')};
+  font-weight: ${(props) => (props.active ? '600' : '400')};
+  outline: none;
+
+  &:hover {
+    color: #111827;
+  }
+`;
+
 export {
   Header,
   CategoryItem,
