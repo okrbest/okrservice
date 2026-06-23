@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import Link from 'next/link';
-import { Config } from '../../types';
+import { Config, IKbArticle } from '../../types';
 import { articlesQuery } from '../graphql/queries';
 import { getRecentArticles, RecentArticle } from '../utils/recentArticles';
 import { RightPanelWrapper, RightPanelSection } from './styles';
@@ -22,9 +22,9 @@ export default function KbRightPanel({ topicId, config }: Props) {
     setRecent(getRecentArticles());
   }, []);
 
-  const popular = (data?.clientPortalKnowledgeBaseArticles || [])
+  const popular: IKbArticle[] = (data?.clientPortalKnowledgeBaseArticles as IKbArticle[] || [])
     .slice()
-    .sort((a: any, b: any) => (b.viewCount || 0) - (a.viewCount || 0))
+    .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
     .slice(0, 5);
 
   return (
@@ -33,10 +33,10 @@ export default function KbRightPanel({ topicId, config }: Props) {
         <RightPanelSection>
           <h6>많이 본 질문</h6>
           <ul>
-            {popular.map((a: any) => (
+            {popular.map((a) => (
               <li key={a._id}>
                 <Link
-                  href={`/knowledge-base/article?id=${a._id}&catId=${a.categoryId}`}
+                  href={`/knowledge-base/article?id=${a._id}${a.categoryId ? `&catId=${a.categoryId}` : ''}`}
                 >
                   <a title={a.title}>• {a.title}</a>
                 </Link>
