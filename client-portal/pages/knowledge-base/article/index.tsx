@@ -2,7 +2,6 @@ import ArticleDetail from '../../../modules/knowledgeBase/containers/ArticleDeta
 import ArticleListContainer from '../../../modules/knowledgeBase/containers/ArticleList';
 import Layout from '../../../modules/main/containers/Layout';
 import React from 'react';
-import Search from '../../../modules/main/components/Search';
 import { Store } from '../../../modules/types';
 import { useRouter } from 'next/router';
 
@@ -10,7 +9,7 @@ export default function Category() {
   const router = useRouter();
   const { searchValue } = router.query;
 
-  const renderContent = (props) => {
+  const renderContent = (props: Store) => {
     if (searchValue) {
       return (
         <ArticleListContainer
@@ -26,7 +25,7 @@ export default function Category() {
   };
 
   return (
-    <Layout headerBottomComponent={<Search searchValue={searchValue} />}>
+    <Layout>
       {(props: Store) => renderContent(props)}
     </Layout>
   );

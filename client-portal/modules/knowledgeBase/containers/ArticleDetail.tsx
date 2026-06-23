@@ -4,6 +4,7 @@ import ArticleDetail from "../components/ArticleDetail";
 import { articleDetailQuery, categoryDetailQuery } from "../graphql/queries";
 import { AppConsumer } from "../../appContext";
 import { Store } from "../../types";
+import { trackRecentArticle } from "../utils/recentArticles";
 
 type Props = {
   queryParams: any;
@@ -31,6 +32,16 @@ function ArticleDetailContainer({
 
   const article = (data && data.knowledgeBaseArticleDetail) || {};
   const category = (catData && catData.knowledgeBaseCategoryDetail) || {};
+
+  React.useEffect(() => {
+    if (article?._id && article?.title) {
+      trackRecentArticle({
+        _id: article._id,
+        title: article.title,
+        categoryId: article.categoryId,
+      });
+    }
+  }, [article?._id]);
 
   const updatedProps = {
     ...props,
