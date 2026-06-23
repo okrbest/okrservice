@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
-import { Config, IKbCategory, Topic } from '../../types';
+import { Config, IKbCategory, IUser, Topic } from '../../types';
 import ArticleListContainer from '../containers/ArticleList';
 import { Card } from '../../styles/cards';
 import SectionHeader from '../../common/SectionHeader';
@@ -8,7 +8,6 @@ import SideBar from './SideBar';
 import KbRightPanel from './KbRightPanel';
 import { SidebarList, KbThreeCol, KbLeftCol, KbCenterCol, KbRightCol } from './styles';
 import { getConfigColor } from '../../common/utils';
-import { IUser } from '../../types';
 
 type Props = {
   category: IKbCategory;
