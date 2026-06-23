@@ -911,6 +911,52 @@ export const SortButton = styledTS<{ active?: boolean }>(styled.button)`
   }
 `;
 
+export const RightPanelWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+export const RightPanelSection = styled.div`
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px 16px;
+
+  h6 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    margin-bottom: 10px;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  li a {
+    font-size: 12px;
+    color: #374151;
+    text-decoration: none;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.15s;
+
+    &:hover {
+      color: #2563eb;
+    }
+  }
+`;
+
 export {
   Header,
   CategoryItem,
