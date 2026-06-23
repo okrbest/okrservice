@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import Link from 'next/link';
-import { Config, IKbArticle } from '../../types';
+import { IKbArticle } from '../../types';
 import { articlesQuery } from '../graphql/queries';
 import { getRecentArticles, RecentArticle } from '../utils/recentArticles';
 import { RightPanelWrapper, RightPanelSection } from './styles';
 
 interface Props {
   topicId: string;
-  config: Config;
 }
 
-export default function KbRightPanel({ topicId, config }: Props) {
+export default function KbRightPanel({ topicId }: Props) {
   const [recent, setRecent] = useState<RecentArticle[]>([]);
 
   const { data } = useQuery(gql(articlesQuery), {

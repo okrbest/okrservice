@@ -1,13 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
-import { IKbArticle, Config } from '../../types';
+import { IKbArticle } from '../../types';
 import { ArticleListItemWrapper, CategoryBadge } from './styles';
 
 interface Props {
   article: IKbArticle;
   searchValue?: string;
   categoryName?: string;
-  config: Config;
 }
 
 function highlight(text: string, keyword?: string): React.ReactNode {

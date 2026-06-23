@@ -66,7 +66,6 @@ function ArticleList({ articles, config, searchValue }: Props) {
           key={article._id}
           article={article}
           searchValue={searchValue}
-          config={config}
         />
       ))}
     </ArticleListWrapper>

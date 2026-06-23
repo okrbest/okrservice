@@ -49,7 +49,7 @@ function ArticleDetail({ loading, article, category, topic, config }: Props) {
         </KbCenterCol>
 
         <KbRightCol>
-          <KbRightPanel topicId={topic._id} config={config} />
+          <KbRightPanel topicId={topic._id} />
         </KbRightCol>
       </KbThreeCol>
     </Container>

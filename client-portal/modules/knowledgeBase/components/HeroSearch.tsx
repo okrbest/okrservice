@@ -67,6 +67,7 @@ export default function HeroSearch({ topicId, initialValue = '' }: Props) {
           placeholder="검색어를 입력하세요 (예: 인사발령)"
           onFocus={() => value.length >= 2 && suggestions.length > 0 && setOpen(true)}
           onBlur={() => {
+            clearTimeout(blurTimerRef.current);
             blurTimerRef.current = setTimeout(() => setOpen(false), 150);
           }}
         />
