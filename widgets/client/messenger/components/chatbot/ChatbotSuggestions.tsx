@@ -32,11 +32,15 @@ const MENU_BUTTON_STYLE: React.CSSProperties = {
 };
 
 const QUESTION_BUTTON_STYLE: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  padding: '7px 12px',
-  background: 'none',
-  border: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  width: 'calc(100% - 20px)',
+  margin: '4px 10px',
+  padding: '10px 12px',
+  background: '#f9fafb',
+  border: '1px solid #e5e7eb',
+  borderRadius: '10px',
   textAlign: 'left',
   fontSize: '13px',
   color: '#374151',
@@ -44,6 +48,8 @@ const QUESTION_BUTTON_STYLE: React.CSSProperties = {
   outline: 'none',
   WebkitAppearance: 'none',
   appearance: 'none',
+  WebkitTapHighlightColor: 'transparent',
+  gap: '8px',
 };
 
 const ChatbotSuggestions: React.FC<ChatbotSuggestionsProps> = ({
@@ -94,29 +100,40 @@ const ChatbotSuggestions: React.FC<ChatbotSuggestionsProps> = ({
 
       {questions.length > 0 && (
         <>
-          <div style={SECTION_LABEL_STYLE}>추천 질문</div>
+          <div style={SECTION_LABEL_STYLE}>이런 질문 어때요?</div>
+          <div style={{ paddingBottom: '8px' }}>
           {questions.map((q, idx) => (
             <button
               key={`question-${idx}`}
               type="button"
               style={QUESTION_BUTTON_STYLE}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                (e.currentTarget as HTMLButtonElement).style.background = '#f3f4f6';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#d1d5db';
+              }}
+              onMouseUp={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = '#f9fafb';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#e5e7eb';
+              }}
               onClick={() => {
                 onQuestionClick(q);
                 onClose();
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = '#f5f3ff';
-                (e.currentTarget as HTMLButtonElement).style.color = '#6366f1';
+                (e.currentTarget as HTMLButtonElement).style.background = '#f3f4f6';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#d1d5db';
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = 'none';
-                (e.currentTarget as HTMLButtonElement).style.color = '#374151';
+                (e.currentTarget as HTMLButtonElement).style.background = '#f9fafb';
+                (e.currentTarget as HTMLButtonElement).style.borderColor = '#e5e7eb';
               }}
             >
-              {q}
+              <span>{q}</span>
+              <span style={{ fontSize: '12px', flexShrink: 0, opacity: 0.7 }}>↗</span>
             </button>
           ))}
+          </div>
         </>
       )}
     </div>
