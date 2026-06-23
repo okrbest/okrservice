@@ -33,7 +33,7 @@ function CategoriesContainer() {
               topicId={props.topic._id}
               initialValue={(searchValue as string) || ''}
             />
-            {searchValue ? (
+            {(searchValue || view === 'all') ? (
               <ArticleListContainer
                 searchValue={searchValue}
                 topicId={props.topic._id}
