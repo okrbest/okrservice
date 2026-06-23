@@ -1,10 +1,8 @@
-import { Config, IKbCategory, IKbParentCategory } from "../../types";
-import { SubCategories, SubMenu } from "./styles";
+import { Config, IKbCategory, IKbParentCategory } from '../../types';
+import { SidebarNav } from './styles';
 
-import Icon from "../../common/Icon";
-import Link from "next/link";
-import React from "react";
-import { getConfigColor } from "../../common/utils";
+import Link from 'next/link';
+import React from 'react';
 
 type Props = {
   parentCategories: IKbParentCategory[];
@@ -13,85 +11,88 @@ type Props = {
   config: Config;
 };
 
-class SideBar extends React.Component<Props> {
-  renderArticles = (isActive) => {
-    const { category, articleId } = this.props;
-    const { articles } = category;
+const ERXES_TO_MATERIAL: Record<string, string> = {
+  alarm: 'alarm',
+  briefcase: 'work',
+  earthgrid: 'public',
+  compass: 'explore',
+  idea: 'lightbulb',
+  diamond: 'diamond',
+  piggybank: 'savings',
+  piechart: 'pie_chart',
+  scale: 'balance',
+  megaphone: 'campaign',
+  tools: 'build',
+  umbrella: 'umbrella',
+  'bar-chart': 'bar_chart',
+  star: 'star',
+  'head-1': 'person',
+  settings: 'settings',
+  users: 'group',
+  paintpalette: 'palette',
+  flag: 'flag',
+  'phone-call': 'call',
+  laptop: 'laptop',
+  home: 'home',
+  puzzle: 'extension',
+  medal: 'military_tech',
+  like: 'thumb_up',
+  book: 'menu_book',
+  clipboard: 'assignment',
+  computer: 'computer',
+  paste: 'content_paste',
+  'folder-1': 'folder',
+  sunset: 'wb_sunny',
+  'heart-alt': 'favorite',
+  'music-1': 'music_note',
+  pencil: 'edit',
+  database: 'storage',
+  videocamera: 'videocam',
+  'clipboard-1': 'note',
+  camera: 'photo_camera',
+  'shuffle-1': 'shuffle',
+  hourglass: 'hourglass_empty',
+  'envelope-alt': 'email',
+  'graph-bar': 'bar_chart',
+  'comment-alt-message': 'chat_bubble',
+  chat: 'chat',
+  smile: 'sentiment_satisfied',
+  wallclock: 'schedule',
+  trees: 'park',
+  gift: 'card_giftcard',
+  'moon-1': 'nights_stay',
+};
 
-    if (!articleId || !isActive || !articles || articles.length === 0) {
-      return null;
-    }
+function toMaterialIcon(erxesIcon: string): string {
+  return ERXES_TO_MATERIAL[erxesIcon] || 'folder';
+}
 
+function SideBar({ parentCategories, category }: Props) {
+  if (!parentCategories || parentCategories.length === 0) return null;
+
+  const renderItem = (cat: any) => {
+    const isActive = cat._id === category._id;
     return (
-      <SubMenu>
-        {articles.map((article, index) => (
-          <Link
-            key={index}
-            href={`/knowledge-base/article?id=${article._id}&catId=${article.categoryId}`}
-          >
-            <li className={article._id === articleId && "active"}>
-              {article.title}
-            </li>
-          </Link>
-        ))}
-      </SubMenu>
+      <Link key={cat._id} href={`/knowledge-base/category?id=${cat._id}`}>
+        <a className={`nav-item${isActive ? ' active' : ''}`}>
+          <span className="material-icons">{toMaterialIcon(cat.icon)}</span>
+          <span>{cat.title}</span>
+        </a>
+      </Link>
     );
   };
 
-  renderCatIcon(cat) {
-    if (!cat.childrens) {
-      return <span>&#x2022;</span>;
-    }
-
-    return (
-      <div className="icon-wrapper d-flex justify-content-center align-items-center">
-        <i className={`icon-${cat.icon}`} />
-      </div>
-    );
-  }
-
-  renderCategory(cat) {
-    return (
-      <React.Fragment key={cat._id}>
-        <Link href={`/knowledge-base/category?id=${cat._id}`}>
-          <div
-            className={`item ${
-              cat._id === this.props.category._id && "active"
-            }`}
-          >
-            <div>
-              {this.renderCatIcon(cat)}
-              <h6>{cat.title}</h6>
-            </div>
-            <span className="d-flex align-items-center">
-              {`(${cat.numOfArticles})`}
-            </span>
-          </div>
-        </Link>
-        {this.renderArticles(cat._id === this.props.category._id)}
-      </React.Fragment>
-    );
-  }
-
-  render() {
-    const { parentCategories, config } = this.props;
-
-    if (!parentCategories || parentCategories.length === 0) {
-      return null;
-    }
-
-    return parentCategories.map((cat, i) => (
-      <React.Fragment key={i}>
-        {this.renderCategory(cat)}
-
-        {cat.childrens && (
-          <SubCategories baseColor={getConfigColor(config, "baseColor")}>
-            {cat.childrens.map((child) => this.renderCategory(child))}
-          </SubCategories>
-        )}
-      </React.Fragment>
-    ));
-  }
+  return (
+    <SidebarNav>
+      <p className="nav-label">카테고리</p>
+      {parentCategories.map((cat) => (
+        <React.Fragment key={cat._id}>
+          {renderItem(cat)}
+          {cat.childrens?.map((child) => renderItem(child))}
+        </React.Fragment>
+      ))}
+    </SidebarNav>
+  );
 }
 
 export default SideBar;

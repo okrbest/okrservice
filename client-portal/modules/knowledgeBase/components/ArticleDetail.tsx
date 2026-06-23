@@ -1,19 +1,11 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
 import { Config, IKbArticle, IKbCategory, Topic } from '../../types';
-import { Card } from '../../styles/cards';
 import SectionHeader from '../../common/SectionHeader';
 import SideBar from './SideBar';
 import SingleArticle from './SingleArticle';
 import KbRightPanel from './KbRightPanel';
-import {
-  SidebarList,
-  KbThreeCol,
-  KbLeftCol,
-  KbCenterCol,
-  KbRightCol,
-} from './styles';
-import { getConfigColor } from '../../common/utils';
+import { KbThreeCol, KbLeftCol, KbCenterCol, KbRightCol } from './styles';
 
 type Props = {
   article: IKbArticle;
@@ -32,16 +24,12 @@ function ArticleDetail({ loading, article, category, topic, config }: Props) {
       />
       <KbThreeCol>
         <KbLeftCol>
-          <Card>
-            <SidebarList baseColor={getConfigColor(config, 'baseColor')}>
-              <SideBar
-                parentCategories={topic.parentCategories}
-                category={category}
-                articleId={article._id}
-                config={config}
-              />
-            </SidebarList>
-          </Card>
+          <SideBar
+            parentCategories={topic.parentCategories}
+            category={category}
+            articleId={article._id}
+            config={config}
+          />
         </KbLeftCol>
 
         <KbCenterCol>

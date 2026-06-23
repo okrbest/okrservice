@@ -584,6 +584,61 @@ const SubMenu = styled.ul`
   }
 `;
 
+const SidebarNav = styled.nav`
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+
+  .nav-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    padding: 0 12px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    color: #374151;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s;
+    margin-bottom: 2px;
+
+    i {
+      font-size: 16px;
+      color: #9ca3af;
+      flex-shrink: 0;
+      width: 18px;
+      text-align: center;
+    }
+
+    &:hover {
+      background: #f3f4f6;
+      color: #374151;
+      text-decoration: none;
+    }
+
+    &.active {
+      color: #2563eb;
+      background: #eff6ff;
+
+      i {
+        color: #3b82f6;
+      }
+    }
+  }
+`;
+
 const Feedback = styled.div`
   .reactions {
     display: flex;
@@ -1008,6 +1063,7 @@ export {
   Sidebar,
   Container,
   SidebarList,
+  SidebarNav,
   SidebarItem,
   SidebarIcon,
   SidebarContent,
