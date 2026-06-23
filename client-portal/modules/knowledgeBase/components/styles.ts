@@ -814,6 +814,63 @@ export const AutocompleteItem = styled.li`
   }
 `;
 
+export const ArticleListItemWrapper = styled.div`
+  padding: 20px 0;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 400;
+    color: #2563eb;
+    margin-bottom: 6px;
+    line-height: 1.5;
+    transition: color 0.15s;
+
+    mark {
+      background: #fef08a;
+      color: inherit;
+      padding: 0 1px;
+      border-radius: 2px;
+    }
+  }
+
+  p {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.65;
+    margin: 0;
+    font-weight: 300;
+
+    mark {
+      background: #fef08a;
+      color: inherit;
+      padding: 0 1px;
+      border-radius: 2px;
+    }
+  }
+
+  &:hover h3 {
+    text-decoration: underline;
+  }
+`;
+
+export const CategoryBadge = styled.span`
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 2px 8px;
+  background: #f0f4ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #4f46e5;
+  font-weight: 500;
+`;
+
 export {
   Header,
   CategoryItem,
