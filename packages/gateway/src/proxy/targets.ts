@@ -1,4 +1,4 @@
-import { clearServiceCache, getService, getServices } from '@erxes/api-utils/src/serviceDiscovery';
+import { getService, getServices } from '@erxes/api-utils/src/serviceDiscovery';
 import retry from '../util/retry';
 import fetch from 'node-fetch';
 import * as dotenv from 'dotenv';
@@ -30,10 +30,7 @@ async function getProxyTarget(name: string): Promise<ErxesProxyTarget> {
 async function retryGetProxyTarget(name: string): Promise<ErxesProxyTarget> {
   const intervalSeconds = 1;
   return retry({
-    fn: async () => {
-      clearServiceCache(name);
-      return getProxyTarget(name);
-    },
+    fn: () => getProxyTarget(name),
     intervalMs: intervalSeconds * 1000,
     maxTries: maxPluginRetry,
     retryExhaustedLog: `Plugin ${name} still hasn't joined the service discovery after checking for ${maxPluginRetry} time(s) with ${intervalSeconds} second(s) interval. Retry exhausted.`,
@@ -85,16 +82,11 @@ async function ensureGraphqlEndpointIsUp({
   );
 }
 
-async function retryEnsureGraphqlEndpointIsUp(name: string) {
-  let endpoint = `${name} graphql endpoint`;
-
+async function retryEnsureGraphqlEndpointIsUp(target: ErxesProxyTarget) {
+  const { name, address } = target;
+  const endpoint = `${address}/graphql`;
   await retry({
-    fn: async () => {
-      clearServiceCache(name);
-      const target = await getProxyTarget(name);
-      endpoint = `${target.address}/graphql`;
-      return ensureGraphqlEndpointIsUp(target);
-    },
+    fn: () => ensureGraphqlEndpointIsUp(target),
     intervalMs: 5 * 1000,
     maxTries: maxPluginRetry,
     retryExhaustedLog: `ERROR: ${name} graphql endpoint ${endpoint} isn't running.`,
@@ -111,7 +103,7 @@ export async function retryGetProxyTargets(): Promise<ErxesProxyTarget[]> {
       serviceNames.map(retryGetProxyTarget),
     );
 
-    await Promise.all(serviceNames.map((name) => retryEnsureGraphqlEndpointIsUp(name)));
+    await Promise.all(proxyTargets.map(retryEnsureGraphqlEndpointIsUp));
 
     return proxyTargets;
   } catch (e) {

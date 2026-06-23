@@ -97,21 +97,6 @@ export const isEnabled = (name) => {
 
 const pluginAddressCache = {};
 
-export const clearServiceCache = (name?: string): void => {
-  if (name) {
-    delete serviceInfoCache[name];
-    delete pluginAddressCache[name];
-    return;
-  }
-
-  for (const key of Object.keys(serviceInfoCache)) {
-    delete serviceInfoCache[key];
-  }
-  for (const key of Object.keys(pluginAddressCache)) {
-    delete pluginAddressCache[key];
-  }
-};
-
 export const getPluginAddress = async (name) => {
   if (!pluginAddressCache[name]) {
     pluginAddressCache[name] = await redis.get(`service:${name}`);

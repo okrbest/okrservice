@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import Router from 'next/router';
 import Link from 'next/link';
@@ -19,6 +19,14 @@ export default function HeroSearch({ topicId, initialValue = '' }: Props) {
   const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(debounceRef.current);
+      clearTimeout(blurTimerRef.current);
+    };
+  }, []);
 
   const { data } = useQuery(gql(articlesQuery), {
     variables: { searchValue: autocompleteQuery, topicId, isPrivate: true },
@@ -58,7 +66,9 @@ export default function HeroSearch({ topicId, initialValue = '' }: Props) {
           onKeyDown={onKeyDown}
           placeholder="검색어를 입력하세요 (예: 인사발령)"
           onFocus={() => value.length >= 2 && suggestions.length > 0 && setOpen(true)}
-          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          onBlur={() => {
+            blurTimerRef.current = setTimeout(() => setOpen(false), 150);
+          }}
         />
         <button type="button" onClick={onSearch}>
           검색
@@ -66,14 +76,16 @@ export default function HeroSearch({ topicId, initialValue = '' }: Props) {
         {open && suggestions.length > 0 && (
           <AutocompleteList>
             {suggestions.map((a) => (
-              <Link
+              <AutocompleteItem
                 key={a._id}
-                href={`/knowledge-base/article?id=${a._id}&catId=${a.categoryId}`}
+                onMouseDown={(e) => e.preventDefault()}
               >
-                <AutocompleteItem onMouseDown={(e) => e.preventDefault()}>
-                  {a.title}
-                </AutocompleteItem>
-              </Link>
+                <Link
+                  href={`/knowledge-base/article?id=${a._id}&catId=${a.categoryId}`}
+                >
+                  <a>{a.title}</a>
+                </Link>
+              </AutocompleteItem>
             ))}
           </AutocompleteList>
         )}
