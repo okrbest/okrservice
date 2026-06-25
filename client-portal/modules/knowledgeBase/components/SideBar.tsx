@@ -11,7 +11,7 @@ type Props = {
   config: Config;
 };
 
-const ERXES_TO_MATERIAL: Record<string, string> = {
+export const ERXES_TO_MATERIAL: Record<string, string> = {
   alarm: 'alarm',
   briefcase: 'work',
   earthgrid: 'public',
@@ -70,13 +70,16 @@ function toMaterialIcon(erxesIcon: string): string {
 function SideBar({ parentCategories, category }: Props) {
   if (!parentCategories || parentCategories.length === 0) return null;
 
-  const renderItem = (cat: any) => {
+  const renderItem = (cat: any, isChild = false) => {
     const isActive = cat._id === category._id;
     return (
       <Link key={cat._id} href={`/knowledge-base/category?id=${cat._id}`}>
-        <a className={`nav-item${isActive ? ' active' : ''}`}>
+        <a className={`nav-item${isActive ? ' active' : ''}${isChild ? ' nav-item-child' : ''}`}>
           <span className="material-icons">{toMaterialIcon(cat.icon)}</span>
-          <span>{cat.title}</span>
+          <span className="nav-item-label">{cat.title}</span>
+          {cat.numOfArticles > 0 && (
+            <span className="nav-item-count">{cat.numOfArticles}</span>
+          )}
         </a>
       </Link>
     );
@@ -94,7 +97,7 @@ function SideBar({ parentCategories, category }: Props) {
       {parentCategories.map((cat) => (
         <React.Fragment key={cat._id}>
           {renderItem(cat)}
-          {cat.childrens?.map((child) => renderItem(child))}
+          {cat.childrens?.map((child) => renderItem(child, true))}
         </React.Fragment>
       ))}
     </SidebarNav>

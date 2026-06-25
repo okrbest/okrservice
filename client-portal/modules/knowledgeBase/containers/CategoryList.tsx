@@ -5,17 +5,9 @@ import KbRightPanel from '../components/KbRightPanel';
 import SideBar from '../components/SideBar';
 import Layout from '../../main/containers/Layout';
 import { KbPageContainer, KbThreeCol, KbLeftCol, KbCenterCol, KbRightCol } from '../components/styles';
-import React, { useEffect } from 'react';
-import Router from 'next/router';
+import React from 'react';
 import { Store } from '../../types';
 import { useRouter } from 'next/router';
-
-function AutoRedirect({ categoryId }: { categoryId: string }) {
-  useEffect(() => {
-    Router.replace(`/knowledge-base/category?id=${categoryId}`);
-  }, [categoryId]);
-  return null;
-}
 
 function CategoriesContainer() {
   const router = useRouter();
@@ -24,10 +16,15 @@ function CategoriesContainer() {
   return (
     <Layout>
       {(props: Store) => {
-        const firstCat = props.topic?.parentCategories?.[0];
-
-        if (!searchValue && !view && firstCat) {
-          return <AutoRedirect categoryId={firstCat._id} />;
+        if (!searchValue && !view) {
+          return (
+            <>
+              <HeroSearch topicId={props.topic._id} initialValue="" />
+              <KbPageContainer>
+                <CategoryList {...props} />
+              </KbPageContainer>
+            </>
+          );
         }
 
         if (view === 'all') {

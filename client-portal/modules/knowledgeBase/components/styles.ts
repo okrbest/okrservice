@@ -622,6 +622,24 @@ const SidebarNav = styled.nav`
       text-align: center;
     }
 
+    .nav-item-label {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nav-item-count {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ca3af;
+      background: #f3f4f6;
+      border-radius: 10px;
+      padding: 1px 7px;
+      flex-shrink: 0;
+    }
+
     &:hover {
       background: #f3f4f6;
       color: #374151;
@@ -635,6 +653,17 @@ const SidebarNav = styled.nav`
       i {
         color: #3b82f6;
       }
+
+      .nav-item-count {
+        background: #dbeafe;
+        color: #3b82f6;
+      }
+    }
+
+    &.nav-item-child {
+      padding-left: 36px;
+      font-size: 13px;
+      font-weight: 400;
     }
   }
 `;
@@ -1018,10 +1047,274 @@ export const RightPanelSection = styled.div`
   }
 `;
 
+export const HomeCategoryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 24px 0 32px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const HomeCategoryCard = styled.div`
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border-color: #bfdbfe;
+  }
+
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #eff6ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-icons {
+      font-size: 20px;
+      color: #3b82f6;
+    }
+  }
+
+  .card-body {
+    flex: 1;
+    min-width: 0;
+
+    h5 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    p {
+      font-size: 12px;
+      color: #6b7280;
+      margin: 0 0 8px;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .article-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      color: #9ca3af;
+
+      .material-icons {
+        font-size: 13px;
+      }
+    }
+  }
+`;
+
+export const ArticleFeedback = styled.div`
+  margin-top: 24px;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  text-align: center;
+
+  p {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin: 0 0 12px;
+  }
+
+  p.thanks {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0;
+    color: #16a34a;
+
+    .material-icons {
+      font-size: 20px;
+    }
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 8px;
+      border: 1px solid;
+      cursor: pointer;
+      transition: all 0.15s;
+
+      .material-icons {
+        font-size: 16px;
+      }
+    }
+
+    .btn-yes {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      color: #16a34a;
+
+      &:hover {
+        background: #dcfce7;
+      }
+    }
+
+    .btn-no {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      color: #ea580c;
+
+      &:hover {
+        background: #ffedd5;
+      }
+    }
+  }
+`;
+
+export const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 24px;
+  text-align: center;
+  color: #6b7280;
+
+  > .material-icons {
+    font-size: 48px;
+    color: #d1d5db;
+    margin-bottom: 16px;
+  }
+
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 20px;
+  }
+
+  .contact-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #2563eb;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 10px 16px;
+
+    .material-icons {
+      font-size: 16px;
+    }
+  }
+`;
+
+const skeletonAnimation = css`
+  @keyframes skeleton-pulse {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+  }
+`;
+
+export const SkeletonLine = styled.div<{ width?: string; height?: string }>`
+  ${skeletonAnimation}
+  height: ${props => props.height || '14px'};
+  width: ${props => props.width || '100%'};
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: skeleton-pulse 1.4s ease infinite;
+`;
+
+export const SkeletonItem = styled.div`
+  padding: 20px 0;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
 export const KbPageContainer = styled.div`
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 16px 32px;
+`;
+
+export const TocWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .toc-item {
+    font-size: 12px;
+    color: #374151;
+    text-decoration: none;
+    line-height: 1.5;
+    padding: 2px 0;
+    border-left: 2px solid transparent;
+    padding-left: 8px;
+    transition: color 0.15s, border-color 0.15s;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+
+    &:hover {
+      color: #2563eb;
+      border-left-color: #93c5fd;
+    }
+
+    &.level-3 {
+      padding-left: 16px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+  }
 `;
 
 export const KbThreeCol = styled.div`

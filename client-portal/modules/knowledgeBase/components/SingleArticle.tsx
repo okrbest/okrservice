@@ -1,11 +1,9 @@
-import { ArticleWrapper, Feedback, Modal, PageAnchor } from "./styles";
+import { ArticleWrapper, Feedback, Modal, PageAnchor, ArticleFeedback } from "./styles";
 import { Config, IKbArticle } from "../../types";
 
 import Avatar from "../../common/Avatar";
-import { Col } from "react-bootstrap";
 import React from "react";
 import Script from "../../common/Script";
-import Scrollspy from "react-scrollspy";
 import Spinner from "../../common/Spinner";
 import classNames from "classnames";
 
@@ -15,12 +13,13 @@ type Props = {
   loading?: boolean;
 };
 
-class SingleArticle extends React.Component<Props, { reaction: string }> {
+class SingleArticle extends React.Component<Props, { reaction: string; helpful: 'yes' | 'no' | null }> {
   constructor(props) {
     super(props);
 
     this.state = {
       reaction: "",
+      helpful: null,
     };
   }
 
@@ -130,7 +129,8 @@ class SingleArticle extends React.Component<Props, { reaction: string }> {
 
     if (
       !article ||
-      (article.reactionChoices && article.reactionChoices.length === 0)
+      !article.reactionChoices ||
+      article.reactionChoices.length === 0
     ) {
       return null;
     }
@@ -153,6 +153,35 @@ class SingleArticle extends React.Component<Props, { reaction: string }> {
           ))}
         </div>
       </Feedback>
+    );
+  };
+
+  renderHelpful = () => {
+    const { helpful } = this.state;
+
+    if (helpful) {
+      return (
+        <ArticleFeedback>
+          <p className="thanks">
+            <span className="material-icons">{helpful === 'yes' ? 'sentiment_satisfied_alt' : 'sentiment_dissatisfied'}</span>
+            {helpful === 'yes' ? '피드백 감사합니다!' : '더 나은 문서를 위해 노력하겠습니다.'}
+          </p>
+        </ArticleFeedback>
+      );
+    }
+
+    return (
+      <ArticleFeedback>
+        <p>이 글이 도움이 됐나요?</p>
+        <div className="buttons">
+          <button className="btn-yes" onClick={() => this.setState({ helpful: 'yes' })}>
+            <span className="material-icons">thumb_up</span> 도움됐어요
+          </button>
+          <button className="btn-no" onClick={() => this.setState({ helpful: 'no' })}>
+            <span className="material-icons">thumb_down</span> 아니에요
+          </button>
+        </div>
+      </ArticleFeedback>
     );
   };
 
@@ -208,6 +237,7 @@ class SingleArticle extends React.Component<Props, { reaction: string }> {
           </div>
           <hr />
           {this.renderReactions()}
+          {this.renderHelpful()}
         </ArticleWrapper>
         {this.renderTags()}
       </>

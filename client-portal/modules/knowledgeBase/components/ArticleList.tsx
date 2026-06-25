@@ -1,10 +1,22 @@
 import React, { useState } from 'react';
 import { Config, IKbArticle } from '../../types';
-import { Card } from '../../styles/cards';
-import EmptyContent from '../../common/EmptyContent';
 import ArticleListItem from './ArticleListItem';
-import { ArticleListWrapper, ResultBar, SortButton } from './styles';
+import { ArticleListWrapper, ResultBar, SortButton, EmptyState, SkeletonItem, SkeletonLine } from './styles';
 import SingleArticle from './SingleArticle';
+
+function ArticleListSkeleton() {
+  return (
+    <ArticleListWrapper>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <SkeletonItem key={i}>
+          <SkeletonLine width="70%" height="18px" />
+          <SkeletonLine width="100%" height="13px" />
+          <SkeletonLine width="85%" height="13px" />
+        </SkeletonItem>
+      ))}
+    </ArticleListWrapper>
+  );
+}
 
 type SortType = 'relevance' | 'latest';
 
@@ -12,16 +24,35 @@ type Props = {
   articles: IKbArticle[];
   config: Config;
   searchValue?: string;
+  loading?: boolean;
 };
 
-function ArticleList({ articles, config, searchValue }: Props) {
+function ArticleList({ articles, config, searchValue, loading }: Props) {
   const [sort, setSort] = useState<SortType>('relevance');
 
+  if (loading) {
+    return <ArticleListSkeleton />;
+  }
+
   if (!articles || articles.length === 0) {
+    if (searchValue) {
+      return (
+        <EmptyState>
+          <span className="material-icons">search_off</span>
+          <h4>"{searchValue}"에 대한 결과가 없습니다.</h4>
+          <p>다른 검색어로 시도하거나, 아래 방법으로 문의해 주세요.</p>
+          <div className="contact-hint">
+            <span className="material-icons">mail_outline</span>
+            고객지원팀에 문의하세요
+          </div>
+        </EmptyState>
+      );
+    }
     return (
-      <Card fullHeight={true}>
-        <EmptyContent text="검색 결과가 없습니다." />
-      </Card>
+      <EmptyState>
+        <span className="material-icons">article</span>
+        <h4>아직 등록된 문서가 없습니다.</h4>
+      </EmptyState>
     );
   }
 

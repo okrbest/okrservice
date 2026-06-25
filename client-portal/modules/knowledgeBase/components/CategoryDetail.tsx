@@ -39,7 +39,7 @@ function CategoryDetail({ topic, category, config, currentUser }: Props) {
         </KbCenterCol>
 
         <KbRightCol>
-          <KbRightPanel topicId={topic._id} />
+          <KbRightPanel topicId={topic._id} categoryId={category._id} />
         </KbRightCol>
       </KbThreeCol>
     </KbPageContainer>

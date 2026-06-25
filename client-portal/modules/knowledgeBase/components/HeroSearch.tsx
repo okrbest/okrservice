@@ -20,9 +20,18 @@ export default function HeroSearch({ topicId, initialValue = '' }: Props) {
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const blurTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleGlobalKeyDown);
     return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown);
       clearTimeout(debounceRef.current);
       clearTimeout(blurTimerRef.current);
     };
@@ -61,10 +70,11 @@ export default function HeroSearch({ topicId, initialValue = '' }: Props) {
       <h2>자주 묻는 질문을 검색하세요.</h2>
       <div className="search-box">
         <input
+          ref={inputRef}
           value={value}
           onChange={onChange}
           onKeyDown={onKeyDown}
-          placeholder="검색어를 입력하세요 (예: 인사발령)"
+          placeholder="검색어를 입력하세요  (/ 로 빠른 검색)"
           onFocus={() => value.length >= 2 && suggestions.length > 0 && setOpen(true)}
           onBlur={() => {
             clearTimeout(blurTimerRef.current);
