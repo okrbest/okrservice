@@ -40,10 +40,10 @@ function ArticleList({ articles, config, searchValue, loading }: Props) {
         <EmptyState>
           <span className="material-icons">search_off</span>
           <h4>"{searchValue}"에 대한 결과가 없습니다.</h4>
-          <p>다른 검색어로 시도하거나, 아래 방법으로 문의해 주세요.</p>
+          <p>다른 검색어로 시도하거나, 서비스데스크에서 티켓을 발급받아 문의해 주세요.</p>
           <div className="contact-hint">
-            <span className="material-icons">mail_outline</span>
-            고객지원팀에 문의하세요
+            <span className="material-icons">confirmation_number</span>
+            서비스데스크에서 티켓 발급받기
           </div>
         </EmptyState>
       );
