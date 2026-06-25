@@ -1018,6 +1018,12 @@ export const RightPanelSection = styled.div`
   }
 `;
 
+export const KbPageContainer = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px 32px;
+`;
+
 export const KbThreeCol = styled.div`
   display: flex;
   gap: 32px;

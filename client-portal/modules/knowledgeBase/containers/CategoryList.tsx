@@ -1,7 +1,10 @@
 import ArticleListContainer from './ArticleList';
 import CategoryList from '../components/CategoryList';
 import HeroSearch from '../components/HeroSearch';
+import KbRightPanel from '../components/KbRightPanel';
+import SideBar from '../components/SideBar';
 import Layout from '../../main/containers/Layout';
+import { KbPageContainer, KbThreeCol, KbLeftCol, KbCenterCol, KbRightCol } from '../components/styles';
 import React, { useEffect } from 'react';
 import Router from 'next/router';
 import { Store } from '../../types';
@@ -27,13 +30,45 @@ function CategoriesContainer() {
           return <AutoRedirect categoryId={firstCat._id} />;
         }
 
+        if (view === 'all') {
+          return (
+            <>
+              <HeroSearch
+                topicId={props.topic._id}
+                initialValue=""
+              />
+              <KbPageContainer>
+                <KbThreeCol>
+                  <KbLeftCol>
+                    <SideBar
+                      parentCategories={props.topic?.parentCategories}
+                      category={{} as any}
+                      config={props.config}
+                    />
+                  </KbLeftCol>
+                  <KbCenterCol>
+                    <ArticleListContainer
+                      topicId={props.topic._id}
+                      config={props.config}
+                      currentUser={props.currentUser}
+                    />
+                  </KbCenterCol>
+                  <KbRightCol>
+                    <KbRightPanel topicId={props.topic._id} />
+                  </KbRightCol>
+                </KbThreeCol>
+              </KbPageContainer>
+            </>
+          );
+        }
+
         return (
           <>
             <HeroSearch
               topicId={props.topic._id}
               initialValue={(searchValue as string) || ''}
             />
-            {(searchValue || view === 'all') ? (
+            {searchValue ? (
               <ArticleListContainer
                 searchValue={searchValue}
                 topicId={props.topic._id}
