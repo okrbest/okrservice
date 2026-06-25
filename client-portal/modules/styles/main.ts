@@ -11,15 +11,14 @@ const Header = styledTS<{
   backgroundImage?: string;
   headingSpacing?: boolean;
 }>(styled.div)`
-  padding: ${props => (props.headingSpacing ? '30px 30px 80px' : '30px 0')};
-  color: ${props => (props.color ? props.color : colors.colorWhite)};
+  padding: ${props => (props.headingSpacing ? '16px 0 48px' : '0')};
+  color: ${props => (props.color ? props.color : '#ffffff')};
   font-size: ${typography.fontSizeBody}px;
-  background-color: ${props =>
-    props.background ? props.background : '#f5f8fb'};
-  background-image: ${props =>
-    props.backgroundImage && `url(${props.backgroundImage})`};
-  position: relative;
-  border-radius: 0 0 30px 30px;
+  background: ${props =>
+    props.background
+      ? props.background
+      : 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)'};
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 
   h3 {
     font-size: 1.75rem;
@@ -35,31 +34,13 @@ const Header = styledTS<{
     background: transparent;
     border: 0;
   }
-
-  &:after, &:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: auto;
-    right: 0;
-    bottom: 0;
-    width: 30%;
-    background-image: url('/static/cp_header_bg.png');
-    background-repeat: no-repeat;
-    background-size: cover;
-  }
-
-  &:before {
-    left: 0;
-    top: 60%;
-  }
 `;
 
 const HeaderTop = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: ${dimensions.unitSpacing}px;
+  padding: 14px 0;
 
   @media (max-width: 700px) {
     flex-direction: column;
@@ -83,13 +64,13 @@ const HeaderLogo = styled.div`
 `;
 
 const HeaderTitle = styledTS<{ color?: string }>(styled.span)`
-  margin-left: 10px;
-  padding-left: 10px;
-  border-left: 1px solid ${props =>
-    props.color ? props.color : colors.colorWhite};
-  font-size: 14px;
-  letter-spacing: 1px;
-  text-transform: capitalize;
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: rgba(255, 255, 255, 0.9);
 `;
 
 const HeaderRight = styled.div`
@@ -107,7 +88,19 @@ const HeaderLeft = styled.div`
 `;
 
 const HamburgerMenuWrapper = styled.div`
-  padding: ${dimensions.unitSpacing}px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  i {
+    font-size: 22px;
+    color: rgba(255, 255, 255, 0.85);
+  }
 `;
 
 const SupportMenus = styledTS<{ color?: string; baseColor?: string }>(
@@ -249,10 +242,8 @@ const Container = styledTS<{
   shrink?: boolean;
   large?: boolean;
 }>(styled.div)`
-  width: ${props =>
-    props.large
-      ? dimensions.wrapperWidth + dimensions.coreSpacing
-      : dimensions.wrapperWidth + dimensions.unitSpacing}%;
+  width: ${props => props.large ? '92%' : (dimensions.wrapperWidth + dimensions.unitSpacing) + '%'};
+  max-width: ${props => props.large ? '1280px' : 'none'};
   margin: 0 auto;
   position: relative;
   z-index: 3;
@@ -263,13 +254,13 @@ const Container = styledTS<{
       height: 100%;
       height: calc(100% - 20px);
     `};
-  
+
   @media (max-width: 1200px) {
-    width: 80%;
+    width: ${props => props.large ? '94%' : '80%'};
   }
 
   @media (max-width: 800px) {
-    width: 90%;
+    width: 96%;
   }
 `;
 
