@@ -38,17 +38,9 @@ const ArticleContainer = (props: Props) => {
   );
 
   const backendArticles = articlesQuery.data?.knowledgeBaseArticles || [];
-  const articles = isMainCategory 
+  const articles = isMainCategory
     ? backendArticles.filter(article => article.isPrivate)
     : backendArticles;
-  
-  // 디버깅 로그 추가
-  console.log('=== ArticleList 백엔드 쿼리 결과 ===');
-  console.log('articlesQuery.data:', articlesQuery.data);
-  console.log('articlesQuery.loading:', articlesQuery.loading);
-  console.log('백엔드에서 받은 articles 수:', articlesQuery.data?.knowledgeBaseArticles?.length || 0);
-  console.log('props.articles 수:', props.articles?.length || 0);
-  console.log('최종 사용할 articles 수:', articles?.length || 0);
 
   const [removeArticlesMutation] = useMutation<RemoveArticlesMutationResponse>(
     gql(mutations.knowledgeBaseArticlesRemove),

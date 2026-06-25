@@ -11,13 +11,17 @@ import {
   ArticleMeta,
   ArticleTitle,
   AuthorName,
-  ReactionCount,
-  ReactionCounts,
-  RowArticle
+  FeedbackCell,
+  FeedbackCounts,
+  FeedbackRatioBar,
+  FeedbackRatioText,
+  ImproveBadge,
+  NoFeedbackText,
+  RowArticle,
 } from "./styles";
 import { ActionButtons } from "@erxes/ui-settings/src/styles";
 import { Column } from "@erxes/ui/src/styles/main";
-import { __ } from "@erxes/ui/src/utils";
+import { __ } from "coreui/utils";
 import { getUserAvatar } from "@erxes/ui/src/utils";
 
 type Props = {
@@ -28,41 +32,49 @@ type Props = {
   remove: (articleId: string) => void;
 };
 
+function getFeedbackStats(reactionCounts: any) {
+  const counts = reactionCounts || {};
+  const helpful = counts.helpful || 0;
+  const notHelpful = counts.not_helpful || 0;
+  const total = helpful + notHelpful;
+  const ratio = total > 0 ? Math.round((helpful / total) * 100) : null;
+  return { helpful, notHelpful, total, ratio };
+}
+
 const ArticleRow = (props: Props) => {
   const { article, queryParams, currentCategoryId, topicId, remove } = props;
   const user = article.createdUser;
   const publishedUser = article?.publishedUser;
 
-  const handleRemove = () => {
-    remove(article._id);
-  };
+  const { helpful, notHelpful, total, ratio } = getFeedbackStats(article.reactionCounts);
+  const needsImprovement = ratio !== null && ratio < 50 && total >= 3;
 
-  const renderReactions = () => {
-    const reactions = Object.entries(article.reactionCounts || {});
-    if (reactions.length === 0) return null;
+  const handleRemove = () => remove(article._id);
 
-    const REACTION_LABELS: Record<string, string> = {
-      helpful: '👍 도움됐어요',
-      not_helpful: '👎 아니에요',
-    };
+  const renderFeedback = () => {
+    if (total === 0) {
+      return (
+        <FeedbackCell>
+          <NoFeedbackText>피드백 없음</NoFeedbackText>
+        </FeedbackCell>
+      );
+    }
 
     return (
-      <ReactionCounts>
-        {reactions.map(([key, value]) => (
-          <ReactionCount key={key}>
-            {REACTION_LABELS[key] ? (
-              <span>{REACTION_LABELS[key]}</span>
-            ) : (
-              <img src={key} alt="reaction" />
-            )}
-            {` ${value}`}
-          </ReactionCount>
-        ))}
-      </ReactionCounts>
+      <FeedbackCell>
+        <FeedbackCounts>
+          <span>👍 {helpful}</span>
+          <span>👎 {notHelpful}</span>
+        </FeedbackCounts>
+        <FeedbackRatioBar ratio={ratio || 0} />
+        <FeedbackRatioText ratio={ratio || 0}>
+          {ratio}% 도움됨
+        </FeedbackRatioText>
+      </FeedbackCell>
     );
   };
 
-  const renderForm = formProps => (
+  const renderForm = (formProps) => (
     <ArticleForm
       {...formProps}
       article={article}
@@ -72,24 +84,25 @@ const ArticleRow = (props: Props) => {
     />
   );
 
-  const renderEditAction = (trigger, tip?) => {
-    return (
-      <ModalTrigger
-        size="lg"
-        title={__("Edit")}
-        trigger={trigger}
-        content={renderForm}
-        enforceFocus={false}
-        tipText={tip}
-      />
-    );
-  };
+  const renderEditAction = (trigger, tip?) => (
+    <ModalTrigger
+      size="lg"
+      title={__("Edit")}
+      trigger={trigger}
+      content={renderForm}
+      enforceFocus={false}
+      tipText={tip}
+    />
+  );
 
   const title = (
     <ArticleTitle>
       {article.title}
       {article.status === "draft" && (
         <Label lblStyle="simple">{article.status}</Label>
+      )}
+      {needsImprovement && (
+        <ImproveBadge>⚠ 개선 필요</ImproveBadge>
       )}
     </ArticleTitle>
   );
@@ -120,12 +133,7 @@ const ArticleRow = (props: Props) => {
           {publishedUser && (
             <>
               <img
-                alt={
-                  (publishedUser &&
-                    publishedUser.details &&
-                    publishedUser.details.fullName) ||
-                  "author"
-                }
+                alt={(publishedUser?.details?.fullName) || "author"}
                 src={getUserAvatar(publishedUser)}
               />
               {__("Published By")}
@@ -139,9 +147,11 @@ const ArticleRow = (props: Props) => {
           )}
           <Icon icon="clock-eight" /> {__("Created")}{" "}
           {dayjs(article.createdDate).format("ll")}
-          {renderReactions()}
         </ArticleMeta>
       </Column>
+
+      {renderFeedback()}
+
       <ActionButtons>
         {renderEditAction(editButton, "Edit")}
         <Tip text={__("Delete")}>

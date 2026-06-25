@@ -2,10 +2,12 @@ import DataWithLoader from '@erxes/ui/src/components/DataWithLoader';
 import EmptyContent from '@erxes/ui/src/components/empty/EmptyContent';
 import Spinner from '@erxes/ui/src/components/Spinner';
 import { EMPTY_CONTENT_KNOWLEDGEBASE } from '@erxes/ui-settings/src/constants';
-import React from 'react';
+import React, { useState } from 'react';
 import { IArticle } from '@erxes/ui-knowledgebase/src/types';
 import ArticleRow from './ArticleRow';
-import { RowArticle } from './styles';
+import { RowArticle, SortBar, SortButton } from './styles';
+
+type SortKey = 'default' | 'helpful_desc' | 'helpful_asc' | 'needs_improvement';
 
 type Props = {
   articles: IArticle[];
@@ -17,48 +19,75 @@ type Props = {
   isMainCategory?: boolean;
 };
 
-const ArticleList = (props: Props) => {
-  const { articles, loading, queryParams, currentCategoryId, topicId, remove, isMainCategory } =
-    props;
+function getRatio(article: IArticle): number {
+  const counts = article.reactionCounts || {};
+  const helpful = counts.helpful || 0;
+  const total = helpful + (counts.not_helpful || 0);
+  return total > 0 ? helpful / total : -1;
+}
 
-  // 실제 렌더링되는 아티클들 로그
-  console.log('=== ArticleList 렌더링 정보 ===');
-  console.log('받은 articles 수:', articles.length);
-  console.log('articles:', articles);
-  console.log('currentCategoryId:', currentCategoryId);
-  console.log('loading:', loading);
-  
-  // 각 아티클의 상세 정보
-  articles.forEach((article, index) => {
-    console.log(`렌더링될 아티클 ${index + 1}:`, {
-      id: article._id,
-      title: article.title,
-      categoryId: article.categoryId,
-      isPrivate: article.isPrivate,
-      status: article.status
-    });
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: 'default', label: '기본순' },
+  { key: 'helpful_desc', label: '👍 높은순' },
+  { key: 'helpful_asc', label: '👎 낮은순' },
+  { key: 'needs_improvement', label: '⚠ 개선 필요' },
+];
+
+const ArticleList = (props: Props) => {
+  const { articles, loading, queryParams, currentCategoryId, topicId, remove } = props;
+  const [sort, setSort] = useState<SortKey>('default');
+
+  const sorted = [...articles].sort((a, b) => {
+    if (sort === 'helpful_desc') return getRatio(b) - getRatio(a);
+    if (sort === 'helpful_asc') {
+      const ra = getRatio(a);
+      const rb = getRatio(b);
+      if (ra === -1 && rb === -1) return 0;
+      if (ra === -1) return 1;
+      if (rb === -1) return -1;
+      return ra - rb;
+    }
+    if (sort === 'needs_improvement') {
+      const needsA = getRatio(a) !== -1 && getRatio(a) < 0.5 ? 0 : 1;
+      const needsB = getRatio(b) !== -1 && getRatio(b) < 0.5 ? 0 : 1;
+      if (needsA !== needsB) return needsA - needsB;
+      return getRatio(a) - getRatio(b);
+    }
+    return 0;
   });
 
-  const renderLoading = () => {
-    return (
-      <RowArticle style={{ height: '115px' }}>
-        <Spinner />
-      </RowArticle>
-    );
-  };
+  const renderLoading = () => (
+    <RowArticle style={{ height: '115px' }}>
+      <Spinner />
+    </RowArticle>
+  );
 
-  const renderArticles = () => {
-    return articles.map((article) => (
-      <ArticleRow
-        key={article._id}
-        queryParams={queryParams}
-        currentCategoryId={currentCategoryId}
-        topicId={topicId}
-        article={article}
-        remove={remove}
-      />
-    ));
-  };
+  const renderArticles = () => (
+    <>
+      <SortBar>
+        <span>정렬:</span>
+        {SORT_OPTIONS.map((opt) => (
+          <SortButton
+            key={opt.key}
+            active={sort === opt.key}
+            onClick={() => setSort(opt.key)}
+          >
+            {opt.label}
+          </SortButton>
+        ))}
+      </SortBar>
+      {sorted.map((article) => (
+        <ArticleRow
+          key={article._id}
+          queryParams={queryParams}
+          currentCategoryId={currentCategoryId}
+          topicId={topicId}
+          article={article}
+          remove={remove}
+        />
+      ))}
+    </>
+  );
 
   return (
     <DataWithLoader
@@ -73,8 +102,6 @@ const ArticleList = (props: Props) => {
       loadingContent={renderLoading()}
       data={renderArticles()}
     />
-    // 페이지네이션/perPage UI가 있다면 아래처럼 조건부 렌더링
-    // {!isMainCategory && <PaginationOrPerPageComponent ... />}
   );
 };
 

@@ -132,6 +132,143 @@ const DeleteButton = styled.button`
   margin-left: 10px;
 `;
 
+const FeedbackCell = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 140px;
+  flex-shrink: 0;
+`;
+
+const FeedbackCounts = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: ${colors.colorCoreGray};
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+`;
+
+const FeedbackRatioBar = styled.div<{ ratio: number }>`
+  width: 100%;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: ${props => props.ratio}%;
+    background: ${props =>
+      props.ratio >= 70 ? '#16a34a' : props.ratio >= 50 ? '#d97706' : '#dc2626'};
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+`;
+
+const FeedbackRatioText = styled.span<{ ratio: number }>`
+  font-size: 12px;
+  font-weight: 600;
+  color: ${props =>
+    props.ratio >= 70 ? '#16a34a' : props.ratio >= 50 ? '#d97706' : '#dc2626'};
+`;
+
+const ImproveBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-left: 8px;
+  vertical-align: middle;
+`;
+
+const NoFeedbackText = styled.span`
+  font-size: 11px;
+  color: #9ca3af;
+`;
+
+const StatsBar = styled.div`
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 10px;
+`;
+
+const StatCard = styled.div<{ accent?: string }>`
+  flex: 1;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-left: 3px solid ${props => props.accent || '#6b7280'};
+  border-radius: 8px;
+  padding: 12px 16px;
+
+  .stat-label {
+    font-size: 11px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+  }
+`;
+
+const SortBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: #6b7280;
+`;
+
+const SortButton = styled.button<{ active?: boolean }>`
+  background: ${props => props.active ? '#eff6ff' : 'transparent'};
+  border: 1px solid ${props => props.active ? '#bfdbfe' : '#e5e7eb'};
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: ${props => props.active ? '600' : '400'};
+  color: ${props => props.active ? '#2563eb' : '#374151'};
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+  }
+`;
+
 export {
   RowArticle,
   ArticleTitle,
@@ -145,4 +282,14 @@ export {
   Forms,
   PageImage,
   DeleteButton,
+  FeedbackCell,
+  FeedbackCounts,
+  FeedbackRatioBar,
+  FeedbackRatioText,
+  ImproveBadge,
+  NoFeedbackText,
+  StatsBar,
+  StatCard,
+  SortBar,
+  SortButton,
 };
