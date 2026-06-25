@@ -80,4 +80,54 @@ describe('useChatbotKeywordSuggestions', () => {
     act(() => { jest.runAllTimers(); });
     expect(result.current.menus.map(m => m.id)).toContain('ctsmn');
   });
+
+  // ─── 조회 전용 키워드 ───────────────────────────────────────────────
+
+  it('"근무시간" 포함 문장은 근무시간 조회 질문을 반환한다', () => {
+    const { result } = renderHook(() => useChatbotKeywordSuggestions('이번 달 근무시간 확인하고 싶어요'));
+    act(() => { jest.runAllTimers(); });
+    expect(result.current.questions.some(q => q.includes('근무시간'))).toBe(true);
+  });
+
+  it('"추가근무" 포함 문장은 추가근무 현황 질문을 반환한다', () => {
+    const { result } = renderHook(() => useChatbotKeywordSuggestions('추가근무 시간 얼마나 됐어요?'));
+    act(() => { jest.runAllTimers(); });
+    expect(result.current.questions.some(q => q.includes('추가근무'))).toBe(true);
+  });
+
+  it('"대출금" 포함 문장은 대출금 현황 질문을 반환한다', () => {
+    const { result } = renderHook(() => useChatbotKeywordSuggestions('대출금 현황 알고 싶어요'));
+    act(() => { jest.runAllTimers(); });
+    expect(result.current.questions.some(q => q.includes('대출금'))).toBe(true);
+  });
+
+  it('"건강검진" 포함 문장은 건강검진 질문을 반환한다', () => {
+    const { result } = renderHook(() => useChatbotKeywordSuggestions('건강검진 언제 받을 수 있나요'));
+    act(() => { jest.runAllTimers(); });
+    expect(result.current.questions.some(q => q.includes('건강검진'))).toBe(true);
+  });
+
+  it('"증명서" 포함 문장은 증명서 발급 질문을 반환한다', () => {
+    const { result } = renderHook(() => useChatbotKeywordSuggestions('재직증명서 발급하고 싶어요'));
+    act(() => { jest.runAllTimers(); });
+    expect(result.current.questions.some(q => q.includes('증명서'))).toBe(true);
+  });
+
+  it('"사회보험" 포함 문장은 사회보험 질문을 반환한다', () => {
+    const { result } = renderHook(() => useChatbotKeywordSuggestions('사회보험 가입 현황 알고 싶어요'));
+    act(() => { jest.runAllTimers(); });
+    expect(result.current.questions.some(q => q.includes('사회보험'))).toBe(true);
+  });
+
+  it('"자격증" 포함 문장은 자격사항 질문을 반환한다', () => {
+    const { result } = renderHook(() => useChatbotKeywordSuggestions('자격증 조회하고 싶어요'));
+    act(() => { jest.runAllTimers(); });
+    expect(result.current.questions.some(q => q.includes('자격'))).toBe(true);
+  });
+
+  it('"교육" 포함 문장은 교육이수 질문을 반환한다', () => {
+    const { result } = renderHook(() => useChatbotKeywordSuggestions('교육 이수 현황 알고 싶어요'));
+    act(() => { jest.runAllTimers(); });
+    expect(result.current.questions.some(q => q.includes('교육'))).toBe(true);
+  });
 });
