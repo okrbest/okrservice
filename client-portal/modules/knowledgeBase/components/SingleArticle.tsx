@@ -6,11 +6,14 @@ import React from "react";
 import Script from "../../common/Script";
 import Spinner from "../../common/Spinner";
 import classNames from "classnames";
+import { gql, useMutation } from "@apollo/client";
+import { articleReactMutation } from "../graphql/queries";
 
 type Props = {
   article: IKbArticle;
   config: Config;
   loading?: boolean;
+  onReact?: (reaction: string) => void;
 };
 
 class SingleArticle extends React.Component<Props, { reaction: string; helpful: 'yes' | 'no' | null }> {
@@ -158,6 +161,7 @@ class SingleArticle extends React.Component<Props, { reaction: string; helpful: 
 
   renderHelpful = () => {
     const { helpful } = this.state;
+    const { onReact } = this.props;
 
     if (helpful) {
       return (
@@ -174,10 +178,16 @@ class SingleArticle extends React.Component<Props, { reaction: string; helpful: 
       <ArticleFeedback>
         <p>이 글이 도움이 됐나요?</p>
         <div className="buttons">
-          <button className="btn-yes" onClick={() => this.setState({ helpful: 'yes' })}>
+          <button className="btn-yes" onClick={() => {
+            this.setState({ helpful: 'yes' });
+            onReact && onReact('helpful');
+          }}>
             <span className="material-icons">thumb_up</span> 도움됐어요
           </button>
-          <button className="btn-no" onClick={() => this.setState({ helpful: 'no' })}>
+          <button className="btn-no" onClick={() => {
+            this.setState({ helpful: 'no' });
+            onReact && onReact('not_helpful');
+          }}>
             <span className="material-icons">thumb_down</span> 아니에요
           </button>
         </div>
@@ -245,4 +255,14 @@ class SingleArticle extends React.Component<Props, { reaction: string; helpful: 
   }
 }
 
-export default SingleArticle;
+function SingleArticleWithReact(props: Omit<Props, 'onReact'>) {
+  const [react] = useMutation(gql(articleReactMutation));
+
+  const onReact = (reaction: string) => {
+    react({ variables: { _id: props.article._id, reaction } }).catch(() => {});
+  };
+
+  return <SingleArticle {...props} onReact={onReact} />;
+}
+
+export default SingleArticleWithReact;

@@ -334,6 +334,19 @@ const knowledgeBaseMutations = {
     { models }: IContext
   ) {
     return await models.KnowledgeBaseArticles.incrementViewCount(_id);
+  },
+
+  async knowledgeBaseArticleReact(
+    _root,
+    { _id, reaction }: { _id: string; reaction: string },
+    { models }: IContext
+  ) {
+    const allowed = ['helpful', 'not_helpful'];
+    if (!allowed.includes(reaction)) {
+      throw new Error('Invalid reaction');
+    }
+    await models.KnowledgeBaseArticles.modifyReactionCount(_id, reaction, 'inc');
+    return { success: true };
   }
 };
 

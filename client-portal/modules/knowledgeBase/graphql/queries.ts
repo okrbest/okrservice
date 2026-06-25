@@ -113,6 +113,12 @@ export const articleDetailQuery = `
   }
 `;
 
+export const articleReactMutation = `
+  mutation knowledgeBaseArticleReact($_id: String!, $reaction: String!) {
+    knowledgeBaseArticleReact(_id: $_id, reaction: $reaction)
+  }
+`;
+
 export const articlesQuery = `
   query knowledgeBaseArticles($categoryIds: [String], $searchValue: String, $topicId: String, $isPrivate: Boolean) {
     clientPortalKnowledgeBaseArticles(categoryIds: $categoryIds, searchValue: $searchValue, topicId: $topicId, isPrivate: $isPrivate) {

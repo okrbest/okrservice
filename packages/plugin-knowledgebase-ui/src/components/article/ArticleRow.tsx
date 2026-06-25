@@ -39,12 +39,23 @@ const ArticleRow = (props: Props) => {
 
   const renderReactions = () => {
     const reactions = Object.entries(article.reactionCounts || {});
+    if (reactions.length === 0) return null;
+
+    const REACTION_LABELS: Record<string, string> = {
+      helpful: '👍 도움됐어요',
+      not_helpful: '👎 아니에요',
+    };
 
     return (
       <ReactionCounts>
         {reactions.map(([key, value]) => (
           <ReactionCount key={key}>
-            <img src={key} alt="reaction" /> {`${value}`}
+            {REACTION_LABELS[key] ? (
+              <span>{REACTION_LABELS[key]}</span>
+            ) : (
+              <img src={key} alt="reaction" />
+            )}
+            {` ${value}`}
           </ReactionCount>
         ))}
       </ReactionCounts>

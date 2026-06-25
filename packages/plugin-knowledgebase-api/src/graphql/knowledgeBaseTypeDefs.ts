@@ -190,4 +190,5 @@ export const mutations = `
   knowledgeBaseArticlesEdit(_id: String!, doc: KnowledgeBaseArticleDoc!): KnowledgeBaseArticle
   knowledgeBaseArticlesRemove(_id: String!): JSON
   knowledgeBaseArticlesIncrementViewCount(_id: String!): JSON
+  knowledgeBaseArticleReact(_id: String!, reaction: String!): JSON
 `;
