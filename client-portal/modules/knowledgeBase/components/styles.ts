@@ -615,10 +615,10 @@ const SidebarNav = styled.nav`
     margin-bottom: 2px;
 
     i {
-      font-size: 16px;
+      font-size: 18px;
       color: #9ca3af;
       flex-shrink: 0;
-      width: 18px;
+      width: 20px;
       text-align: center;
     }
 
@@ -791,7 +791,7 @@ const Modal = styled.div`
 
 export const HeroSearchWrapper = styled.div`
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  padding: 56px 24px;
+  padding: 48px 16px;
   text-align: center;
   width: 100vw;
   position: relative;
@@ -802,14 +802,14 @@ export const HeroSearchWrapper = styled.div`
 
   h2 {
     color: #fff;
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 16px;
   }
 
   .search-box {
     position: relative;
-    max-width: 640px;
+    max-width: 768px;
     margin: 0 auto;
     display: flex;
 
@@ -885,7 +885,7 @@ export const ArticleListItemWrapper = styled.div`
   }
 
   h3 {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 400;
     color: #2563eb;
     margin-bottom: 6px;
@@ -901,9 +901,9 @@ export const ArticleListItemWrapper = styled.div`
   }
 
   p {
-    font-size: 13px;
+    font-size: 14px;
     color: #6b7280;
-    line-height: 1.65;
+    line-height: 1.625;
     margin: 0;
     font-weight: 300;
 
@@ -940,11 +940,11 @@ export const ResultBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 12px;
+  padding-bottom: 16px;
   margin-bottom: 4px;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 13px;
-  color: #6b7280;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 14px;
+  color: #4b5563;
 
   strong {
     color: #2563eb;
@@ -953,7 +953,7 @@ export const ResultBar = styled.div`
 
   .sort-group {
     display: flex;
-    gap: 12px;
+    gap: 16px;
   }
 `;
 
@@ -961,7 +961,7 @@ export const SortButton = styledTS<{ active?: boolean }>(styled.button)`
   background: none;
   border: none;
   padding: 0;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   color: ${(props) => (props.active ? '#111827' : '#9ca3af')};
   font-weight: ${(props) => (props.active ? '600' : '400')};
@@ -982,15 +982,15 @@ export const RightPanelSection = styled.div`
   background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 16px;
 
   h6 {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: #6b7280;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
   ul {
@@ -999,12 +999,12 @@ export const RightPanelSection = styled.div`
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   li a {
     font-size: 12px;
-    color: #374151;
+    color: #4b5563;
     text-decoration: none;
     display: block;
     overflow: hidden;
@@ -1020,16 +1020,16 @@ export const RightPanelSection = styled.div`
 
 export const KbThreeCol = styled.div`
   display: flex;
-  gap: 20px;
+  gap: 32px;
   align-items: flex-start;
   margin-top: 16px;
 `;
 
 export const KbLeftCol = styled.div`
-  width: 220px;
+  width: 256px;
   flex-shrink: 0;
   position: sticky;
-  top: 80px;
+  top: 96px;
 `;
 
 export const KbCenterCol = styled.div`
@@ -1038,16 +1038,16 @@ export const KbCenterCol = styled.div`
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 24px 28px;
+  padding: 32px;
 `;
 
 export const KbRightCol = styled.div`
-  width: 180px;
+  width: 192px;
   flex-shrink: 0;
   position: sticky;
-  top: 80px;
+  top: 96px;
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1280px) {
     display: none;
   }
 `;
