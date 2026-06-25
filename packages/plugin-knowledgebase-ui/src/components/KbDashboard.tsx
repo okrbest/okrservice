@@ -105,7 +105,7 @@ const KnowledgeBase = (props: Props) => {
         <StatCard accent="#dc2626">
           <div className="stat-label">👎 아니에요</div>
           <div className="stat-value">{stats.totalNotHelpful}</div>
-          <div className="stat-sub">전체 피드백 중</div>
+          <div className="stat-sub">총 피드백 {stats.totalHelpful + stats.totalNotHelpful}건</div>
         </StatCard>
 
         <StatCard accent={ratioColor}>
