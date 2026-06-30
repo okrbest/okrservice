@@ -1,3 +1,12 @@
+export const MATERIAL_ICON_NAMES: Record<string, string> = {
+  apps: 'apps',
+  'corporate-fare': 'corporate_fare',
+  payments: 'payments',
+  badge: 'badge',
+  'history-edu': 'history_edu',
+  'help-outline': 'help_outline',
+};
+
 export const icons = [
   { value: 'alarm', label: 'alarm' },
   { value: 'briefcase', label: 'briefcase' },
@@ -47,7 +56,13 @@ export const icons = [
   { value: 'wallclock', label: 'clock' },
   { value: 'trees', label: 'trees' },
   { value: 'gift', label: 'gift' },
-  { value: 'moon-1', label: 'night' }
+  { value: 'moon-1', label: 'night' },
+  { value: 'apps', label: 'apps' },
+  { value: 'corporate-fare', label: 'corporate fare' },
+  { value: 'payments', label: 'payments' },
+  { value: 'badge', label: 'badge' },
+  { value: 'history-edu', label: 'history edu' },
+  { value: 'help-outline', label: 'help outline' },
 ];
 
 export const articleReactions = [

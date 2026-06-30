@@ -87,6 +87,43 @@ const HeaderLeft = styled.div`
   align-items: center;
 `;
 
+const HeaderNavLinks = styledTS<{ color?: string }>(styled.div)`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-right: 4px;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: ${props => (props.color ? props.color : 'rgba(255, 255, 255, 0.9)')};
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    opacity: 0.92;
+
+    &:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    .material-icons {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+  }
+
+  @media (max-width: 700px) {
+    gap: 10px;
+
+    a {
+      font-size: 13px;
+    }
+  }
+`;
+
 const HamburgerMenuWrapper = styled.div`
   padding: 8px;
   border-radius: 8px;
@@ -868,6 +905,7 @@ export {
   HeaderTitle,
   HeaderRight,
   HeaderLeft,
+  HeaderNavLinks,
   SupportMenus,
   WebLink,
   HeaderLinks,

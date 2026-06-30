@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { gql, useQuery } from '@apollo/client';
-import Router from 'next/router';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { articlesQuery } from '../graphql/queries';
 import {
   HeroSearchWrapper,
@@ -15,6 +15,7 @@ interface Props {
 }
 
 export default function HeroSearch({ topicId, initialValue = '' }: Props) {
+  const router = useRouter();
   const [value, setValue] = useState(initialValue);
   const [autocompleteQuery, setAutocompleteQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -57,7 +58,10 @@ export default function HeroSearch({ topicId, initialValue = '' }: Props) {
   const onSearch = () => {
     if (!value.trim()) return;
     setOpen(false);
-    Router.push({ query: { searchValue: value.trim() } });
+    router.push({
+      pathname: router.pathname || '/knowledge-base',
+      query: { searchValue: value.trim() },
+    });
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -74,7 +78,7 @@ export default function HeroSearch({ topicId, initialValue = '' }: Props) {
           value={value}
           onChange={onChange}
           onKeyDown={onKeyDown}
-          placeholder="검색어를 입력하세요  (/ 로 빠른 검색)"
+          placeholder="검색어를 입력하세요 (예:인사발령)"
           onFocus={() => value.length >= 2 && suggestions.length > 0 && setOpen(true)}
           onBlur={() => {
             clearTimeout(blurTimerRef.current);

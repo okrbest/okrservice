@@ -11,7 +11,18 @@ import { ModalFooter } from "@erxes/ui/src/styles/main";
 import React from "react";
 import Select from "react-select";
 import { __ } from "coreui/utils";
-import { icons } from "../../icons.constant";
+import { icons, MATERIAL_ICON_NAMES } from "../../icons.constant";
+import { colors, typography } from "@erxes/ui/src/styles";
+import { createGlobalStyle } from "styled-components";
+
+const KbMaterialIconStyles = createGlobalStyle`
+  .icon-option .material-icons {
+    margin-right: 10px;
+    font-size: ${typography.fontSizeHeading6}px;
+    color: ${colors.colorPrimaryDark};
+    line-height: 1;
+  }
+`;
 
 type Props = {
   currentTopicId: string;
@@ -53,10 +64,30 @@ class CategoryForm extends React.Component<Props, State> {
     });
   };
 
+  componentDidMount() {
+    if (!document.getElementById("kb-material-icons-font")) {
+      const link = document.createElement("link");
+      link.id = "kb-material-icons-font";
+      link.rel = "stylesheet";
+      link.href = "https://fonts.googleapis.com/icon?family=Material+Icons";
+      document.head.appendChild(link);
+    }
+  }
+
+  renderIconPreview = (option: { value: string }) => {
+    const materialName = MATERIAL_ICON_NAMES[option.value];
+
+    if (materialName) {
+      return <span className="material-icons">{materialName}</span>;
+    }
+
+    return <Icon icon={option.value} />;
+  };
+
   renderOption = (option) => {
     return (
       <div className="icon-option">
-        <Icon icon={option.value} />
+        {this.renderIconPreview(option)}
         {option.label}
       </div>
     );
@@ -213,7 +244,7 @@ class CategoryForm extends React.Component<Props, State> {
             value={icons.find((o) => o.value === this.state.selectedIcon)}
             options={icons}
             onChange={this.onChangeIcon}
-            // components={{ Option, SingleValue }}
+            formatOptionLabel={this.renderOption}
           />
         </FormGroup>
 
@@ -244,7 +275,12 @@ class CategoryForm extends React.Component<Props, State> {
   };
 
   render() {
-    return <Form renderContent={this.renderContent} />;
+    return (
+      <>
+        <KbMaterialIconStyles />
+        <Form renderContent={this.renderContent} />
+      </>
+    );
   }
 }
 

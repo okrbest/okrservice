@@ -32,6 +32,7 @@ import SelectProductCategory from '@erxes/ui-products/src/containers/SelectProdu
 import Button from '@erxes/ui/src/components/Button';
 import ModalTrigger from '@erxes/ui/src/components/ModalTrigger';
 import { LANGUAGES } from '@erxes/ui-settings/src/general/constants';
+import NavigationLinks from './NavigationLinks';
 
 type Props = {
   topics: ITopic[];
@@ -39,7 +40,7 @@ type Props = {
   pipelines: IPipeline[];
   kind?: 'client' | 'vendor';
   fetchPipelines: (boardId: string) => void;
-  handleFormChange: (name: string, value: string | boolean) => void;
+  handleFormChange: (name: string, value: string | boolean | object) => void;
 } & ClientPortalConfig;
 
 type ControlItem = {
@@ -59,6 +60,7 @@ type ControlItem = {
 };
 
 function General({
+  _id,
   name,
   description,
   url,
@@ -99,6 +101,7 @@ function General({
   kind,
   languages = [],
   language = 'en',
+  externalLinks,
 }: Props) {
   const [show, setShow] = useState<boolean>(false);
 
@@ -616,6 +619,11 @@ function General({
   return (
     <>
       {renderMain()}
+      <NavigationLinks
+        key={_id || 'new-portal'}
+        externalLinks={externalLinks}
+        handleFormChange={handleFormChange}
+      />
       {renderFeatures()}
     </>
   );

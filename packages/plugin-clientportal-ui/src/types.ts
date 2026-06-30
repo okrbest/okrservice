@@ -219,6 +219,7 @@ export type ClientPortalConfig = {
   tokiConfig?: TokiConfig;
   language?: string;
   languages?: string[];
+  externalLinks?: Record<string, string>;
   environmentVariables?: EnvironmentVariable[];
 };
 

@@ -130,6 +130,7 @@ export const commonFields = `
   vendorParentProductCategoryId
   language
   languages
+  externalLinks
 
   environmentVariables {
     key

@@ -45,6 +45,7 @@ export default class Search extends React.Component<Props, State> {
     const { searchValue } = this.state;
 
     Router.push({
+      pathname: Router.pathname || '/knowledge-base',
       query: { searchValue },
     });
   };
@@ -54,6 +55,7 @@ export default class Search extends React.Component<Props, State> {
 
     if (e.key === "Enter") {
       Router.push({
+        pathname: Router.pathname || '/knowledge-base',
         query: { searchValue },
       });
     }
@@ -65,6 +67,7 @@ export default class Search extends React.Component<Props, State> {
     });
 
     Router.push({
+      pathname: Router.pathname || '/knowledge-base',
       query: { searchValue: "" },
     });
   };

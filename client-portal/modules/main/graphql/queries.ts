@@ -37,6 +37,7 @@ export const clientPortalGetConfig = `
       facebookAppId
       erxesAppToken
       language
+      externalLinks
 
       styles {
         bodyColor

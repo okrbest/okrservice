@@ -6,7 +6,7 @@ import queryString from "query-string";
 
 const KnowledgeBase = asyncComponent(
   () =>
-    import(/* webpackChunkName: "KnowledgeBase" */ "./containers/KnowledgeBase")
+    import(/* webpackChunkName: "knowledgebase-routes" */ "./containers/KnowledgeBase")
 );
 
 const KbComponent = () => {

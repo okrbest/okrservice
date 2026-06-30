@@ -10,6 +10,7 @@ import {
   HeaderLinks,
   HeaderLogo,
   HeaderRight,
+  HeaderNavLinks,
   HeaderTitle,
   HeaderTop,
   LinkItem,
@@ -61,7 +62,7 @@ function Header({
   const [showResetPassword, setResetPassword] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  const onClick = (url) => {
+  const onClick = (url: string) => {
     if (!currentUser && url.includes('tickets')) {
       Alert.error('Log in first to create or manage ticket cards');
 
@@ -69,18 +70,101 @@ function Header({
     }
   };
 
-  const renderMenu = (url: string, label: string) => {
+  const isExternalUrl = (url: string) => /^https?:\/\//i.test(url);
+
+  const renderMenuLink = (url: string, label: string) => {
+    if (isExternalUrl(url)) {
+      return (
+        <LinkItem
+          key={`${label}-${url}`}
+          color={getConfigColor(config, 'headingColor')}
+        >
+          <a href={url} target="_blank" rel="noopener noreferrer">
+            {label}
+          </a>
+        </LinkItem>
+      );
+    }
+
     return (
       <LinkItem
+        key={`${label}-${url}`}
         active={router && router.pathname === url}
         onClick={() => onClick(url)}
         color={getConfigColor(config, 'headingColor')}
       >
-        <Link href={!currentUser && url.includes('tickets') ? '' : url}>
+        <Link
+          href={url}
+          onClick={(e) => {
+            if (!currentUser && url.includes('tickets')) {
+              e.preventDefault();
+            }
+          }}
+        >
           {label}
         </Link>
       </LinkItem>
     );
+  };
+
+  const renderMenu = (url: string, label: string) => renderMenuLink(url, label);
+
+  const renderHeaderExternalLinks = () => {
+    const links = config.externalLinks || {};
+    const entries = Object.entries(links).filter(([, url]) =>
+      Boolean(url && String(url).trim())
+    );
+
+    if (entries.length === 0) {
+      return null;
+    }
+
+    const linkColor = getConfigColor(config, 'headingColor');
+
+    return (
+      <HeaderNavLinks color={linkColor}>
+        {entries.map(([label, url]) => {
+          const href = String(url);
+
+          if (isExternalUrl(href)) {
+            return (
+              <a
+                key={`${label}-${href}`}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {label}
+                <span className="material-icons">open_in_new</span>
+              </a>
+            );
+          }
+
+          return (
+            <Link key={`${label}-${href}`} href={href}>
+              <a>{label}</a>
+            </Link>
+          );
+        })}
+      </HeaderNavLinks>
+    );
+  };
+
+  const hasHamburgerItems = () => {
+    if (config.publicTaskToggle) {
+      return true;
+    }
+
+    if (currentUser) {
+      return Boolean(
+        config.ticketToggle ||
+          config.dealToggle ||
+          config.purchaseToggle ||
+          config.taskToggle,
+      );
+    }
+
+    return false;
   };
 
   const renderAuth = () => {
@@ -176,6 +260,10 @@ function Header({
   };
 
   const renderNavigationMenu = () => {
+    if (!hasHamburgerItems()) {
+      return null;
+    }
+
     return (
       <HamburgerMenuWrapper>
         <Dropdown>
@@ -243,6 +331,7 @@ function Header({
               color={getConfigColor(config, 'headingColor')}
               baseColor={getConfigColor(config, 'baseColor')}
             >
+              {renderHeaderExternalLinks()}
               {currentUser && Object.keys(currentUser).length !== 0
                 ? renderCurrentUser()
                 : renderAuth()}

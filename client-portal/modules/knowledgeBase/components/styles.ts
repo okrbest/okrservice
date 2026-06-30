@@ -614,7 +614,8 @@ const SidebarNav = styled.nav`
     transition: background 0.15s;
     margin-bottom: 2px;
 
-    i {
+    i,
+    .material-icons {
       font-size: 18px;
       color: #9ca3af;
       flex-shrink: 0;
@@ -650,7 +651,8 @@ const SidebarNav = styled.nav`
       color: #2563eb;
       background: #eff6ff;
 
-      i {
+      i,
+      .material-icons {
         color: #3b82f6;
       }
 

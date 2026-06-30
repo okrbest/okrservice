@@ -61,6 +61,12 @@ export const ERXES_TO_MATERIAL: Record<string, string> = {
   trees: 'park',
   gift: 'card_giftcard',
   'moon-1': 'nights_stay',
+  apps: 'apps',
+  'corporate-fare': 'corporate_fare',
+  payments: 'payments',
+  badge: 'badge',
+  'history-edu': 'history_edu',
+  'help-outline': 'help_outline',
 };
 
 function toMaterialIcon(erxesIcon: string): string {
