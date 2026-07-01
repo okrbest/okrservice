@@ -3,6 +3,8 @@ import { Config, IKbArticle } from "../../types";
 
 import Avatar from "../../common/Avatar";
 import React from "react";
+import { Col } from "react-bootstrap";
+import Scrollspy from "react-scrollspy";
 import Script from "../../common/Script";
 import Spinner from "../../common/Spinner";
 import classNames from "classnames";
