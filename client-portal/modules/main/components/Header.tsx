@@ -93,15 +93,16 @@ function Header({
         onClick={() => onClick(url)}
         color={getConfigColor(config, 'headingColor')}
       >
-        <Link
-          href={url}
-          onClick={(e) => {
-            if (!currentUser && url.includes('tickets')) {
-              e.preventDefault();
-            }
-          }}
-        >
-          {label}
+        <Link href={url}>
+          <a
+            onClick={(e) => {
+              if (!currentUser && url.includes('tickets')) {
+                e.preventDefault();
+              }
+            }}
+          >
+            {label}
+          </a>
         </Link>
       </LinkItem>
     );
