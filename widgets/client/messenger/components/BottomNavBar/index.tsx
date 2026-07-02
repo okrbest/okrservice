@@ -88,6 +88,10 @@ function BottomNavBar() {
         }
 
         // Deal: hide unless dealToggle is true AND dealStageId is set
+        if (route === "chatbot") {
+          return null;
+        }
+
         if (route === "deal") {
           if (!showDeal) {
             return null;

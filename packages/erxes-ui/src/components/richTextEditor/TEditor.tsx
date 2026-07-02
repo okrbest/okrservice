@@ -2,7 +2,7 @@ import * as controls from "./RichTextEditorControl/controls";
 
 import { DEFAULT_LABELS, IRichTextEditorLabels } from "./labels";
 import { DropdownControlType, getToolbar } from "./utils/getToolbarControl";
-import { Editor, useEditor } from "@tiptap/react";
+import { BubbleMenu, Editor, useEditor } from "@tiptap/react";
 import {
   IRichTextEditorContentProps,
   RichTextEditorContent,
@@ -88,8 +88,8 @@ export interface IRichTextEditorProps extends IRichTextEditorContentProps {
   additionalToolbarContent?: (props: {
     onClick: (placeholder: string) => void;
   }) => React.ReactNode;
-  /** Optional initial color for custom block background */
   initialBlockColor?: string;
+  notionMode?: boolean;
 }
 
 const RichTextEditor = forwardRef(function RichTextEditor(
@@ -117,6 +117,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     autoFocus,
     onCtrlEnter,
     additionalToolbarContent,
+    notionMode = false,
   } = props;
   const formattedContent = content ? content.replace(/\n/g, "<br />") : "";
   const editorContentProps = {
@@ -136,6 +137,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     placeholder,
     mentionSuggestion,
     limit,
+    notionMode,
   });
 
   // ⭐ 초기 content를 useEditor에 전달하여 히스토리에 추가되지 않도록 함
@@ -552,6 +554,63 @@ const RichTextEditor = forwardRef(function RichTextEditor(
       }}
     >
       <RichTextEditorWrapper ref={wrapperRef} $position={toolbarLocation}>
+        {notionMode && (
+          <BubbleMenu
+            editor={editor}
+            tippyOptions={{ duration: 100, placement: 'top-start' }}
+            className="bubble-menu"
+          >
+            <button
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              className={editor.isActive('bold') ? 'is-active' : ''}
+            >
+              <strong>B</strong>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              className={editor.isActive('italic') ? 'is-active' : ''}
+            >
+              <em>I</em>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleUnderline().run()}
+              className={editor.isActive('underline') ? 'is-active' : ''}
+            >
+              <u>U</u>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleStrike().run()}
+              className={editor.isActive('strike') ? 'is-active' : ''}
+            >
+              <s>S</s>
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleCode().run()}
+              className={editor.isActive('code') ? 'is-active' : ''}
+            >
+              {'<>'}
+            </button>
+            <div className="bubble-menu-divider" />
+            <button
+              onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+              className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
+            >
+              H1
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
+            >
+              H2
+            </button>
+            <button
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              className={editor.isActive('bulletList') ? 'is-active' : ''}
+            >
+              •—
+            </button>
+          </BubbleMenu>
+        )}
         {renderEditor()}
       </RichTextEditorWrapper>
     </RichTextEditorProvider>

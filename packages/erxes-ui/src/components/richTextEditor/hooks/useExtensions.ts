@@ -37,6 +37,8 @@ import {
   Subscript,
   Superscript,
   Mention,
+  SlashCommand,
+  Callout,
 } from '../extensions';
 
 import { DivNode } from '../nodes';
@@ -47,11 +49,10 @@ import {
 } from '../utils/getMentionSuggestions';
 import { generateJSON, generateHTML as generateHTMLTiptap } from '@tiptap/html';
 export type UseExtensionsOptions = {
-  /** Placeholder hint to show in the text input area before a user types a message. */
   placeholder?: string;
   mentionSuggestion?: MentionSuggestionParams;
-  /** Character count limit. */
   limit?: number;
+  notionMode?: boolean;
 };
 
 /**
@@ -61,6 +62,7 @@ export default function useExtensions({
   placeholder,
   mentionSuggestion,
   limit,
+  notionMode,
 }: UseExtensionsOptions = {}): EditorOptions['extensions'] {
   return useMemo(
     () => [
@@ -149,6 +151,7 @@ export default function useExtensions({
         placeholder,
       }),
       GlobalAttributes,
+      ...(notionMode ? [SlashCommand, Callout] : []),
     ],
     [],
   );

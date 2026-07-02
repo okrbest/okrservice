@@ -315,6 +315,38 @@ const ArticleWrapper = styled.div`
         margin-bottom: 5px !important;
       }
     }
+
+    pre {
+      background: #f6f8fa;
+      border-radius: 8px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      margin: 12px 0;
+
+      code {
+        background: transparent;
+        color: #374151;
+        font-size: 13px;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        padding: 0;
+      }
+    }
+
+    code {
+      background: #f1f5f9;
+      color: #e11d48;
+      font-size: 13px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+
+    blockquote {
+      border-left: 3px solid #e5e7eb;
+      padding: 4px 0 4px 16px;
+      margin: 12px 0;
+      color: #6b7280;
+    }
   }
 `;
 
@@ -1068,10 +1100,10 @@ export const HomeCategoryCard = styled.div`
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 20px;
+  padding: 24px;
   display: flex;
-  gap: 14px;
-  align-items: flex-start;
+  gap: 16px;
+  align-items: center;
   transition: box-shadow 0.15s, border-color 0.15s;
   cursor: pointer;
 
@@ -1081,9 +1113,9 @@ export const HomeCategoryCard = styled.div`
   }
 
   .card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
     background: #eff6ff;
     display: flex;
     align-items: center;
@@ -1091,7 +1123,7 @@ export const HomeCategoryCard = styled.div`
     flex-shrink: 0;
 
     .material-icons {
-      font-size: 20px;
+      font-size: 26px;
       color: #3b82f6;
     }
   }
@@ -1101,17 +1133,15 @@ export const HomeCategoryCard = styled.div`
     min-width: 0;
 
     h5 {
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 17px;
+      font-weight: 700;
       color: #111827;
-      margin: 0 0 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      margin: 0 0 6px;
+      line-height: 1.4;
     }
 
     p {
-      font-size: 12px;
+      font-size: 13px;
       color: #6b7280;
       margin: 0 0 8px;
       line-height: 1.5;
@@ -1124,12 +1154,12 @@ export const HomeCategoryCard = styled.div`
     .article-count {
       display: inline-flex;
       align-items: center;
-      gap: 3px;
-      font-size: 11px;
+      gap: 4px;
+      font-size: 14px;
       color: #9ca3af;
 
       .material-icons {
-        font-size: 13px;
+        font-size: 15px;
       }
     }
   }

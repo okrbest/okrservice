@@ -262,7 +262,7 @@ const MainContent = styledTS<{ baseColor?: string; bodyColor?: string }>(
   styled.div
 )`
   background-color: ${props => (props.bodyColor ? props.bodyColor : '#f5f8fb')};
-  min-height: 60vh;
+  min-height: calc(100vh - 60px);
   padding: 32px 0;
 
   ${props =>

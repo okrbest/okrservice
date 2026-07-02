@@ -44,7 +44,9 @@ function Layout({
         </Container>
       </MainContent>
 
-      <div dangerouslySetInnerHTML={{ __html: config.footerHtml || "" }} />
+      {config.footerHtml?.replace(/<[^>]*>/g, '').trim() && (
+        <div dangerouslySetInnerHTML={{ __html: config.footerHtml }} />
+      )}
     </>
   );
 }

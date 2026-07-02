@@ -611,6 +611,7 @@ class ArticleForm extends React.Component<Props, State> {
             isSubmitted={isSubmitted}
             height={300}
             name={`knowledgeBase_${article ? article._id : 'create'}`}
+            notionMode={true}
           />
         </FormGroup>
 

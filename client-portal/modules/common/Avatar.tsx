@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import { __ } from '../../utils';
 import { Avatars } from '../knowledgeBase/components/styles';
 import Icon from './Icon';
-import { readFile } from './utils';
 
 type Props = {
   user: IUser & { status?: string };
@@ -22,15 +21,10 @@ export default function Avatar({
   }
 
   const { details = {} as IUserDetails, status } = user;
-  const { fullName, avatar } = details;
+  const { fullName } = details;
 
   return (
     <Avatars>
-      <img
-        className="round-img"
-        alt={fullName}
-        src={avatar ? readFile(avatar) : '/static/avatar-colored.svg'}
-      />
       <div className="detail avatar-info d-flex flex-wrap">
         <div>
           <div>

@@ -7,3 +7,5 @@ export { Variable } from './variable';
 export { Subscript } from './Subscript';
 export { Superscript } from './Superscript';
 export { GlobalAttributes } from './GlobalAttributes';
+export { SlashCommand } from './SlashCommand';
+export { Callout } from './Callout';
