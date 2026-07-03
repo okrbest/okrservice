@@ -306,7 +306,7 @@ function Header({
   };
 
   const renderTopHeader = () => {
-    if (headerHtml)
+    if (headerHtml?.replace(/<[^>]*>/g, '').trim())
       return <div dangerouslySetInnerHTML={{ __html: headerHtml }} />;
 
     return (
