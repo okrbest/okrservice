@@ -899,9 +899,32 @@ export const HeroSearchWrapper = styled.div`
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      white-space: nowrap;
 
       &:hover {
         background: #2563eb;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 32px 16px;
+    margin-top: -16px;
+
+    h2 {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .search-box {
+      input {
+        padding: 12px 14px;
+        font-size: 13px;
+      }
+
+      button {
+        padding: 0 16px;
+        font-size: 13px;
       }
     }
   }
@@ -1315,6 +1338,10 @@ export const KbPageContainer = styled.div`
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 16px 32px;
+
+  @media (max-width: 768px) {
+    padding: 0 12px 24px;
+  }
 `;
 
 export const TocWrapper = styled.div`
@@ -1349,11 +1376,58 @@ export const TocWrapper = styled.div`
   }
 `;
 
+export const MobileCategoryNav = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 0 0 12px;
+    margin-bottom: 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+`;
+
+export const MobileCategoryTab = styled.a<{ active?: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: ${props => props.active ? '600' : '400'};
+  white-space: nowrap;
+  text-decoration: none;
+  flex-shrink: 0;
+  background: ${props => props.active ? '#dbeafe' : '#fff'};
+  color: ${props => props.active ? '#1d4ed8' : '#6b7280'};
+  border: 1px solid ${props => props.active ? '#93c5fd' : '#e5e7eb'};
+  transition: all 0.15s;
+
+  &:hover {
+    text-decoration: none;
+    background: ${props => props.active ? '#bfdbfe' : '#f3f4f6'};
+    color: ${props => props.active ? '#1e40af' : '#374151'};
+    border-color: ${props => props.active ? '#60a5fa' : '#d1d5db'};
+  }
+`;
+
 export const KbThreeCol = styled.div`
   display: flex;
   gap: 32px;
   align-items: flex-start;
   margin-top: 16px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0;
+  }
 `;
 
 export const KbLeftCol = styled.div`
@@ -1361,6 +1435,10 @@ export const KbLeftCol = styled.div`
   flex-shrink: 0;
   position: sticky;
   top: 96px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 export const KbCenterCol = styled.div`
@@ -1370,6 +1448,11 @@ export const KbCenterCol = styled.div`
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 32px;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    border-radius: 8px;
+  }
 `;
 
 export const KbRightCol = styled.div`

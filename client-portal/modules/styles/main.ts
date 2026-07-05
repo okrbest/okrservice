@@ -43,13 +43,7 @@ const HeaderTop = styled.div`
   padding: 14px 0;
 
   @media (max-width: 700px) {
-    flex-direction: column;
-    align-items: flex-start;
-
-    > div {
-      flex: 1;
-      margin-bottom: ${dimensions.coreSpacing}px;
-    }
+    padding: 10px 0;
   }
 `;
 
@@ -75,11 +69,7 @@ const HeaderTitle = styledTS<{ color?: string }>(styled.span)`
 
 const HeaderRight = styled.div`
   display: flex;
-
-  @media (max-width: 700px) {
-    width: 100%;
-    justify-content: center;
-  }
+  align-items: center;
 `;
 
 const HeaderLeft = styled.div`
@@ -145,10 +135,8 @@ const SupportMenus = styledTS<{ color?: string; baseColor?: string }>(
 )`
   display: flex;
   gap:${dimensions.coreSpacing}px;
-  align-items: baseline;
-  justify-content: flex-end;
   align-items: center;
-  margin-bottom: 10px;
+  justify-content: flex-end;
   position: relative;
 
   .dropdown {
@@ -264,6 +252,10 @@ const MainContent = styledTS<{ baseColor?: string; bodyColor?: string }>(
   background-color: ${props => (props.bodyColor ? props.bodyColor : '#f5f8fb')};
   min-height: calc(100vh - 60px);
   padding: 32px 0;
+
+  @media (max-width: 768px) {
+    padding: 16px 0;
+  }
 
   ${props =>
     props.baseColor &&

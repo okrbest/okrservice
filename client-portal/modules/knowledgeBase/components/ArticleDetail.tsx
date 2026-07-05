@@ -4,7 +4,8 @@ import SectionHeader from '../../common/SectionHeader';
 import SideBar from './SideBar';
 import SingleArticle from './SingleArticle';
 import KbRightPanel, { TocItem } from './KbRightPanel';
-import { KbPageContainer, KbThreeCol, KbLeftCol, KbCenterCol, KbRightCol } from './styles';
+import { KbPageContainer, KbThreeCol, KbLeftCol, KbCenterCol, KbRightCol, MobileCategoryNav, MobileCategoryTab } from './styles';
+import Link from 'next/link';
 
 type Props = {
   article: IKbArticle;
@@ -40,6 +41,18 @@ function ArticleDetail({ loading, article, category, topic, config }: Props) {
         categories={topic.parentCategories}
         selectedCat={category}
       />
+      <MobileCategoryNav>
+        <Link href="/knowledge-base?view=all">
+          <MobileCategoryTab as="a">전체</MobileCategoryTab>
+        </Link>
+        {topic.parentCategories?.map((cat) => (
+          <Link key={cat._id} href={`/knowledge-base/category?id=${cat._id}`}>
+            <MobileCategoryTab as="a" active={cat._id === category._id}>
+              {cat.title}
+            </MobileCategoryTab>
+          </Link>
+        ))}
+      </MobileCategoryNav>
       <KbThreeCol>
         <KbLeftCol>
           <SideBar
