@@ -256,6 +256,7 @@ function DraggableContainer(props: DraggableContainerProps) {
           ref={dragProvided.innerRef}
           {...dragProvided.draggableProps}
           {...dragProvided.dragHandleProps}
+          onClick={onClick}
         >
           {renderHasNotified()}
           <Item

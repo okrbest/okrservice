@@ -389,7 +389,10 @@ const TicketItem: React.FC<Props> = (props) => {
     <>
       <Labels labels={item.labels} indicator={true} />
       <Content
-        onClick={onClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onClick) onClick();
+        }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
