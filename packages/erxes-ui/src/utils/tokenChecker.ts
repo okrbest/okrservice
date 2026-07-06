@@ -315,12 +315,13 @@ export const setupTokenExpirationChecker = () => {
   };
   
   // 정확한 만료 시점에 체크하도록 스케줄링
-  const scheduleExpirationCheck = async () => {
+  // 초기 호출 시에는 즉시 API를 호출하지 않고, 23시간 후에 체크하도록 타이머만 등록.
+  // withCurrentUser가 이미 currentUser 쿼리를 담당하므로 중복 호출 불필요.
+  const scheduleExpirationCheck = () => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
-    
-    // 로그인 관련 페이지에서는 스케줄링하지 않음
+
     const pathname = window.location.pathname;
     if (
       pathname === '/' ||
@@ -330,50 +331,33 @@ export const setupTokenExpirationChecker = () => {
     ) {
       return;
     }
-    
-    // JWT 토큰은 httpOnly 쿠키라서 읽을 수 없으므로
-    // API를 호출해서 토큰 상태를 확인하고, 만료 시간을 추정
-    try {
-      const { getEnv } = await import('./core');
-      const { REACT_APP_API_URL } = getEnv();
-      
-      if (!REACT_APP_API_URL) {
-        return;
-      }
-      
-      const response = await fetch(`${REACT_APP_API_URL}/graphql`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          query: `query { currentUser { _id } }`
-        })
-      });
 
-      const result = await response.json();
-      
-      // 토큰이 만료되었으면 즉시 리다이렉트
-      if (result.errors && result.errors.some((e: any) => e.message === 'Login required')) {
-        window.location.href = '/';
-        return;
-      }
-      
-      // 토큰이 유효하면, JWT 토큰은 1일(24시간) 만료이므로
-      // 23시간 후에 다시 체크하도록 스케줄링 (만료 1시간 전)
-      const checkInterval = 23 * 60 * 60 * 1000; // 23시간
-      
-      timeoutId = setTimeout(() => {
-        scheduleExpirationCheck(); // 재귀적으로 다시 스케줄링
-      }, checkInterval);
-      
-    } catch (e) {
-      // 에러 발생 시 1시간 후에 다시 시도
-      timeoutId = setTimeout(() => {
+    const checkInterval = 23 * 60 * 60 * 1000; // 23시간
+
+    timeoutId = setTimeout(async () => {
+      try {
+        const { getEnv } = await import('./core');
+        const { REACT_APP_API_URL } = getEnv();
+        if (!REACT_APP_API_URL) return;
+
+        const response = await fetch(`${REACT_APP_API_URL}/graphql`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ query: `query { currentUser { _id } }` })
+        });
+
+        const result = await response.json();
+        if (result.errors && result.errors.some((e: any) => e.message === 'Login required')) {
+          window.location.href = '/';
+          return;
+        }
+
         scheduleExpirationCheck();
-      }, 60 * 60 * 1000);
-    }
+      } catch (e) {
+        timeoutId = setTimeout(() => scheduleExpirationCheck(), 60 * 60 * 1000);
+      }
+    }, checkInterval);
   };
   
   // 클릭 이벤트 핸들러
@@ -396,8 +380,8 @@ export const setupTokenExpirationChecker = () => {
     }
   };
   
-  // 초기 체크 및 스케줄링
-  checkAndRedirect();
+  // 초기 로드 시 API 호출 없이 23h 타이머만 등록.
+  // 토큰 만료 감지는 Apollo errorLink와 withCurrentUser가 담당.
   scheduleExpirationCheck();
   
   // 탭이 다시 활성화될 때도 체크

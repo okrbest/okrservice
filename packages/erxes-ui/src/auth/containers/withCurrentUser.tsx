@@ -16,7 +16,7 @@ const withCurrentUser = (WrappedComponent) => {
     const { loading, data } = useQuery<CurrentUserQueryResponse>(
       gql(gq.currentUser),
       {
-        fetchPolicy: "cache-and-network",
+        fetchPolicy: "cache-first",
       }
     );
 
