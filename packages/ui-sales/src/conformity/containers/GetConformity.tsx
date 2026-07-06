@@ -39,7 +39,8 @@ const PortableItemsContainer = (props: IProps) => {
 
   const {data, loading, error, refetch} = useQuery(gql(itemsQuery), {
     skip: shouldSkip,
-    variables
+    variables,
+    fetchPolicy: 'cache-and-network',
   })
 
   let items = alreadyItems;

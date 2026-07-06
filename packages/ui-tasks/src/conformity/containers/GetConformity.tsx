@@ -48,6 +48,7 @@ const PortableItemsContainer = (props: IProps) => {
   const { data, refetch } = useQuery(gql(itemsQuery), {
     skip: (!mainType && !mainTypeId && !relType) || alreadyItems !== undefined,
     variables,
+    fetchPolicy: 'cache-and-network',
   });
 
   let items = alreadyItems;
