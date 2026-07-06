@@ -66,25 +66,40 @@ export default function HeroSearch({ topicId, initialValue = '' }: Props) {
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') onSearch();
-    if (e.key === 'Escape') setOpen(false);
+    if (e.key === 'Escape') onClear();
+  };
+
+  const onClear = () => {
+    setValue('');
+    setAutocompleteQuery('');
+    setOpen(false);
+    router.push({ pathname: '/knowledge-base' });
+    inputRef.current?.focus();
   };
 
   return (
     <HeroSearchWrapper>
       <h2>자주 묻는 질문을 검색하세요.</h2>
       <div className="search-box">
-        <input
-          ref={inputRef}
-          value={value}
-          onChange={onChange}
-          onKeyDown={onKeyDown}
-          placeholder="검색어를 입력하세요 (예:인사발령)"
-          onFocus={() => value.length >= 2 && suggestions.length > 0 && setOpen(true)}
-          onBlur={() => {
-            clearTimeout(blurTimerRef.current);
-            blurTimerRef.current = setTimeout(() => setOpen(false), 150);
-          }}
-        />
+        <div className="input-wrapper">
+          <input
+            ref={inputRef}
+            value={value}
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+            placeholder="검색어를 입력하세요 (예:인사발령)"
+            onFocus={() => value.length >= 2 && suggestions.length > 0 && setOpen(true)}
+            onBlur={() => {
+              clearTimeout(blurTimerRef.current);
+              blurTimerRef.current = setTimeout(() => setOpen(false), 150);
+            }}
+          />
+          {value && (
+            <button type="button" className="clear-btn" onClick={onClear} aria-label="검색어 지우기">
+              ✕
+            </button>
+          )}
+        </div>
         <button type="button" onClick={onSearch}>
           검색
         </button>

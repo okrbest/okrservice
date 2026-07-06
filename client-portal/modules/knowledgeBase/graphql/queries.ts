@@ -109,6 +109,12 @@ export const articleDetailQuery = `
       createdDate
       modifiedBy
       modifiedDate
+      attachments {
+        url
+        name
+        type
+        size
+      }
     }
   }
 `;

@@ -320,6 +320,7 @@ export interface IKbArticle extends ICommonFields {
   publishedUser: IUser;
   publishedAt: Date;
   viewCount?: number;
+  attachments?: IAttachment[];
 }
 
 export interface INotification {

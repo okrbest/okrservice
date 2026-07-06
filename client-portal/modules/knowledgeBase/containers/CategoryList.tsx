@@ -1,33 +1,22 @@
 import ArticleListContainer from './ArticleList';
-import CategoryList from '../components/CategoryList';
 import HeroSearch from '../components/HeroSearch';
 import KbRightPanel from '../components/KbRightPanel';
 import SideBar from '../components/SideBar';
 import Layout from '../../main/containers/Layout';
-import { KbPageContainer, KbThreeCol, KbLeftCol, KbCenterCol, KbRightCol } from '../components/styles';
+import { KbPageContainer, KbThreeCol, KbLeftCol, KbCenterCol, KbRightCol, MobileCategoryNav, MobileCategoryTab } from '../components/styles';
+import Link from 'next/link';
 import React from 'react';
 import { Store } from '../../types';
 import { useRouter } from 'next/router';
 
 function CategoriesContainer() {
   const router = useRouter();
-  const { searchValue, view } = router.query;
+  const { searchValue } = router.query;
 
   return (
     <Layout>
       {(props: Store) => {
-        if (!searchValue && !view) {
-          return (
-            <>
-              <HeroSearch topicId={props.topic._id} initialValue="" />
-              <KbPageContainer>
-                <CategoryList {...props} />
-              </KbPageContainer>
-            </>
-          );
-        }
-
-        if (view === 'all') {
+        if (!searchValue) {
           return (
             <>
               <HeroSearch
@@ -35,6 +24,14 @@ function CategoriesContainer() {
                 initialValue=""
               />
               <KbPageContainer>
+                <MobileCategoryNav>
+                  <MobileCategoryTab as="a" active={true}>전체</MobileCategoryTab>
+                  {props.topic?.parentCategories?.map((cat) => (
+                    <Link key={cat._id} href={`/knowledge-base/category?id=${cat._id}`}>
+                      <MobileCategoryTab as="a">{cat.title}</MobileCategoryTab>
+                    </Link>
+                  ))}
+                </MobileCategoryNav>
                 <KbThreeCol>
                   <KbLeftCol>
                     <SideBar
@@ -65,16 +62,28 @@ function CategoriesContainer() {
               topicId={props.topic._id}
               initialValue={(searchValue as string) || ''}
             />
-            {searchValue ? (
-              <ArticleListContainer
-                searchValue={searchValue}
-                topicId={props.topic._id}
-                config={props.config}
-                currentUser={props.currentUser}
-              />
-            ) : (
-              <CategoryList {...props} />
-            )}
+            <KbPageContainer>
+              <KbThreeCol>
+                <KbLeftCol>
+                  <SideBar
+                    parentCategories={props.topic?.parentCategories}
+                    category={{} as any}
+                    config={props.config}
+                  />
+                </KbLeftCol>
+                <KbCenterCol>
+                  <ArticleListContainer
+                    searchValue={searchValue}
+                    topicId={props.topic._id}
+                    config={props.config}
+                    currentUser={props.currentUser}
+                  />
+                </KbCenterCol>
+                <KbRightCol>
+                  <KbRightPanel topicId={props.topic._id} />
+                </KbRightCol>
+              </KbThreeCol>
+            </KbPageContainer>
           </>
         );
       }}

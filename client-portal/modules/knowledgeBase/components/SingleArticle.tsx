@@ -10,6 +10,7 @@ import Spinner from "../../common/Spinner";
 import classNames from "classnames";
 import { gql, useMutation } from "@apollo/client";
 import { articleReactMutation } from "../graphql/queries";
+import { readFile } from "../../common/utils";
 
 type Props = {
   article: IKbArticle;
@@ -197,6 +198,70 @@ class SingleArticle extends React.Component<Props, { reaction: string; helpful: 
     );
   };
 
+  getAttachmentDisplayName = (name: string, url: string): string => {
+    if (name && name !== url) {
+      return name;
+    }
+    const raw = url || '';
+    return raw.length > 21 ? raw.substring(21) : raw;
+  };
+
+  getAttachmentDownloadUrl = (name: string, url: string): string => {
+    if (!url) return '';
+    if (url.includes('http')) return url;
+    const displayName = this.getAttachmentDisplayName(name, url);
+    return `${readFile(url)}&name=${encodeURIComponent(displayName)}`;
+  };
+
+  renderAttachments = () => {
+    const { article } = this.props;
+    const attachments = article.attachments || [];
+
+    if (attachments.length === 0) {
+      return null;
+    }
+
+    return (
+      <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '16px' }}>
+        <strong style={{ display: 'block', marginBottom: '10px', fontSize: '14px' }}>첨부파일</strong>
+        {attachments.map((attachment, index) => {
+          const displayName = this.getAttachmentDisplayName(attachment.name, attachment.url);
+          const downloadUrl = this.getAttachmentDownloadUrl(attachment.name, attachment.url);
+
+          return (
+            <a
+              key={index}
+              href={downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                marginBottom: '6px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px',
+                textDecoration: 'none',
+                color: '#374151',
+                fontSize: '14px',
+                background: '#f9fafb',
+              }}
+            >
+              <span>📎</span>
+              <span style={{ flex: 1, wordBreak: 'break-all' }}>{displayName}</span>
+              {attachment.size && (
+                <span style={{ color: '#9ca3af', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                  {Math.round(attachment.size / 1024)}KB
+                </span>
+              )}
+            </a>
+          );
+        })}
+      </div>
+    );
+  };
+
   renderContent = () => {
     const { article, config } = this.props;
 
@@ -242,6 +307,7 @@ class SingleArticle extends React.Component<Props, { reaction: string; helpful: 
           <div className="content" id="contentText">
             <p>{article.summary}</p>
             {this.renderContent()}
+            {this.renderAttachments()}
             <Modal onClick={this.handleModal} id="modal">
               <span id="close">&times;</span>
               <img id="modal-content" alt="modal" />

@@ -78,7 +78,7 @@ export default function KbRightPanel({ topicId, categoryId, toc }: Props) {
 
       {recent.length > 0 && (
         <RightPanelSection>
-          <h6>최근 본 문서</h6>
+          <h6>최근 본 질문</h6>
           <ul>
             {recent.map((a) => (
               <li key={a._id}>

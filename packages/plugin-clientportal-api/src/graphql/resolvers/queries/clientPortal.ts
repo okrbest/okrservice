@@ -333,12 +333,15 @@ const configClientPortalQueries = {
     const selector: any = {};
 
     if (searchValue && searchValue.trim() && topicId && topicId.trim()) {
+      const flexible = searchValue.trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        .replace(/\s+/g, '\\s*');
       selector.$and = [
         {
           $or: [
-            { title: { $regex: `.*${searchValue.trim()}.*`, $options: "i" } },
-            { content: { $regex: `.*${searchValue.trim()}.*`, $options: "i" } },
-            { summary: { $regex: `.*${searchValue.trim()}.*`, $options: "i" } },
+            { title: { $regex: `.*${flexible}.*`, $options: "i" } },
+            { content: { $regex: `.*${flexible}.*`, $options: "i" } },
+            { summary: { $regex: `.*${flexible}.*`, $options: "i" } },
           ],
         },
         { topicId },

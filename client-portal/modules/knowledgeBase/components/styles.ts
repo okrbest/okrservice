@@ -876,21 +876,46 @@ export const HeroSearchWrapper = styled.div`
     margin: 0 auto;
     display: flex;
 
-    input {
+    .input-wrapper {
       flex: 1;
-      padding: 14px 20px;
-      border: none;
-      border-radius: 12px 0 0 12px;
-      font-size: 14px;
-      outline: none;
-      color: #1e293b;
+      position: relative;
+      display: flex;
+      align-items: center;
 
-      &::placeholder {
+      input {
+        width: 100%;
+        padding: 14px 40px 14px 20px;
+        border: none;
+        border-radius: 12px 0 0 12px;
+        font-size: 16px;
+        outline: none;
+        color: #1e293b;
+
+        &::placeholder {
+          color: #94a3b8;
+        }
+      }
+
+      .clear-btn {
+        position: absolute;
+        right: 10px;
+        background: none;
+        border: none;
         color: #94a3b8;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 4px;
+        line-height: 1;
+        border-radius: 50%;
+
+        &:hover {
+          color: #475569;
+          background: #f1f5f9;
+        }
       }
     }
 
-    button {
+    button:not(.clear-btn) {
       padding: 0 24px;
       background: #3b82f6;
       color: #fff;
@@ -917,12 +942,12 @@ export const HeroSearchWrapper = styled.div`
     }
 
     .search-box {
-      input {
-        padding: 12px 14px;
-        font-size: 13px;
+      .input-wrapper input {
+        padding: 12px 36px 12px 14px;
+        font-size: 15px;
       }
 
-      button {
+      button:not(.clear-btn) {
         padding: 0 16px;
         font-size: 13px;
       }
@@ -947,7 +972,7 @@ export const AutocompleteList = styled.ul`
 
 export const AutocompleteItem = styled.li`
   padding: 10px 16px;
-  font-size: 13px;
+  font-size: 15px;
   color: #374151;
   cursor: pointer;
   text-align: left;
@@ -971,7 +996,7 @@ export const ArticleListItemWrapper = styled.div`
   }
 
   h3 {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 400;
     color: #2563eb;
     margin-bottom: 6px;
@@ -1071,7 +1096,7 @@ export const RightPanelSection = styled.div`
   padding: 16px;
 
   h6 {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -1089,7 +1114,7 @@ export const RightPanelSection = styled.div`
   }
 
   li a {
-    font-size: 12px;
+    font-size: 13px;
     color: #4b5563;
     text-decoration: none;
     display: block;

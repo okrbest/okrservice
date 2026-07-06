@@ -31,10 +31,13 @@ const buildQuery = (args: any) => {
   });
 
   if (args.searchValue && args.searchValue.trim()) {
+    const flexible = args.searchValue.trim()
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/\s+/g, '\\s*');
     qry.$or = [
-      { title: { $regex: `.*${args.searchValue.trim()}.*`, $options: 'i' } },
-      { content: { $regex: `.*${args.searchValue.trim()}.*`, $options: 'i' } },
-      { summary: { $regex: `.*${args.searchValue.trim()}.*`, $options: 'i' } },
+      { title: { $regex: `.*${flexible}.*`, $options: 'i' } },
+      { content: { $regex: `.*${flexible}.*`, $options: 'i' } },
+      { summary: { $regex: `.*${flexible}.*`, $options: 'i' } },
     ];
   }
 
