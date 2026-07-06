@@ -342,7 +342,8 @@ const withQuery = (props: ContainerProps) => {
             _id: props.itemId,
             ...(props.options?.type === "ticket" ? { includeRelations: false } : {})
           },
-          fetchPolicy: "network-only"
+          // 호버 프리페치 캐시가 있으면 즉시 표시하고 백그라운드에서 갱신
+          fetchPolicy: "cache-and-network"
         })
       }),
       graphql<ContainerProps, AllUsersQueryResponse>(

@@ -1,5 +1,7 @@
 import { colors } from "@erxes/ui/src/styles";
-import React from "react";
+import React, { useRef, useCallback } from "react";
+import { gql } from "@apollo/client";
+import client from "@erxes/ui/src/apolloClient";
 import { __ } from "coreui/utils";
 import Assignees from "../../boards/components/Assignees";
 import Details from "../../boards/components/Details";
@@ -34,8 +36,29 @@ type Props = {
 const TicketItem: React.FC<Props> = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const prefetchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const { item, isFormVisible, stageId, portable, onClick } = props;
+
+  const handleMouseEnter = useCallback(() => {
+    if (!props.options?.queries?.detailQuery) return;
+    prefetchTimer.current = setTimeout(() => {
+      client
+        .query({
+          query: gql(props.options!.queries.detailQuery),
+          variables: { _id: item._id, includeRelations: false },
+          fetchPolicy: "network-only"
+        })
+        .catch(() => {});
+    }, 150);
+  }, [item._id, props.options]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (prefetchTimer.current !== null) {
+      clearTimeout(prefetchTimer.current);
+      prefetchTimer.current = null;
+    }
+  }, []);
   
   const getRequestTypeColor = (requestType: string) => {
     const colorMap: { [key: string]: { bg: string; text: string } } = {
@@ -346,7 +369,11 @@ const TicketItem: React.FC<Props> = (props) => {
   if (portable) {
     return (
       <>
-        <ItemContainer onClick={handleClick}>
+        <ItemContainer
+          onClick={handleClick}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
           <ItemArchivedStatus
             status={item.status || "active"}
             skipContainer={false}
@@ -361,7 +388,13 @@ const TicketItem: React.FC<Props> = (props) => {
   return (
     <>
       <Labels labels={item.labels} indicator={true} />
-      <Content onClick={onClick}>{renderContent()}</Content>
+      <Content
+        onClick={onClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {renderContent()}
+      </Content>
       {renderForm()}
     </>
   );
