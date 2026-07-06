@@ -51,6 +51,26 @@ function DraggableContainer(props: DraggableContainerProps) {
   const [isDragDisabled, setIsDragDisabled] = useState<boolean>(
     Boolean(itemIdQueryParam)
   );
+
+  const touchStartRef = React.useRef<{ x: number; y: number } | null>(null);
+
+  const onItemTouchStart = (e: React.TouchEvent) => {
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+  };
+
+  const onItemTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const dx = Math.abs(e.changedTouches[0].clientX - touchStartRef.current.x);
+    const dy = Math.abs(e.changedTouches[0].clientY - touchStartRef.current.y);
+    touchStartRef.current = null;
+    if (dx < 10 && dy < 10) {
+      e.preventDefault(); // 브라우저 click 합성 방지 (이중 호출 방지)
+      onClick();
+    }
+  };
   const [hasNotified, setHasNotified] = useState(
     item.hasNotified === false ? false : true
   );
@@ -257,6 +277,8 @@ function DraggableContainer(props: DraggableContainerProps) {
           {...dragProvided.draggableProps}
           {...dragProvided.dragHandleProps}
           onClick={onClick}
+          onTouchStart={onItemTouchStart}
+          onTouchEnd={onItemTouchEnd}
         >
           {renderHasNotified()}
           <Item
