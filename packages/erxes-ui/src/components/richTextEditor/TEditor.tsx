@@ -119,7 +119,6 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     additionalToolbarContent,
     notionMode = false,
   } = props;
-  const formattedContent = content ? content.replace(/\n/g, "<br />") : "";
   const editorContentProps = {
     height,
     autoGrow,
@@ -242,37 +241,11 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     }
   }, [showMentions]);
 
-  // ⭐ 에디터 초기화 후 히스토리 강제 클리어
   useEffect(() => {
     if (editor && !isInitialContentSet.current) {
-      const initialHTML = editor.getHTML();
-
-      // ⭐ 히스토리 강제 클리어: Tiptap이 초기 content도 히스토리에 추가하는 버그
-      setTimeout(() => {
-        if (editor && editor.view && editor.state) {
-          const originalContent = editor.getHTML();
-
-          // ⭐ 모든 undo 실행하여 히스토리 스택 비우기
-          let undoCount = 0;
-          while (editor.can().undo() && undoCount < 100) {
-            editor.commands.undo();
-            undoCount++;
-          }
-
-          // 원래 내용으로 다시 설정 (히스토리에 추가하지 않음)
-          editor.commands.setContent(originalContent, false);
-
-          // Redo 스택도 비우기
-          while (editor.can().redo()) {
-            editor.commands.redo();
-          }
-        }
-      }, 100);
-      
-      // 초기 content onChange 호출
-      onChange && onChange(initialHTML);
+      onChange && onChange(editor.getHTML());
       isInitialContentSet.current = true;
-      
+
       if (name && typeof window !== 'undefined' && localStorage.getItem(name)) {
         hasRestoredFromLocalStorage.current = true;
       }
@@ -295,12 +268,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     []
   );
 
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyEvents);
-    return () => window.removeEventListener("keydown", handleKeyEvents);
-  }, [handleKeyEvents]);
-
-  function handleKeyEvents(event: KeyboardEvent) {
+  const handleKeyEvents = useCallback((event: KeyboardEvent) => {
     const isFocused = editorRef?.current?.isFocused;
 
     if (!isFocused) return;
@@ -308,7 +276,12 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
       onCtrlEnter && onCtrlEnter();
     }
-  }
+  }, [onCtrlEnter]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyEvents);
+    return () => window.removeEventListener("keydown", handleKeyEvents);
+  }, [handleKeyEvents]);
 
   const mergedLabels = useMemo(
     () => ({ ...DEFAULT_LABELS, ...labels }),
@@ -521,7 +494,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
         {editorParts[0]}
       </>
     );
-  }, []);
+  }, [editorParts, toolbarLocation]);
 
   const toggleSourceView = () => {
     const editorContent = editor?.getHTML() || "";
