@@ -71,7 +71,8 @@ class WithStages extends Component<WithStagesQueryProps> {
   }
 
   queryParamsChanged = (queryParams: any, nextQueryParams: any) => {
-    if (nextQueryParams.itemId || (!queryParams.key && queryParams.itemId)) {
+    // itemId 전환(티켓 열기/닫기)은 실제 필터 변경이 아님 — 재조회 불필요
+    if (nextQueryParams.itemId || queryParams.itemId) {
       return false;
     }
 
