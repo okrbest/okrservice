@@ -23,6 +23,8 @@ type Props = {
   relType?: string;
   hideQuickButtons?: boolean;
   onChangeItem: () => void;
+  onActivate?: () => void;
+  initialSkip?: boolean;
 };
 
 class Items extends React.Component<Props, { openItemId?: string }> {
@@ -153,10 +155,14 @@ class Items extends React.Component<Props, { openItemId?: string }> {
       />
     );
 
+    const { onActivate, initialSkip } = this.props;
+
     const boxProps = {
       extraButtons: !hideQuickButtons && quickButtons,
       title: __(data.options.title),
       name: relType && `show${relType}`,
+      isOpen: !initialSkip,
+      callback: onActivate,
     };
 
     return (

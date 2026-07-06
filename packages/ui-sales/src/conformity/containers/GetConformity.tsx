@@ -1,5 +1,5 @@
 import { gql, useQuery } from '@apollo/client';
-import React from 'react'
+import React, { useState } from 'react'
 
 type IProps = {
   mainType?: string;
@@ -13,11 +13,13 @@ type IProps = {
   collapseCallback?: () => void;
   alreadyItems?: any;
   actionSection?: any;
+  initialSkip?: boolean;
 };
 
 const PortableItemsContainer = (props: IProps) => {
+  const [active, setActive] = useState(!props.initialSkip);
 
-  const { itemsQuery, component, queryName,  mainType, mainTypeId, relType, alreadyItems } = props;
+  const { itemsQuery, component, queryName, mainType, mainTypeId, relType, alreadyItems } = props;
 
   const variables: any = {
     mainType,
@@ -35,7 +37,7 @@ const PortableItemsContainer = (props: IProps) => {
     variables.isSaved = false;
   }
 
-  const shouldSkip = (!mainType && !mainTypeId && !relType) || alreadyItems !== undefined;
+  const shouldSkip = !active || (!mainType && !mainTypeId && !relType) || alreadyItems !== undefined;
 
   const {data, loading, error, refetch} = useQuery(gql(itemsQuery), {
     skip: shouldSkip,
@@ -43,32 +45,33 @@ const PortableItemsContainer = (props: IProps) => {
     fetchPolicy: 'cache-and-network',
   })
 
-  let items = alreadyItems;
+  let items = alreadyItems || [];
 
-    if (!alreadyItems) {
-      if (loading) {
-        items = [];
-      } else if (error) {
-        items = [];
-      } else if (!data) {
-        items = [];
-      } else {
-        items = data[queryName] || [];
-      }
+  if (!alreadyItems && active) {
+    if (loading || error || !data) {
+      items = [];
+    } else {
+      items = data[queryName] || [];
     }
+  }
 
-    const onChangeItem = () => {
-      refetch()
-    };
+  const onChangeItem = () => {
+    refetch()
+  };
 
-    const extendedProps = {
-      ...props,
-      items,
-      onChangeItem
-    };
+  const onActivate = () => {
+    if (!active) setActive(true);
+  };
 
-    const Component = component;
-    return <Component {...extendedProps} />;
+  const extendedProps = {
+    ...props,
+    items,
+    onChangeItem,
+    onActivate,
+  };
+
+  const Component = component;
+  return <Component {...extendedProps} />;
 }
 
 export default PortableItemsContainer

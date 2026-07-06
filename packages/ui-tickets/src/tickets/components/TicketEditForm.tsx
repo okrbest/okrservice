@@ -543,14 +543,14 @@ export default function TicketEditForm(props: Props) {
         <PortableTickets mainType="ticket" mainTypeId={props.item._id} />
         
         {isEnabled("sales") && (
-          <PortableDeals mainType="ticket" mainTypeId={props.item._id} />
+          <PortableDeals mainType="ticket" mainTypeId={props.item._id} initialSkip={true} />
         )}
         {isEnabled("purchases") && (
-          <PortablePurchase mainType="ticket" mainTypeId={props.item._id} />
+          <PortablePurchase mainType="ticket" mainTypeId={props.item._id} initialSkip={true} />
         )}
 
         {isEnabled("tasks") && (
-          <PortableTasks mainType="ticket" mainTypeId={props.item._id} />
+          <PortableTasks mainType="ticket" mainTypeId={props.item._id} initialSkip={true} />
         )}
 
         {loadDynamicComponent(

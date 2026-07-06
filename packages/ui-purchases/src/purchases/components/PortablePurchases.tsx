@@ -7,6 +7,7 @@ type IProps = {
   mainType?: string;
   mainTypeId?: string;
   mainTypeName?: string;
+  initialSkip?: boolean;
 };
 
 export default (props: IProps) => {

@@ -1,5 +1,5 @@
 import { gql, useQuery } from '@apollo/client';
-import React from 'react';
+import React, { useState } from 'react';
 
 type IProps = {
   mainType?: string;
@@ -13,9 +13,12 @@ type IProps = {
   collapseCallback?: () => void;
   alreadyItems?: any;
   actionSection?: any;
+  initialSkip?: boolean;
 };
 
 const PortableItemsContainer = (props: IProps) => {
+  const [active, setActive] = useState(!props.initialSkip);
+
   const {
     itemsQuery,
     component,
@@ -34,41 +37,44 @@ const PortableItemsContainer = (props: IProps) => {
     isSaved: true,
   };
 
-  // conformity with mainType "user" is not saved
   if (mainType === 'user') {
     variables.assignedUserIds = [mainTypeId];
     variables.isSaved = false;
   }
 
-  // add archived items in contacts side bar
   if (mainType === 'customer' || mainType === 'company') {
     variables.noSkipArchive = true;
   }
 
   const { data, refetch } = useQuery(gql(itemsQuery), {
-    skip: (!mainType && !mainTypeId && !relType) || alreadyItems !== undefined,
+    skip: !active || (!mainType && !mainTypeId && !relType) || alreadyItems !== undefined,
     variables,
     fetchPolicy: 'cache-and-network',
   });
 
-  let items = alreadyItems;
+  let items = alreadyItems || [];
 
-  if (!alreadyItems) {
+  if (!alreadyItems && active) {
     if (!data) {
-      return null;
+      items = [];
+    } else {
+      items = data[queryName] || [];
     }
-
-    items = data[queryName] || [];
   }
 
   const onChangeItem = () => {
     refetch();
   };
 
+  const onActivate = () => {
+    if (!active) setActive(true);
+  };
+
   const extendedProps = {
     ...props,
     items,
     onChangeItem,
+    onActivate,
   };
 
   const Component = component;
