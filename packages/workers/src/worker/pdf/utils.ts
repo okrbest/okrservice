@@ -147,6 +147,34 @@ const handleChunks = async (taskId, chunkDir, totalChunks) => {
   console.debug('Chunks merged successfully', chunkDir);
 };
 
+const uploadImageViaCore = async (file: any, subdomain: string): Promise<string> => {
+  const CORE_URL = getEnv({ name: 'CORE_URL' }) || 'http://localhost:3300';
+
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(file.path), {
+    filename: file.filename,
+    contentType: file.mimetype || 'image/jpeg',
+  });
+
+  const response = await fetch(`${CORE_URL}/upload-file`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      ...formData.getHeaders(),
+      'erxes-subdomain': subdomain || 'localhost',
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Core upload failed: ${errorText}`);
+  }
+
+  const url = await response.text();
+  fs.unlinkSync(file.path);
+  return url;
+};
+
 const processPdf = async (taskId) => {
   // const taskData = await redis.get(`pdf_upload_task_${taskId}`);
   let taskData: any = JSON.parse(
@@ -184,11 +212,6 @@ const processPdf = async (taskId) => {
     throw new Error('No images found');
   }
 
-  validateCloudflareConfig();
-
-  const uploadImage =
-    config.useCdn === 'true' ? uploadToCFImages : uploadToCloudflare;
-
   const imageUrls: any = [];
   taskData.status = 'uploading';
   taskData.progress = 0; // Initialize progress
@@ -197,7 +220,7 @@ const processPdf = async (taskId) => {
   for (let i = 0; i < imagePaths.length; i++) {
     const imagePath = imagePaths[i];
     try {
-      const imageUrl = await uploadImage(imagePath, taskData.subdomain);
+      const imageUrl = await uploadImageViaCore(imagePath, taskData.subdomain);
       imageUrls.push(imageUrl);
 
       // Update progress

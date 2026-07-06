@@ -38,7 +38,7 @@ export async function applyProxiesCoreless(
     app.use(
       path,
       createProxyMiddleware({
-        pathRewrite: { [path]: '/' },
+        pathRewrite: { [path]: '' },
         target: target.address,
         onProxyReq,
       }),
