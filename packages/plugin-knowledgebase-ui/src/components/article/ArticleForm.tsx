@@ -3,7 +3,6 @@ import {
   IErxesForm,
   ITopic,
 } from '@erxes/ui-knowledgebase/src/types';
-import { FILE_MIME_TYPES } from '@erxes/ui-settings/src/general/constants';
 import Button from '@erxes/ui/src/components/Button';
 import FormControl from '@erxes/ui/src/components/form/Control';
 import Form from '@erxes/ui/src/components/form/Form';
@@ -19,7 +18,6 @@ import {
   IButtonMutateProps,
   IFormProps,
   IOption,
-  IPdfAttachment,
 } from '@erxes/ui/src/types';
 import dayjs from 'dayjs';
 import { __, extractAttachment } from '@erxes/ui/src/utils';
@@ -28,7 +26,6 @@ import Select, { OnChangeValue } from 'react-select';
 import { articleReactions } from '../../icons.constant';
 
 import { FlexRow, Forms, ReactionItem } from './styles';
-import PdfUploader from '@erxes/ui/src/components/PdfUploader';
 
 type Props = {
   article: IArticle;
@@ -46,8 +43,6 @@ type State = {
   categoryId: string;
   scheduledDate?: Date;
   attachments: IAttachment[];
-  pdfAttachment?: IPdfAttachment | undefined;
-  image: IAttachment | null;
   erxesForms: IErxesForm[];
   isPrivate: boolean;
   isScheduled: boolean;
@@ -60,7 +55,6 @@ class ArticleForm extends React.Component<Props, State> {
     const article = props.article || ({ content: '' } as IArticle);
     const attachments =
       (article.attachments && extractAttachment(article.attachments)) || [];
-    const image = article.image ? extractAttachment([article.image])[0] : null;
 
     this.state = {
       content: article.content,
@@ -68,13 +62,11 @@ class ArticleForm extends React.Component<Props, State> {
       topicId: article.topicId,
       categoryId: article.categoryId,
       erxesForms: article.forms || [],
-      image,
       attachments,
       isPrivate: article.isPrivate || false,
       isScheduled: article.status === 'scheduled' || false,
       scheduledDate:
         article.status === 'scheduled' ? article.scheduledDate : undefined,
-      pdfAttachment: article.pdfAttachment || undefined,
     };
   }
 
@@ -90,11 +82,6 @@ class ArticleForm extends React.Component<Props, State> {
     }
   }
 
-  getFirstAttachment = () => {
-    const { attachments } = this.state;
-
-    return attachments.length > 0 ? attachments[0] : ({} as IAttachment);
-  };
 
   generateDoc = (values: {
     _id?: string;
@@ -109,7 +96,6 @@ class ArticleForm extends React.Component<Props, State> {
       reactionChoices,
       topicId,
       categoryId,
-      image,
       erxesForms,
       isPrivate,
       scheduledDate,
@@ -120,24 +106,6 @@ class ArticleForm extends React.Component<Props, State> {
     if (article) {
       finalValues._id = article._id;
     }
-
-    const pdfAttachment: any = { ...this.state.pdfAttachment };
-
-    if (pdfAttachment && pdfAttachment.__typename) {
-      delete pdfAttachment.__typename;
-    }
-
-    if (pdfAttachment.pdf && pdfAttachment.pdf.__typename) {
-      delete pdfAttachment.pdf.__typename;
-    }
-
-    pdfAttachment.pages = pdfAttachment.pages?.map((p) => {
-      const page = { ...p };
-      if (page && page.__typename) {
-        delete page.__typename;
-      }
-      return page;
-    });
 
     return {
       _id: finalValues._id,
@@ -156,9 +124,7 @@ class ArticleForm extends React.Component<Props, State> {
         })),
         attachments,
         categoryId,
-        image,
         scheduledDate,
-        pdfAttachment,
       },
     };
   };
@@ -174,29 +140,11 @@ class ArticleForm extends React.Component<Props, State> {
   onChangeAttachments = (attachments: IAttachment[]) =>
     this.setState({ attachments });
 
-  onChangeImage = (images: IAttachment[]) => {
-    if (images && images.length > 0) {
-      this.setState({ image: images[0] });
-    } else {
-      this.setState({ image: null });
-    }
-  };
-
   onChangeIsCheckDate = (e) => {
     const isChecked = (e.currentTarget as HTMLInputElement).checked;
     this.setState({ isPrivate: isChecked });
   };
 
-  onChangeAttachment = (key: string, value: string | number) => {
-    this.setState({
-      attachments: [
-        {
-          ...this.getFirstAttachment(),
-          [key]: value,
-        },
-      ],
-    });
-  };
 
   onChangeForm = (formId: string, key: string, value: string | number) => {
     const erxesForms = this.state.erxesForms;
@@ -360,14 +308,8 @@ class ArticleForm extends React.Component<Props, State> {
 
   renderContent = (formProps: IFormProps) => {
     const { article, renderButton, closeModal } = this.props;
-    const { attachments, reactionChoices, content, image, isPrivate } =
+    const { attachments, reactionChoices, content, isPrivate } =
       this.state;
-    const attachment = this.getFirstAttachment();
-
-    const mimeTypeOptions = FILE_MIME_TYPES.map((item) => ({
-      value: item.value,
-      label: `${item.label} (${item.extension})`,
-    }));
 
     const { isSubmitted, values } = formProps;
 
@@ -491,99 +433,12 @@ class ArticleForm extends React.Component<Props, State> {
         </FlexContent>
 
         <FormGroup>
-          <ControlLabel>{__('Image')}</ControlLabel>
-          <Uploader
-            defaultFileList={image ? [image] : []}
-            onChange={this.onChangeImage}
-            single={true}
-          />
-        </FormGroup>
-
-        <FormGroup>
-          <ControlLabel>{__('Attachment')}</ControlLabel>
+          <ControlLabel>{__('Attachments')}</ControlLabel>
           <Uploader
             defaultFileList={attachments}
             onChange={this.onChangeAttachments}
-            single={true}
           />
         </FormGroup>
-
-        <FormGroup>
-          <ControlLabel>PDF</ControlLabel>
-          <PdfUploader
-            attachment={this.state.pdfAttachment}
-            onChange={(attachment?: IPdfAttachment) => {
-              return this.setState({ pdfAttachment: attachment });
-            }}
-          />
-        </FormGroup>
-
-        <FlexContent>
-          <FlexItem count={2} hasSpace={true}>
-            <FormGroup>
-              <ControlLabel>{__('File url')}</ControlLabel>
-              <FormControl
-                placeholder='Url'
-                value={attachment.url || ''}
-                onChange={(e: any) =>
-                  this.onChangeAttachment('url', e.target.value)
-                }
-              />
-            </FormGroup>
-            <FormGroup>
-              <ControlLabel>{__('File name')}</ControlLabel>
-              <FormControl
-                placeholder='Name'
-                value={attachment.name || ''}
-                onChange={(e: any) =>
-                  this.onChangeAttachment('name', e.target.value)
-                }
-              />
-            </FormGroup>
-          </FlexItem>
-          <FlexItem count={2} hasSpace={true}>
-            <FormGroup>
-              <ControlLabel>{__('File size (byte)')}</ControlLabel>
-              <FormControl
-                placeholder='Size (byte)'
-                value={attachment.size || ''}
-                type='number'
-                onChange={(e: any) =>
-                  this.onChangeAttachment('size', parseInt(e.target.value, 10))
-                }
-              />
-            </FormGroup>
-            <FormGroup>
-              <ControlLabel>{__('File type')}</ControlLabel>
-              <FormControl
-                componentclass='select'
-                value={attachment.type || ''}
-                onChange={(e: any) =>
-                  this.onChangeAttachment('type', e.target.value)
-                }
-                options={[
-                  { value: '', label: __('Select type') },
-                  ...mimeTypeOptions,
-                ]}
-              />
-            </FormGroup>
-          </FlexItem>
-          <FlexItem count={2} hasSpace={true}>
-            <FormGroup>
-              <ControlLabel>{__('File duration (sec)')}</ControlLabel>
-              <FormControl
-                placeholder='Duration'
-                value={attachment.duration || 0}
-                onChange={(e: any) =>
-                  this.onChangeAttachment(
-                    'duration',
-                    parseInt(e.target.value, 10)
-                  )
-                }
-              />
-            </FormGroup>
-          </FlexItem>
-        </FlexContent>
 
         <FormGroup>
           <ControlLabel>{__('erxes forms')}</ControlLabel>
