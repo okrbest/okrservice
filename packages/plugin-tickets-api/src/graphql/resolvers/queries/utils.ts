@@ -32,6 +32,8 @@ export interface IArchiveArgs {
   customerIds?: string[];
   startDate?: string;
   endDate?: string;
+  modifiedAtStart?: string;
+  modifiedAtEnd?: string;
   sources?: string[];
   hackStages?: string[];
 }
@@ -1019,6 +1021,8 @@ const generateArhivedItemsFilter = (
     productIds,
     startDate,
     endDate,
+    modifiedAtStart,
+    modifiedAtEnd,
     sources,
     hackStages,
   } = params;
@@ -1065,6 +1069,16 @@ const generateArhivedItemsFilter = (
         $lte: new Date(endDate),
       };
     }
+  }
+
+  if (modifiedAtStart) {
+    filter.modifiedAt = { $gte: new Date(modifiedAtStart) };
+  }
+
+  if (modifiedAtEnd) {
+    const endOfDay = new Date(modifiedAtEnd);
+    endOfDay.setHours(23, 59, 59, 999);
+    filter.modifiedAt = { ...(filter.modifiedAt || {}), $lte: endOfDay };
   }
 
   if (sources && sources.length) {
