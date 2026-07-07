@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Icon from '@erxes/ui/src/components/Icon';
+import * as routerUtils from '@erxes/ui/src/utils/router';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const GroupHeader = styled.div`
   background: #e9ecef;
@@ -22,6 +24,10 @@ const ItemRow = styled.div`
   padding: 7px 14px;
   border-bottom: 1px solid #f0f0f0;
   font-size: 12px;
+  cursor: pointer;
+  &:hover {
+    background: #f8f9fa;
+  }
   &:last-child {
     border-bottom: none;
   }
@@ -83,6 +89,8 @@ export default function ArchiveGroupList({
   onGroupSelectAll,
   cacheKey,
 }: Props) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [groupItems, setGroupItems] = useState<Record<string, TicketItem[]>>({});
   const [pages, setPages] = useState<Record<string, number>>({});
@@ -156,11 +164,17 @@ export default function ArchiveGroupList({
             {isOpen && (
               <>
                 {items.map((item) => (
-                  <ItemRow key={item._id}>
+                  <ItemRow
+                    key={item._id}
+                    onClick={() =>
+                      routerUtils.setParams(navigate, location, { itemId: item._id, key: '' })
+                    }
+                  >
                     <input
                       type="checkbox"
                       checked={selectedIds.includes(item._id)}
                       onChange={() => onToggleSelect(item._id)}
+                      onClick={(e) => e.stopPropagation()}
                       style={{ cursor: 'pointer' }}
                     />
                     <span style={{ flex: 2, color: '#212529' }}>{item.name}</span>
