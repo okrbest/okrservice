@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import { Alert, confirm } from '@erxes/ui/src/utils';
 import ArchiveModalComponent from '../components/ArchiveModal';
@@ -11,6 +11,32 @@ type Props = {
 };
 
 const ITEMS_PER_PAGE = 10;
+
+const REQUEST_TYPE_LABELS: Record<string, string> = {
+  inquiry: '단순문의',
+  improvement: '개선요청',
+  error: '오류처리',
+  config: '설정변경',
+  additional_development: '추가개발',
+  usage_guide: '사용안내',
+  data_work: '데이터작업',
+};
+
+const FUNCTION_CATEGORY_LABELS: Record<string, string> = {
+  hr: '인사',
+  organization: '조직',
+  attendance: '근태',
+  payroll: '급여',
+  evaluation: '평가',
+  education: '교육',
+  recruitment: '채용',
+  benefits: '복리후생',
+  pcoff: 'PCOFF',
+  approval: '전자결재',
+  system: '시스템',
+  mobile: '모바일',
+  tigris: '티그리스',
+};
 
 export default function ArchiveModal({ pipelineId, onClose }: Props) {
   const client = useApolloClient();
@@ -178,7 +204,21 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
     });
   };
 
-  const groups = data?.archivedTicketsGroups || [];
+  const rawGroups = data?.archivedTicketsGroups || [];
+
+  const groups = useMemo(() => {
+    const labelMap =
+      groupBy === 'requestType' ? REQUEST_TYPE_LABELS :
+      groupBy === 'functionCategory' ? FUNCTION_CATEGORY_LABELS :
+      null;
+
+    if (!labelMap) return rawGroups;
+
+    return rawGroups.map((g: { key: string; label: string; count: number }) => ({
+      ...g,
+      label: labelMap[g.key] ?? g.label,
+    }));
+  }, [rawGroups, groupBy]);
 
   return (
     <ArchiveModalComponent
