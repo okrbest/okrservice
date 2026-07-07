@@ -75,7 +75,6 @@ const SelectedCount = styled.span`
 type Group = { key: string; label: string; count: number };
 
 type Props = {
-  pipelineId: string;
   groups: Group[];
   groupBy: string;
   filters: ArchiveFilters;
