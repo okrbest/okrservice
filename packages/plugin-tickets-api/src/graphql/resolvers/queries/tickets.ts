@@ -45,20 +45,20 @@ const ticketQueries = {
   /**
    * Archived list
    */
-  async archivedTickets(_root, args: IArchiveArgs, { models }: IContext) {
-    return archivedItems(models, args, models.Tickets);
+  async archivedTickets(_root, args: IArchiveArgs, { models, subdomain }: IContext) {
+    return archivedItems(models, subdomain, args, models.Tickets);
   },
 
-  async archivedTicketsCount(_root, args: IArchiveArgs, { models }: IContext) {
-    return archivedItemsCount(models, args, models.Tickets);
+  async archivedTicketsCount(_root, args: IArchiveArgs, { models, subdomain }: IContext) {
+    return archivedItemsCount(models, subdomain, args, models.Tickets);
   },
 
   async archivedTicketsGroups(
     _root,
     args: IArchivedTicketsGroupsParams,
-    { models }: IContext
+    { models, subdomain }: IContext
   ) {
-    return archivedTicketsGroupsUtil(models, args);
+    return archivedTicketsGroupsUtil(models, subdomain, args);
   },
 
   /**
