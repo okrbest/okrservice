@@ -125,8 +125,8 @@ const archivedTicketsParams = `
   customerIds: [String]
   startDate: String
   endDate: String
-  modifiedAtStart: String
-  modifiedAtEnd: String
+  createdAtStart: String
+  createdAtEnd: String
   sources: [String]
 `;
 

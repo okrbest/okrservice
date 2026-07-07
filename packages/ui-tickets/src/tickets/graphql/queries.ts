@@ -191,8 +191,8 @@ const archivedTicketsParams = `
   $customerIds: [String]
   $startDate: String
   $endDate: String
-  $modifiedAtStart: String
-  $modifiedAtEnd: String
+  $createdAtStart: String
+  $createdAtEnd: String
   $sources: [String]
 `;
 
@@ -207,8 +207,8 @@ const archivedTicketsArgs = `
   customerIds: $customerIds
   startDate: $startDate
   endDate: $endDate
-  modifiedAtStart: $modifiedAtStart
-  modifiedAtEnd: $modifiedAtEnd
+  createdAtStart: $createdAtStart
+  createdAtEnd: $createdAtEnd
   sources: $sources
 `;
 
