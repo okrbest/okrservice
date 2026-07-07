@@ -137,18 +137,25 @@ export default function ArchiveLeftPanel({
       />
 
       <FilterLabel>담당자</FilterLabel>
-      <MultiSelect
-        multiple
-        value={filters.assignedUserIds}
+      <input
+        type="text"
+        placeholder="담당자 ID (쉼표 구분)"
         onChange={(e) => {
-          const selected = Array.from(e.target.selectedOptions).map((o) => o.value);
-          set('assignedUserIds', selected);
+          const ids = e.target.value
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+          set('assignedUserIds', ids);
         }}
-      >
-        <option value="" disabled>
-          담당자 선택...
-        </option>
-      </MultiSelect>
+        style={{
+          width: '100%',
+          padding: '3px 6px',
+          border: '1px solid #ced4da',
+          borderRadius: 4,
+          fontSize: 11,
+          boxSizing: 'border-box',
+        }}
+      />
     </Panel>
   );
 }
