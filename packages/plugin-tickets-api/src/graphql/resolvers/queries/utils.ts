@@ -32,8 +32,8 @@ export interface IArchiveArgs {
   customerIds?: string[];
   startDate?: string;
   endDate?: string;
-  modifiedAtStart?: string;
-  modifiedAtEnd?: string;
+  createdAtStart?: string;
+  createdAtEnd?: string;
   sources?: string[];
   hackStages?: string[];
 }
@@ -1021,8 +1021,8 @@ const generateArhivedItemsFilter = (
     productIds,
     startDate,
     endDate,
-    modifiedAtStart,
-    modifiedAtEnd,
+    createdAtStart,
+    createdAtEnd,
     sources,
     hackStages,
   } = params;
@@ -1071,14 +1071,14 @@ const generateArhivedItemsFilter = (
     }
   }
 
-  if (modifiedAtStart) {
-    filter.modifiedAt = { $gte: new Date(modifiedAtStart) };
+  if (createdAtStart) {
+    filter.createdAt = { $gte: new Date(createdAtStart) };
   }
 
-  if (modifiedAtEnd) {
-    const endOfDay = new Date(modifiedAtEnd);
+  if (createdAtEnd) {
+    const endOfDay = new Date(createdAtEnd);
     endOfDay.setHours(23, 59, 59, 999);
-    filter.modifiedAt = { ...(filter.modifiedAt || {}), $lte: endOfDay };
+    filter.createdAt = { ...(filter.createdAt || {}), $lte: endOfDay };
   }
 
   if (sources && sources.length) {
@@ -1140,7 +1140,7 @@ export const archivedTicketsGroups = async (
   switch (groupBy) {
     case "month":
       groupField = {
-        $dateToString: { format: "%Y-%m", date: "$modifiedAt" },
+        $dateToString: { format: "%Y-%m", date: "$createdAt" },
       };
       break;
     case "assignee":
