@@ -1202,9 +1202,40 @@ export const archivedTicketsGroups = async (
         $dateToString: { format: "%Y-%m", date: "$createdAt" },
       };
       break;
-    case "assignee":
-      groupField = { $arrayElemAt: ["$assignedUserIds", 0] };
-      break;
+    case "assignee": {
+      const groups = await models.Tickets.aggregate([
+        { $match: baseFilter },
+        { $group: { _id: { $arrayElemAt: ["$assignedUserIds", 0] }, count: { $sum: 1 } } },
+        { $sort: { _id: -1 } },
+      ]);
+
+      const userIds = groups
+        .filter((g) => g._id != null)
+        .map((g) => String(g._id));
+
+      const users = userIds.length
+        ? await sendCoreMessage({
+            subdomain,
+            action: "users.find",
+            data: { query: { _id: { $in: userIds } } },
+            isRPC: true,
+            defaultValue: [],
+          })
+        : [];
+
+      const nameMap = new Map(
+        (users as any[]).map((u) => [
+          String(u._id),
+          u.details?.fullName || u.email || String(u._id),
+        ])
+      );
+
+      return groups.map((g) => ({
+        key: g._id != null ? String(g._id) : "none",
+        label: g._id != null ? (nameMap.get(String(g._id)) || String(g._id)) : "미분류",
+        count: g.count,
+      }));
+    }
     case "requestType":
       groupField = "$requestType";
       break;
