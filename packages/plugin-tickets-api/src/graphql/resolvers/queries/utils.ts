@@ -1077,7 +1077,7 @@ const generateArhivedItemsFilter = (
 
   if (createdAtEnd) {
     const endOfDay = new Date(createdAtEnd);
-    endOfDay.setHours(23, 59, 59, 999);
+    endOfDay.setUTCHours(23, 59, 59, 999);
     filter.createdAt = { ...(filter.createdAt || {}), $lte: endOfDay };
   }
 

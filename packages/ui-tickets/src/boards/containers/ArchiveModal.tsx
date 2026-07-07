@@ -64,10 +64,9 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
             if (year && month) {
               const y = parseInt(year, 10);
               const m = parseInt(month, 10);
-              const start = new Date(y, m - 1, 1);
-              const end = new Date(y, m, 0);
-              groupFilter.createdAtStart = start.toISOString().split('T')[0];
-              groupFilter.createdAtEnd = end.toISOString().split('T')[0];
+              const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+              groupFilter.createdAtStart = `${year}-${month}-01`;
+              groupFilter.createdAtEnd = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
             }
           }
           break;
