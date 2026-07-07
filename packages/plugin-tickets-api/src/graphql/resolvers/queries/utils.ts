@@ -34,6 +34,8 @@ export interface IArchiveArgs {
   endDate?: string;
   createdAtStart?: string;
   createdAtEnd?: string;
+  noAssignee?: boolean;
+  noCompany?: boolean;
   sources?: string[];
   hackStages?: string[];
 }
@@ -1023,8 +1025,10 @@ const generateArhivedItemsFilter = (
     endDate,
     createdAtStart,
     createdAtEnd,
+    noAssignee,
+    noCompany,
     sources,
-    hackStages,
+    hackStages
   } = params;
 
   const filter: any = { status: BOARD_STATUSES.ARCHIVED };
@@ -1043,7 +1047,9 @@ const generateArhivedItemsFilter = (
     filter.priority = { $in: priorities };
   }
 
-  if (assignedUserIds && assignedUserIds.length) {
+  if (noAssignee) {
+    filter['assignedUserIds.0'] = { $exists: false };
+  } else if (assignedUserIds && assignedUserIds.length) {
     filter.assignedUserIds = { $in: assignedUserIds };
   }
 
@@ -1079,6 +1085,10 @@ const generateArhivedItemsFilter = (
     const endOfDay = new Date(createdAtEnd);
     endOfDay.setUTCHours(23, 59, 59, 999);
     filter.createdAt = { ...(filter.createdAt || {}), $lte: endOfDay };
+  }
+
+  if (noCompany) {
+    filter['companyIds.0'] = { $exists: false };
   }
 
   if (sources && sources.length) {

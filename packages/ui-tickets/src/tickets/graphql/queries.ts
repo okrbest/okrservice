@@ -193,6 +193,8 @@ const archivedTicketsParams = `
   $endDate: String
   $createdAtStart: String
   $createdAtEnd: String
+  $noAssignee: Boolean
+  $noCompany: Boolean
   $sources: [String]
 `;
 
@@ -209,6 +211,8 @@ const archivedTicketsArgs = `
   endDate: $endDate
   createdAtStart: $createdAtStart
   createdAtEnd: $createdAtEnd
+  noAssignee: $noAssignee
+  noCompany: $noCompany
   sources: $sources
 `;
 
