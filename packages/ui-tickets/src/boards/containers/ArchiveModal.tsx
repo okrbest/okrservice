@@ -141,6 +141,10 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
           variables: {
             pipelineId,
             search: filters.search || undefined,
+            assignedUserIds:
+              groupBy !== 'assignee' && filters.assignedUserIds.length > 0
+                ? filters.assignedUserIds
+                : undefined,
             page,
             perPage: ITEMS_PER_PAGE,
             ...groupFilter,
@@ -153,7 +157,7 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
         return [];
       }
     },
-    [client, pipelineId, groupBy, filters.search]
+    [client, pipelineId, groupBy, filters.search, filters.assignedUserIds]
   );
 
   const handleSearchChange = (v: string) => {
