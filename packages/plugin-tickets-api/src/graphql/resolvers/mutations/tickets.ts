@@ -157,6 +157,12 @@ const ticketMutations = {
     { models, user }: IContext
   ) {
     if (!ids || ids.length === 0) return { count: 0 };
+
+    const VALID_STATUSES = ['active', 'archived'];
+    if (!VALID_STATUSES.includes(status)) {
+      throw new Error(`유효하지 않은 status: ${status}`);
+    }
+
     const limitedIds = ids.slice(0, 500);
 
     await models.Tickets.updateMany(
