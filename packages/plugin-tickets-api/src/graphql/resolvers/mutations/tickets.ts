@@ -176,14 +176,16 @@ const ticketMutations = {
   async ticketsBulkRemove(
     _root,
     { ids }: { ids: string[] },
-    { models }: IContext
+    { models, subdomain, user }: IContext
   ) {
     if (!ids || ids.length === 0) return 0;
     const limitedIds = ids.slice(0, 500);
 
-    const result = await models.Tickets.deleteMany({ _id: { $in: limitedIds } });
+    const results = await Promise.allSettled(
+      limitedIds.map((id) => itemsRemove(models, subdomain, id, 'ticket', user))
+    );
 
-    return result.deletedCount || 0;
+    return results.filter((r) => r.status === 'fulfilled').length;
   },
 
   /**
