@@ -7,6 +7,7 @@ import {
   PageHeader,
 } from "../styles/header";
 import { IBoard, IOptions, IPipeline } from "../types";
+import ArchiveModalContainer from '../containers/ArchiveModal';
 import { __ } from "coreui/utils";
 import { isEnabled } from "@erxes/ui/src/utils/core";
 import {
@@ -540,10 +541,22 @@ class MainActionBar extends React.Component<Props, State> {
     );
 
     return (
-      <PageHeader id="board-pipeline-header">
-        {actionBarLeft}
-        {actionBarRight}
-      </PageHeader>
+      <>
+        <PageHeader id="board-pipeline-header">
+          {actionBarLeft}
+          {actionBarRight}
+        </PageHeader>
+        {this.state.showArchiveModal && (
+          <ArchiveModalContainer
+            pipelineId={
+              (this.props.queryParams?.pipelineId as string) ||
+              this.props.currentPipeline?._id ||
+              ''
+            }
+            onClose={() => this.setState({ showArchiveModal: false })}
+          />
+        )}
+      </>
     );
   }
 }
