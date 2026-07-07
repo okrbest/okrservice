@@ -63,6 +63,8 @@ type State = {
   isDragEnabled?: boolean;
   /** 스테이지별 슬라이딩 윈도우: 앞쪽으로 건너뛴 개수 (다음 fetch의 skip = stageSkipOffset[stageId] + items.length) */
   stageSkipOffset: { [stageId: string]: number };
+  isSelectMode: boolean;
+  selectedIds: string[];
 };
 
 interface IStore {
@@ -86,6 +88,12 @@ interface IStore {
   maxItemsPerStage: number;
   /** 스테이지별 슬라이딩 윈도우 오프셋 (다음 loadMore 시 skip = stageSkipOffset + items.length) */
   stageSkipOffset: { [stageId: string]: number };
+  isSelectMode: boolean;
+  selectedIds: string[];
+  toggleSelectMode: () => void;
+  toggleItemSelect: (itemId: string) => void;
+  selectAllInStage: (stageItemIds: string[]) => void;
+  clearSelection: () => void;
 }
 
 const PipelineContext = React.createContext({} as IStore);
@@ -129,7 +137,9 @@ class PipelineProviderInner extends React.Component<Props, State> {
       stageLoadMap: {},
       stageIds,
       isShowLabel: false || localStorage.getItem(pipeline._id) === "true",
-      stageSkipOffset: {}
+      stageSkipOffset: {},
+      isSelectMode: false,
+      selectedIds: [] as string[]
     };
 
     PipelineProviderInner.tickets = [];
@@ -766,6 +776,45 @@ class PipelineProviderInner extends React.Component<Props, State> {
     }
   };
 
+  toggleSelectMode = () => {
+    this.setState((prev) => ({
+      isSelectMode: !prev.isSelectMode,
+      selectedIds: [],
+    }));
+  };
+
+  toggleItemSelect = (itemId: string) => {
+    this.setState((prev) => {
+      const exists = prev.selectedIds.includes(itemId);
+      return {
+        selectedIds: exists
+          ? prev.selectedIds.filter((id) => id !== itemId)
+          : [...prev.selectedIds, itemId],
+      };
+    });
+  };
+
+  selectAllInStage = (stageItemIds: string[]) => {
+    this.setState((prev) => {
+      const allSelected = stageItemIds.every((id) =>
+        prev.selectedIds.includes(id)
+      );
+      if (allSelected) {
+        return {
+          selectedIds: prev.selectedIds.filter(
+            (id) => !stageItemIds.includes(id)
+          ),
+        };
+      }
+      const merged = [...new Set([...prev.selectedIds, ...stageItemIds])];
+      return { selectedIds: merged };
+    });
+  };
+
+  clearSelection = () => {
+    this.setState({ selectedIds: [], isSelectMode: false });
+  };
+
   toggleLabels = () => {
     if (!this.state.isShowLabel) {
       localStorage.setItem(this.props.pipeline._id, "true");
@@ -818,7 +867,13 @@ class PipelineProviderInner extends React.Component<Props, State> {
             isShowLabel,
             toggleLabels: this.toggleLabels,
             maxItemsPerStage: MAX_ITEMS_PER_STAGE,
-            stageSkipOffset: stageSkipOffset || {}
+            stageSkipOffset: stageSkipOffset || {},
+            isSelectMode: this.state.isSelectMode,
+            selectedIds: this.state.selectedIds,
+            toggleSelectMode: this.toggleSelectMode,
+            toggleItemSelect: this.toggleItemSelect,
+            selectAllInStage: this.selectAllInStage,
+            clearSelection: this.clearSelection
           }}
         >
           {this.props.children}
