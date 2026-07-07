@@ -129,6 +129,10 @@ const archivedTicketsParams = `
   createdAtEnd: String
   noAssignee: Boolean
   noCompany: Boolean
+  requestType: String
+  functionCategory: String
+  noRequestType: Boolean
+  noFunctionCategory: Boolean
   sources: [String]
 `;
 

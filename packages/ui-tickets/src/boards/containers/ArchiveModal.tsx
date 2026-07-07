@@ -57,6 +57,10 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
         createdAtEnd?: string;
         noAssignee?: boolean;
         noCompany?: boolean;
+        requestType?: string;
+        functionCategory?: string;
+        noRequestType?: boolean;
+        noFunctionCategory?: boolean;
       } = {};
 
       switch (groupBy) {
@@ -85,6 +89,20 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
             groupFilter.noCompany = true;
           } else {
             groupFilter.companyIds = [groupKey];
+          }
+          break;
+        case 'requestType':
+          if (groupKey === 'none') {
+            groupFilter.noRequestType = true;
+          } else {
+            groupFilter.requestType = groupKey;
+          }
+          break;
+        case 'functionCategory':
+          if (groupKey === 'none') {
+            groupFilter.noFunctionCategory = true;
+          } else {
+            groupFilter.functionCategory = groupKey;
           }
           break;
         default:
