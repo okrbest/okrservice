@@ -20,6 +20,7 @@ import { isEnabled } from "@erxes/ui/src/utils/core";
 
 import { AddForm } from "../../containers/portable";
 import { Draggable } from "react-beautiful-dnd";
+import { PipelineConsumer } from "../../containers/PipelineContext";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import Icon from "@erxes/ui/src/components/Icon";
 import ItemList from "../stage/ItemList";
@@ -574,7 +575,26 @@ export default class Stage extends React.Component<Props, State> {
             <StageRoot $isDragging={snapshot.isDragging}>
               <Header {...provided.dragHandleProps}>
                 <StageTitle>
-                  <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <PipelineConsumer>
+                      {({ isSelectMode, selectedIds, selectAllInStage }) => {
+                        if (!isSelectMode) return null;
+                        const stageIds = this.props.items.map((i) => i._id);
+                        const allSelected =
+                          stageIds.length > 0 &&
+                          stageIds.every((id) => selectedIds.includes(id));
+                        return (
+                          <input
+                            type='checkbox'
+                            checked={allSelected}
+                            onChange={() => selectAllInStage(stageIds)}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ cursor: 'pointer', flexShrink: 0 }}
+                            title='스테이지 전체 선택'
+                          />
+                        );
+                      }}
+                    </PipelineConsumer>
                     {stage.name}
                     <span>{stage.itemsTotalCount}</span>
                   </div>
