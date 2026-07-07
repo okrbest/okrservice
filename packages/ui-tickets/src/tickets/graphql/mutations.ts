@@ -81,6 +81,20 @@ const ticketsBulkArchive = `
   }
 `;
 
+const ticketsBulkEdit = `
+  mutation ticketsBulkEdit($ids: [String!]!, $status: String!) {
+    ticketsBulkEdit(ids: $ids, status: $status) {
+      count
+    }
+  }
+`;
+
+const ticketsBulkRemove = `
+  mutation ticketsBulkRemove($ids: [String!]!) {
+    ticketsBulkRemove(ids: $ids)
+  }
+`;
+
 const ticketsCopy = `
   mutation ticketsCopy($_id: String!, $proccessId: String) {
     ticketsCopy(_id: $_id, proccessId: $proccessId) {
@@ -98,5 +112,7 @@ export default {
   ticketsWatch,
   ticketsArchive,
   ticketsBulkArchive,
+  ticketsBulkEdit,
+  ticketsBulkRemove,
   ticketsCopy,
 };
