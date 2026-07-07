@@ -195,6 +195,10 @@ const archivedTicketsParams = `
   $createdAtEnd: String
   $noAssignee: Boolean
   $noCompany: Boolean
+  $requestType: String
+  $functionCategory: String
+  $noRequestType: Boolean
+  $noFunctionCategory: Boolean
   $sources: [String]
 `;
 
@@ -213,6 +217,10 @@ const archivedTicketsArgs = `
   createdAtEnd: $createdAtEnd
   noAssignee: $noAssignee
   noCompany: $noCompany
+  requestType: $requestType
+  functionCategory: $functionCategory
+  noRequestType: $noRequestType
+  noFunctionCategory: $noFunctionCategory
   sources: $sources
 `;
 

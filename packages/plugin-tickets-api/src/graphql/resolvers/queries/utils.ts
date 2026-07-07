@@ -36,6 +36,10 @@ export interface IArchiveArgs {
   createdAtEnd?: string;
   noAssignee?: boolean;
   noCompany?: boolean;
+  requestType?: string;
+  functionCategory?: string;
+  noRequestType?: boolean;
+  noFunctionCategory?: boolean;
   sources?: string[];
   hackStages?: string[];
 }
@@ -1027,6 +1031,10 @@ const generateArhivedItemsFilter = (
     createdAtEnd,
     noAssignee,
     noCompany,
+    requestType,
+    functionCategory,
+    noRequestType,
+    noFunctionCategory,
     sources,
     hackStages
   } = params;
@@ -1089,6 +1097,18 @@ const generateArhivedItemsFilter = (
 
   if (noCompany) {
     filter['companyIds.0'] = { $exists: false };
+  }
+
+  if (noRequestType) {
+    filter.requestType = { $in: [null, ''] };
+  } else if (requestType) {
+    filter.requestType = requestType;
+  }
+
+  if (noFunctionCategory) {
+    filter.functionCategory = { $in: [null, ''] };
+  } else if (functionCategory) {
+    filter.functionCategory = functionCategory;
   }
 
   if (sources && sources.length) {
