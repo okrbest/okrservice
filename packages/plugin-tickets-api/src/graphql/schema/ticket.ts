@@ -135,6 +135,7 @@ export const queries = `
   archivedTickets(
     page: Int
     perPage: Int
+    pipelineId: String
     ${archivedTicketsParams}
   ): [Ticket]
   archivedTicketsCount(
