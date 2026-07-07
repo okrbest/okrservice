@@ -55,6 +55,8 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
         companyIds?: string[];
         createdAtStart?: string;
         createdAtEnd?: string;
+        noAssignee?: boolean;
+        noCompany?: boolean;
       } = {};
 
       switch (groupBy) {
@@ -72,12 +74,16 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
           break;
         }
         case 'assignee':
-          if (groupKey !== 'none') {
+          if (groupKey === 'none') {
+            groupFilter.noAssignee = true;
+          } else {
             groupFilter.assignedUserIds = [groupKey];
           }
           break;
         case 'company':
-          if (groupKey !== 'none') {
+          if (groupKey === 'none') {
+            groupFilter.noCompany = true;
+          } else {
             groupFilter.companyIds = [groupKey];
           }
           break;
