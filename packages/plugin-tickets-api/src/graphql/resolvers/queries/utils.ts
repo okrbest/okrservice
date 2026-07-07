@@ -971,47 +971,79 @@ export const checkItemPermByUser = async (
 
 export const archivedItems = async (
   models: IModels,
+  subdomain: string,
   params: IArchiveArgs,
   collection: any
 ) => {
-  const { pipelineId, ...listArgs } = params;
-
-  const { page = 0, perPage = 0 } = listArgs;
+  const { pipelineId, page = 0, perPage = 0 } = params;
 
   const stages = await models.Stages.find({ pipelineId }).lean();
 
-  if (stages.length > 0) {
-    const filter = generateArhivedItemsFilter(params, stages);
+  if (stages.length === 0) return [];
 
-    return collection
-      .find(filter)
-      .sort({
-        modifiedAt: -1,
-      })
-      .skip(page || 0)
-      .limit(perPage || 20)
-      .lean();
+  const filter = generateArhivedItemsFilter(params, stages);
+
+  if (params.companyIds && params.companyIds.length) {
+    const relIds = await sendCoreMessage({
+      subdomain,
+      action: "conformities.filterConformity",
+      data: { mainType: "company", mainTypeIds: params.companyIds, relType: "ticket" },
+      isRPC: true,
+      defaultValue: [],
+    });
+    filter._id = { $in: relIds };
+  } else if (params.noCompany) {
+    const allIds = (await collection.find(
+      { stageId: { $in: stages.map((s: any) => s._id) }, status: BOARD_STATUSES.ARCHIVED },
+      { _id: 1 }
+    ).lean()).map((t: any) => String(t._id));
+
+    const conformities = await sendCoreMessage({
+      subdomain,
+      action: "conformities.findConformities",
+      data: { mainType: "ticket", relType: "company", mainTypeId: { $in: allIds } },
+      isRPC: true,
+      defaultValue: [],
+    });
+
+    const idsWithCompany = new Set(conformities.map((c: any) => String(c.mainTypeId)));
+    filter._id = { $nin: [...idsWithCompany] };
   }
 
-  return [];
+  return collection
+    .find(filter)
+    .sort({ modifiedAt: -1 })
+    .skip(page || 0)
+    .limit(perPage || 20)
+    .lean();
 };
 
 export const archivedItemsCount = async (
   models: IModels,
+  subdomain: string,
   params: IArchiveArgs,
   collection: any
 ) => {
   const { pipelineId } = params;
 
-  const stages = await models.Stages.find({ pipelineId });
+  const stages = await models.Stages.find({ pipelineId }).lean();
 
-  if (stages.length > 0) {
-    const filter = generateArhivedItemsFilter(params, stages);
+  if (stages.length === 0) return 0;
 
-    return collection.find(filter).countDocuments();
+  const filter = generateArhivedItemsFilter(params, stages);
+
+  if (params.companyIds && params.companyIds.length) {
+    const relIds = await sendCoreMessage({
+      subdomain,
+      action: "conformities.filterConformity",
+      data: { mainType: "company", mainTypeIds: params.companyIds, relType: "ticket" },
+      isRPC: true,
+      defaultValue: [],
+    });
+    filter._id = { $in: relIds };
   }
 
-  return 0;
+  return collection.find(filter).countDocuments();
 };
 
 const generateArhivedItemsFilter = (
@@ -1095,10 +1127,6 @@ const generateArhivedItemsFilter = (
     filter.createdAt = { ...(filter.createdAt || {}), $lte: endOfDay };
   }
 
-  if (noCompany) {
-    filter['companyIds.0'] = { $exists: false };
-  }
-
   if (noRequestType) {
     filter.requestType = { $in: [null, ''] };
   } else if (requestType) {
@@ -1133,6 +1161,7 @@ export interface IArchivedTicketsGroupsParams {
 
 export const archivedTicketsGroups = async (
   models: IModels,
+  subdomain: string,
   params: IArchivedTicketsGroupsParams
 ) => {
   const { pipelineId, groupBy, search, assignedUserIds, startDate, endDate } =
@@ -1182,9 +1211,67 @@ export const archivedTicketsGroups = async (
     case "functionCategory":
       groupField = "$functionCategory";
       break;
-    case "company":
-      groupField = { $arrayElemAt: ["$companyIds", 0] };
-      break;
+    case "company": {
+      const ticketIds = (await models.Tickets.find(baseFilter, { _id: 1 }).lean()).map(
+        (t: any) => String(t._id)
+      );
+
+      if (ticketIds.length === 0) return [];
+
+      const conformities = await sendCoreMessage({
+        subdomain,
+        action: "conformities.findConformities",
+        data: { mainType: "ticket", relType: "company", mainTypeId: { $in: ticketIds } },
+        isRPC: true,
+        defaultValue: [],
+      });
+
+      const ticketCompanyMap = new Map<string, string>();
+      for (const c of conformities) {
+        const tid = String(c.mainTypeId);
+        if (!ticketCompanyMap.has(tid)) {
+          ticketCompanyMap.set(tid, String(c.relTypeId));
+        }
+      }
+
+      const companyCounts = new Map<string, number>();
+      let noneCount = 0;
+      for (const tid of ticketIds) {
+        const cid = ticketCompanyMap.get(tid);
+        if (cid) {
+          companyCounts.set(cid, (companyCounts.get(cid) || 0) + 1);
+        } else {
+          noneCount++;
+        }
+      }
+
+      const cIds = [...companyCounts.keys()];
+      const companies = cIds.length
+        ? await sendCoreMessage({
+            subdomain,
+            action: "companies.findActiveCompanies",
+            data: { selector: { _id: { $in: cIds } }, fields: { primaryName: 1 } },
+            isRPC: true,
+            defaultValue: [],
+          })
+        : [];
+
+      const nameMap = new Map(
+        (companies as any[]).map((c) => [String(c._id), c.primaryName || String(c._id)])
+      );
+
+      const result = [...companyCounts.entries()].map(([cid, count]) => ({
+        key: cid,
+        label: nameMap.get(cid) || cid,
+        count,
+      }));
+
+      if (noneCount > 0) {
+        result.push({ key: "none", label: "미분류", count: noneCount });
+      }
+
+      return result.sort((a, b) => b.count - a.count);
+    }
     default:
       groupField = "$requestType";
   }
