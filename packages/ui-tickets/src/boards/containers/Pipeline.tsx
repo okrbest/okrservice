@@ -14,11 +14,13 @@ import React, { Component, useState, useEffect } from "react";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import Spinner from "@erxes/ui/src/components/Spinner";
 import Stage from "./Stage";
-import { gql } from "@apollo/client";
+import BulkSelectBar from "../components/BulkSelectBar";
+import { Alert, confirm, withProps } from "@erxes/ui/src/utils";
+import { gql, useMutation } from "@apollo/client";
 import { graphql } from "@apollo/client/react/hoc";
 import { queries } from "../graphql";
+import { mutations as ticketMutations } from "../../tickets/graphql";
 import styled from "styled-components";
-import { withProps } from "@erxes/ui/src/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const Container = styled.div<{ $isMobile: boolean }>`
@@ -40,6 +42,51 @@ type Props = {
   navigate: any;
   location: any;
   options: IOptions;
+};
+
+type BulkBarProps = { pipelineId: string };
+
+const BulkSelectBarConnected: React.FC<BulkBarProps> = ({ pipelineId }) => {
+  const [dateThreshold, setDateThreshold] = useState('');
+  const [bulkArchive] = useMutation(gql(ticketMutations.ticketsBulkArchive));
+
+  return (
+    <PipelineConsumer>
+      {({ isSelectMode, selectedIds, clearSelection }) => {
+        if (!isSelectMode) return null;
+
+        const handleArchive = () => {
+          if (selectedIds.length === 0) return;
+          confirm(`${selectedIds.length}개 티켓을 아카이브하시겠습니까?`).then(
+            async () => {
+              try {
+                const result = await bulkArchive({
+                  variables: { ids: selectedIds, pipelineId },
+                });
+                const count =
+                  (result.data as any)?.ticketsBulkArchive?.count ??
+                  selectedIds.length;
+                Alert.success(`${count}개가 아카이브되었습니다.`);
+                clearSelection();
+              } catch (e: any) {
+                Alert.error(e.message);
+              }
+            }
+          );
+        };
+
+        return (
+          <BulkSelectBar
+            selectedCount={selectedIds.length}
+            onArchive={handleArchive}
+            onCancel={clearSelection}
+            dateThreshold={dateThreshold}
+            onDateThresholdChange={setDateThreshold}
+          />
+        );
+      }}
+    </PipelineConsumer>
+  );
 };
 
 class WithStages extends Component<WithStagesQueryProps> {
@@ -123,6 +170,8 @@ class WithStages extends Component<WithStagesQueryProps> {
         navigate={navigate}
         location={location}
       >
+        <>
+        <BulkSelectBarConnected pipelineId={pipeline._id} />
         <PipelineConsumer>
           {({
             stageLoadMap,
@@ -188,6 +237,7 @@ class WithStages extends Component<WithStagesQueryProps> {
             </DragDropContext>
           )}
         </PipelineConsumer>
+        </>
       </PipelineProvider>
     );
   }
