@@ -94,11 +94,13 @@ export default function ArchiveGroupList({
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [groupItems, setGroupItems] = useState<Record<string, TicketItem[]>>({});
   const [pages, setPages] = useState<Record<string, number>>({});
+  const [hasMore, setHasMore] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setExpanded({});
     setGroupItems({});
     setPages({});
+    setHasMore({});
   }, [cacheKey]);
 
   const ITEMS_PER_PAGE = 10;
@@ -109,6 +111,7 @@ export default function ArchiveGroupList({
       const items = await fetchGroupItems(key, 0);
       setGroupItems((prev) => ({ ...prev, [key]: items }));
       setPages((prev) => ({ ...prev, [key]: ITEMS_PER_PAGE }));
+      setHasMore((prev) => ({ ...prev, [key]: items.length >= ITEMS_PER_PAGE }));
     }
     setExpanded((prev) => ({ ...prev, [key]: !isOpen }));
   };
@@ -121,6 +124,7 @@ export default function ArchiveGroupList({
       [key]: [...(prev[key] || []), ...more],
     }));
     setPages((prev) => ({ ...prev, [key]: skip + ITEMS_PER_PAGE }));
+    setHasMore((prev) => ({ ...prev, [key]: more.length >= ITEMS_PER_PAGE }));
   };
 
   return (
@@ -190,9 +194,9 @@ export default function ArchiveGroupList({
                     {item.requestType && <Tag>{item.requestType}</Tag>}
                   </ItemRow>
                 ))}
-                {items.length < group.count && (
+                {hasMore[group.key] && (
                   <LoadMoreRow onClick={() => loadMore(group.key)}>
-                    + {group.count - items.length}개 더 보기
+                    + 더 보기
                   </LoadMoreRow>
                 )}
               </>
