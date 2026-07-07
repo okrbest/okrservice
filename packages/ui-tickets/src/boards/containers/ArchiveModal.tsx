@@ -123,21 +123,17 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
     });
   };
 
-  const handleBulkUnarchive = () => {
-    confirm(`${selectedIds.length}개 티켓을 아카이브 해제하시겠습니까?`).then(
-      async () => {
-        try {
-          await bulkUnarchiveMutation({
-            variables: { ids: selectedIds, status: 'active' },
-          });
-          Alert.success(`${selectedIds.length}개 티켓이 복구되었습니다.`);
-          setSelectedIds([]);
-          refetch();
-        } catch (e: any) {
-          Alert.error(e.message);
-        }
-      }
-    );
+  const handleBulkUnarchive = async () => {
+    try {
+      await bulkUnarchiveMutation({
+        variables: { ids: selectedIds, status: 'active' },
+      });
+      Alert.success(`${selectedIds.length}개 티켓이 복구되었습니다.`);
+      setSelectedIds([]);
+      refetch();
+    } catch (e: any) {
+      Alert.error(e.message);
+    }
   };
 
   const handleBulkDelete = () => {
