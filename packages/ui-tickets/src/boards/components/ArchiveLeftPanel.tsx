@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import SelectTeamMembers from '@erxes/ui/src/team/containers/SelectTeamMembers';
 
 const Panel = styled.div`
   width: 180px;
@@ -61,17 +62,6 @@ const DateInput = styled.input`
   border-radius: 4px;
   background: #fff;
   box-sizing: border-box;
-`;
-
-const MultiSelect = styled.select`
-  width: 100%;
-  padding: 4px 6px;
-  font-size: 11px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  background: #fff;
-  box-sizing: border-box;
-  min-height: 60px;
 `;
 
 const GROUP_OPTIONS = [
@@ -136,24 +126,15 @@ export default function ArchiveLeftPanel({
         onChange={(e) => set('endDate', e.target.value)}
       />
 
-      <FilterLabel>담당자</FilterLabel>
-      <input
-        type="text"
-        placeholder="담당자 ID (쉼표 구분)"
-        onChange={(e) => {
-          const ids = e.target.value
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean);
-          set('assignedUserIds', ids);
-        }}
-        style={{
-          width: '100%',
-          padding: '3px 6px',
-          border: '1px solid #ced4da',
-          borderRadius: 4,
-          fontSize: 11,
-          boxSizing: 'border-box',
+      <SelectTeamMembers
+        label="담당자 선택"
+        name="assignedUserIds"
+        onSelect={(v) => {
+          if (typeof v === 'string') {
+            set('assignedUserIds', v ? [v] : []);
+          } else {
+            set('assignedUserIds', v || []);
+          }
         }}
       />
     </Panel>
