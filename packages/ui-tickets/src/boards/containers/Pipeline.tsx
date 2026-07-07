@@ -16,7 +16,7 @@ import Spinner from "@erxes/ui/src/components/Spinner";
 import Stage from "./Stage";
 import BulkSelectBar from "../components/BulkSelectBar";
 import { Alert, confirm, withProps } from "@erxes/ui/src/utils";
-import { gql, useMutation } from "@apollo/client";
+import { gql, useMutation, useApolloClient } from "@apollo/client";
 import { graphql } from "@apollo/client/react/hoc";
 import { queries } from "../graphql";
 import { mutations as ticketMutations } from "../../tickets/graphql";
@@ -49,6 +49,7 @@ type BulkBarProps = { pipelineId: string };
 const BulkSelectBarConnected: React.FC<BulkBarProps> = ({ pipelineId }) => {
   const [dateThreshold, setDateThreshold] = useState('');
   const [bulkArchive] = useMutation(gql(ticketMutations.ticketsBulkArchive));
+  const client = useApolloClient();
 
   return (
     <PipelineConsumer>
@@ -68,6 +69,7 @@ const BulkSelectBarConnected: React.FC<BulkBarProps> = ({ pipelineId }) => {
                   selectedIds.length;
                 Alert.success(`${count}개가 아카이브되었습니다.`);
                 clearSelection();
+                await client.refetchQueries({ include: 'active' });
               } catch (e: any) {
                 Alert.error(e.message);
               }
