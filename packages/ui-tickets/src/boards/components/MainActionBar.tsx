@@ -18,6 +18,7 @@ import {
 } from "../constants";
 
 import Button from "@erxes/ui/src/components/Button";
+import { PipelineConsumer } from "../containers/PipelineContext";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import Filter from "@erxes/ui/src/components/filter/Filter";
 import { GroupByContent } from "../styles/common";
@@ -55,6 +56,7 @@ type Props = {
 type State = {
   showDetail: boolean;
   isMobile: boolean;
+  showArchiveModal: boolean;
 };
 
 class MainActionBar extends React.Component<Props, State> {
@@ -71,6 +73,7 @@ class MainActionBar extends React.Component<Props, State> {
       showDetail:
         localStorage.getItem("showSalesDetail") === "true" ? true : false,
       isMobile: false,
+      showArchiveModal: false,
     };
   }
 
@@ -506,6 +509,29 @@ class MainActionBar extends React.Component<Props, State> {
           />
         )}
         {!isMobile && this.renderViewChooser()}
+
+        <PipelineConsumer>
+          {({ isSelectMode, toggleSelectMode }) => (
+            <>
+              <Button
+                btnStyle={isSelectMode ? 'warning' : 'simple'}
+                size='small'
+                icon='check-square'
+                onClick={toggleSelectMode}
+              >
+                {isSelectMode ? '선택 모드 종료' : '선택'}
+              </Button>
+              <Button
+                btnStyle='primary'
+                size='small'
+                icon='archive-alt'
+                onClick={() => this.setState({ showArchiveModal: true })}
+              >
+                아카이브 보기
+              </Button>
+            </>
+          )}
+        </PipelineConsumer>
 
         {rightContent && rightContent()}
 

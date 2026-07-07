@@ -15,6 +15,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import Icon from "@erxes/ui/src/components/Icon";
 import Item from "./Item";
+import { PipelineConsumer } from "../../containers/PipelineContext";
 import client from "@erxes/ui/src/apolloClient";
 import dayjs from "dayjs";
 import { gql } from "@apollo/client";
@@ -280,6 +281,31 @@ function DraggableContainer(props: DraggableContainerProps) {
           onTouchStart={onItemTouchStart}
           onTouchEnd={onItemTouchEnd}
         >
+          <PipelineConsumer>
+            {({ isSelectMode, selectedIds, toggleItemSelect }) =>
+              isSelectMode ? (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 8,
+                    left: 8,
+                    zIndex: 10,
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleItemSelect(currentItem._id);
+                  }}
+                >
+                  <input
+                    type='checkbox'
+                    checked={selectedIds.includes(currentItem._id)}
+                    onChange={() => {}}
+                    style={{ cursor: 'pointer', width: 16, height: 16 }}
+                  />
+                </div>
+              ) : null
+            }
+          </PipelineConsumer>
           {renderHasNotified()}
           <Item
             key={currentItem._id}
