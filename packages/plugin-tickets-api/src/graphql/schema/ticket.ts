@@ -48,6 +48,16 @@ export const types = ({ contacts, clientPortal }) => `
         : ""
     }
   }
+
+  type BulkArchiveResult {
+    count: Int!
+  }
+
+  type ArchivedGroup {
+    key: String!
+    label: String
+    count: Int!
+  }
 `;
 
 const listQueryParams = `
@@ -130,6 +140,14 @@ export const queries = `
   archivedTicketsCount(
     ${archivedTicketsParams}
   ): Int
+  archivedTicketsGroups(
+    pipelineId: String!
+    groupBy: String!
+    search: String
+    assignedUserIds: [String]
+    startDate: String
+    endDate: String
+  ): [ArchivedGroup!]!
 `;
 
 const ticketMutationParams = `
@@ -149,5 +167,8 @@ export const mutations = `
   ticketsWatch(_id: String, isAdd: Boolean): Ticket
   ticketsCopy(_id: String!, proccessId: String): Ticket
   ticketsArchive(stageId: String!, proccessId: String): String
+  ticketsBulkArchive(ids: [String!]!, pipelineId: String!): BulkArchiveResult
+  ticketsBulkEdit(ids: [String!]!, status: String!): BulkArchiveResult
+  ticketsBulkRemove(ids: [String!]!): Int
   updateWidgetAlarm(ticketId: String!): UpdateWidgetAlarmResponse
 `;
