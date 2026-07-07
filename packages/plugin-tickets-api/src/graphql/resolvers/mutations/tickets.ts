@@ -135,6 +135,51 @@ const ticketMutations = {
     return itemsArchive(models, subdomain, stageId, "ticket", proccessId, user);
   },
 
+  async ticketsBulkArchive(
+    _root,
+    { ids, pipelineId: _pipelineId }: { ids: string[]; pipelineId: string },
+    { models, user }: IContext
+  ) {
+    if (!ids || ids.length === 0) return { count: 0 };
+    const limitedIds = ids.slice(0, 500);
+
+    await models.Tickets.updateMany(
+      { _id: { $in: limitedIds } },
+      { $set: { status: "archived", modifiedAt: new Date(), modifiedBy: user._id } }
+    );
+
+    return { count: limitedIds.length };
+  },
+
+  async ticketsBulkEdit(
+    _root,
+    { ids, status }: { ids: string[]; status: string },
+    { models, user }: IContext
+  ) {
+    if (!ids || ids.length === 0) return { count: 0 };
+    const limitedIds = ids.slice(0, 500);
+
+    await models.Tickets.updateMany(
+      { _id: { $in: limitedIds } },
+      { $set: { status, modifiedAt: new Date(), modifiedBy: user._id } }
+    );
+
+    return { count: limitedIds.length };
+  },
+
+  async ticketsBulkRemove(
+    _root,
+    { ids }: { ids: string[] },
+    { models }: IContext
+  ) {
+    if (!ids || ids.length === 0) return 0;
+    const limitedIds = ids.slice(0, 500);
+
+    const result = await models.Tickets.deleteMany({ _id: { $in: limitedIds } });
+
+    return result.deletedCount || 0;
+  },
+
   /**
    * Update widget alarm
    */
@@ -167,5 +212,8 @@ checkPermission(ticketMutations, "ticketsEdit", "ticketsEdit");
 checkPermission(ticketMutations, "ticketsRemove", "ticketsRemove");
 checkPermission(ticketMutations, "ticketsWatch", "ticketsWatch");
 checkPermission(ticketMutations, "ticketsArchive", "ticketsArchive");
+checkPermission(ticketMutations, "ticketsBulkArchive", "ticketsArchive");
+checkPermission(ticketMutations, "ticketsBulkEdit", "ticketsEdit");
+checkPermission(ticketMutations, "ticketsBulkRemove", "ticketsRemove");
 
 export default ticketMutations;

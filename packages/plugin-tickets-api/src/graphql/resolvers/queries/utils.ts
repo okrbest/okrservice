@@ -1078,6 +1078,86 @@ const generateArhivedItemsFilter = (
   return filter;
 };
 
+export interface IArchivedTicketsGroupsParams {
+  pipelineId: string;
+  groupBy: string;
+  search?: string;
+  assignedUserIds?: string[];
+  startDate?: string;
+  endDate?: string;
+}
+
+export const archivedTicketsGroups = async (
+  models: IModels,
+  params: IArchivedTicketsGroupsParams
+) => {
+  const { pipelineId, groupBy, search, assignedUserIds, startDate, endDate } =
+    params;
+
+  const stages = await models.Stages.find({ pipelineId }).lean();
+  if (stages.length === 0) return [];
+
+  const stageIds = stages.map((s) => s._id);
+
+  const baseFilter: any = {
+    stageId: { $in: stageIds },
+    status: BOARD_STATUSES.ARCHIVED,
+  };
+
+  if (search) {
+    Object.assign(baseFilter, regexSearchText(search, "name"));
+  }
+
+  if (assignedUserIds && assignedUserIds.length > 0) {
+    baseFilter.assignedUserIds = { $in: assignedUserIds };
+  }
+
+  if (startDate || endDate) {
+    baseFilter.modifiedAt = {};
+    if (startDate) {
+      baseFilter.modifiedAt.$gte = new Date(startDate);
+    }
+    if (endDate) {
+      baseFilter.modifiedAt.$lte = new Date(endDate);
+    }
+  }
+
+  let groupField: any;
+  switch (groupBy) {
+    case "month":
+      groupField = {
+        $dateToString: { format: "%Y-%m", date: "$modifiedAt" },
+      };
+      break;
+    case "assignee":
+      groupField = { $arrayElemAt: ["$assignedUserIds", 0] };
+      break;
+    case "requestType":
+      groupField = "$requestType";
+      break;
+    case "functionCategory":
+      groupField = "$functionCategory";
+      break;
+    case "company":
+      groupField = { $arrayElemAt: ["$companyIds", 0] };
+      break;
+    default:
+      groupField = "$requestType";
+  }
+
+  const groups = await models.Tickets.aggregate([
+    { $match: baseFilter },
+    { $group: { _id: groupField, count: { $sum: 1 } } },
+    { $sort: { _id: -1 } },
+  ]);
+
+  return groups.map((g) => ({
+    key: g._id != null ? String(g._id) : "none",
+    label: g._id != null ? String(g._id) : "미분류",
+    count: g.count,
+  }));
+};
+
 export const getItemList = async (
   models: IModels,
   subdomain: string,

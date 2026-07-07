@@ -7,10 +7,12 @@ import { IListParams } from "./boards";
 import {
   archivedItems,
   archivedItemsCount,
+  archivedTicketsGroups as archivedTicketsGroupsUtil,
   checkItemPermByUser,
   generateTicketCommonFilters,
   getItemList,
-  IArchiveArgs
+  IArchiveArgs,
+  IArchivedTicketsGroupsParams
 } from "./utils";
 const ticketQueries = {
   /**
@@ -49,6 +51,14 @@ const ticketQueries = {
 
   async archivedTicketsCount(_root, args: IArchiveArgs, { models }: IContext) {
     return archivedItemsCount(models, args, models.Tickets);
+  },
+
+  async archivedTicketsGroups(
+    _root,
+    args: IArchivedTicketsGroupsParams,
+    { models }: IContext
+  ) {
+    return archivedTicketsGroupsUtil(models, args);
   },
 
   /**
