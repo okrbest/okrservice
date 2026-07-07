@@ -53,8 +53,8 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
       const groupFilter: {
         assignedUserIds?: string[];
         companyIds?: string[];
-        startDate?: string;
-        endDate?: string;
+        modifiedAtStart?: string;
+        modifiedAtEnd?: string;
       } = {};
 
       switch (groupBy) {
@@ -66,8 +66,8 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
               const m = parseInt(month, 10);
               const start = new Date(y, m - 1, 1);
               const end = new Date(y, m, 0);
-              groupFilter.startDate = start.toISOString().split('T')[0];
-              groupFilter.endDate = end.toISOString().split('T')[0];
+              groupFilter.modifiedAtStart = start.toISOString().split('T')[0];
+              groupFilter.modifiedAtEnd = end.toISOString().split('T')[0];
             }
           }
           break;

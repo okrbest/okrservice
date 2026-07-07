@@ -93,24 +93,26 @@ export default function ArchiveGroupList({
     setPages({});
   }, [cacheKey]);
 
+  const ITEMS_PER_PAGE = 10;
+
   const toggle = async (key: string) => {
     const isOpen = expanded[key];
     if (!isOpen && !groupItems[key]) {
-      const items = await fetchGroupItems(key, 1);
+      const items = await fetchGroupItems(key, 0);
       setGroupItems((prev) => ({ ...prev, [key]: items }));
-      setPages((prev) => ({ ...prev, [key]: 2 }));
+      setPages((prev) => ({ ...prev, [key]: ITEMS_PER_PAGE }));
     }
     setExpanded((prev) => ({ ...prev, [key]: !isOpen }));
   };
 
   const loadMore = async (key: string) => {
-    const page = pages[key] || 1;
-    const more = await fetchGroupItems(key, page);
+    const skip = pages[key] || ITEMS_PER_PAGE;
+    const more = await fetchGroupItems(key, skip);
     setGroupItems((prev) => ({
       ...prev,
       [key]: [...(prev[key] || []), ...more],
     }));
-    setPages((prev) => ({ ...prev, [key]: page + 1 }));
+    setPages((prev) => ({ ...prev, [key]: skip + ITEMS_PER_PAGE }));
   };
 
   return (
