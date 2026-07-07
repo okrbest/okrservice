@@ -89,6 +89,7 @@ type Props = {
   onClose: () => void;
   fetchGroupItems: (groupKey: string, page: number) => Promise<any[]>;
   loading?: boolean;
+  cacheKey?: string | number;
 };
 
 export default function ArchiveModal({
@@ -106,6 +107,7 @@ export default function ArchiveModal({
   onClose,
   fetchGroupItems,
   loading,
+  cacheKey,
 }: Props) {
   const renderBody = () => {
     if (loading) {
@@ -121,6 +123,7 @@ export default function ArchiveModal({
         selectedIds={selectedIds}
         onToggleSelect={onToggleSelect}
         onGroupSelectAll={onGroupSelectAll}
+        cacheKey={cacheKey}
       />
     );
   };

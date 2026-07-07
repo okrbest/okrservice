@@ -23,6 +23,8 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
     endDate: '',
   });
 
+  const [cacheKey, setCacheKey] = useState(0);
+
   const { data, loading, refetch } = useQuery(
     gql(ticketQueries.archivedTicketsGroups),
     {
@@ -130,6 +132,7 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
       });
       Alert.success(`${selectedIds.length}개 티켓이 복구되었습니다.`);
       setSelectedIds([]);
+      setCacheKey((k) => k + 1);
       refetch();
     } catch (e: any) {
       Alert.error(e.message);
@@ -144,6 +147,7 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
         await bulkDeleteMutation({ variables: { ids: selectedIds } });
         Alert.success(`${selectedIds.length}개 티켓이 삭제되었습니다.`);
         setSelectedIds([]);
+        setCacheKey((k) => k + 1);
         refetch();
       } catch (e: any) {
         Alert.error(e.message);
@@ -169,6 +173,7 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
       onClose={onClose}
       fetchGroupItems={fetchGroupItems}
       loading={loading}
+      cacheKey={cacheKey}
     />
   );
 }

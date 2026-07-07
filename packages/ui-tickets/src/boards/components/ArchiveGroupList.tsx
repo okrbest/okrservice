@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Icon from '@erxes/ui/src/components/Icon';
 
@@ -72,6 +72,7 @@ type Props = {
   selectedIds: string[];
   onToggleSelect: (id: string) => void;
   onGroupSelectAll: (ids: string[]) => void;
+  cacheKey?: string | number;
 };
 
 export default function ArchiveGroupList({
@@ -80,17 +81,24 @@ export default function ArchiveGroupList({
   selectedIds,
   onToggleSelect,
   onGroupSelectAll,
+  cacheKey,
 }: Props) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [groupItems, setGroupItems] = useState<Record<string, TicketItem[]>>({});
   const [pages, setPages] = useState<Record<string, number>>({});
 
+  useEffect(() => {
+    setExpanded({});
+    setGroupItems({});
+    setPages({});
+  }, [cacheKey]);
+
   const toggle = async (key: string) => {
     const isOpen = expanded[key];
     if (!isOpen && !groupItems[key]) {
-      const items = await fetchGroupItems(key, 0);
+      const items = await fetchGroupItems(key, 1);
       setGroupItems((prev) => ({ ...prev, [key]: items }));
-      setPages((prev) => ({ ...prev, [key]: 1 }));
+      setPages((prev) => ({ ...prev, [key]: 2 }));
     }
     setExpanded((prev) => ({ ...prev, [key]: !isOpen }));
   };
