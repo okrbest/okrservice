@@ -235,6 +235,30 @@ const archivedTicketsCount = `
   }
 `;
 
+const archivedTicketsGroups = `
+  query archivedTicketsGroups(
+    $pipelineId: String!
+    $groupBy: String!
+    $search: String
+    $assignedUserIds: [String]
+    $startDate: String
+    $endDate: String
+  ) {
+    archivedTicketsGroups(
+      pipelineId: $pipelineId
+      groupBy: $groupBy
+      search: $search
+      assignedUserIds: $assignedUserIds
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      key
+      label
+      count
+    }
+  }
+`;
+
 const convertToInfo = `
   query ticketsConvertToInfo($conversationId: String!) {
     ticketsConvertToInfo(conversationId: $conversationId) {
@@ -250,6 +274,7 @@ export default {
   ticketDetail,
   archivedTickets,
   archivedTicketsCount,
+  archivedTicketsGroups,
   clientPortalComments,
   widgetsTicketComments
 };

@@ -73,6 +73,14 @@ const ticketsArchive = `
   }
 `;
 
+const ticketsBulkArchive = `
+  mutation ticketsBulkArchive($ids: [String!]!, $pipelineId: String!) {
+    ticketsBulkArchive(ids: $ids, pipelineId: $pipelineId) {
+      count
+    }
+  }
+`;
+
 const ticketsCopy = `
   mutation ticketsCopy($_id: String!, $proccessId: String) {
     ticketsCopy(_id: $_id, proccessId: $proccessId) {
@@ -89,5 +97,6 @@ export default {
   ticketsChange,
   ticketsWatch,
   ticketsArchive,
+  ticketsBulkArchive,
   ticketsCopy,
 };
