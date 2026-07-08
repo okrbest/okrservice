@@ -282,39 +282,38 @@ function DraggableContainer(props: DraggableContainerProps) {
           onTouchEnd={onItemTouchEnd}
         >
           <PipelineConsumer>
-            {({ isSelectMode, selectedIds, toggleItemSelect }) =>
-              isSelectMode ? (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 8,
-                    left: 8,
-                    zIndex: 10,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleItemSelect(currentItem._id);
-                  }}
-                >
-                  <input
-                    type='checkbox'
-                    checked={selectedIds.includes(currentItem._id)}
-                    onChange={() => {}}
-                    style={{ cursor: 'pointer', width: 16, height: 16 }}
+            {({ isSelectMode, selectedIds, toggleItemSelect }) => (
+              <>
+                {isSelectMode && (
+                  <div
+                    style={{ position: 'absolute', top: 8, left: 8, zIndex: 10 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleItemSelect(currentItem._id);
+                    }}
+                  >
+                    <input
+                      type='checkbox'
+                      checked={selectedIds.includes(currentItem._id)}
+                      onChange={() => {}}
+                      style={{ cursor: 'pointer', width: 16, height: 16 }}
+                    />
+                  </div>
+                )}
+                <div style={{ paddingLeft: isSelectMode ? 24 : 0 }}>
+                  {renderHasNotified()}
+                  <Item
+                    key={currentItem._id}
+                    stageId={stageId}
+                    item={currentItem}
+                    onClick={onClick}
+                    beforePopupClose={beforePopupClose}
+                    options={options}
                   />
                 </div>
-              ) : null
-            }
+              </>
+            )}
           </PipelineConsumer>
-          {renderHasNotified()}
-          <Item
-            key={currentItem._id}
-            stageId={stageId}
-            item={currentItem}
-            onClick={onClick}
-            beforePopupClose={beforePopupClose}
-            options={options}
-          />
         </ItemContainer>
       )}
     </Draggable>

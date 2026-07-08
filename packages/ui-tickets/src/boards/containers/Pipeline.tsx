@@ -9,14 +9,14 @@ import {
   StagesQueryResponse
 } from "../types";
 import { PipelineConsumer, PipelineProvider } from "./PipelineContext";
-import React, { Component, useState, useEffect } from "react";
+import React, { Component } from "react";
 
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import Spinner from "@erxes/ui/src/components/Spinner";
 import Stage from "./Stage";
 import BulkSelectBar from "../components/BulkSelectBar";
 import { Alert, confirm, withProps } from "@erxes/ui/src/utils";
-import { gql, useMutation, useApolloClient } from "@apollo/client";
+import { gql, useMutation } from "@apollo/client";
 import { graphql } from "@apollo/client/react/hoc";
 import { queries } from "../graphql";
 import { mutations as ticketMutations } from "../../tickets/graphql";
@@ -47,13 +47,11 @@ type Props = {
 type BulkBarProps = { pipelineId: string };
 
 const BulkSelectBarConnected: React.FC<BulkBarProps> = ({ pipelineId }) => {
-  const [dateThreshold, setDateThreshold] = useState('');
   const [bulkArchive] = useMutation(gql(ticketMutations.ticketsBulkArchive));
-  const client = useApolloClient();
 
   return (
     <PipelineConsumer>
-      {({ isSelectMode, selectedIds, clearSelection }) => {
+      {({ isSelectMode, selectedIds, clearSelection, itemMap, refetchStage, bulkDateThreshold, setBulkDateThreshold }) => {
         if (!isSelectMode) return null;
 
         const handleArchive = () => {
@@ -68,8 +66,14 @@ const BulkSelectBarConnected: React.FC<BulkBarProps> = ({ pipelineId }) => {
                   (result.data as any)?.ticketsBulkArchive?.count ??
                   selectedIds.length;
                 Alert.success(`${count}개가 아카이브되었습니다.`);
+
+                const selectedSet = new Set(selectedIds);
+                const affectedStageIds = Object.entries(itemMap)
+                  .filter(([, items]) => items.some(i => selectedSet.has(i._id)))
+                  .map(([stageId]) => stageId);
+
                 clearSelection();
-                await client.refetchQueries({ include: 'active' });
+                affectedStageIds.forEach(stageId => refetchStage(stageId));
               } catch (e: any) {
                 Alert.error(e.message);
               }
@@ -77,13 +81,20 @@ const BulkSelectBarConnected: React.FC<BulkBarProps> = ({ pipelineId }) => {
           );
         };
 
+        const handleDateThresholdChange = (value: string) => {
+          if (selectedIds.length > 0) {
+            Alert.info(`날짜 조건 변경으로 ${selectedIds.length}개 선택이 초기화되었습니다.`);
+          }
+          setBulkDateThreshold(value);
+        };
+
         return (
           <BulkSelectBar
             selectedCount={selectedIds.length}
             onArchive={handleArchive}
             onCancel={clearSelection}
-            dateThreshold={dateThreshold}
-            onDateThresholdChange={setDateThreshold}
+            dateThreshold={bulkDateThreshold}
+            onDateThresholdChange={handleDateThresholdChange}
           />
         );
       }}
@@ -188,7 +199,9 @@ class WithStages extends Component<WithStagesQueryProps> {
             onAddItem,
             onRemoveItem,
             maxItemsPerStage,
-            stageSkipOffset
+            stageSkipOffset,
+            selectAllInStage,
+            bulkDateThreshold,
           }) => (
             <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
               <Droppable
@@ -229,6 +242,8 @@ class WithStages extends Component<WithStagesQueryProps> {
                           onRemoveItem={onRemoveItem}
                           maxItemsPerStage={maxItemsPerStage}
                           stageSkipOffset={stageSkipOffset?.[stageId] ?? 0}
+                          selectAllInStage={selectAllInStage}
+                          bulkDateThreshold={bulkDateThreshold}
                         />
                       );
                     })}

@@ -969,6 +969,77 @@ export const checkItemPermByUser = async (
   return item;
 };
 
+const expandSearchWithConformity = async (
+  subdomain: string,
+  search: string,
+  filter: any,
+): Promise<void> => {
+  if (!filter.$and) return;
+
+  const [companies, customers] = await Promise.all([
+    sendCoreMessage({
+      subdomain,
+      action: "companies.findActiveCompanies",
+      data: {
+        selector: { primaryName: { $regex: search.trim(), $options: "mui" } },
+        fields: { _id: 1 },
+      },
+      isRPC: true,
+      defaultValue: [],
+    }),
+    sendCoreMessage({
+      subdomain,
+      action: "customers.findActiveCustomers",
+      data: {
+        selector: {
+          $or: [
+            { firstName: { $regex: search.trim(), $options: "mui" } },
+            { lastName: { $regex: search.trim(), $options: "mui" } },
+          ],
+        },
+        fields: { _id: 1 },
+      },
+      isRPC: true,
+      defaultValue: [],
+    }),
+  ]);
+
+  const companyIds = (companies as any[]).map((c) => String(c._id));
+  const customerIds = (customers as any[]).map((c) => String(c._id));
+
+  const [companyTicketIds, customerTicketIds] = await Promise.all([
+    companyIds.length
+      ? sendCoreMessage({
+          subdomain,
+          action: "conformities.filterConformity",
+          data: { mainType: "company", mainTypeIds: companyIds, relType: "ticket" },
+          isRPC: true,
+          defaultValue: [],
+        })
+      : Promise.resolve([]),
+    customerIds.length
+      ? sendCoreMessage({
+          subdomain,
+          action: "conformities.filterConformity",
+          data: { mainType: "customer", mainTypeIds: customerIds, relType: "ticket" },
+          isRPC: true,
+          defaultValue: [],
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const conformityTicketIds = [...new Set([...companyTicketIds, ...customerTicketIds])];
+
+  if (conformityTicketIds.length > 0) {
+    const searchAnd = filter.$and;
+    delete filter.$and;
+    filter.$or = [
+      { $and: searchAnd },
+      { _id: { $in: conformityTicketIds } },
+    ];
+  }
+};
+
 export const archivedItems = async (
   models: IModels,
   subdomain: string,
@@ -982,6 +1053,10 @@ export const archivedItems = async (
   if (stages.length === 0) return [];
 
   const filter = generateArhivedItemsFilter(params, stages);
+
+  if (params.search) {
+    await expandSearchWithConformity(subdomain, params.search, filter);
+  }
 
   if (params.companyIds && params.companyIds.length) {
     const relIds = await sendCoreMessage({
@@ -1032,6 +1107,10 @@ export const archivedItemsCount = async (
 
   const filter = generateArhivedItemsFilter(params, stages);
 
+  if (params.search) {
+    await expandSearchWithConformity(subdomain, params.search, filter);
+  }
+
   if (params.companyIds && params.companyIds.length) {
     const relIds = await sendCoreMessage({
       subdomain,
@@ -1076,7 +1155,14 @@ const generateArhivedItemsFilter = (
   filter.stageId = { $in: stages.map((stage) => stage._id) };
 
   if (search) {
-    Object.assign(filter, regexSearchText(search, "name"));
+    const words = search.replace(/\s\s+/g, ' ').split(' ').filter(Boolean);
+    const andConditions = words.map(word => ({
+      $or: [
+        { name: { $regex: word, $options: 'mui' } },
+        { description: { $regex: word, $options: 'mui' } },
+      ],
+    }));
+    filter.$and = [...(filter.$and || []), ...andConditions];
   }
 
   if (userIds && userIds.length) {
@@ -1102,19 +1188,11 @@ const generateArhivedItemsFilter = (
   }
 
   if (startDate) {
-    filter.closeDate = {
-      $gte: new Date(startDate),
-    };
+    filter.startDate = { $gte: new Date(startDate) };
   }
 
   if (endDate) {
-    if (filter.closeDate) {
-      filter.closeDate.$lte = new Date(endDate);
-    } else {
-      filter.closeDate = {
-        $lte: new Date(endDate),
-      };
-    }
+    filter.closeDate = { ...(filter.closeDate || {}), $lte: new Date(endDate) };
   }
 
   if (createdAtStart) {
@@ -1155,16 +1233,78 @@ export interface IArchivedTicketsGroupsParams {
   groupBy: string;
   search?: string;
   assignedUserIds?: string[];
+  requestType?: string;
+  functionCategory?: string;
   startDate?: string;
   endDate?: string;
 }
+
+export const archivedItemsLightweight = async (
+  models: IModels,
+  params: IArchiveArgs,
+  collection: any
+) => {
+  const { pipelineId, page = 0, perPage = 10 } = params;
+
+  const stages = await models.Stages.find({ pipelineId }).lean();
+  if (stages.length === 0) return [];
+
+  const filter = generateArhivedItemsFilter(params, stages);
+
+  return collection.aggregate([
+    { $match: filter },
+    { $sort: { modifiedAt: -1 } },
+    { $skip: page || 0 },
+    { $limit: perPage || 10 },
+    {
+      $lookup: {
+        from: 'tickets_stages',
+        localField: 'stageId',
+        foreignField: '_id',
+        as: 'stageDoc',
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'assignedUserIds',
+        foreignField: '_id',
+        as: 'assignedUsersDoc',
+      },
+    },
+    {
+      $project: {
+        name: 1,
+        modifiedAt: 1,
+        requestType: 1,
+        functionCategory: 1,
+        stageName: { $arrayElemAt: ['$stageDoc.name', 0] },
+        assignedUsers: {
+          $slice: [
+            {
+              $map: {
+                input: '$assignedUsersDoc',
+                as: 'u',
+                in: {
+                  _id: '$$u._id',
+                  details: { fullName: '$$u.details.fullName' },
+                },
+              },
+            },
+            1,
+          ],
+        },
+      },
+    },
+  ]);
+};
 
 export const archivedTicketsGroups = async (
   models: IModels,
   subdomain: string,
   params: IArchivedTicketsGroupsParams
 ) => {
-  const { pipelineId, groupBy, search, assignedUserIds, startDate, endDate } =
+  const { pipelineId, groupBy, search, assignedUserIds, requestType, functionCategory, startDate, endDate } =
     params;
 
   const stages = await models.Stages.find({ pipelineId }).lean();
@@ -1178,21 +1318,35 @@ export const archivedTicketsGroups = async (
   };
 
   if (search) {
-    Object.assign(baseFilter, regexSearchText(search, "name"));
+    const words = search.replace(/\s\s+/g, ' ').split(' ').filter(Boolean);
+    const andConditions = words.map(word => ({
+      $or: [
+        { name: { $regex: word, $options: 'mui' } },
+        { description: { $regex: word, $options: 'mui' } },
+      ],
+    }));
+    baseFilter.$and = [...(baseFilter.$and || []), ...andConditions];
+    await expandSearchWithConformity(subdomain, search, baseFilter);
   }
 
   if (assignedUserIds && assignedUserIds.length > 0) {
     baseFilter.assignedUserIds = { $in: assignedUserIds };
   }
 
-  if (startDate || endDate) {
-    baseFilter.modifiedAt = {};
-    if (startDate) {
-      baseFilter.modifiedAt.$gte = new Date(startDate);
-    }
-    if (endDate) {
-      baseFilter.modifiedAt.$lte = new Date(endDate);
-    }
+  if (requestType) {
+    baseFilter.requestType = requestType;
+  }
+
+  if (functionCategory) {
+    baseFilter.functionCategory = functionCategory;
+  }
+
+  if (startDate) {
+    baseFilter.startDate = { $gte: new Date(startDate) };
+  }
+
+  if (endDate) {
+    baseFilter.closeDate = { ...(baseFilter.closeDate || {}), $lte: new Date(endDate) };
   }
 
   let groupField: any;

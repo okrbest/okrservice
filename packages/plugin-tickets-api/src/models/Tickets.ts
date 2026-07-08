@@ -134,6 +134,10 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
   ticketSchema.index({ assignedUserIds: 1, stageId: 1, status: 1 });
   // getItemList의 $match + $sort(order, createdAt)가 인덱스 커버되도록
   ticketSchema.index({ stageId: 1, status: 1, assignedUserIds: 1, order: 1, createdAt: -1 });
+  // archivedTicketsGroups 월별 집계: status='ARCHIVED' 선택도가 높아 status를 선두에 배치
+  ticketSchema.index({ status: 1, stageId: 1, createdAt: -1 });
+  // archivedItems 아이템 목록: modifiedAt 정렬 최적화
+  ticketSchema.index({ status: 1, stageId: 1, modifiedAt: -1 });
 
   return ticketSchema;
 };
