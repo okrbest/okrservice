@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 import { Alert, confirm } from '@erxes/ui/src/utils';
 import ArchiveModalComponent from '../components/ArchiveModal';
@@ -45,27 +45,37 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
   const [filters, setFilters] = useState<ArchiveFilters>({
     search: '',
     assignedUserIds: [],
+    requestType: '',
+    functionCategory: '',
     startDate: '',
     endDate: '',
   });
 
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [cacheKey, setCacheKey] = useState(0);
 
-  const { data, loading, refetch } = useQuery(
+  const { data, loading, previousData, refetch } = useQuery(
     gql(ticketQueries.archivedTicketsGroups),
     {
       variables: {
         pipelineId,
         groupBy,
-        search: filters.search || undefined,
+        search: debouncedSearch || undefined,
         assignedUserIds:
           filters.assignedUserIds.length ? filters.assignedUserIds : undefined,
+        requestType: filters.requestType || undefined,
+        functionCategory: filters.functionCategory || undefined,
         startDate: filters.startDate || undefined,
         endDate: filters.endDate || undefined,
       },
-      fetchPolicy: 'network-only',
+      fetchPolicy: 'cache-and-network',
     }
   );
+
+  const displayData = data ?? previousData;
+  const isInitialLoading = loading && !displayData;
 
   const [bulkUnarchiveMutation] = useMutation(
     gql(ticketMutations.ticketsBulkEdit)
@@ -135,9 +145,15 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
           break;
       }
 
+      const isLightweight = groupBy !== 'company';
+      const queryDoc = isLightweight
+        ? gql(ticketQueries.archivedTicketItems)
+        : gql(ticketQueries.archivedTickets);
+      const resultKey = isLightweight ? 'archivedTicketItems' : 'archivedTickets';
+
       try {
         const result = await client.query({
-          query: gql(ticketQueries.archivedTickets),
+          query: queryDoc,
           variables: {
             pipelineId,
             search: filters.search || undefined,
@@ -145,24 +161,38 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
               groupBy !== 'assignee' && filters.assignedUserIds.length > 0
                 ? filters.assignedUserIds
                 : undefined,
+            requestType: groupBy !== 'requestType' && filters.requestType
+              ? filters.requestType
+              : undefined,
+            functionCategory: groupBy !== 'functionCategory' && filters.functionCategory
+              ? filters.functionCategory
+              : undefined,
+            startDate: filters.startDate || undefined,
+            endDate: filters.endDate || undefined,
             page,
             perPage: ITEMS_PER_PAGE,
             ...groupFilter,
           },
           fetchPolicy: 'network-only',
         });
-        return result.data?.archivedTickets || [];
+        return result.data?.[resultKey] || [];
       } catch (e: any) {
         Alert.error(e.message);
         return [];
       }
     },
-    [client, pipelineId, groupBy, filters.search, filters.assignedUserIds]
+    [client, pipelineId, groupBy, filters.search, filters.assignedUserIds, filters.requestType, filters.functionCategory, filters.startDate, filters.endDate]
   );
 
   const handleSearchChange = (v: string) => {
     setFilters(prev => ({ ...prev, search: v }));
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(v), 300);
   };
+
+  useEffect(() => () => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+  }, []);
 
   const toggleItemSelect = (id: string) => {
     setSelectedIds(prev =>
@@ -208,7 +238,7 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
     });
   };
 
-  const rawGroups = data?.archivedTicketsGroups || [];
+  const rawGroups = displayData?.archivedTicketsGroups || [];
 
   const groups = useMemo(() => {
     const labelMap =
@@ -239,7 +269,8 @@ export default function ArchiveModal({ pipelineId, onClose }: Props) {
       onBulkDelete={handleBulkDelete}
       onClose={onClose}
       fetchGroupItems={fetchGroupItems}
-      loading={loading}
+      loading={isInitialLoading}
+      refetching={loading && !!displayData}
       cacheKey={cacheKey}
     />
   );

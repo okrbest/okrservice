@@ -19,7 +19,6 @@ import {
 } from "../constants";
 
 import Button from "@erxes/ui/src/components/Button";
-import { PipelineConsumer } from "../containers/PipelineContext";
 import EmptyState from "@erxes/ui/src/components/EmptyState";
 import Filter from "@erxes/ui/src/components/filter/Filter";
 import { GroupByContent } from "../styles/common";
@@ -58,6 +57,7 @@ type State = {
   showDetail: boolean;
   isMobile: boolean;
   showArchiveModal: boolean;
+  isSelectMode: boolean;
 };
 
 class MainActionBar extends React.Component<Props, State> {
@@ -75,17 +75,24 @@ class MainActionBar extends React.Component<Props, State> {
         localStorage.getItem("showSalesDetail") === "true" ? true : false,
       isMobile: false,
       showArchiveModal: false,
+      isSelectMode: false,
     };
   }
 
   componentDidMount() {
     this.checkMobile();
     window.addEventListener('resize', this.checkMobile);
+    document.addEventListener('erxes:selectModeChanged', this.handleSelectModeChanged);
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.checkMobile);
+    document.removeEventListener('erxes:selectModeChanged', this.handleSelectModeChanged);
   }
+
+  handleSelectModeChanged = (e: Event) => {
+    this.setState({ isSelectMode: (e as CustomEvent).detail.isSelectMode });
+  };
 
   checkMobile = () => {
     const isMobile = window.innerWidth <= 768;
@@ -511,28 +518,24 @@ class MainActionBar extends React.Component<Props, State> {
         )}
         {!isMobile && this.renderViewChooser()}
 
-        <PipelineConsumer>
-          {({ isSelectMode, toggleSelectMode }) => (
-            <>
-              <Button
-                btnStyle={isSelectMode ? 'warning' : 'simple'}
-                size='small'
-                icon='check-square'
-                onClick={toggleSelectMode}
-              >
-                {isSelectMode ? '선택 모드 종료' : '선택'}
-              </Button>
-              <Button
-                btnStyle='primary'
-                size='small'
-                icon='archive-alt'
-                onClick={() => this.setState({ showArchiveModal: true })}
-              >
-                아카이브 보기
-              </Button>
-            </>
-          )}
-        </PipelineConsumer>
+        <>
+          <Button
+            btnStyle={this.state.isSelectMode ? 'warning' : 'simple'}
+            size='small'
+            icon='check-square'
+            onClick={() => document.dispatchEvent(new CustomEvent('erxes:toggleSelectMode'))}
+          >
+            {this.state.isSelectMode ? '선택 모드 종료' : '선택'}
+          </Button>
+          <Button
+            btnStyle='primary'
+            size='small'
+            icon='archive-alt'
+            onClick={() => this.setState({ showArchiveModal: true })}
+          >
+            아카이브 보기
+          </Button>
+        </>
 
         {rightContent && rightContent()}
 

@@ -58,6 +58,16 @@ export const types = ({ contacts, clientPortal }) => `
     label: String
     count: Int!
   }
+
+  type ArchivedTicketListItem {
+    _id: String
+    name: String
+    stageName: String
+    assignedUsers: JSON
+    modifiedAt: Date
+    requestType: String
+    functionCategory: String
+  }
 `;
 
 const listQueryParams = `
@@ -154,9 +164,16 @@ export const queries = `
     groupBy: String!
     search: String
     assignedUserIds: [String]
+    requestType: String
+    functionCategory: String
     startDate: String
     endDate: String
   ): [ArchivedGroup!]!
+  archivedTicketItems(
+    page: Int
+    perPage: Int
+    ${archivedTicketsParams}
+  ): [ArchivedTicketListItem]
 `;
 
 const ticketMutationParams = `

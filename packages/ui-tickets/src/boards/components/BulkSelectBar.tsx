@@ -17,6 +17,7 @@ const Bar = styled.div`
 
 const DATE_OPTIONS = [
   { value: '', label: '전체' },
+  { value: '7', label: '7일 이상' },
   { value: '30', label: '30일 이상' },
   { value: '60', label: '60일 이상' },
   { value: '90', label: '90일 이상' },

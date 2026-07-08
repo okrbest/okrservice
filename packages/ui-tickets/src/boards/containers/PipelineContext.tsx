@@ -65,6 +65,7 @@ type State = {
   stageSkipOffset: { [stageId: string]: number };
   isSelectMode: boolean;
   selectedIds: string[];
+  bulkDateThreshold: string;
 };
 
 interface IStore {
@@ -90,10 +91,12 @@ interface IStore {
   stageSkipOffset: { [stageId: string]: number };
   isSelectMode: boolean;
   selectedIds: string[];
+  bulkDateThreshold: string;
   toggleSelectMode: () => void;
   toggleItemSelect: (itemId: string) => void;
   selectAllInStage: (stageItemIds: string[]) => void;
   clearSelection: () => void;
+  setBulkDateThreshold: (v: string) => void;
 }
 
 const PipelineContext = React.createContext({} as IStore);
@@ -139,7 +142,8 @@ class PipelineProviderInner extends React.Component<Props, State> {
       isShowLabel: false || localStorage.getItem(pipeline._id) === "true",
       stageSkipOffset: {},
       isSelectMode: false,
-      selectedIds: [] as string[]
+      selectedIds: [] as string[],
+      bulkDateThreshold: ''
     };
 
     PipelineProviderInner.tickets = [];
@@ -337,7 +341,12 @@ class PipelineProviderInner extends React.Component<Props, State> {
       clearTimeout(this.itemUpdateFlushTimeout);
       this.itemUpdateFlushTimeout = null;
     }
+    document.removeEventListener('erxes:toggleSelectMode', this.handleToggleSelectModeEvent);
   }
+
+  handleToggleSelectModeEvent = () => {
+    this.toggleSelectMode();
+  };
 
   synchSingleCard = (itemId: string) => {
     setTimeout(() => {
@@ -381,7 +390,11 @@ class PipelineProviderInner extends React.Component<Props, State> {
     return index;
   };
 
-  componentDidUpdate(prevProps: Props) {
+  componentDidMount() {
+    document.addEventListener('erxes:toggleSelectMode', this.handleToggleSelectModeEvent);
+  }
+
+  componentDidUpdate(prevProps: Props, prevState: State) {
     const { queryParams, queryParamsChanged } = this.props;
 
     if (queryParamsChanged(prevProps.queryParams, queryParams)) {
@@ -393,6 +406,12 @@ class PipelineProviderInner extends React.Component<Props, State> {
       stageIds.forEach((stageId: string) => {
         this.scheduleStage(stageId);
       });
+    }
+
+    if (prevState.isSelectMode !== this.state.isSelectMode) {
+      document.dispatchEvent(new CustomEvent('erxes:selectModeChanged', {
+        detail: { isSelectMode: this.state.isSelectMode },
+      }));
     }
   }
 
@@ -812,7 +831,11 @@ class PipelineProviderInner extends React.Component<Props, State> {
   };
 
   clearSelection = () => {
-    this.setState({ selectedIds: [], isSelectMode: false });
+    this.setState({ selectedIds: [], isSelectMode: false, bulkDateThreshold: '' });
+  };
+
+  setBulkDateThreshold = (v: string) => {
+    this.setState({ bulkDateThreshold: v, selectedIds: [] });
   };
 
   toggleLabels = () => {
@@ -870,10 +893,12 @@ class PipelineProviderInner extends React.Component<Props, State> {
             stageSkipOffset: stageSkipOffset || {},
             isSelectMode: this.state.isSelectMode,
             selectedIds: this.state.selectedIds,
+            bulkDateThreshold: this.state.bulkDateThreshold,
             toggleSelectMode: this.toggleSelectMode,
             toggleItemSelect: this.toggleItemSelect,
             selectAllInStage: this.selectAllInStage,
-            clearSelection: this.clearSelection
+            clearSelection: this.clearSelection,
+            setBulkDateThreshold: this.setBulkDateThreshold
           }}
         >
           {this.props.children}

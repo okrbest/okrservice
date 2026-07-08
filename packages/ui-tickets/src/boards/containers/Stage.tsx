@@ -39,6 +39,8 @@ type StageProps = {
   maxItemsPerStage?: number;
   /** 슬라이딩 윈도우: 앞쪽으로 건너뛴 개수. loadMore 시 skip = stageSkipOffset + items.length */
   stageSkipOffset?: number;
+  selectAllInStage?: (ids: string[]) => void;
+  bulkDateThreshold?: string;
 };
 
 type FinalStageProps = {
@@ -114,6 +116,46 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
       .finally(() => {
         this.loadMoreInProgress = false;
       });
+  };
+
+  selectAllItems = async () => {
+    const { stage, queryParams, options, selectAllInStage, items, bulkDateThreshold } = this.props;
+    if (!selectAllInStage) return;
+
+    const applyDateFilter = (list: IItem[]): IItem[] => {
+      if (!bulkDateThreshold) return list;
+      const days = parseInt(bulkDateThreshold, 10);
+      if (isNaN(days)) return list;
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - days);
+      return list.filter(i => new Date(i.createdAt) <= cutoff);
+    };
+
+    const total = stage.itemsTotalCount || 0;
+    const hasMore = (this.props.stageSkipOffset ?? 0) + items.length < total;
+
+    if (!hasMore) {
+      selectAllInStage(applyDateFilter(items).map((i) => i._id));
+      return;
+    }
+
+    try {
+      const { data } = await client.query({
+        query: gql(options.queries.itemsQuery),
+        variables: {
+          stageId: stage._id,
+          pipelineId: stage.pipelineId,
+          skip: 0,
+          limit: total || 9999,
+          ...getFilterParams(queryParams, options.getExtraParams),
+        },
+        fetchPolicy: 'network-only',
+      });
+      const allItems: IItem[] = data[options.queriesName.itemsQuery] || [];
+      selectAllInStage(applyDateFilter(allItems).map((i) => i._id));
+    } catch (e: any) {
+      Alert.error(e.message);
+    }
   };
 
   loadPrevious = () => {
@@ -294,6 +336,7 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
         onAddItem={onAddItem}
         onRemoveItem={onRemoveItem}
         hasMore={hasMore}
+        onSelectAll={this.selectAllItems}
       />
     );
   }

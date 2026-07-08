@@ -49,6 +49,7 @@ type Props = {
   sortItems: (type: string, description: string) => void;
   /** 슬라이딩 윈도우 시 아직 더 불러올 수 있는지 (없으면 더보기 버튼 숨김) */
   hasMore?: boolean;
+  onSelectAll?: () => void;
 };
 
 type State = {
@@ -70,7 +71,7 @@ export default class Stage extends React.Component<Props, State> {
     this.state = {
       showSortOptions: false,
       renderModal: false,
-      items: []
+      items: [],
     };
   }
 
@@ -128,7 +129,7 @@ export default class Stage extends React.Component<Props, State> {
   componentDidUpdate(prevProps: Props) {
     const { items, stage } = this.props;
     const { items: prevItems, stage: prevStage } = prevProps;
-    
+
     // 슬라이딩 윈도우로 아이템 세트가 바뀌면 스크롤을 맨 위로 → 다시 밑으로 스크롤해 더보기 가능
     const sameLength = items.length === prevItems.length && items.length > 0;
     const allIdsChanged = sameLength && items.every((item, i) => item._id !== prevItems[i]?._id);
@@ -577,7 +578,7 @@ export default class Stage extends React.Component<Props, State> {
                 <StageTitle>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <PipelineConsumer>
-                      {({ isSelectMode, selectedIds, selectAllInStage }) => {
+                      {({ isSelectMode, selectedIds }) => {
                         if (!isSelectMode) return null;
                         const stageIds = this.props.items.map((i) => i._id);
                         const allSelected =
@@ -587,7 +588,7 @@ export default class Stage extends React.Component<Props, State> {
                           <input
                             type='checkbox'
                             checked={allSelected}
-                            onChange={() => selectAllInStage(stageIds)}
+                            onChange={() => this.props.onSelectAll?.()}
                             onClick={(e) => e.stopPropagation()}
                             style={{ cursor: 'pointer', flexShrink: 0 }}
                             title='스테이지 전체 선택'

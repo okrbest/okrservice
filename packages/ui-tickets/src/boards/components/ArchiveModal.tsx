@@ -67,6 +67,35 @@ const EmptyState = styled.div`
   font-size: 14px;
 `;
 
+const SkeletonList = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+`;
+
+const SkeletonBlock = styled.div<{ $width?: string; $height?: string }>`
+  background: linear-gradient(90deg, #e9ecef 25%, #dee2e6 50%, #e9ecef 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 4px;
+  width: ${(p) => p.$width || '100%'};
+  height: ${(p) => p.$height || '16px'};
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+`;
+
+const SkeletonGroup = styled.div`
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
 const SelectedCount = styled.span`
   font-weight: 700;
   color: #495057;
@@ -89,6 +118,7 @@ type Props = {
   onClose: () => void;
   fetchGroupItems: (groupKey: string, page: number) => Promise<any[]>;
   loading?: boolean;
+  refetching?: boolean;
   cacheKey?: string | number;
 };
 
@@ -107,11 +137,22 @@ export default function ArchiveModal({
   onClose,
   fetchGroupItems,
   loading,
+  refetching,
   cacheKey,
 }: Props) {
   const renderBody = () => {
     if (loading) {
-      return <EmptyState>로딩 중...</EmptyState>;
+      return (
+        <SkeletonList>
+          {[80, 60, 90, 50, 70].map((w, i) => (
+            <SkeletonGroup key={i}>
+              <SkeletonBlock $width='16px' $height='16px' />
+              <SkeletonBlock $width={`${w}%`} $height='14px' />
+              <SkeletonBlock $width='40px' $height='14px' />
+            </SkeletonGroup>
+          ))}
+        </SkeletonList>
+      );
     }
     if (groups.length === 0) {
       return <EmptyState>아카이브된 티켓이 없습니다.</EmptyState>;
@@ -134,10 +175,13 @@ export default function ArchiveModal({
         <TopBar>
           <SearchInput
             type="text"
-            placeholder="🔍 아카이브 검색..."
+            placeholder="제목, 내용, 고객명, 회사명으로 검색"
             value={filters.search}
             onChange={(e) => onSearchChange(e.target.value)}
           />
+          {refetching && (
+            <span style={{ fontSize: 11, color: '#868e96' }}>갱신 중...</span>
+          )}
           {selectedIds.length > 0 && (
             <>
               <SelectedCount>{selectedIds.length}개 선택됨</SelectedCount>

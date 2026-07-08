@@ -15,7 +15,7 @@ const Panel = styled.div`
 `;
 
 const SectionLabel = styled.div`
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: #868e96;
   text-transform: uppercase;
@@ -37,7 +37,7 @@ interface GroupItemProps {
 const GroupItem = styled.div<GroupItemProps>`
   padding: 7px 10px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   background: ${(p) => (p.active ? '#4361ee' : 'transparent')};
   color: ${(p) => (p.active ? '#fff' : '#495057')};
@@ -47,7 +47,7 @@ const GroupItem = styled.div<GroupItemProps>`
 `;
 
 const FilterLabel = styled.label`
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: #495057;
   margin-top: 8px;
@@ -56,8 +56,18 @@ const FilterLabel = styled.label`
 
 const DateInput = styled.input`
   width: 100%;
-  padding: 4px 6px;
-  font-size: 11px;
+  padding: 5px 7px;
+  font-size: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: #fff;
+  box-sizing: border-box;
+`;
+
+const SelectInput = styled.select`
+  width: 100%;
+  padding: 5px 7px;
+  font-size: 12px;
   border: 1px solid #ced4da;
   border-radius: 4px;
   background: #fff;
@@ -72,9 +82,39 @@ const GROUP_OPTIONS = [
   { value: 'company', label: '🏢 회사별' },
 ];
 
+const REQUEST_TYPE_OPTIONS = [
+  { value: '', label: '전체' },
+  { value: 'inquiry', label: '단순문의' },
+  { value: 'improvement', label: '개선요청' },
+  { value: 'error', label: '오류처리' },
+  { value: 'config', label: '설정변경' },
+  { value: 'additional_development', label: '추가개발' },
+  { value: 'usage_guide', label: '사용안내' },
+  { value: 'data_work', label: '데이터작업' },
+];
+
+const FUNCTION_CATEGORY_OPTIONS = [
+  { value: '', label: '전체' },
+  { value: 'hr', label: '인사' },
+  { value: 'organization', label: '조직' },
+  { value: 'attendance', label: '근태' },
+  { value: 'payroll', label: '급여' },
+  { value: 'evaluation', label: '평가' },
+  { value: 'education', label: '교육' },
+  { value: 'recruitment', label: '채용' },
+  { value: 'benefits', label: '복리후생' },
+  { value: 'pcoff', label: 'PCOFF' },
+  { value: 'approval', label: '전자결재' },
+  { value: 'system', label: '시스템' },
+  { value: 'mobile', label: '모바일' },
+  { value: 'tigris', label: '티그리스' },
+];
+
 export type ArchiveFilters = {
   search: string;
   assignedUserIds: string[];
+  requestType: string;
+  functionCategory: string;
   startDate: string;
   endDate: string;
 };
@@ -137,6 +177,26 @@ export default function ArchiveLeftPanel({
           }
         }}
       />
+
+      <FilterLabel>고객요청구분</FilterLabel>
+      <SelectInput
+        value={filters.requestType}
+        onChange={(e) => set('requestType', e.target.value)}
+      >
+        {REQUEST_TYPE_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </SelectInput>
+
+      <FilterLabel>기능분류</FilterLabel>
+      <SelectInput
+        value={filters.functionCategory}
+        onChange={(e) => set('functionCategory', e.target.value)}
+      >
+        {FUNCTION_CATEGORY_OPTIONS.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </SelectInput>
     </Panel>
   );
 }

@@ -7,6 +7,7 @@ import { IListParams } from "./boards";
 import {
   archivedItems,
   archivedItemsCount,
+  archivedItemsLightweight,
   archivedTicketsGroups as archivedTicketsGroupsUtil,
   checkItemPermByUser,
   generateTicketCommonFilters,
@@ -47,6 +48,10 @@ const ticketQueries = {
    */
   async archivedTickets(_root, args: IArchiveArgs, { models, subdomain }: IContext) {
     return archivedItems(models, subdomain, args, models.Tickets);
+  },
+
+  async archivedTicketItems(_root, args: IArchiveArgs, { models }: IContext) {
+    return archivedItemsLightweight(models, args, models.Tickets);
   },
 
   async archivedTicketsCount(_root, args: IArchiveArgs, { models, subdomain }: IContext) {

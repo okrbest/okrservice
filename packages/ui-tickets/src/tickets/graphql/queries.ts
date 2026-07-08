@@ -251,12 +251,36 @@ const archivedTicketsCount = `
   }
 `;
 
+const archivedTicketItems = `
+  query archivedTicketItems(
+    $page: Int
+    $perPage: Int
+    ${archivedTicketsParams}
+  ) {
+    archivedTicketItems(
+      page: $page
+      perPage: $perPage
+      ${archivedTicketsArgs}
+    ) {
+      _id
+      name
+      stageName
+      assignedUsers
+      modifiedAt
+      requestType
+      functionCategory
+    }
+  }
+`;
+
 const archivedTicketsGroups = `
   query archivedTicketsGroups(
     $pipelineId: String!
     $groupBy: String!
     $search: String
     $assignedUserIds: [String]
+    $requestType: String
+    $functionCategory: String
     $startDate: String
     $endDate: String
   ) {
@@ -265,6 +289,8 @@ const archivedTicketsGroups = `
       groupBy: $groupBy
       search: $search
       assignedUserIds: $assignedUserIds
+      requestType: $requestType
+      functionCategory: $functionCategory
       startDate: $startDate
       endDate: $endDate
     ) {
@@ -289,6 +315,7 @@ export default {
   ticketsTotalCount,
   ticketDetail,
   archivedTickets,
+  archivedTicketItems,
   archivedTicketsCount,
   archivedTicketsGroups,
   clientPortalComments,

@@ -34,12 +34,14 @@ const ItemRow = styled.div`
 `;
 
 interface TagProps {
-  color?: string;
+  $bg?: string;
+  $text?: string;
 }
 
 const Tag = styled.span<TagProps>`
-  background: ${(p) => p.color || '#e9ecef'};
-  color: #333;
+  background: ${(p) => p.$bg || '#e9ecef'};
+  color: ${(p) => p.$text || '#333'};
+  border: 1px solid ${(p) => p.$text ? `${p.$text}30` : '#dee2e6'};
   padding: 1px 7px;
   border-radius: 10px;
   font-size: 11px;
@@ -64,6 +66,35 @@ export type TicketItem = {
   assignedUsers?: { _id: string; details?: { fullName?: string } }[];
   modifiedAt?: string;
   requestType?: string;
+  functionCategory?: string;
+};
+
+type ColorDef = { bg: string; text: string };
+
+const REQUEST_TYPE_MAP: Record<string, { label: string } & ColorDef> = {
+  inquiry:                { label: '단순문의',  bg: '#fff8e1', text: '#f57f17' },
+  improvement:            { label: '개선요청',  bg: '#c8e6c9', text: '#2e7d32' },
+  error:                  { label: '오류처리',  bg: '#ffcdd2', text: '#c62828' },
+  config:                 { label: '설정변경',  bg: '#b3e5fc', text: '#0277bd' },
+  additional_development: { label: '추가개발',  bg: '#e1bee7', text: '#6a1b9a' },
+  usage_guide:            { label: '사용안내',  bg: '#e8f5e9', text: '#388e3c' },
+  data_work:              { label: '데이터작업', bg: '#fff3e0', text: '#e65100' },
+};
+
+const FUNCTION_CATEGORY_MAP: Record<string, { label: string } & ColorDef> = {
+  hr:           { label: '인사',     bg: '#edf7ed', text: '#2e7d32' },
+  organization: { label: '조직',     bg: '#e8f4f2', text: '#0f766e' },
+  attendance:   { label: '근태',     bg: '#fff7ed', text: '#b45309' },
+  payroll:      { label: '급여',     bg: '#f4e8fd', text: '#6b21a8' },
+  evaluation:   { label: '평가',     bg: '#eaf2ff', text: '#1d4ed8' },
+  education:    { label: '교육',     bg: '#f3f4ff', text: '#4338ca' },
+  recruitment:  { label: '채용',     bg: '#fde8f3', text: '#be185d' },
+  benefits:     { label: '복리후생', bg: '#f7ecfb', text: '#9333ea' },
+  pcoff:        { label: 'PCOFF',    bg: '#e0f2fe', text: '#0369a1' },
+  approval:     { label: '전자결재', bg: '#eff4ff', text: '#1e3a8a' },
+  system:       { label: '시스템',   bg: '#fff4ed', text: '#c2410c' },
+  mobile:       { label: '모바일',   bg: '#ecfeff', text: '#0e7490' },
+  tigris:       { label: '티그리스', bg: '#f0fdf4', text: '#15803d' },
 };
 
 export type Group = {
@@ -191,7 +222,22 @@ export default function ArchiveGroupList({
                     <span style={{ flex: 1, color: '#868e96' }}>
                       {item.modifiedAt ? item.modifiedAt.slice(0, 10) : '-'}
                     </span>
-                    {item.requestType && <Tag>{item.requestType}</Tag>}
+                    {item.requestType && (() => {
+                      const rt = REQUEST_TYPE_MAP[item.requestType];
+                      return (
+                        <Tag $bg={rt?.bg} $text={rt?.text}>
+                          {rt?.label ?? item.requestType}
+                        </Tag>
+                      );
+                    })()}
+                    {item.functionCategory && (() => {
+                      const fc = FUNCTION_CATEGORY_MAP[item.functionCategory];
+                      return (
+                        <Tag $bg={fc?.bg} $text={fc?.text}>
+                          {fc?.label ?? item.functionCategory}
+                        </Tag>
+                      );
+                    })()}
                   </ItemRow>
                 ))}
                 {hasMore[group.key] && (
