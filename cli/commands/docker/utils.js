@@ -601,7 +601,8 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
         PORT: "3200",
         ROOT_URL: widgets_domain,
         API_URL: gateway_url,
-        API_SUBSCRIPTIONS_URL: subscription_url
+        API_SUBSCRIPTIONS_URL: subscription_url,
+        ...((configs.widgets || {}).extra_env || {})
       },
       ports: ["3200:3200"],
       networks: ["erxes"]
