@@ -561,6 +561,12 @@ const ChatbotView: React.FC = () => {
   const [inputFocused, setInputFocused] = React.useState(false);
   const [isStreaming, setIsStreaming] = React.useState(false);
   const [dismissedForValue, setDismissedForValue] = React.useState<string | null>(null);
+  const abortRef = React.useRef<AbortController | null>(null);
+
+  // 화면 이탈 시 진행 중인 스트림 취소
+  React.useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
   const { menus: suggestionMenus, questions: suggestionQuestions } =
     useChatbotKeywordSuggestions(inputValue);
 
@@ -568,8 +574,26 @@ const ChatbotView: React.FC = () => {
     dismissedForValue !== inputValue &&
     (suggestionMenus.length > 0 || suggestionQuestions.length > 0);
 
-  const aiConfig = connection.setting?.aiChat ?? {};
-  const sessionId = connection.data?.customerId || "anonymous";
+  // 비로그인 사용자는 브라우저별 랜덤 ID 사용 — "anonymous" 공유 시
+  // 서버측 대화 이력(apiSessionId)이 방문자 간에 섞이는 문제 방지
+  const sessionId = React.useMemo(() => {
+    const customerId = connection.data?.customerId;
+    if (customerId) return customerId;
+    const ANON_KEY = "erxes_ai_anon_sid";
+    try {
+      let anonId = localStorage.getItem(ANON_KEY);
+      if (!anonId) {
+        anonId =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `anon-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        localStorage.setItem(ANON_KEY, anonId);
+      }
+      return anonId;
+    } catch {
+      return `anon-${Date.now()}`;
+    }
+  }, []);
   const storageKey = `erxes_ai_chat_${sessionId}`;
 
   // localStorage에서 이전 대화 복원 (undefined 텍스트 정리)
@@ -627,11 +651,28 @@ const ChatbotView: React.FC = () => {
     setDismissedForValue('');
     setIsStreaming(true);
 
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       let accumulated = "";
       let firstChunk = true;
-      for await (const chunk of streamChat(text, sessionId, aiConfig)) {
-        if (chunk.error) break;
+      for await (const chunk of streamChat(text, sessionId, { signal: controller.signal })) {
+        // 서버 abort 청크: error가 문자열로 옴 (정상 청크는 false/null)
+        if (typeof chunk.error === "string" && chunk.error) {
+          setAiMessages((prev) =>
+            prev.map((m) =>
+              m.id === botMsgId
+                ? {
+                    ...m,
+                    text: accumulated || "오류가 발생했습니다. 다시 시도해주세요.",
+                    streaming: false,
+                  }
+                : m
+            )
+          );
+          break;
+        }
         accumulated += chunk.textResponse ?? "";
         const receivedAt = Date.now();
         setAiMessages((prev) =>
@@ -648,14 +689,22 @@ const ChatbotView: React.FC = () => {
         );
         firstChunk = false;
       }
-    } catch (e) {
-      setAiMessages((prev) =>
-        prev.map((m) =>
-          m.id === botMsgId ? { ...m, text: "오류가 발생했습니다. 다시 시도해주세요.", streaming: false } : m
-        )
-      );
+    } catch (e: any) {
+      // unmount로 인한 중단은 에러 표시하지 않음
+      if (e?.name !== "AbortError") {
+        setAiMessages((prev) =>
+          prev.map((m) =>
+            m.id === botMsgId ? { ...m, text: "오류가 발생했습니다. 다시 시도해주세요.", streaming: false } : m
+          )
+        );
+      }
     } finally {
+      abortRef.current = null;
       setIsStreaming(false);
+      // close 청크 없이 스트림이 끝나도 "···" 플레이스홀더가 남지 않도록 해제
+      setAiMessages((prev) =>
+        prev.map((m) => (m.id === botMsgId && m.streaming ? { ...m, streaming: false } : m))
+      );
     }
   };
 

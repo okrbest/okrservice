@@ -1,46 +1,37 @@
-const DEFAULT_BASE_URL = "https://demo.teamplgpt.com";
-const DEFAULT_WORKSPACE = "5240";
-const DEFAULT_API_KEY = "N3GT9T5-JB44B7K-MMFSNPE-Y4F0BKN";
-
-export interface AiChatConfig {
-  baseUrl?: string;
-  workspace?: string;
-  apiToken?: string;
-}
+import { getEnv } from "../../../utils";
 
 export interface ChatChunk {
-  textResponse: string;
+  type?: string;
+  textResponse: string | null;
   close: boolean;
-  error: string | null;
+  error: string | boolean | null;
 }
 
+export interface StreamChatOptions {
+  signal?: AbortSignal;
+}
+
+/**
+ * 위젯 서버의 /ai-chat/stream 프록시를 경유해 TeamplGPT와 스트리밍 채팅.
+ * API 키는 서버에서만 보관되며 클라이언트 번들에 포함되지 않는다.
+ */
 export async function* streamChat(
   message: string,
   sessionId: string,
-  config: AiChatConfig = {}
+  options: StreamChatOptions = {}
 ): AsyncGenerator<ChatChunk> {
-  const baseUrl = (config.baseUrl || DEFAULT_BASE_URL).replace(/\/$/, "");
-  const workspace = config.workspace || DEFAULT_WORKSPACE;
-  const apiToken = config.apiToken || DEFAULT_API_KEY;
+  const { ROOT_URL } = getEnv();
+  const baseUrl = (ROOT_URL || "").replace(/\/$/, "");
 
-  const response = await fetch(
-    `${baseUrl}/api/v1/workspace/${workspace}/stream-chat`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiToken}`,
-      },
-      body: JSON.stringify({
-        message,
-        mode: "chat",
-        sessionId,
-      }),
-    }
-  );
+  const response = await fetch(`${baseUrl}/ai-chat/stream`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, sessionId }),
+    signal: options.signal,
+  });
 
   if (!response.ok) {
-    throw new Error(`TeamplGPT API error: ${response.status}`);
+    throw new Error(`AI chat error: ${response.status}`);
   }
 
   const reader = response.body?.getReader();

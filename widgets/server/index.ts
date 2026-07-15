@@ -152,6 +152,81 @@ app.get('/clientportal-widget-test', (req, res) => {
   );
 });
 
+/**
+ * TeamplGPT AI 채팅 프록시 — API 키를 서버에서만 보관하고 SSE 스트림을 그대로 전달
+ * 클라이언트 번들에 developer API 키가 노출되지 않도록 위젯은 이 경로만 호출한다.
+ */
+app.post('/ai-chat/stream', async (req, res) => {
+  const {
+    TEAMPLGPT_BASE_URL = 'https://demo.teamplgpt.com',
+    TEAMPLGPT_WORKSPACE = '5240',
+    TEAMPLGPT_API_KEY = '',
+  } = process.env;
+
+  if (!TEAMPLGPT_API_KEY) {
+    res.status(503).json({ error: 'AI chat is not configured' });
+    return;
+  }
+
+  const message = typeof req.body?.message === 'string' ? req.body.message : '';
+  const sessionId =
+    typeof req.body?.sessionId === 'string' ? req.body.sessionId : '';
+
+  if (!message.trim() || !sessionId) {
+    res.status(400).json({ error: 'message and sessionId are required' });
+    return;
+  }
+
+  const upstreamUrl = `${TEAMPLGPT_BASE_URL.replace(/\/$/, '')}/api/v1/workspace/${TEAMPLGPT_WORKSPACE}/stream-chat`;
+
+  const controller = new AbortController();
+  // 클라이언트가 응답 완료 전에 연결을 끊으면 upstream 스트림도 중단
+  // (req 'close'는 Node 16+에서 body 수신 완료 시 발화하므로 사용 금지)
+  res.on('close', () => {
+    if (!res.writableFinished) controller.abort();
+  });
+
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${TEAMPLGPT_API_KEY}`,
+      },
+      body: JSON.stringify({ message, mode: 'chat', sessionId }),
+      signal: controller.signal,
+    });
+
+    if (!upstream.ok || !upstream.body) {
+      res.status(upstream.status || 502).json({ error: 'AI chat upstream error' });
+      return;
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const reader = upstream.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(value);
+    }
+    res.end();
+  } catch (e: any) {
+    if (e?.name === 'AbortError') {
+      res.end();
+      return;
+    }
+    if (res.headersSent) {
+      res.end();
+    } else {
+      res.status(502).json({ error: 'AI chat upstream error' });
+    }
+  }
+});
+
 app.get('/test', (req, res) => {
   const { form_id, brand_id, topic_id, integration_id, type } = req.query;
   const env = getEnv(req);

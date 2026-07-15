@@ -31,6 +31,7 @@ export const getEnv = () => {
   };
 
   return {
+    ROOT_URL: getItem("ROOT_URL"),
     API_URL: getItem("API_URL"),
     API_SUBSCRIPTIONS_URL: getItem("API_SUBSCRIPTIONS_URL"),
     // CALLS_APP_ID: getItem('CALLS_APP_ID'),
