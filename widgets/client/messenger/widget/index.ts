@@ -7,6 +7,7 @@ import {
   listenForCommonRequests,
   setErxesProperty,
 } from "../../widgetUtils";
+import { initHrBridge } from "./hrBridge";
 declare const window: any;
 
 /*
@@ -133,6 +134,9 @@ launcherContainer.appendChild(launcherIframe);
 erxesWidgetContainer.append(messengerIframeContainer, launcherContainer);
 // Finally, append the erxes container to the document body
 document.body.appendChild(erxesWidgetContainer);
+
+// TeamplGPT HR 브리지 — hrBaseUrl 설정된 배포(kiwibox)에서만 등록됨
+initHrBridge(messengerIframe);
 
 let launcherIframeDocument: Document | null | undefined;
 

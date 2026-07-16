@@ -1,10 +1,17 @@
 import { getEnv } from "../../../utils";
+import {
+  CLIENT_TOOL_EVENT_TYPE,
+  ClientToolSpec,
+  handleClientToolRequest,
+} from "./clientTools";
 
 export interface ChatChunk {
   type?: string;
   textResponse: string | null;
   close: boolean;
   error: string | boolean | null;
+  callId?: string;
+  spec?: ClientToolSpec;
 }
 
 export interface StreamChatOptions {
@@ -55,6 +62,12 @@ export async function* streamChat(
       if (!jsonStr || jsonStr === "[DONE]") continue;
       try {
         const chunk = JSON.parse(jsonStr) as ChatChunk;
+        if (chunk.type === CLIENT_TOOL_EVENT_TYPE) {
+          // R1 클라이언트 실행 위임 — 브리지 왕복은 백그라운드로,
+          // 스트림 소비는 계속 (await 금지), UI로는 yield하지 않음
+          void handleClientToolRequest(chunk, sessionId);
+          continue;
+        }
         yield chunk;
         if (chunk.close) return;
       } catch {

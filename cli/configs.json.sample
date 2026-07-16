@@ -20,7 +20,8 @@
     "extra_env": {
       "TEAMPLGPT_BASE_URL": "https://demo.teamplgpt.com",
       "TEAMPLGPT_WORKSPACE": "5240",
-      "TEAMPLGPT_API_KEY": "<teamplgpt-developer-api-key>"
+      "TEAMPLGPT_API_KEY": "<teamplgpt-developer-api-key>",
+      "TEAMPLGPT_EMBED_ID": "<teamplgpt-embed-id>"
     }
   },
   "allowed_origins": ".*",

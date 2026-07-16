@@ -16,7 +16,8 @@ app.get('/health', (_req, res) => {
 
 app.use(compression());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+// json limit 2mb: /ai-chat/tool-result가 kiwibox HR 조회 응답 원문을 릴레이함
+app.use(bodyParser.json({ limit: '2mb' }));
 app.use(cors());
 
 app.set('view engine', 'ejs');
@@ -153,17 +154,18 @@ app.get('/clientportal-widget-test', (req, res) => {
 });
 
 /**
- * TeamplGPT AI 채팅 프록시 — API 키를 서버에서만 보관하고 SSE 스트림을 그대로 전달
- * 클라이언트 번들에 developer API 키가 노출되지 않도록 위젯은 이 경로만 호출한다.
+ * TeamplGPT AI 채팅 프록시 — embed API로 SSE 스트림을 그대로 전달.
+ * R1 클라이언트 실행 위임(clientToolRequest) 프로토콜은 embed 경로에만 배선돼
+ * 있으므로 workspace API 대신 embed API를 사용한다 (embedId 기반, 키 불필요).
+ * TEAMPLGPT_WORKSPACE / TEAMPLGPT_API_KEY env는 롤백 대비로 유지하되 미사용.
  */
 app.post('/ai-chat/stream', async (req, res) => {
   const {
     TEAMPLGPT_BASE_URL = 'https://demo.teamplgpt.com',
-    TEAMPLGPT_WORKSPACE = '5240',
-    TEAMPLGPT_API_KEY = '',
+    TEAMPLGPT_EMBED_ID = '',
   } = process.env;
 
-  if (!TEAMPLGPT_API_KEY) {
+  if (!TEAMPLGPT_EMBED_ID) {
     res.status(503).json({ error: 'AI chat is not configured' });
     return;
   }
@@ -177,7 +179,7 @@ app.post('/ai-chat/stream', async (req, res) => {
     return;
   }
 
-  const upstreamUrl = `${TEAMPLGPT_BASE_URL.replace(/\/$/, '')}/api/v1/workspace/${TEAMPLGPT_WORKSPACE}/stream-chat`;
+  const upstreamUrl = `${TEAMPLGPT_BASE_URL.replace(/\/$/, '')}/api/embed/${TEAMPLGPT_EMBED_ID}/stream-chat`;
 
   const controller = new AbortController();
   // 클라이언트가 응답 완료 전에 연결을 끊으면 upstream 스트림도 중단
@@ -189,11 +191,8 @@ app.post('/ai-chat/stream', async (req, res) => {
   try {
     const upstream = await fetch(upstreamUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${TEAMPLGPT_API_KEY}`,
-      },
-      body: JSON.stringify({ message, mode: 'chat', sessionId }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, sessionId }),
       signal: controller.signal,
     });
 
@@ -203,7 +202,9 @@ app.post('/ai-chat/stream', async (req, res) => {
     }
 
     res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
+    // no-transform: compression 미들웨어가 SSE를 gzip 버퍼링해 청크 전달이
+    // 지연되는 것을 방지 (Accept-Encoding: gzip 클라이언트에서 스트림 멈춤)
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
@@ -212,6 +213,7 @@ app.post('/ai-chat/stream', async (req, res) => {
       const { done, value } = await reader.read();
       if (done) break;
       res.write(value);
+      (res as any).flush?.();
     }
     res.end();
   } catch (e: any) {
@@ -224,6 +226,61 @@ app.post('/ai-chat/stream', async (req, res) => {
     } else {
       res.status(502).json({ error: 'AI chat upstream error' });
     }
+  }
+});
+
+/**
+ * R1 클라이언트 실행 위임 — 브리지 실행 결과를 TeamplGPT로 회신하는 프록시.
+ * body는 kiwibox HR 조회 응답 원문이 포함되므로 로그에 남기지 않는다.
+ */
+const TOOL_RESULT_BODY_LIMIT = 2 * 1024 * 1024; // 2MB — kiwibox 조회 응답 릴레이 상한
+
+app.post('/ai-chat/tool-result', async (req, res) => {
+  const {
+    TEAMPLGPT_BASE_URL = 'https://demo.teamplgpt.com',
+    TEAMPLGPT_EMBED_ID = '',
+  } = process.env;
+
+  if (!TEAMPLGPT_EMBED_ID) {
+    res.status(503).json({ error: 'AI chat is not configured' });
+    return;
+  }
+
+  const { callId, sessionId, ok, status, body } = req.body || {};
+
+  if (typeof callId !== 'string' || !callId || typeof sessionId !== 'string' || !sessionId) {
+    res.status(400).json({ error: 'callId and sessionId are required' });
+    return;
+  }
+
+  const bodyText = typeof body === 'string' ? body : '';
+  if (bodyText.length > TOOL_RESULT_BODY_LIMIT) {
+    res.status(413).json({ error: 'tool result body too large' });
+    return;
+  }
+
+  try {
+    const upstream = await fetch(
+      `${TEAMPLGPT_BASE_URL.replace(/\/$/, '')}/api/embed/${TEAMPLGPT_EMBED_ID}/client-tool-result`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          callId,
+          sessionId,
+          ok: ok === true,
+          status: Number(status) || 0,
+          body: bodyText,
+        }),
+      }
+    );
+
+    const text = await upstream.text();
+    res.status(upstream.status);
+    res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/json');
+    res.send(text);
+  } catch (e) {
+    res.status(502).json({ error: 'AI chat upstream error' });
   }
 });
 
