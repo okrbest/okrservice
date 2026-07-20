@@ -60,7 +60,7 @@ describe('ChatbotSuggestions', () => {
       <ChatbotSuggestions menus={menus} questions={questions} onMenuClick={jest.fn()} onQuestionClick={jest.fn()} onClose={jest.fn()} />
     );
     expect(getByText('💡 HR 메뉴 바로가기')).toBeInTheDocument();
-    expect(getByText('추천 질문')).toBeInTheDocument();
+    expect(getByText('이런 질문 어때요?')).toBeInTheDocument();
   });
 
   it('메뉴와 질문이 모두 있을 때 구분선을 렌더링한다', () => {
