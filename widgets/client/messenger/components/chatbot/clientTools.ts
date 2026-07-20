@@ -111,11 +111,23 @@ export async function handleClientToolRequest(
   const { ROOT_URL } = getEnv();
   const baseUrl = (ROOT_URL || "").replace(/\/$/, "");
 
-  await fetch(`${baseUrl}/ai-chat/tool-result`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ callId, sessionId, ...result }),
-  }).catch(() => {
-    // 회신 실패는 서버 타임아웃(30s)에 맡김 — 위젯에서 재시도하지 않음
-  });
+  try {
+    const resp = await fetch(`${baseUrl}/ai-chat/tool-result`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ callId, sessionId, ...result }),
+    });
+    // 무음 삼킴 제거 — 회신 실패 원인을 콘솔에 남겨 사후 추적 가능하게.
+    // 404 matched:false = upstream이 이 callId의 대기 호출을 못 찾음(타임아웃·타 백엔드).
+    if (!resp.ok) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[clientTools] tool-result ${resp.status} callId=${callId.slice(0, 8)}`
+      );
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn(`[clientTools] tool-result 전송 실패 callId=${callId.slice(0, 8)}`, e);
+    // 재시도 안 함 — 서버 타임아웃(30s)에 맡김
+  }
 }

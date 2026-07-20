@@ -182,12 +182,29 @@ app.post('/ai-chat/stream', async (req, res) => {
 
   const upstreamUrl = `${TEAMPLGPT_BASE_URL.replace(/\/$/, '')}/api/embed/${TEAMPLGPT_EMBED_ID}/stream-chat`;
 
+  // 정밀 추적용 — 개인정보(message/body) 미기록, sessionId 앞 8자만
+  const sidTag = sessionId.slice(0, 8);
+  const t0 = Date.now();
+  const ms = () => Date.now() - t0;
+  let bytes = 0;
+  let chunks = 0;
+  let lastByteAt = 0; // 마지막 upstream 바이트 수신 후 경과(idle) 추적용
+  let ended = false;
+
   const controller = new AbortController();
   // 클라이언트가 응답 완료 전에 연결을 끊으면 upstream 스트림도 중단
   // (req 'close'는 Node 16+에서 body 수신 완료 시 발화하므로 사용 금지)
   res.on('close', () => {
-    if (!res.writableFinished) controller.abort();
+    if (!res.writableFinished) {
+      controller.abort();
+      if (!ended)
+        console.warn(
+          `[ai-chat/stream] ${sidTag} client-closed early @${ms()}ms bytes=${bytes} chunks=${chunks}`,
+        );
+    }
   });
+
+  let heartbeat: NodeJS.Timeout | undefined;
 
   try {
     // embed canRespond가 Origin을 allowlist_domains와 대조(불일치 401).
@@ -202,6 +219,10 @@ app.post('/ai-chat/stream', async (req, res) => {
       signal: controller.signal,
     });
 
+    console.log(
+      `[ai-chat/stream] ${sidTag} upstream ${upstream.status} @${ms()}ms`,
+    );
+
     if (!upstream.ok || !upstream.body) {
       res.status(upstream.status || 502).json({ error: 'AI chat upstream error' });
       return;
@@ -212,26 +233,55 @@ app.post('/ai-chat/stream', async (req, res) => {
     // 지연되는 것을 방지 (Accept-Encoding: gzip 클라이언트에서 스트림 멈춤)
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
+    // nginx가 SSE를 버퍼링해 종료 청크 유실(ERR_INCOMPLETE_CHUNKED_ENCODING)되는 것을
+    // 응답 단위로 차단 — 생성 nginx.conf에 proxy_buffering off가 없어 이 헤더로 무력화
+    res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders();
+
+    // R1 tool 대기(최대 ~30s) 동안 SSE 무음 → 중간 프록시 idle-timeout 절단 방지용
+    // 하트비트. SSE 주석(: 로 시작)이라 클라 파서(data: 접두만 처리)가 무시.
+    // teamplgpt는 완결 프레임(data:..\n\n) 단위 기록이라 프레임 경계에서만 삽입돼 안전.
+    lastByteAt = Date.now();
+    heartbeat = setInterval(() => {
+      if (Date.now() - lastByteAt >= 15000 && !res.writableEnded) {
+        res.write(': hb\n\n');
+        (res as any).flush?.();
+        console.log(`[ai-chat/stream] ${sidTag} heartbeat @${ms()}ms idle`);
+      }
+    }, 15000);
 
     const reader = upstream.body.getReader();
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
+      bytes += value.byteLength;
+      chunks += 1;
+      lastByteAt = Date.now();
       res.write(value);
       (res as any).flush?.();
     }
+    ended = true;
     res.end();
+    console.log(
+      `[ai-chat/stream] ${sidTag} done @${ms()}ms bytes=${bytes} chunks=${chunks}`,
+    );
   } catch (e: any) {
     if (e?.name === 'AbortError') {
+      console.warn(`[ai-chat/stream] ${sidTag} aborted @${ms()}ms bytes=${bytes}`);
       res.end();
       return;
     }
+    // upstream 절단·네트워크 오류 — 스트림 도중이면 어디서 끊겼는지 기록
+    console.error(
+      `[ai-chat/stream] ${sidTag} error @${ms()}ms bytes=${bytes} chunks=${chunks} ${e?.name}: ${e?.message}`,
+    );
     if (res.headersSent) {
       res.end();
     } else {
       res.status(502).json({ error: 'AI chat upstream error' });
     }
+  } finally {
+    if (heartbeat) clearInterval(heartbeat);
   }
 });
 
@@ -282,10 +332,26 @@ app.post('/ai-chat/tool-result', async (req, res) => {
     );
 
     const text = await upstream.text();
+    // 상관 로깅: callId ↔ upstream status ↔ matched. body 원문(HR 개인정보)은 제외,
+    // matched 플래그만 파싱. 404 matched:false = pending 소실(타임아웃·타 백엔드).
+    let matched: unknown;
+    try {
+      matched = JSON.parse(text)?.matched;
+    } catch {
+      /* 비 JSON 응답 무시 */
+    }
+    if (upstream.status !== 200 || matched === false) {
+      console.warn(
+        `[ai-chat/tool-result] callId=${callId.slice(0, 8)} sid=${sessionId.slice(0, 8)} upstream=${upstream.status} matched=${matched} ok=${ok === true}`,
+      );
+    }
     res.status(upstream.status);
     res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/json');
     res.send(text);
-  } catch (e) {
+  } catch (e: any) {
+    console.error(
+      `[ai-chat/tool-result] callId=${String(callId).slice(0, 8)} upstream-fail ${e?.name}: ${e?.message}`,
+    );
     res.status(502).json({ error: 'AI chat upstream error' });
   }
 });
