@@ -163,6 +163,7 @@ app.post('/ai-chat/stream', async (req, res) => {
   const {
     TEAMPLGPT_BASE_URL = 'https://demo.teamplgpt.com',
     TEAMPLGPT_EMBED_ID = '',
+    TEAMPLGPT_WIDGET_ORIGIN = '',
   } = process.env;
 
   if (!TEAMPLGPT_EMBED_ID) {
@@ -189,9 +190,14 @@ app.post('/ai-chat/stream', async (req, res) => {
   });
 
   try {
+    // embed canRespond가 Origin을 allowlist_domains와 대조(불일치 401).
+    // 서버측 fetch는 Origin 자동 미전송 — 작업지시서 "필수 수정 1" (env와 allowlist 값 일치 필수)
     const upstream = await fetch(upstreamUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(TEAMPLGPT_WIDGET_ORIGIN ? { Origin: TEAMPLGPT_WIDGET_ORIGIN } : {}),
+      },
       body: JSON.stringify({ message, sessionId }),
       signal: controller.signal,
     });
