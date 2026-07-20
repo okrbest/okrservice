@@ -574,24 +574,35 @@ const ChatbotView: React.FC = () => {
     dismissedForValue !== inputValue &&
     (suggestionMenus.length > 0 || suggestionQuestions.length > 0);
 
-  // 비로그인 사용자는 브라우저별 랜덤 ID 사용 — "anonymous" 공유 시
-  // 서버측 대화 이력(apiSessionId)이 방문자 간에 섞이는 문제 방지
+  // TeamplGPT embed API가 uuid.validate(sessionId)로 검증(불일치 404) —
+  // sessionId는 반드시 UUID 형식. customerId는 Mongo ObjectId라 그대로 못 쓰므로
+  // customerId별 UUID를 발급·저장해 로그인 사용자도 안정 세션 유지.
+  // 비로그인은 브라우저별 랜덤 UUID — "anonymous" 공유 시 서버측 대화 이력
+  // (apiSessionId)이 방문자 간에 섞이는 문제 방지.
   const sessionId = React.useMemo(() => {
+    const UUID_RE =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const randomUuid = (): string =>
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+          });
+
     const customerId = connection.data?.customerId;
-    if (customerId) return customerId;
-    const ANON_KEY = "erxes_ai_anon_sid";
+    const storageKey = customerId
+      ? `erxes_ai_sid_${customerId}`
+      : "erxes_ai_anon_sid";
     try {
-      let anonId = localStorage.getItem(ANON_KEY);
-      if (!anonId) {
-        anonId =
-          typeof crypto !== "undefined" && crypto.randomUUID
-            ? crypto.randomUUID()
-            : `anon-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-        localStorage.setItem(ANON_KEY, anonId);
+      let sid = localStorage.getItem(storageKey);
+      if (!sid || !UUID_RE.test(sid)) {
+        sid = randomUuid();
+        localStorage.setItem(storageKey, sid);
       }
-      return anonId;
+      return sid;
     } catch {
-      return `anon-${Date.now()}`;
+      return randomUuid();
     }
   }, []);
   const storageKey = `erxes_ai_chat_${sessionId}`;
