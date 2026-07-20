@@ -8,7 +8,8 @@
  *
  * 보안 장치:
  *  - event.source(iframe contentWindow) + event.origin(위젯 서버 origin) 이중 검증
- *  - endpoint allowlist: 등록된 kiwibox 경로 외 실행 거부
+ *  - endpoint allowlist: 정적 22개 + YTA 정규식 외 실행 거부
+ *  - 범용 endpoint(/CommonCode.do)는 queryId 화이트리스트 병행 — 임의 쿼리 차단
  *  - self 강제: "$SELF_STAFF_ID" 마커를 페이지 DOM의 본인 STAFF_ID로만 치환
  *  - 게이트 스킵 값 차단: searchType=mobile 거부
  *
@@ -22,8 +23,9 @@ const REQUEST_TYPE = "teamplgpt:hr-tool-request";
 const RESULT_TYPE = "teamplgpt:hr-tool-result";
 const FETCH_TIMEOUT_MS = 20000;
 
-// hr-attendance + hr-personnel 이 사용하는 kiwibox 경로 전체 (작업지시서 §1.5)
+// HR 스킬 7종이 사용하는 kiwibox 정적 경로 22개 — 정확 매칭 (작업지시서 §1.5)
 const ALLOWED_PATHS = [
+  // hr-attendance
   "/TAAWrkTimeListMgrByDate.do",
   "/TAAWrkTimeStatusMgr.do",
   "/TAADclzWorkSearchCldr.do",
@@ -31,6 +33,7 @@ const ALLOWED_PATHS = [
   "/TAADclzVcatnCldrMgr.do",
   "/getMBLLeavDetailStaff.do",
   "/getMBLHomeLeaveDetail.do",
+  // hr-personnel
   "/getMBLPrtEmpCard.do",
   "/getMBLPrtEmpCardPop.do",
   "/getMBLHrBassiemOrgList.do",
@@ -38,11 +41,34 @@ const ALLOWED_PATHS = [
   "/getTodoIconCnt.do",
   "/getScheduleDay.do",
   "/getContactList.do",
+  "/PRCHrBassiemMgrTab220.do",
+  // hr-salary
+  "/SALPayslipNewMgr.do",
+  "/SALSalaryDtstmnMgr.do",
+  "/SALDaylabMgr.do",
+  "/CommonCode.do",
+  // hr-approval
+  "/EAPRequestMgr.do",
+  // hr-certificate
+  "/CTIMcrtfReqstRefromMgr.do",
+  // hr-welfare
+  "/LONLoanReqstListMgr.do",
 ];
+
+// hr-year-end-tax: 연말정산 컨트롤러가 연도별 분리 — endpoint 6개 × 지원연도(2022~2025)만
+// 허용. 연도 확장 시 이 정규식과 TeamplGPT 스킬 양쪽 갱신 (작업지시서 §1.5).
+const YTA_PATH_RE =
+  /^\/YTA(SummaryMgr|YndMedDtlMgr|YtaFamilySttusMgr|YndBefWrkDtlMgr|YndGivPayDtlMgr|InDctMgr)(2022|2023|2024|2025)\.do$/;
 
 // 게이트 스킵/위험 파라미터 값 차단 (작업지시서 §1.5)
 const FORBIDDEN_PARAM_VALUES: Record<string, string[]> = {
   searchType: ["mobile"],
+};
+
+// 범용 endpoint는 queryId 화이트리스트 병행 — 임의 쿼리 실행 차단 (작업지시서 §1.5).
+// 목록에 없는 path는 이 제약을 받지 않음.
+const QUERY_ID_ALLOWLIST: Record<string, string[]> = {
+  "/CommonCode.do": ["getSalYmdTypeCdList", "getSalYmdTypeCdList2"],
 };
 
 interface BridgeReply {
@@ -68,22 +94,14 @@ function resolveStaffId(): string | null {
 }
 
 /**
- * kiwibox 요청 base URL. hrBaseUrl이 컨텍스트 경로(/kiwibox)를 포함하지 않으면
- * 보정한다 (작업지시서 §4 — 실측 전 안전 기본값: pathname 없으면 /kiwibox 부여).
- * 값이 비거나 파싱 불가면 location.origin 폴백.
+ * kiwibox 요청 base URL — hrBaseUrl 값을 그대로 사용(끝 슬래시만 제거).
+ * ⚠️ /kiwibox 자동 보정 금지: ntest.5240.kr은 루트 배포(getContextPath()="")라
+ * 보정하면 404 (작업지시서 §4 정정, 2026-07-16 실측). 컨텍스트 경로가 있는
+ * 배포는 hrBaseUrl 값에 이미 포함돼 있다. 값이 비면 location.origin 폴백.
  */
 function resolveHrBase(hrBaseUrl: string): string {
-  let base = String(hrBaseUrl || "").replace(/\/$/, "");
-  if (!base) return `${window.location.origin}/kiwibox`;
-  try {
-    const url = new URL(base);
-    if (url.pathname === "" || url.pathname === "/") {
-      return `${url.origin}/kiwibox`;
-    }
-    return base;
-  } catch {
-    return `${window.location.origin}/kiwibox`;
-  }
+  const base = String(hrBaseUrl || "").replace(/\/$/, "");
+  return base || window.location.origin;
 }
 
 export function initHrBridge(iframe: HTMLIFrameElement): void {
@@ -117,13 +135,30 @@ export function initHrBridge(iframe: HTMLIFrameElement): void {
 
     const { callId, spec } = msg;
 
-    if (ALLOWED_PATHS.indexOf(spec.path) === -1) {
+    if (
+      ALLOWED_PATHS.indexOf(spec.path) === -1 &&
+      !YTA_PATH_RE.test(spec.path)
+    ) {
       reply(callId, { ok: false, status: 0, body: "bridge: path not allowed" });
       return;
     }
 
     const form = new URLSearchParams();
     const formObj: Record<string, unknown> = spec.form || {};
+
+    const allowedQueryIds = QUERY_ID_ALLOWLIST[spec.path];
+    if (
+      allowedQueryIds &&
+      allowedQueryIds.indexOf(String(formObj.queryId ?? "")) === -1
+    ) {
+      reply(callId, {
+        ok: false,
+        status: 0,
+        body: "bridge: queryId not allowed",
+      });
+      return;
+    }
+
     for (const key of Object.keys(formObj)) {
       let value = String(formObj[key]);
       if (

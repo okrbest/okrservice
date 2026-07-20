@@ -95,13 +95,17 @@ describe("handleClientToolRequest", () => {
     });
   });
 
-  it("15초 타임아웃 시 ok:false로 회신한다", async () => {
+  it("25초 타임아웃 시 ok:false로 회신한다 (브리지 fetch 20s보다 길어야 함)", async () => {
     const promise = handleClientToolRequest(
       { callId: "call-2", spec: SPEC },
       "sess-1"
     );
 
-    jest.advanceTimersByTime(15000);
+    // 브리지 fetch 상한(20s)까지는 대기 유지 — 중첩 계약 §3.1
+    jest.advanceTimersByTime(20000);
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    jest.advanceTimersByTime(5000);
     await promise;
 
     const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
@@ -156,7 +160,7 @@ describe("handleClientToolRequest", () => {
     });
     expect(fetchMock).not.toHaveBeenCalled();
 
-    jest.advanceTimersByTime(15000);
+    jest.advanceTimersByTime(25000);
     await promise;
     expect(JSON.parse(fetchMock.mock.calls[0][1].body).ok).toBe(false);
   });

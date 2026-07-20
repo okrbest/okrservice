@@ -85,9 +85,9 @@ describe("initHrBridge", () => {
     );
     await flush();
 
-    // hrBaseUrl에 컨텍스트 경로 없음 → /kiwibox 보정 (작업지시서 §4)
+    // /kiwibox 자동 보정 금지 — hrBaseUrl 그대로 사용 (작업지시서 §4 정정, 루트 배포)
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://kiwibox.example.com/kiwibox/getMBLHomeLeaveDetail.do",
+      "https://kiwibox.example.com/getMBLHomeLeaveDetail.do",
       expect.objectContaining({
         method: "POST",
         credentials: "same-origin",
@@ -110,6 +110,91 @@ describe("initHrBridge", () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(replyMock).toHaveBeenCalledWith(
       expect.objectContaining({ ok: false, body: "bridge: path not allowed" }),
+      WIDGET_ORIGIN
+    );
+  });
+
+  it("확장 정적 경로(hr-welfare 등)를 허용한다", async () => {
+    dispatchRequest(
+      iframe,
+      request({ path: "/LONLoanReqstListMgr.do", method: "POST", form: {} })
+    );
+    await flush();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://kiwibox.example.com/LONLoanReqstListMgr.do",
+      expect.anything()
+    );
+  });
+
+  it("YTA 정규식: 지원 endpoint×연도는 허용한다", async () => {
+    dispatchRequest(
+      iframe,
+      request({ path: "/YTASummaryMgr2024.do", method: "POST", form: {} })
+    );
+    await flush();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://kiwibox.example.com/YTASummaryMgr2024.do",
+      expect.anything()
+    );
+  });
+
+  it("YTA 미지원 연도(2021·2026)·유사 경로는 거부한다", async () => {
+    for (const path of [
+      "/YTASummaryMgr2021.do",
+      "/YTASummaryMgr2026.do",
+      "/YTAFakeMgr2024.do",
+      "/YTASummaryMgr2024.do.jsp",
+    ]) {
+      dispatchRequest(iframe, request({ path, method: "POST", form: {} }));
+    }
+    await flush();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(replyMock).toHaveBeenCalledTimes(4);
+    expect(replyMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ ok: false, body: "bridge: path not allowed" }),
+      WIDGET_ORIGIN
+    );
+  });
+
+  it("CommonCode.do는 허용 queryId만 통과시킨다", async () => {
+    dispatchRequest(
+      iframe,
+      request({
+        path: "/CommonCode.do",
+        method: "POST",
+        form: { queryId: "getSalYmdTypeCdList2" },
+      })
+    );
+    await flush();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://kiwibox.example.com/CommonCode.do",
+      expect.objectContaining({ body: "queryId=getSalYmdTypeCdList2" })
+    );
+  });
+
+  it("CommonCode.do 임의 queryId·queryId 부재는 거부한다", async () => {
+    dispatchRequest(
+      iframe,
+      request({
+        path: "/CommonCode.do",
+        method: "POST",
+        form: { queryId: "getAllStaffSalaries" },
+      })
+    );
+    dispatchRequest(
+      iframe,
+      request({ path: "/CommonCode.do", method: "POST", form: {} }, "call-2")
+    );
+    await flush();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(replyMock).toHaveBeenCalledTimes(2);
+    expect(replyMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ ok: false, body: "bridge: queryId not allowed" }),
       WIDGET_ORIGIN
     );
   });
