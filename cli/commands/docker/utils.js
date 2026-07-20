@@ -854,6 +854,17 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
     ${commonParams}
   `;
 
+  // SSE(/widgets/ai-chat/stream) 전용 — 버퍼링 끄고 긴 무바이트 구간 허용.
+  // 기본 proxy_buffering on이면 upstream keepalive/청크가 버퍼에 갇혀 브라우저가
+  // 무음→종료청크 유실(ERR_INCOMPLETE_CHUNKED_ENCODING). read/send timeout은
+  // '읽기 간격'에도 적용되므로 tool 왕복(수십 초) 대비 길게.
+  const sseConfig = `
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+  `;
+
   await fs.promises.writeFile(
     filePath("nginx.conf"),
     `
@@ -871,6 +882,7 @@ const up = async ({ uis, downloadLocales, fromInstaller }) => {
             location /widgets/ {
                     proxy_pass http://127.0.0.1:3200/;
                     ${commonConfig}
+                    ${sseConfig}
             }
             location /gateway/ {
                     proxy_pass http://127.0.0.1:${GATEWAY_PORT}/;
