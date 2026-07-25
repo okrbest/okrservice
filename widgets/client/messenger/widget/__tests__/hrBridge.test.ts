@@ -78,7 +78,7 @@ describe("initHrBridge", () => {
       iframe,
       request({
         transport: "kiwibox-bridge",
-        path: "/getMBLHomeLeaveDetail.do",
+        path: "/TAADclzVcatnList.do",
         method: "POST",
         form: { searchType: "1", cmmSearchStaffId: "$SELF_STAFF_ID" },
       })
@@ -87,7 +87,7 @@ describe("initHrBridge", () => {
 
     // /kiwibox 자동 보정 금지 — hrBaseUrl 그대로 사용 (작업지시서 §4 정정, 루트 배포)
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://kiwibox.example.com/getMBLHomeLeaveDetail.do",
+      "https://kiwibox.example.com/TAADclzVcatnList.do",
       expect.objectContaining({
         method: "POST",
         credentials: "same-origin",
@@ -124,6 +124,67 @@ describe("initHrBridge", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "https://kiwibox.example.com/LONLoanReqstListMgr.do",
       expect.anything()
+    );
+  });
+
+  it("신판 카탈로그 신규 경로(specs/011)를 허용한다", async () => {
+    for (const path of ["/TAADclzVcatnList.do", "/SALSalaryBassMgr.do"]) {
+      dispatchRequest(iframe, request({ path, method: "POST", form: {} }));
+    }
+    await flush();
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://kiwibox.example.com/TAADclzVcatnList.do",
+      expect.anything()
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://kiwibox.example.com/SALSalaryBassMgr.do",
+      expect.anything()
+    );
+  });
+
+  it("폐기 경로 4종은 allowlist에서 제거되어 거부한다", async () => {
+    for (const path of [
+      "/TAAWrkTimeListMgrByDate.do",
+      "/getMBLLeavDetailStaff.do",
+      "/getMBLHomeLeaveDetail.do",
+      "/SALSalaryDtstmnMgr.do",
+    ]) {
+      dispatchRequest(iframe, request({ path, method: "POST", form: {} }));
+    }
+    await flush();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(replyMock).toHaveBeenCalledTimes(4);
+    expect(replyMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ ok: false, body: "bridge: path not allowed" }),
+      WIDGET_ORIGIN
+    );
+  });
+
+  it("마커 3중 파라미터를 모두 페이지 STAFF_ID로 치환한다", async () => {
+    const staffInput = document.createElement("input");
+    staffInput.id = "searchUserId";
+    staffInput.value = "STAFF123";
+    document.body.appendChild(staffInput);
+
+    dispatchRequest(
+      iframe,
+      request({
+        path: "/TAADclzVcatnList.do",
+        method: "POST",
+        form: {
+          staffId: "$SELF_STAFF_ID",
+          cmmSearchStaffId: "$SELF_STAFF_ID",
+          searchStaffId: "$SELF_STAFF_ID",
+        },
+      })
+    );
+    await flush();
+
+    expect(fetchMock.mock.calls[0][1].body).toBe(
+      "staffId=STAFF123&cmmSearchStaffId=STAFF123&searchStaffId=STAFF123"
     );
   });
 
@@ -203,7 +264,7 @@ describe("initHrBridge", () => {
     dispatchRequest(
       iframe,
       request({
-        path: "/getMBLHomeLeaveDetail.do",
+        path: "/TAADclzVcatnList.do",
         method: "POST",
         form: { searchType: "mobile" },
       })
@@ -221,7 +282,7 @@ describe("initHrBridge", () => {
     dispatchRequest(
       iframe,
       request({
-        path: "/getMBLHomeLeaveDetail.do",
+        path: "/TAADclzVcatnList.do",
         method: "POST",
         form: { cmmSearchStaffId: "$SELF_STAFF_ID" },
       })
@@ -247,7 +308,7 @@ describe("initHrBridge", () => {
     dispatchRequest(
       iframe,
       request({
-        path: "/getMBLHomeLeaveDetail.do",
+        path: "/TAADclzVcatnList.do",
         method: "POST",
         form: { cmmSearchStaffId: "$SELF_STAFF_ID" },
       })
@@ -260,7 +321,7 @@ describe("initHrBridge", () => {
   it("origin 불일치 메시지는 무시한다", async () => {
     dispatchRequest(
       iframe,
-      request({ path: "/getMBLHomeLeaveDetail.do", method: "POST", form: {} }),
+      request({ path: "/TAADclzVcatnList.do", method: "POST", form: {} }),
       { origin: "https://evil.example.com" }
     );
     await flush();
@@ -272,7 +333,7 @@ describe("initHrBridge", () => {
   it("source가 chatbot iframe이 아니면 무시한다", async () => {
     dispatchRequest(
       iframe,
-      request({ path: "/getMBLHomeLeaveDetail.do", method: "POST", form: {} }),
+      request({ path: "/TAADclzVcatnList.do", method: "POST", form: {} }),
       { source: {} }
     );
     await flush();
@@ -293,7 +354,7 @@ describe("initHrBridge", () => {
 
     dispatchRequest(
       iframe2,
-      request({ path: "/getMBLHomeLeaveDetail.do", method: "POST", form: {} })
+      request({ path: "/TAADclzVcatnList.do", method: "POST", form: {} })
     );
     await flush();
     expect(reply2).not.toHaveBeenCalled();

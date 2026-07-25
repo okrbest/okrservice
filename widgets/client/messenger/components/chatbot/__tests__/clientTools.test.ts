@@ -16,7 +16,7 @@ const PARENT_ORIGIN = "https://kiwibox.example.com";
 
 const SPEC: ClientToolSpec = {
   transport: "kiwibox-bridge",
-  path: "/getMBLHomeLeaveDetail.do",
+  path: "/TAADclzVcatnList.do",
   method: "POST",
   form: { searchType: "1", cmmSearchStaffId: "$SELF_STAFF_ID" },
 };
