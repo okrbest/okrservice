@@ -166,6 +166,11 @@ postMessage → 브리지가 same-origin fetch로 kiwibox 호출(JSESSIONID 자�
 
 ### 1.5 브리지 endpoint allowlist (정적 22개 + YTA 정규식 외 실행 거부)
 
+> ⚠️ **구판 기준 (2026-07-16)** — 2026-07-24 kiwibox 신판 카탈로그 재정렬(teamplgpt specs/011)로
+> 정적 목록이 **21개**로 변경됨. 현행 목록은 `teamplgpt-hr-endpoint-realign-workorder.md` §2 W1 참조.
+> (추가: `/TAADclzVcatnList.do`, `/SALSalaryBassMgr.do` · 제거: `/TAAWrkTimeListMgrByDate.do`,
+> `/getMBLLeavDetailStaff.do`, `/getMBLHomeLeaveDetail.do`, `/SALSalaryDtstmnMgr.do`)
+
 정적 경로 22개 (정확 매칭):
 
 ```
