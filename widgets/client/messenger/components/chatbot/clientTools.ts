@@ -13,7 +13,8 @@ import { getEnv } from "../../../utils";
  */
 const REQUEST_TYPE = "teamplgpt:hr-tool-request";
 const RESULT_TYPE = "teamplgpt:hr-tool-result";
-// 타임아웃 중첩 계약(작업지시서 §3.1): 브리지 fetch 20s < 위젯 대기 25s < broker 30s.
+// 타임아웃 중첩 계약(작업지시서 §3.1): 브리지 fetch 20s < 위젯 대기 25s
+// < broker 45s(기본, env HR_CLIENT_TOOL_TIMEOUT_MS로 조정).
 // 브리지보다 짧으면 kiwibox 지연 응답 구간에서 진짜 결과가 유실되고 거짓 실패가 회신된다.
 const BRIDGE_TIMEOUT_MS = 25000;
 
