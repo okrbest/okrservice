@@ -4,6 +4,7 @@ import { getCallData, getMessengerData } from "../utils/util";
 
 import ChatbotView from "./chatbot/ChatbotView";
 import ChatbotIframeView from "./chatbot/ChatbotIframeView";
+import ChatbotHistoryView from "./chatbot/ChatbotHistoryView";
 import AccquireInformationContainer from "../containers/AccquireInformation";
 import ArticleDetailContainer from "../containers/faq/ArticleDetail";
 import CallContainer from "../containers/call/CallContainer";
@@ -60,6 +61,8 @@ function Messenger({
         ) : (
           <ChatbotView />
         );
+      case "chatbot-history":
+        return <ChatbotHistoryView />;
 
       case "allConversations":
         return <ConversationListContainer loading={loading} />;
