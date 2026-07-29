@@ -550,14 +550,25 @@ const USER_BUBBLE_STYLE: React.CSSProperties = {
 const HEADER_ACTION_ROW_STYLE: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  gap: "14px",
+  gap: "8px",
 };
 
-const HEADER_ICON_BUTTON_STYLE: React.CSSProperties = {
-  fontSize: "18px",
-  lineHeight: 1,
+const HEADER_BUTTON_STYLE: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "6px 12px",
+  borderRadius: "16px",
+  border: "1px solid rgba(255,255,255,0.5)",
+  background: "rgba(255,255,255,0.15)",
+  color: "#fff",
+  fontSize: "12px",
+  fontWeight: 600,
   cursor: "pointer",
-  userSelect: "none",
+  whiteSpace: "nowrap",
+  outline: "none",
+  WebkitAppearance: "none",
+  appearance: "none",
 };
 
 const ChatbotView: React.FC = () => {
@@ -713,28 +724,25 @@ const ChatbotView: React.FC = () => {
       showBackButton={false}
       title={
         <div style={HEADER_ACTION_ROW_STYLE}>
-          <span
-            role="button"
-            aria-label="새 채팅"
-            title="새 채팅"
+          <button
+            type="button"
             onClick={handleNewChat}
+            disabled={aiMessages.length === 0}
             style={{
-              ...HEADER_ICON_BUTTON_STYLE,
+              ...HEADER_BUTTON_STYLE,
               opacity: aiMessages.length === 0 ? 0.4 : 1,
               cursor: aiMessages.length === 0 ? "default" : "pointer",
             }}
           >
-            ✏️
-          </span>
-          <span
-            role="button"
-            aria-label="채팅 이력"
-            title="채팅 이력"
+            새 채팅
+          </button>
+          <button
+            type="button"
             onClick={() => setRoute("chatbot-history")}
-            style={HEADER_ICON_BUTTON_STYLE}
+            style={HEADER_BUTTON_STYLE}
           >
-            🕐
-          </span>
+            채팅 이력
+          </button>
         </div>
       }
     >
