@@ -21,6 +21,7 @@ import { IMessage } from "../types";
 import { connection } from "../connection";
 import { getDealData, toggleNotifier } from "../utils/util";
 import { useRouter } from "./Router";
+import { startNewSession } from "../components/chatbot/chatHistory";
 
 interface ConversationContextType {
   activeConversationId: string | null;
@@ -230,6 +231,12 @@ export const ConversationProvider = ({
     });
 
     setIsMessengerVisible(nextVisible);
+
+    // 위젯을 다시 열 때는 항상 새 AI 채팅 세션으로 시작한다.
+    // (탭 전환은 toggle()을 거치지 않으므로 영향 없음 — 실제 열기/닫기 시에만 리셋)
+    if (nextVisible) {
+      startNewSession();
+    }
 
     if (nextVisible && activeRoute.includes("conversation")) {
       prepareOpenLastConversation();
