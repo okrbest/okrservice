@@ -11,10 +11,17 @@ import {
 } from "./chatHistory";
 
 const EMPTY_STATE_STYLE: React.CSSProperties = {
+  width: "100%",
+  boxSizing: "border-box",
   padding: "40px 20px",
   textAlign: "center",
   color: "#94a3b8",
   fontSize: "13px",
+};
+
+const LIST_STYLE: React.CSSProperties = {
+  width: "100%",
+  boxSizing: "border-box",
 };
 
 const ROW_STYLE: React.CSSProperties = {
@@ -98,7 +105,7 @@ const ChatbotHistoryView: React.FC = () => {
       {entries.length === 0 ? (
         <div style={EMPTY_STATE_STYLE}>아직 대화 이력이 없어요</div>
       ) : (
-        <div>
+        <div style={LIST_STYLE}>
           {entries.map((entry) => (
             <div key={entry.id} style={ROW_STYLE} onClick={() => handleSelect(entry.id)}>
               <div style={ROW_TEXT_COLUMN_STYLE}>
