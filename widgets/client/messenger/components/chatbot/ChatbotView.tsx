@@ -1,19 +1,16 @@
-import * as React from 'react';
-import Container from '../common/Container';
-import { CHATBOT_MENUS, CHATBOT_MENU_CATEGORIES } from './chatbotMenus';
-import { useRouter } from '../../context/Router';
-import { getColor } from '../../utils/util';
-import { useChatbotMessages } from './useChatbotMessages';
-import { useRpaMessages } from '../../context/RpaMessage';
-import { buildHrUrl } from './getHrBaseUrl';
-import {
-  useChatbotButtonMessages,
-  ChatbotButtonCardMessage,
-} from '../../context/ChatbotButtonMessages';
-import { resolveRpaButtons } from './rpaButtons';
-import { ScheduledMessage } from './chatbotMessages';
-import { RpaMessageItem } from '../../context/RpaMessage';
-import { streamChat } from './teamplgpt';
+import * as React from "react";
+import Container from "../common/Container";
+import { CHATBOT_MENUS, CHATBOT_MENU_CATEGORIES } from "./chatbotMenus";
+import { useRouter } from "../../context/Router";
+import { getColor } from "../../utils/util";
+import { useChatbotMessages } from "./useChatbotMessages";
+import { useRpaMessages } from "../../context/RpaMessage";
+import { buildHrUrl } from "./getHrBaseUrl";
+import { useChatbotButtonMessages, ChatbotButtonCardMessage } from "../../context/ChatbotButtonMessages";
+import { resolveRpaButtons } from "./rpaButtons";
+import { ScheduledMessage } from "./chatbotMessages";
+import { RpaMessageItem } from "../../context/RpaMessage";
+import { streamChat } from "./teamplgpt";
 import { useChatbotKeywordSuggestions } from './useChatbotKeywordSuggestions';
 import ChatbotSuggestions from './ChatbotSuggestions';
 import {
@@ -23,133 +20,134 @@ import {
   loadMessages,
   saveMessages,
   upsertIndexEntry,
-} from './chatHistory';
+} from "./chatHistory";
+
 
 const DIVIDER_STYLE: React.CSSProperties = {
-  height: '1px',
-  background: 'linear-gradient(90deg, #e0e0f0 0%, transparent 100%)',
-  margin: '10px 0',
+  height: "1px",
+  background: "linear-gradient(90deg, #e0e0f0 0%, transparent 100%)",
+  margin: "10px 0",
 };
 
 const CARD_BASE_STYLE: React.CSSProperties = {
-  background: '#fff',
-  borderWidth: '1.5px',
-  borderStyle: 'solid',
-  borderColor: '#ebebf5',
-  borderRadius: '12px',
-  minHeight: '52px',
-  height: 'auto',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  textAlign: 'center',
-  fontSize: '12px',
-  fontWeight: '500',
-  color: '#374151',
-  cursor: 'pointer',
+  background: "#fff",
+  borderWidth: "1.5px",
+  borderStyle: "solid",
+  borderColor: "#ebebf5",
+  borderRadius: "12px",
+  minHeight: "52px",
+  height: "auto",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  textAlign: "center",
+  fontSize: "12px",
+  fontWeight: "500",
+  color: "#374151",
+  cursor: "pointer",
   lineHeight: 1.35,
-  padding: '8px 6px',
-  boxShadow: '0 1px 3px rgba(99,102,241,0.06)',
-  transition: 'all 0.18s ease',
-  boxSizing: 'border-box' as const,
-  whiteSpace: 'normal' as const,
-  wordBreak: 'keep-all' as const,
-  overflowWrap: 'anywhere' as const,
+  padding: "8px 6px",
+  boxShadow: "0 1px 3px rgba(99,102,241,0.06)",
+  transition: "all 0.18s ease",
+  boxSizing: "border-box" as const,
+  whiteSpace: "normal" as const,
+  wordBreak: "keep-all" as const,
+  overflowWrap: "anywhere" as const,
   minWidth: 0,
-  outline: 'none',
-  WebkitAppearance: 'none',
-  appearance: 'none',
-  WebkitTapHighlightColor: 'transparent',
+  outline: "none",
+  WebkitAppearance: "none",
+  appearance: "none",
+  WebkitTapHighlightColor: "transparent",
 };
 
 const BOT_AVATAR_STYLE: React.CSSProperties = {
-  width: '28px',
-  height: '28px',
-  background: 'linear-gradient(135deg, #6366f1, #a78bfa)',
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '14px',
+  width: "28px",
+  height: "28px",
+  background: "linear-gradient(135deg, #6366f1, #a78bfa)",
+  borderRadius: "50%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "14px",
   flexShrink: 0,
 };
 
 const MESSAGE_COLUMN_STYLE: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '6px',
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
   flex: 1,
   minWidth: 0,
-  maxWidth: 'calc(100% - 36px)',
+  maxWidth: "calc(100% - 36px)",
 };
 
 const BUBBLE_STYLE: React.CSSProperties = {
-  background: '#fff',
-  borderRadius: '4px 14px 14px 14px',
-  padding: '10px 14px',
-  fontSize: '13px',
-  color: '#374151',
+  background: "#fff",
+  borderRadius: "4px 14px 14px 14px",
+  padding: "10px 14px",
+  fontSize: "13px",
+  color: "#374151",
   lineHeight: 1.55,
-  boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
-  maxWidth: '100%',
-  width: 'fit-content',
-  alignSelf: 'flex-start',
+  boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
+  maxWidth: "100%",
+  width: "fit-content",
+  alignSelf: "flex-start",
 };
 
 // 마크다운 렌더링 말풍선 — 코드블록 등이 넘치지 않도록 width: 100%
 const MARKDOWN_BUBBLE_STYLE: React.CSSProperties = {
   ...BUBBLE_STYLE,
-  width: '100%',
-  boxSizing: 'border-box' as const,
+  width: "100%",
+  boxSizing: "border-box" as const,
 };
 
 const ACTION_BUTTON_GROUP_STYLE: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '4px',
-  marginBottom: '10px',
-  alignSelf: 'flex-start',
-  alignItems: 'flex-start',
-  width: 'fit-content',
-  maxWidth: '100%',
+  display: "flex",
+  flexDirection: "column",
+  gap: "4px",
+  marginBottom: "10px",
+  alignSelf: "flex-start",
+  alignItems: "flex-start",
+  width: "fit-content",
+  maxWidth: "100%",
 };
 
 function createActionButtonStyle(
   primaryColor: string,
-  isHovered: boolean,
+  isHovered: boolean
 ): React.CSSProperties {
   return {
-    width: 'fit-content',
-    maxWidth: '100%',
-    padding: '10px 18px',
+    width: "fit-content",
+    maxWidth: "100%",
+    padding: "10px 18px",
     background: isHovered
       ? `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`
       : primaryColor,
-    color: '#fff',
-    border: 'none',
-    borderRadius: '10px',
-    fontSize: '13px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-    outline: 'none',
-    WebkitAppearance: 'none',
-    appearance: 'none',
+    color: "#fff",
+    border: "none",
+    borderRadius: "10px",
+    fontSize: "13px",
+    fontWeight: "700",
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    outline: "none",
+    WebkitAppearance: "none",
+    appearance: "none",
     boxShadow: isHovered
-      ? '0 6px 16px rgba(99,102,241,0.35)'
-      : '0 2px 8px rgba(99,102,241,0.25)',
-    transform: isHovered ? 'translateY(-1px)' : 'none',
-    letterSpacing: '0.2px',
-    whiteSpace: 'nowrap',
+      ? "0 6px 16px rgba(99,102,241,0.35)"
+      : "0 2px 8px rgba(99,102,241,0.25)",
+    transform: isHovered ? "translateY(-1px)" : "none",
+    letterSpacing: "0.2px",
+    whiteSpace: "nowrap",
   };
 }
 
 function formatMessageTime(value?: string): string {
-  if (!value) return '';
+  if (!value) return "";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  const hh = String(date.getHours()).padStart(2, '0');
-  const mm = String(date.getMinutes()).padStart(2, '0');
+  if (Number.isNaN(date.getTime())) return "";
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
   return `${hh}:${mm}`;
 }
 
@@ -165,13 +163,12 @@ function getMessageTimestamp(value?: string): number {
 }
 
 function getRpaDisplayText(msg: { message?: string }): string {
-  return msg.message || '알림이 도착했습니다.';
+  return msg.message || "알림이 도착했습니다.";
 }
 
 function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const pattern =
-    /(\*\*(.+?)\*\*|\*([^*]+)\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\))/g;
+  const pattern = /(\*\*(.+?)\*\*|\*([^*]+)\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\))/g;
   let last = 0;
   let match: RegExpExecArray | null;
   let i = 0;
@@ -192,17 +189,17 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
         <code
           key={`${keyPrefix}-${i++}`}
           style={{
-            background: '#eff0fb',
-            borderRadius: '4px',
-            padding: '1px 5px',
-            fontSize: '11.5px',
+            background: "#eff0fb",
+            borderRadius: "4px",
+            padding: "1px 5px",
+            fontSize: "11.5px",
             fontFamily: "'SFMono-Regular', Consolas, monospace",
-            color: '#5b5fc7',
-            border: '1px solid #dde0f5',
+            color: "#5b5fc7",
+            border: "1px solid #dde0f5",
           }}
         >
           {match[4]}
-        </code>,
+        </code>
       );
     } else if (match[5] !== undefined && match[6] !== undefined) {
       // [link text](url)
@@ -212,14 +209,10 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
           href={match[6]}
           target="_blank"
           rel="noopener noreferrer"
-          style={{
-            color: '#6366f1',
-            textDecoration: 'underline',
-            textUnderlineOffset: '2px',
-          }}
+          style={{ color: "#6366f1", textDecoration: "underline", textUnderlineOffset: "2px" }}
         >
           {match[5]}
-        </a>,
+        </a>
       );
     }
     last = match.index + match[0].length;
@@ -237,39 +230,37 @@ function isTableSeparator(line: string): boolean {
 function parseTableRow(line: string): string[] {
   return line
     .trim()
-    .replace(/^\||\|$/g, '')
-    .split('|')
+    .replace(/^\||\|$/g, "")
+    .split("|")
     .map((cell) => cell.trim());
 }
 
-function parseColAligns(
-  separatorLine: string,
-): Array<'left' | 'center' | 'right'> {
+function parseColAligns(separatorLine: string): Array<"left" | "center" | "right"> {
   return separatorLine
     .trim()
-    .replace(/^\||\|$/g, '')
-    .split('|')
+    .replace(/^\||\|$/g, "")
+    .split("|")
     .map((cell) => {
       const c = cell.trim();
-      if (c.startsWith(':') && c.endsWith(':')) return 'center';
-      if (c.endsWith(':')) return 'right';
-      return 'left';
+      if (c.startsWith(":") && c.endsWith(":")) return "center";
+      if (c.endsWith(":")) return "right";
+      return "left";
     });
 }
 
 function renderMarkdown(text: string): React.ReactNode[] {
-  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   const nodes: React.ReactNode[] = [];
   let listItems: React.ReactNode[] = [];
-  let listType: 'ul' | 'ol' = 'ul';
+  let listType: "ul" | "ol" = "ul";
   let inCodeBlock = false;
   let codeLines: string[] = [];
-  let codeLang = '';
+  let codeLang = "";
   let nodeIdx = 0;
 
   // 테이블 버퍼
   let tableHeaders: string[] = [];
-  let tableAligns: Array<'left' | 'center' | 'right'> = [];
+  let tableAligns: Array<"left" | "center" | "right"> = [];
   let tableRows: string[][] = [];
   let inTable = false;
 
@@ -278,23 +269,17 @@ function renderMarkdown(text: string): React.ReactNode[] {
   const flushList = () => {
     if (listItems.length === 0) return;
     const key = `list-${nextKey()}`;
-    if (listType === 'ol') {
+    if (listType === "ol") {
       nodes.push(
-        <ol
-          key={key}
-          style={{ margin: '6px 0', paddingLeft: '20px', lineHeight: 1.7 }}
-        >
+        <ol key={key} style={{ margin: "6px 0", paddingLeft: "20px", lineHeight: 1.7 }}>
           {listItems}
-        </ol>,
+        </ol>
       );
     } else {
       nodes.push(
-        <ul
-          key={key}
-          style={{ margin: '6px 0', paddingLeft: '20px', lineHeight: 1.7 }}
-        >
+        <ul key={key} style={{ margin: "6px 0", paddingLeft: "20px", lineHeight: 1.7 }}>
           {listItems}
-        </ul>,
+        </ul>
       );
     }
     listItems = [];
@@ -303,44 +288,29 @@ function renderMarkdown(text: string): React.ReactNode[] {
   const flushTable = () => {
     if (tableHeaders.length === 0) return;
     const key = `table-${nextKey()}`;
-    const cellStyle = (
-      align: 'left' | 'center' | 'right',
-    ): React.CSSProperties => ({
-      padding: '6px 10px',
+    const cellStyle = (align: "left" | "center" | "right"): React.CSSProperties => ({
+      padding: "6px 10px",
       textAlign: align,
-      borderBottom: '1px solid #e5e7eb',
-      fontSize: '12px',
+      borderBottom: "1px solid #e5e7eb",
+      fontSize: "12px",
       lineHeight: 1.5,
-      whiteSpace: 'pre-wrap' as const,
-      wordBreak: 'keep-all' as const,
+      whiteSpace: "pre-wrap" as const,
+      wordBreak: "keep-all" as const,
     });
     nodes.push(
-      <div
-        key={key}
-        style={{
-          overflowX: 'auto',
-          margin: '8px 0',
-          WebkitOverflowScrolling: 'touch',
-        }}
-      >
-        <table
-          style={{
-            borderCollapse: 'collapse',
-            width: '100%',
-            fontSize: '12px',
-          }}
-        >
+      <div key={key} style={{ overflowX: "auto", margin: "8px 0", WebkitOverflowScrolling: "touch" }}>
+        <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "12px" }}>
           <thead>
-            <tr style={{ background: '#f0f0fb' }}>
+            <tr style={{ background: "#f0f0fb" }}>
               {tableHeaders.map((h, ci) => (
                 <th
                   key={ci}
                   style={{
-                    ...cellStyle(tableAligns[ci] || 'left'),
+                    ...cellStyle(tableAligns[ci] || "left"),
                     fontWeight: 700,
-                    color: '#374151',
-                    borderBottom: '2px solid #c7c9ef',
-                    whiteSpace: 'nowrap' as const,
+                    color: "#374151",
+                    borderBottom: "2px solid #c7c9ef",
+                    whiteSpace: "nowrap" as const,
                   }}
                 >
                   {renderInline(h, `th-${key}-${ci}`)}
@@ -350,20 +320,17 @@ function renderMarkdown(text: string): React.ReactNode[] {
           </thead>
           <tbody>
             {tableRows.map((row, ri) => (
-              <tr
-                key={ri}
-                style={{ background: ri % 2 === 0 ? '#fff' : '#f9f9ff' }}
-              >
+              <tr key={ri} style={{ background: ri % 2 === 0 ? "#fff" : "#f9f9ff" }}>
                 {tableHeaders.map((_, ci) => (
-                  <td key={ci} style={cellStyle(tableAligns[ci] || 'left')}>
-                    {renderInline(row[ci] ?? '', `td-${key}-${ri}-${ci}`)}
+                  <td key={ci} style={cellStyle(tableAligns[ci] || "left")}>
+                    {renderInline(row[ci] ?? "", `td-${key}-${ri}-${ci}`)}
                   </td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
-      </div>,
+      </div>
     );
     tableHeaders = [];
     tableAligns = [];
@@ -377,35 +344,28 @@ function renderMarkdown(text: string): React.ReactNode[] {
       <pre
         key={key}
         style={{
-          background: '#1e1e2e',
-          borderRadius: '8px',
-          padding: '12px 14px',
-          overflowX: 'auto',
-          margin: '8px 0',
-          fontSize: '11.5px',
+          background: "#1e1e2e",
+          borderRadius: "8px",
+          padding: "12px 14px",
+          overflowX: "auto",
+          margin: "8px 0",
+          fontSize: "11.5px",
           lineHeight: 1.6,
-          color: '#cdd6f4',
+          color: "#cdd6f4",
           fontFamily: "'SFMono-Regular', Consolas, monospace",
-          WebkitOverflowScrolling: 'touch',
+          WebkitOverflowScrolling: "touch",
         }}
       >
         {codeLang && (
-          <div
-            style={{
-              color: '#89b4fa',
-              fontSize: '10px',
-              marginBottom: '6px',
-              opacity: 0.8,
-            }}
-          >
+          <div style={{ color: "#89b4fa", fontSize: "10px", marginBottom: "6px", opacity: 0.8 }}>
             {codeLang}
           </div>
         )}
-        <code>{codeLines.join('\n')}</code>
-      </pre>,
+        <code>{codeLines.join("\n")}</code>
+      </pre>
     );
     codeLines = [];
-    codeLang = '';
+    codeLang = "";
   };
 
   lines.forEach((line) => {
@@ -429,7 +389,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
     }
 
     // 테이블 처리
-    const isTableRow = line.trim().startsWith('|') && line.trim().endsWith('|');
+    const isTableRow = line.trim().startsWith("|") && line.trim().endsWith("|");
     if (isTableRow) {
       if (isTableSeparator(line)) {
         // 구분선 행 — 정렬 정보 파싱 (헤더 다음에 오는 행)
@@ -460,110 +420,70 @@ function renderMarkdown(text: string): React.ReactNode[] {
     if (h1) {
       flushList();
       nodes.push(
-        <div
-          key={nextKey()}
-          style={{
-            fontWeight: 700,
-            fontSize: '14px',
-            color: '#1f2937',
-            marginTop: '12px',
-            marginBottom: '4px',
-            paddingBottom: '4px',
-            borderBottom: '2px solid #e5e7eb',
-          }}
-        >
+        <div key={nextKey()} style={{ fontWeight: 700, fontSize: "14px", color: "#1f2937", marginTop: "12px", marginBottom: "4px", paddingBottom: "4px", borderBottom: "2px solid #e5e7eb" }}>
           {renderInline(h1[1], `h1-${nodeIdx}`)}
-        </div>,
+        </div>
       );
     } else if (h2) {
       flushList();
       nodes.push(
-        <div
-          key={nextKey()}
-          style={{
-            fontWeight: 700,
-            fontSize: '13px',
-            color: '#374151',
-            marginTop: '10px',
-            marginBottom: '3px',
-            paddingBottom: '3px',
-            borderBottom: '1px solid #e5e7eb',
-          }}
-        >
+        <div key={nextKey()} style={{ fontWeight: 700, fontSize: "13px", color: "#374151", marginTop: "10px", marginBottom: "3px", paddingBottom: "3px", borderBottom: "1px solid #e5e7eb" }}>
           {renderInline(h2[1], `h2-${nodeIdx}`)}
-        </div>,
+        </div>
       );
     } else if (h3) {
       flushList();
       nodes.push(
-        <div
-          key={nextKey()}
-          style={{
-            fontWeight: 600,
-            fontSize: '12.5px',
-            color: '#4b5563',
-            marginTop: '8px',
-            marginBottom: '2px',
-          }}
-        >
+        <div key={nextKey()} style={{ fontWeight: 600, fontSize: "12.5px", color: "#4b5563", marginTop: "8px", marginBottom: "2px" }}>
           {renderInline(h3[1], `h3-${nodeIdx}`)}
-        </div>,
+        </div>
       );
     } else if (hr) {
       flushList();
-      nodes.push(
-        <hr
-          key={nextKey()}
-          style={{
-            border: 'none',
-            borderTop: '1px solid #e5e7eb',
-            margin: '8px 0',
-          }}
-        />,
-      );
+      nodes.push(<hr key={nextKey()} style={{ border: "none", borderTop: "1px solid #e5e7eb", margin: "8px 0" }} />);
     } else if (blockquote) {
       flushList();
       nodes.push(
         <div
           key={nextKey()}
           style={{
-            borderLeft: '3px solid #6366f1',
-            paddingLeft: '10px',
-            margin: '4px 0',
-            color: '#6b7280',
-            fontStyle: 'italic',
-            fontSize: '12.5px',
+            borderLeft: "3px solid #6366f1",
+            paddingLeft: "10px",
+            margin: "4px 0",
+            color: "#6b7280",
+            fontStyle: "italic",
+            fontSize: "12.5px",
             lineHeight: 1.6,
           }}
         >
           {renderInline(blockquote[1], `bq-${nodeIdx}`)}
-        </div>,
+        </div>
       );
     } else if (bullet) {
-      if (listType === 'ol' && listItems.length > 0) flushList();
-      listType = 'ul';
+      if (listType === "ol" && listItems.length > 0) flushList();
+      listType = "ul";
       listItems.push(
-        <li key={nodeIdx} style={{ marginBottom: '2px', lineHeight: 1.6 }}>
+        <li key={nodeIdx} style={{ marginBottom: "2px", lineHeight: 1.6 }}>
           {renderInline(bullet[1], `li-${nodeIdx}`)}
-        </li>,
+        </li>
       );
     } else if (numbered) {
-      if (listType === 'ul' && listItems.length > 0) flushList();
-      listType = 'ol';
+      if (listType === "ul" && listItems.length > 0) flushList();
+      listType = "ol";
       listItems.push(
-        <li key={nodeIdx} style={{ marginBottom: '2px', lineHeight: 1.6 }}>
+        <li key={nodeIdx} style={{ marginBottom: "2px", lineHeight: 1.6 }}>
           {renderInline(numbered[2], `li-${nodeIdx}`)}
-        </li>,
+        </li>
       );
-    } else if (line.trim() === '') {
+    } else if (line.trim() === "") {
       flushList();
-      nodes.push(<div key={nextKey()} style={{ height: '5px' }} />);
+      nodes.push(<div key={nextKey()} style={{ height: "5px" }} />);
     } else {
       flushList();
       nodes.push(
         <div key={nextKey()} style={{ lineHeight: 1.65 }}>
           {renderInline(line, `p-${nodeIdx}`)}
-        </div>,
+        </div>
       );
     }
   });
@@ -575,11 +495,11 @@ function renderMarkdown(text: string): React.ReactNode[] {
 }
 
 type TimelineItem =
-  | { kind: 'scheduled'; sortKey: number; data: ScheduledMessage }
-  | { kind: 'rpa'; sortKey: number; data: RpaMessageItem }
-  | { kind: 'suggestion'; sortKey: number; data: ChatbotButtonCardMessage }
-  | { kind: 'ai-user'; sortKey: number; data: AiMessage }
-  | { kind: 'ai-bot'; sortKey: number; data: AiMessage };
+  | { kind: "scheduled"; sortKey: number; data: ScheduledMessage }
+  | { kind: "rpa"; sortKey: number; data: RpaMessageItem }
+  | { kind: "suggestion"; sortKey: number; data: ChatbotButtonCardMessage }
+  | { kind: "ai-user"; sortKey: number; data: AiMessage }
+  | { kind: "ai-bot"; sortKey: number; data: AiMessage };
 
 function buildTimelineItems(
   scheduledMessages: ScheduledMessage[],
@@ -592,24 +512,22 @@ function buildTimelineItems(
   // AI: createdAt (Date.now() 기반)
   return [
     ...scheduledMessages.map((msg) => ({
-      kind: 'scheduled' as const,
+      kind: "scheduled" as const,
       sortKey: getMessageTimestamp(msg.shownAt),
       data: msg,
     })),
     ...rpaMessages.map((msg) => ({
-      kind: 'rpa' as const,
+      kind: "rpa" as const,
       sortKey: msg.clientReceivedAt ?? getMessageTimestamp(msg.receivedAt),
       data: msg,
     })),
     ...buttonCardMessages.map((msg) => ({
-      kind: 'suggestion' as const,
+      kind: "suggestion" as const,
       sortKey: getMessageTimestamp(msg.createdAt),
       data: msg,
     })),
     ...aiMessages.map((msg) => ({
-      kind: (msg.role === 'user' ? 'ai-user' : 'ai-bot') as
-        | 'ai-user'
-        | 'ai-bot',
+      kind: (msg.role === "user" ? "ai-user" : "ai-bot") as "ai-user" | "ai-bot",
       sortKey: msg.createdAt,
       data: msg,
     })),
@@ -617,34 +535,34 @@ function buildTimelineItems(
 }
 
 const USER_BUBBLE_STYLE: React.CSSProperties = {
-  background: '#6366f1',
-  borderRadius: '14px 4px 14px 14px',
-  padding: '10px 14px',
-  fontSize: '13px',
-  color: '#fff',
+  background: "#6366f1",
+  borderRadius: "14px 4px 14px 14px",
+  padding: "10px 14px",
+  fontSize: "13px",
+  color: "#fff",
   lineHeight: 1.55,
-  maxWidth: '100%',
-  width: 'fit-content',
-  alignSelf: 'flex-end',
-  boxShadow: '0 2px 8px rgba(99,102,241,0.2)',
+  maxWidth: "100%",
+  width: "fit-content",
+  alignSelf: "flex-end",
+  boxShadow: "0 2px 8px rgba(99,102,241,0.2)",
 };
 
 const HEADER_ACTION_ROW_STYLE: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '14px',
+  display: "flex",
+  alignItems: "center",
+  gap: "14px",
 };
 
 const HEADER_ICON_BUTTON_STYLE: React.CSSProperties = {
-  fontSize: '18px',
+  fontSize: "18px",
   lineHeight: 1,
-  cursor: 'pointer',
-  userSelect: 'none',
+  cursor: "pointer",
+  userSelect: "none",
 };
 
 const ChatbotView: React.FC = () => {
   const { setRoute, setChatbotMenu } = useRouter();
-  const primaryColor = getColor() || '#6366f1';
+  const primaryColor = getColor() || "#6366f1";
   const [hoveredBtn, setHoveredBtn] = React.useState<string | null>(null);
   const chatBottomRef = React.useRef<HTMLDivElement>(null);
 
@@ -654,9 +572,7 @@ const ChatbotView: React.FC = () => {
   const [inputValue, setInputValue] = React.useState('');
   const [inputFocused, setInputFocused] = React.useState(false);
   const [isStreaming, setIsStreaming] = React.useState(false);
-  const [dismissedForValue, setDismissedForValue] = React.useState<
-    string | null
-  >(null);
+  const [dismissedForValue, setDismissedForValue] = React.useState<string | null>(null);
   const abortRef = React.useRef<AbortController | null>(null);
 
   // 화면 이탈 시 진행 중인 스트림 취소
@@ -670,14 +586,10 @@ const ChatbotView: React.FC = () => {
     dismissedForValue !== inputValue &&
     (suggestionMenus.length > 0 || suggestionQuestions.length > 0);
 
-  const [sessionId, setSessionId] = React.useState<string>(() =>
-    getActiveSessionId(),
-  );
+  const [sessionId, setSessionId] = React.useState<string>(() => getActiveSessionId());
 
   // 활성 세션의 대화 복원. sessionId가 바뀔 때(새 채팅/이력 전환)도 다시 실행된다.
-  const [aiMessages, setAiMessages] = React.useState<AiMessage[]>(() =>
-    loadMessages(sessionId),
-  );
+  const [aiMessages, setAiMessages] = React.useState<AiMessage[]>(() => loadMessages(sessionId));
 
   React.useEffect(() => {
     setAiMessages(loadMessages(sessionId));
@@ -687,8 +599,7 @@ const ChatbotView: React.FC = () => {
   React.useEffect(() => {
     saveMessages(sessionId, aiMessages);
     if (aiMessages.length > 0) {
-      const firstUserMessage =
-        aiMessages.find((m) => m.role === 'user') ?? aiMessages[0];
+      const firstUserMessage = aiMessages.find((m) => m.role === "user") ?? aiMessages[0];
       upsertIndexEntry({
         id: sessionId,
         firstMessage: firstUserMessage.text,
@@ -703,23 +614,17 @@ const ChatbotView: React.FC = () => {
   };
 
   const timelineItems = React.useMemo(
-    () =>
-      buildTimelineItems(
-        scheduledMessages,
-        rpaMessages,
-        buttonCardMessages,
-        aiMessages,
-      ),
-    [scheduledMessages, rpaMessages, buttonCardMessages, aiMessages],
+    () => buildTimelineItems(scheduledMessages, rpaMessages, buttonCardMessages, aiMessages),
+    [scheduledMessages, rpaMessages, buttonCardMessages, aiMessages]
   );
 
   React.useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [timelineItems.length, aiMessages]);
 
   const handleMenuClick = (title: string, pathOrUrl: string) => {
     setChatbotMenu({ title, url: buildHrUrl(pathOrUrl) });
-    setRoute('chatbot-iframe');
+    setRoute("chatbot-iframe");
   };
 
   const handleSend = async () => {
@@ -727,22 +632,11 @@ const ChatbotView: React.FC = () => {
     if (!text || isStreaming) return;
 
     const now = Date.now();
-    const userMsg: AiMessage = {
-      id: `u-${now}`,
-      role: 'user',
-      text,
-      createdAt: now,
-    };
+    const userMsg: AiMessage = { id: `u-${now}`, role: "user", text, createdAt: now };
     const botMsgId = `b-${now + 1}`;
     // createdAt은 첫 청크 수신 시점으로 업데이트 — 전송 시점으로 고정하면
     // 그 사이에 도착한 RPA 메시지보다 위에 정렬됨
-    const botMsg: AiMessage = {
-      id: botMsgId,
-      role: 'bot',
-      text: '',
-      createdAt: now + 1,
-      streaming: true,
-    };
+    const botMsg: AiMessage = { id: botMsgId, role: "bot", text: "", createdAt: now + 1, streaming: true };
 
     setAiMessages((prev) => [...prev, userMsg, botMsg]);
     setInputValue('');
@@ -753,28 +647,25 @@ const ChatbotView: React.FC = () => {
     abortRef.current = controller;
 
     try {
-      let accumulated = '';
+      let accumulated = "";
       let firstChunk = true;
-      for await (const chunk of streamChat(text, sessionId, {
-        signal: controller.signal,
-      })) {
+      for await (const chunk of streamChat(text, sessionId, { signal: controller.signal })) {
         // 서버 abort 청크: error가 문자열로 옴 (정상 청크는 false/null)
-        if (typeof chunk.error === 'string' && chunk.error) {
+        if (typeof chunk.error === "string" && chunk.error) {
           setAiMessages((prev) =>
             prev.map((m) =>
               m.id === botMsgId
                 ? {
                     ...m,
-                    text:
-                      accumulated || '오류가 발생했습니다. 다시 시도해주세요.',
+                    text: accumulated || "오류가 발생했습니다. 다시 시도해주세요.",
                     streaming: false,
                   }
-                : m,
-            ),
+                : m
+            )
           );
           break;
         }
-        accumulated += chunk.textResponse ?? '';
+        accumulated += chunk.textResponse ?? "";
         const receivedAt = Date.now();
         setAiMessages((prev) =>
           prev.map((m) => {
@@ -786,23 +677,17 @@ const ChatbotView: React.FC = () => {
               // 첫 청크 수신 시각으로 createdAt 업데이트
               createdAt: firstChunk ? receivedAt : m.createdAt,
             };
-          }),
+          })
         );
         firstChunk = false;
       }
     } catch (e: any) {
       // unmount로 인한 중단은 에러 표시하지 않음
-      if (e?.name !== 'AbortError') {
+      if (e?.name !== "AbortError") {
         setAiMessages((prev) =>
           prev.map((m) =>
-            m.id === botMsgId
-              ? {
-                  ...m,
-                  text: '오류가 발생했습니다. 다시 시도해주세요.',
-                  streaming: false,
-                }
-              : m,
-          ),
+            m.id === botMsgId ? { ...m, text: "오류가 발생했습니다. 다시 시도해주세요.", streaming: false } : m
+          )
         );
       }
     } finally {
@@ -810,15 +695,13 @@ const ChatbotView: React.FC = () => {
       setIsStreaming(false);
       // close 청크 없이 스트림이 끝나도 "···" 플레이스홀더가 남지 않도록 해제
       setAiMessages((prev) =>
-        prev.map((m) =>
-          m.id === botMsgId && m.streaming ? { ...m, streaming: false } : m,
-        ),
+        prev.map((m) => (m.id === botMsgId && m.streaming ? { ...m, streaming: false } : m))
       );
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -838,7 +721,7 @@ const ChatbotView: React.FC = () => {
             style={{
               ...HEADER_ICON_BUTTON_STYLE,
               opacity: aiMessages.length === 0 ? 0.4 : 1,
-              cursor: aiMessages.length === 0 ? 'default' : 'pointer',
+              cursor: aiMessages.length === 0 ? "default" : "pointer",
             }}
           >
             ✏️
@@ -847,7 +730,7 @@ const ChatbotView: React.FC = () => {
             role="button"
             aria-label="채팅 이력"
             title="채팅 이력"
-            onClick={() => setRoute('chatbot-history')}
+            onClick={() => setRoute("chatbot-history")}
             style={HEADER_ICON_BUTTON_STYLE}
           >
             🕐
@@ -857,13 +740,13 @@ const ChatbotView: React.FC = () => {
     >
       <div
         style={{
-          display: 'flex',
-          flexDirection: 'column',
+          display: "flex",
+          flexDirection: "column",
           flex: 1,
-          width: '100%',
+          width: "100%",
           minHeight: 0,
-          height: '100%',
-          background: '#f5f6fc',
+          height: "100%",
+          background: "#f5f6fc",
         }}
       >
         {/* ── 채팅 영역: 인사 + 시간대 메시지 (스크롤) ── */}
@@ -871,17 +754,15 @@ const ChatbotView: React.FC = () => {
           style={{
             flex: 1,
             minHeight: 0,
-            overflowY: 'auto',
-            padding: '16px 16px 8px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
+            overflowY: "auto",
+            padding: "16px 16px 8px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
           }}
         >
           {/* 봇 인사 말풍선 */}
-          <div
-            style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}
-          >
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
             <div style={BOT_AVATAR_STYLE}>🤖</div>
             <div style={MESSAGE_COLUMN_STYLE}>
               <div style={BUBBLE_STYLE}>
@@ -894,16 +775,12 @@ const ChatbotView: React.FC = () => {
 
           {/* 시간순 통합 메시지 (예약 / RPA / 추천단어) */}
           {timelineItems.map((item) => {
-            if (item.kind === 'scheduled') {
+            if (item.kind === "scheduled") {
               const msg = item.data;
               return (
                 <div
                   key={`scheduled-${msg.id}`}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '8px',
-                  }}
+                  style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
                 >
                   <div style={BOT_AVATAR_STYLE}>🤖</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
@@ -918,17 +795,12 @@ const ChatbotView: React.FC = () => {
                               key={btnKey}
                               type="button"
                               tabIndex={-1}
-                              style={createActionButtonStyle(
-                                primaryColor,
-                                isHovered,
-                              )}
+                              style={createActionButtonStyle(primaryColor, isHovered)}
                               onMouseEnter={() => setHoveredBtn(btnKey)}
                               onMouseLeave={() => setHoveredBtn(null)}
                               onMouseDown={(e) => e.preventDefault()}
                               onFocus={(e) => e.currentTarget.blur()}
-                              onClick={() =>
-                                handleMenuClick(btn.label, btn.url)
-                              }
+                              onClick={() => handleMenuClick(btn.label, btn.url)}
                             >
                               {btn.label} →
                             </button>
@@ -939,9 +811,9 @@ const ChatbotView: React.FC = () => {
                     {!!msg.shownAt && (
                       <span
                         style={{
-                          alignSelf: 'flex-end',
-                          fontSize: '10px',
-                          color: '#94a3b8',
+                          alignSelf: "flex-end",
+                          fontSize: "10px",
+                          color: "#94a3b8",
                           marginRight: 2,
                         }}
                       >
@@ -953,17 +825,13 @@ const ChatbotView: React.FC = () => {
               );
             }
 
-            if (item.kind === 'rpa') {
+            if (item.kind === "rpa") {
               const msg = item.data;
               const actionButtons = resolveRpaButtons(msg.rpaCode, msg.buttons);
               return (
                 <div
                   key={`rpa-${msg._id}`}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '8px',
-                  }}
+                  style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
                 >
                   <div style={BOT_AVATAR_STYLE}>🤖</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
@@ -978,17 +846,12 @@ const ChatbotView: React.FC = () => {
                               key={btnKey}
                               type="button"
                               tabIndex={-1}
-                              style={createActionButtonStyle(
-                                primaryColor,
-                                isHovered,
-                              )}
+                              style={createActionButtonStyle(primaryColor, isHovered)}
                               onMouseEnter={() => setHoveredBtn(btnKey)}
                               onMouseLeave={() => setHoveredBtn(null)}
                               onMouseDown={(e) => e.preventDefault()}
                               onFocus={(e) => e.currentTarget.blur()}
-                              onClick={() =>
-                                handleMenuClick(btn.label, btn.path)
-                              }
+                              onClick={() => handleMenuClick(btn.label, btn.path)}
                             >
                               {btn.label} →
                             </button>
@@ -997,14 +860,7 @@ const ChatbotView: React.FC = () => {
                       </div>
                     )}
                     {!!msg.receivedAt && (
-                      <span
-                        style={{
-                          alignSelf: 'flex-end',
-                          fontSize: '10px',
-                          color: '#94a3b8',
-                          marginRight: 2,
-                        }}
-                      >
+                      <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
                         {formatMessageTime(msg.receivedAt)}
                       </span>
                     )}
@@ -1013,16 +869,12 @@ const ChatbotView: React.FC = () => {
               );
             }
 
-            if (item.kind === 'suggestion') {
+            if (item.kind === "suggestion") {
               const msg = item.data;
               return (
                 <div
                   key={`suggestion-${msg.id}`}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '8px',
-                  }}
+                  style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
                 >
                   <div style={BOT_AVATAR_STYLE}>🤖</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
@@ -1038,10 +890,7 @@ const ChatbotView: React.FC = () => {
                             key={btnKey}
                             type="button"
                             tabIndex={-1}
-                            style={createActionButtonStyle(
-                              primaryColor,
-                              isHovered,
-                            )}
+                            style={createActionButtonStyle(primaryColor, isHovered)}
                             onMouseEnter={() => setHoveredBtn(btnKey)}
                             onMouseLeave={() => setHoveredBtn(null)}
                             onMouseDown={(e) => e.preventDefault()}
@@ -1053,14 +902,7 @@ const ChatbotView: React.FC = () => {
                         );
                       })}
                     </div>
-                    <span
-                      style={{
-                        alignSelf: 'flex-end',
-                        fontSize: '10px',
-                        color: '#94a3b8',
-                        marginRight: 2,
-                      }}
-                    >
+                    <span style={{ alignSelf: "flex-end", fontSize: "10px", color: "#94a3b8", marginRight: 2 }}>
                       {formatMessageTime(msg.createdAt)}
                     </span>
                   </div>
@@ -1068,47 +910,33 @@ const ChatbotView: React.FC = () => {
               );
             }
 
-            if (item.kind === 'ai-user') {
+            if (item.kind === "ai-user") {
               const msg = item.data;
               return (
                 <div
                   key={`ai-user-${msg.id}`}
-                  style={{ display: 'flex', justifyContent: 'flex-end' }}
+                  style={{ display: "flex", justifyContent: "flex-end" }}
                 >
                   <div style={USER_BUBBLE_STYLE}>{msg.text}</div>
                 </div>
               );
             }
 
-            if (item.kind === 'ai-bot') {
+            if (item.kind === "ai-bot") {
               const msg = item.data;
               return (
                 <div
                   key={`ai-bot-${msg.id}`}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '8px',
-                  }}
+                  style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
                 >
                   <div style={BOT_AVATAR_STYLE}>🤖</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={MARKDOWN_BUBBLE_STYLE}>
-                      {msg.text ? (
-                        renderMarkdown(msg.text)
-                      ) : msg.streaming ? (
-                        <span
-                          style={{
-                            color: '#94a3b8',
-                            fontSize: '18px',
-                            letterSpacing: '2px',
-                          }}
-                        >
-                          ···
-                        </span>
-                      ) : (
-                        ''
-                      )}
+                      {msg.text
+                        ? renderMarkdown(msg.text)
+                        : msg.streaming
+                        ? <span style={{ color: "#94a3b8", fontSize: "18px", letterSpacing: "2px" }}>···</span>
+                        : ""}
                     </div>
                   </div>
                 </div>
@@ -1141,12 +969,12 @@ const ChatbotView: React.FC = () => {
         <div
           style={{
             flexShrink: 0,
-            borderTop: '1px solid #ebebf5',
-            background: '#fff',
-            padding: '12px 14px',
-            display: 'flex',
-            gap: '8px',
-            alignItems: 'flex-end',
+            borderTop: "1px solid #ebebf5",
+            background: "#fff",
+            padding: "12px 14px",
+            display: "flex",
+            gap: "8px",
+            alignItems: "flex-end",
           }}
         >
           <textarea
@@ -1158,17 +986,17 @@ const ChatbotView: React.FC = () => {
             rows={3}
             style={{
               flex: 1,
-              border: `1.5px solid ${inputFocused ? primaryColor : '#e0e0f4'}`,
-              borderRadius: '10px',
-              padding: '10px 12px',
-              fontSize: '13px',
-              color: '#374151',
-              outline: 'none',
-              boxSizing: 'border-box',
-              background: isStreaming ? '#f5f5f5' : '#f9f9ff',
-              resize: 'none',
+              border: `1.5px solid ${inputFocused ? primaryColor : "#e0e0f4"}`,
+              borderRadius: "10px",
+              padding: "10px 12px",
+              fontSize: "13px",
+              color: "#374151",
+              outline: "none",
+              boxSizing: "border-box",
+              background: isStreaming ? "#f5f5f5" : "#f9f9ff",
+              resize: "none",
               lineHeight: 1.5,
-              fontFamily: 'inherit',
+              fontFamily: "inherit",
             }}
             onFocus={() => setInputFocused(true)}
             onBlur={() => setInputFocused(false)}
@@ -1179,21 +1007,19 @@ const ChatbotView: React.FC = () => {
             disabled={isStreaming || !inputValue.trim()}
             style={{
               flexShrink: 0,
-              background:
-                isStreaming || !inputValue.trim() ? '#c7c7d4' : primaryColor,
-              border: 'none',
-              borderRadius: '10px',
-              padding: '10px 16px',
-              color: '#fff',
-              fontSize: '13px',
-              fontWeight: '600',
-              cursor:
-                isStreaming || !inputValue.trim() ? 'not-allowed' : 'pointer',
-              outline: 'none',
-              height: '42px',
+              background: isStreaming || !inputValue.trim() ? "#c7c7d4" : primaryColor,
+              border: "none",
+              borderRadius: "10px",
+              padding: "10px 16px",
+              color: "#fff",
+              fontSize: "13px",
+              fontWeight: "600",
+              cursor: isStreaming || !inputValue.trim() ? "not-allowed" : "pointer",
+              outline: "none",
+              height: "42px",
             }}
           >
-            {isStreaming ? '...' : '전송'}
+            {isStreaming ? "..." : "전송"}
           </button>
         </div>
 
