@@ -621,7 +621,11 @@ const ChatbotView: React.FC = () => {
 
   const handleNewChat = () => {
     if (aiMessages.length === 0) return;
+    // sessionId만 바꾸면 다음 렌더에서 아직 초기화되지 않은 이전 aiMessages가
+    // 새 sessionId와 함께 저장 이펙트에 걸려 이력에 중복 항목이 남는다.
+    // 두 상태를 같은 이벤트 핸들러에서 함께 바꿔 같은 렌더에 반영되게 한다.
     setSessionId(startNewSession());
+    setAiMessages([]);
   };
 
   const timelineItems = React.useMemo(

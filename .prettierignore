@@ -1,2 +1,4 @@
 packages/template.plugin.api
 packages/template.plugin.ui
+widgets/client/messenger/components/chatbot/ChatbotView.tsx
+widgets/client/messenger/components/chatbot/__tests__/ChatbotView.test.tsx

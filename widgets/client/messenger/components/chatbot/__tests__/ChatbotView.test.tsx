@@ -75,5 +75,9 @@ describe("ChatbotView - 새 채팅 버튼", () => {
     expect(getActiveSessionId()).not.toBe(existingId);
     expect(screen.queryByText("안녕하세요")).not.toBeInTheDocument();
     expect(loadIndex().some((e) => e.id === existingId)).toBe(true);
+    // 새 세션은 아직 메시지가 없으므로 이력에 중복 항목이 남으면 안 된다
+    // (sessionId만 바꾸고 aiMessages를 그대로 두면, 이전 메시지가 새 sessionId와
+    // 함께 저장되며 중복 항목이 생기는 회귀가 있었다)
+    expect(loadIndex()).toHaveLength(1);
   });
 });
