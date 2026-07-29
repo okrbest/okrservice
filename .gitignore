@@ -54,3 +54,5 @@ packages/plugin-payment-api/src/public/js/bundle.js.gz
 packages/plugin-payment-api/src/public/js/bundle.js.map.gz
 
 docker/elasticsearchData
+
+.superpowers/sdd/
