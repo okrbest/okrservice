@@ -1,4 +1,2 @@
 packages/template.plugin.api
 packages/template.plugin.ui
-widgets/client/messenger/components/chatbot/ChatbotHistoryView.tsx
-widgets/client/messenger/components/chatbot/__tests__/ChatbotHistoryView.test.tsx
