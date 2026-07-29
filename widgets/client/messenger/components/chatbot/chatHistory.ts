@@ -1,8 +1,8 @@
-import { connection } from '../../connection';
+import { connection } from "../../connection";
 
 export interface AiMessage {
   id: string;
-  role: 'user' | 'bot';
+  role: "user" | "bot";
   text: string;
   createdAt: number;
   streaming?: boolean;
@@ -19,23 +19,23 @@ const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function randomUuid(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
   }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
 
 function getPointerKey(): string {
   const customerId = connection.data?.customerId;
-  return customerId ? `erxes_ai_sid_${customerId}` : 'erxes_ai_anon_sid';
+  return customerId ? `erxes_ai_sid_${customerId}` : "erxes_ai_anon_sid";
 }
 
 function getIndexKey(): string {
   const customerId = connection.data?.customerId;
-  return `erxes_ai_chat_index_${customerId || 'anon'}`;
+  return `erxes_ai_chat_index_${customerId || "anon"}`;
 }
 
 function getMessagesKey(sessionId: string): string {
@@ -82,7 +82,7 @@ export function loadMessages(sessionId: string): AiMessage[] {
     if (!Array.isArray(parsed)) return [];
     return (parsed as AiMessage[]).map((m) => ({
       ...m,
-      text: (m.text ?? '').replace(/^undefined/, ''),
+      text: (m.text ?? "").replace(/^undefined/, ""),
     }));
   } catch {
     return [];
