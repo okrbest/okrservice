@@ -35,8 +35,8 @@ export const getMessengerData = (): IIntegrationMessengerData => {
 };
 
 export const getIntegrationId = () => {
-  return connection.data.integrationId
-}
+  return connection.data.integrationId;
+};
 
 export const getCallData = (): IIntegrationCallData => {
   return connection.data.callData || {};
@@ -52,6 +52,10 @@ export const getDealData = (): any => {
 
 export const getShowTicket = (): boolean => {
   return connection.setting?.showTicket === true;
+};
+
+export const getShowChatbot = (): boolean => {
+  return connection.setting?.showChatbot === true;
 };
 
 export const isOnline = () => {
@@ -72,11 +76,14 @@ function rgbToHex(r: any, g: any, b: any) {
 }
 
 export const hexToRGBA = (hex: string, alpha: number | string): string => {
-  let validHex = hex.replace(/^#/, "");
+  let validHex = hex.replace(/^#/, '');
 
   if (validHex.length === 3) {
     // Expand shorthand like #abc to #aabbcc
-    validHex = validHex.split("").map((char) => char + char).join("");
+    validHex = validHex
+      .split('')
+      .map((char) => char + char)
+      .join('');
   }
 
   const bigint = parseInt(validHex, 16);
@@ -98,4 +105,3 @@ export function adjustBrightness(hex: string, factor: any) {
 
   return rgbToHex(r, g, b);
 }
-

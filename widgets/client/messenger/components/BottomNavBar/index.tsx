@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 
 import {
   IconChatbot,
@@ -7,18 +7,25 @@ import {
   IconQuestionMark,
   IconTicket,
   IconDeal,
-} from "./Icons";
-import { getCallData, getTicketData, getDealData, getMessengerData, getShowTicket } from "../../utils/util";
+} from './Icons';
+import {
+  getCallData,
+  getTicketData,
+  getDealData,
+  getMessengerData,
+  getShowTicket,
+  getShowChatbot,
+} from '../../utils/util';
 
-import Item from "./Item";
-import { useRouter } from "../../context/Router";
-import { useTicket } from "../../context/Ticket";
+import Item from './Item';
+import { useRouter } from '../../context/Router';
+import { useTicket } from '../../context/Ticket';
 
 const items = [
   {
-    label: "Home",
+    label: 'Home',
     icon: IconHome,
-    route: "home",
+    route: 'home',
   },
   {
     label: (
@@ -29,17 +36,17 @@ const items = [
       </>
     ),
     icon: IconChatbot,
-    route: "chatbot",
-    additionalRoutes: ["chatbot-iframe"],
+    route: 'chatbot',
+    additionalRoutes: ['chatbot-iframe'],
   },
-  { label: "Call", icon: IconPhone, route: "call" },
-  { label: "Ticket", icon: IconTicket, route: "ticket" },
-  { label: "Deal", icon: IconDeal, route: "deal" },
+  { label: 'Call', icon: IconPhone, route: 'call' },
+  { label: 'Ticket', icon: IconTicket, route: 'ticket' },
+  { label: 'Deal', icon: IconDeal, route: 'deal' },
   {
-    label: "Help",
+    label: 'Help',
     icon: IconQuestionMark,
-    route: "faqCategories",
-    additionalRoutes: ["faqCategory", "faqArticle"],
+    route: 'faqCategories',
+    additionalRoutes: ['faqCategory', 'faqArticle'],
   },
 ];
 
@@ -47,6 +54,7 @@ function BottomNavBar() {
   const { setActiveRoute, activeRoute } = useRouter();
   const { unreadTicketCount, hasTickets } = useTicket();
   const showTicket = getShowTicket();
+  const showChatbot = getShowChatbot();
   const callData = getCallData();
   const ticketData = getTicketData();
   const dealData = getDealData();
@@ -67,28 +75,31 @@ function BottomNavBar() {
     return activeRoute === route;
   };
 
-  const showDeal =
-    dealData?.dealToggle === true && !!dealData?.dealStageId;
+  const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
 
   return (
     <ul className="nav-container nav-list">
       {items.map((item) => {
         const { route } = item;
 
-        if (route === "call" && callData && !callData.isReceiveWebCall) {
+        if (route === 'call' && callData && !callData.isReceiveWebCall) {
           return null;
         }
 
-        if (route === "ticket" && ticketData && !ticketData.ticketStageId) {
+        if (route === 'ticket' && ticketData && !ticketData.ticketStageId) {
           return null;
         }
 
-        if (route === "ticket" && !showTicket && !hasTickets) {
+        if (route === 'ticket' && !showTicket && !hasTickets) {
+          return null;
+        }
+
+        if (route === 'chatbot' && !showChatbot) {
           return null;
         }
 
         // Deal: hide unless dealToggle is true AND dealStageId is set
-        if (route === "deal") {
+        if (route === 'deal') {
           if (!showDeal) {
             return null;
           }
@@ -96,13 +107,13 @@ function BottomNavBar() {
 
         // When Deal is on: hide Home, Conversations, Ticket, Help
         if (showDeal) {
-          const hideWhenDealOn = ["home", "chatbot", "ticket", "faqCategories"];
+          const hideWhenDealOn = ['home', 'chatbot', 'ticket', 'faqCategories'];
           if (hideWhenDealOn.includes(route)) {
             return null;
           }
         }
 
-        const badge = route === "ticket" ? unreadTicketCount : undefined;
+        const badge = route === 'ticket' ? unreadTicketCount : undefined;
 
         return (
           <Item
