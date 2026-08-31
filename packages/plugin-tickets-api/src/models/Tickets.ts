@@ -1,15 +1,15 @@
-import { ITicket, ITicketDocument, ticketSchema } from "./definitions/tickets";
+import { ITicket, ITicketDocument, ticketSchema } from './definitions/tickets';
 import {
   createBoardItem,
   destroyBoardItemRelations,
   fillSearchTextItem,
-  watchItem
-} from "./utils";
+  watchItem,
+} from './utils';
 
-import { ACTIVITY_CONTENT_TYPES } from "./definitions/constants";
-import { IModels } from "../connectionResolver";
-import { IUserDocument } from "@erxes/api-utils/src/types";
-import { Model } from "mongoose";
+import { ACTIVITY_CONTENT_TYPES } from './definitions/constants';
+import { IModels } from '../connectionResolver';
+import { IUserDocument } from '@erxes/api-utils/src/types';
+import { Model } from 'mongoose';
 
 export interface ITicketModel extends Model<ITicketDocument> {
   createTicket(doc: ITicket): Promise<ITicketDocument>;
@@ -23,7 +23,13 @@ export interface ITicketModel extends Model<ITicketDocument> {
     content: string,
     userType: string,
     customerId?: string,
-    attachments?: Array<{ name?: string; url?: string; type?: string; size?: number; duration?: number }>
+    attachments?: Array<{
+      name?: string;
+      url?: string;
+      type?: string;
+      size?: number;
+      duration?: number;
+    }>,
   ): Promise<any>;
 }
 
@@ -36,7 +42,7 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
       const ticket = await models.Tickets.findOne({ _id });
 
       if (!ticket) {
-        throw new Error("Ticket not found");
+        throw new Error('Ticket not found');
       }
 
       return ticket;
@@ -48,15 +54,15 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
     public static async createTicket(doc: ITicket) {
       if (doc.sourceConversationIds) {
         const convertedTicket = await models.Tickets.findOne({
-          sourceConversationIds: { $in: doc.sourceConversationIds }
+          sourceConversationIds: { $in: doc.sourceConversationIds },
         });
 
         if (convertedTicket) {
-          throw new Error("Already converted a ticket");
+          throw new Error('Already converted a ticket');
         }
       }
 
-      return createBoardItem(models, subdomain, doc, "ticket");
+      return createBoardItem(models, subdomain, doc, 'ticket');
     }
     public static async createTicketComment(
       type: string,
@@ -64,13 +70,19 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
       content: string,
       userType: string,
       customerId?: string,
-      attachments?: Array<{ name?: string; url?: string; type?: string; size?: number; duration?: number }>
+      attachments?: Array<{
+        name?: string;
+        url?: string;
+        type?: string;
+        size?: number;
+        duration?: number;
+      }>,
     ) {
       try {
         const hasContent = content && content.trim().length > 0;
         const hasAttachments = attachments && attachments.length > 0;
         if (!typeId || (!hasContent && !hasAttachments)) {
-          throw new Error("typeId or content not found");
+          throw new Error('typeId or content not found');
         }
         const comment = await models.Comments.createComment({
           type,
@@ -80,7 +92,7 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
           userId: customerId,
           attachments: attachments || [],
         });
-        return comment
+        return comment;
       } catch (error) {
         throw error;
       }
@@ -92,7 +104,7 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
     public static async updateTicket(_id: string, doc: ITicket) {
       const searchText = fillSearchTextItem(
         doc,
-        await models.Tickets.getTicket(_id)
+        await models.Tickets.getTicket(_id),
       );
 
       await models.Tickets.updateOne({ _id }, { $set: doc, searchText });
@@ -106,7 +118,7 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
     public static async watchTicket(
       _id: string,
       isAdd: boolean,
-      userId: string
+      userId: string,
     ) {
       return watchItem(models.Tickets, _id, isAdd, userId);
     }
@@ -118,7 +130,7 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
           models,
           subdomain,
           _id,
-          ACTIVITY_CONTENT_TYPES.TICKET
+          ACTIVITY_CONTENT_TYPES.TICKET,
         );
       }
 
@@ -133,9 +145,18 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
   ticketSchema.index({ stageId: 1, status: 1, assignedUserIds: 1 });
   ticketSchema.index({ assignedUserIds: 1, stageId: 1, status: 1 });
   // getItemList의 $match + $sort(order, createdAt)가 인덱스 커버되도록
-  ticketSchema.index({ stageId: 1, status: 1, assignedUserIds: 1, order: 1, createdAt: -1 });
-  // archivedTicketsGroups 월별 집계: status='ARCHIVED' 선택도가 높아 status를 선두에 배치
-  ticketSchema.index({ status: 1, stageId: 1, createdAt: -1 });
+  ticketSchema.index({
+    stageId: 1,
+    status: 1,
+    assignedUserIds: 1,
+    order: 1,
+    createdAt: -1,
+  });
+  // archivedTicketsGroups 기간 집계 + archivedItems 목록 정렬(createdAt DESC).
+  // status='ARCHIVED' 선택도가 높아 status를 선두에 배치.
+  // _id는 페이지네이션 타이브레이커. 정렬 키에 _id가 없으면 createdAt 동률 구간에서
+  // skip/limit 페이지 사이 순서가 흔들리고, 인덱스에 _id가 없으면 블로킹 SORT로 떨어진다.
+  ticketSchema.index({ status: 1, stageId: 1, createdAt: -1, _id: -1 });
   // archivedItems 아이템 목록: modifiedAt 정렬 최적화
   ticketSchema.index({ status: 1, stageId: 1, modifiedAt: -1 });
 

@@ -5,7 +5,7 @@ import {
   commonTypes,
   conformityQueryFields,
   copyParams,
-} from "./common";
+} from './common';
 
 export const types = ({ contacts, clientPortal }) => `
   type UpdateWidgetAlarmResponse {
@@ -32,20 +32,21 @@ export const types = ({ contacts, clientPortal }) => `
     qualityImpact: String
     functionCategory: String
     visibility: String
-    ${contacts
-    ? `
+    ${
+      contacts
+        ? `
       companies: [Company]
       customers: [Customer]
       `
-        : ""
+        : ''
     }
 
     tags: [Tag]
-    ${clientPortal ? `vendorCustomers: [ClientPortalUser]` : ""}
+    ${clientPortal ? `vendorCustomers: [ClientPortalUser]` : ''}
 
     ${commonTypes}
     `
-        : ""
+        : ''
     }
   }
 
@@ -64,6 +65,7 @@ export const types = ({ contacts, clientPortal }) => `
     name: String
     stageName: String
     assignedUsers: JSON
+    createdAt: Date
     modifiedAt: Date
     requestType: String
     functionCategory: String

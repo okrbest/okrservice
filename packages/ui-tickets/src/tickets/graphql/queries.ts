@@ -1,8 +1,8 @@
-import { commonFields, commonListFields } from "../../boards/graphql/mutations";
+import { commonFields, commonListFields } from '../../boards/graphql/mutations';
 import {
   conformityQueryFieldDefs,
-  conformityQueryFields
-} from "../../conformity/graphql/queries";
+  conformityQueryFields,
+} from '../../conformity/graphql/queries';
 
 const commonParams = `
   $companyIds: [String],
@@ -266,6 +266,7 @@ const archivedTicketItems = `
       name
       stageName
       assignedUsers
+      createdAt
       modifiedAt
       requestType
       functionCategory
@@ -319,5 +320,5 @@ export default {
   archivedTicketsCount,
   archivedTicketsGroups,
   clientPortalComments,
-  widgetsTicketComments
+  widgetsTicketComments,
 };
