@@ -2,14 +2,14 @@ import {
   IAttachment,
   MutationVariables,
   QueryResponse,
-} from "@erxes/ui/src/types";
+} from '@erxes/ui/src/types';
 
-import { IActivityLog } from "@erxes/ui-log/src/activityLogs/types";
-import { ICompany } from "@erxes/ui-contacts/src/companies/types";
-import { ICustomer } from "@erxes/ui-contacts/src/customers/types";
-import { ISavedConformity } from "../conformity/types";
-import { ITag } from "@erxes/ui-tags/src/types";
-import { IUser } from "@erxes/ui/src/auth/types";
+import { IActivityLog } from '@erxes/ui-log/src/activityLogs/types';
+import { ICompany } from '@erxes/ui-contacts/src/companies/types';
+import { ICustomer } from '@erxes/ui-contacts/src/customers/types';
+import { ISavedConformity } from '../conformity/types';
+import { ITag } from '@erxes/ui-tags/src/types';
+import { IUser } from '@erxes/ui/src/auth/types';
 
 export interface IOptions {
   EditForm: any;
@@ -446,7 +446,11 @@ export interface IEditFormContent {
   onChangeStage: (stageId: string) => void;
   copy: () => void;
   remove: (id: string) => void;
-  descriptionConflictPending?: { doc: any; callback: (item: any) => void } | null;
+  descriptionConflictPending?: {
+    doc: any;
+    callback: (item: any) => void;
+  } | null;
+  descriptionDirtyRef?: React.MutableRefObject<(() => boolean) | null>;
 }
 
 export type ConvertToMutationVariables = {

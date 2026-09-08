@@ -3,37 +3,38 @@ import {
   ContentWrapper,
   LeftContainer,
   TitleRow,
-} from "../../styles/item";
+} from '../../styles/item';
 import {
   EditorActions,
   EditorWrapper,
-} from "@erxes/ui-internalnotes/src/components/Form";
-import { IItem, IItemParams, IOptions } from "../../types";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import debounce from "lodash/debounce";
-import { __, readFile } from "coreui/utils";
-import { extractAttachment } from "@erxes/ui/src/utils";
-import styled from "styled-components";
-import { useIsMobile } from "../../utils/mobile";
+} from '@erxes/ui-internalnotes/src/components/Form';
+import { IItem, IItemParams, IOptions } from '../../types';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { __, readFile } from 'coreui/utils';
+import { extractAttachment } from '@erxes/ui/src/utils';
+import styled from 'styled-components';
+import { useIsMobile } from '../../utils/mobile';
 
-import Actions from "./Actions";
-import ActivityInputs from "@erxes/ui-log/src/activityLogs/components/ActivityInputs";
-import ActivityLogs from "@erxes/ui-log/src/activityLogs/containers/ActivityLogs";
-import Button from "@erxes/ui/src/components/Button";
-import { RichTextEditor } from "@erxes/ui/src/components/richTextEditor/TEditor";
-import Checklists from "../../../checklists/containers/Checklists";
-import ControlLabel from "@erxes/ui/src/components/form/Label";
-import FormGroup from "@erxes/ui/src/components/form/Group";
-import FormControl from "@erxes/ui/src/components/form/Control";
-import { IAttachment } from "@erxes/ui/src/types";
-import Icon from "@erxes/ui/src/components/Icon";
-import Labels from "../label/Labels";
-import Uploader from "@erxes/ui/src/components/Uploader";
-import { isEnabled } from "@erxes/ui/src/utils/core";
+import Actions from './Actions';
+import ActivityInputs from '@erxes/ui-log/src/activityLogs/components/ActivityInputs';
+import ActivityLogs from '@erxes/ui-log/src/activityLogs/containers/ActivityLogs';
+import Button from '@erxes/ui/src/components/Button';
+import { RichTextEditor } from '@erxes/ui/src/components/richTextEditor/TEditor';
+import Checklists from '../../../checklists/containers/Checklists';
+import ControlLabel from '@erxes/ui/src/components/form/Label';
+import FormGroup from '@erxes/ui/src/components/form/Group';
+import FormControl from '@erxes/ui/src/components/form/Control';
+import { IAttachment } from '@erxes/ui/src/types';
+import Icon from '@erxes/ui/src/components/Icon';
+import Labels from '../label/Labels';
+import Uploader from '@erxes/ui/src/components/Uploader';
+import { isEnabled } from '@erxes/ui/src/utils/core';
 
 // 모바일용 스타일드 컴포넌트들
 const MobileContent = styled(Content)<{ isMobile: boolean }>`
-  ${props => props.isMobile && `
+  ${(props) =>
+    props.isMobile &&
+    `
     @media (max-width: 768px) {
       width: 160%;
       max-width: 160%;
@@ -45,13 +46,30 @@ const MobileContent = styled(Content)<{ isMobile: boolean }>`
   `}
 `;
 
-const MobileCommentContainer = styled.div<{ isMobile: boolean }>`
+const MobileCommentContainer = styled.div<{
+  isMobile: boolean;
+  $isEditing?: boolean;
+}>`
   margin-bottom: 15px;
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  
-  ${props => props.isMobile && `
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  ${(props) =>
+    props.$isEditing &&
+    `
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  `}
+
+  ${(props) =>
+    props.isMobile &&
+    `
     margin-bottom: 20px;
     gap: 12px;
     padding: 8px;
@@ -59,50 +77,124 @@ const MobileCommentContainer = styled.div<{ isMobile: boolean }>`
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     flex-direction: column;
-    width: 100%;
-    box-sizing: border-box;
-    margin-left: 0;
-    margin-right: 0;
+  `}
+`;
+
+const CommentBodyColumn = styled.div<{ $teamIndent?: boolean }>`
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  ${(props) =>
+    props.$teamIndent &&
+    `
+    padding-left: 25px;
   `}
 `;
 
 const MobileCommentBubble = styled.div<{ isTeam: boolean; isMobile: boolean }>`
   position: relative;
-  background-color: ${props => props.isTeam ? '#f0ecf9' : '#ffffff'};
+  background-color: ${(props) => (props.isTeam ? '#f0ecf9' : '#ffffff')};
   padding: 10px 15px;
   border-radius: 18px;
-  max-width: ${props => props.isTeam ? 'none' : 'none'};
-  min-width: ${props => props.isTeam ? '200px' : '200px'};
-  width: ${props => props.isTeam ? 'auto' : 'auto'};
+  max-width: 100%;
+  min-width: 0;
   word-wrap: break-word;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  border: ${props => props.isTeam ? '1px solid #f0ecf9' : '1px solid #e1e5e9'};
+  overflow-wrap: break-word;
+  word-break: break-word;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  border: ${(props) =>
+    props.isTeam ? '1px solid #f0ecf9' : '1px solid #e1e5e9'};
   font-size: 12px;
   line-height: 1.4;
-  
-  ${props => props.isMobile && `
+  box-sizing: border-box;
+
+  ${(props) =>
+    props.isMobile &&
+    `
     padding: 16px 20px;
-    max-width: 100%;
-    min-width: 0;
-    width: 100%;
     font-size: 15px;
     line-height: 1.6;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     border-radius: 12px;
-    box-sizing: border-box;
   `}
 `;
 
-const MobileUserName = styled.div<{ isMobile: boolean }>`
+const CommentInputArea = styled.div`
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-top: 15px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 20px;
+  }
+`;
+
+const CommentTextarea = styled.textarea`
+  display: block;
+  width: 100%;
+  min-width: 100%;
+  min-height: 100px;
+  box-sizing: border-box;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  font-family: inherit;
+  background: #fff;
+
+  @media (max-width: 768px) {
+    min-height: 100px;
+    font-size: 15px;
+    padding: 16px;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #6569df;
+  }
+`;
+
+const CommentActionRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 10px;
+`;
+
+const MobileUserName = styled.div<{ isMobile: boolean; $isEditing?: boolean }>`
+  flex-shrink: 0;
   min-width: 80px;
+  max-width: 120px;
   text-align: right;
   font-weight: bold;
   font-size: 12px;
   color: #333;
   padding-top: 5px;
-  
-  ${props => props.isMobile && `
+
+  ${(props) =>
+    props.$isEditing &&
+    `
     min-width: 0;
+    max-width: none;
+    width: 100%;
+    text-align: left;
+    padding-top: 0;
+    font-size: 13px;
+  `}
+
+  ${(props) =>
+    props.isMobile &&
+    `
+    min-width: 0;
+    max-width: none;
     width: 100%;
     text-align: left;
     font-size: 14px;
@@ -116,10 +208,15 @@ const MobileUserName = styled.div<{ isMobile: boolean }>`
 `;
 
 const MobileCommentList = styled(Content)<{ isMobile: boolean }>`
-  padding: 12px 12px;
-  
-  ${props => props.isMobile && `
-    padding: 0;
+  padding: 12px;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+  ${(props) =>
+    props.isMobile &&
+    `
+    padding: 8px;
     min-height: 400px;
     max-height: 500px;
     background-color: #fafafa;
@@ -127,24 +224,26 @@ const MobileCommentList = styled(Content)<{ isMobile: boolean }>`
     border: 1px solid #e1e5e9;
     overflow-x: hidden;
     overflow-y: auto;
-    width: 160%;
-    max-width: 160%;
+    width: 100%;
+    max-width: 100%;
     margin: 0;
-    padding: 0;
     box-sizing: border-box;
   `}
 `;
 
 const MobileFormControl = styled(FormControl)`
+  width: 100% !important;
+  min-height: 100px !important;
+  box-sizing: border-box !important;
+  resize: vertical !important;
+  border: 2px solid #e1e5e9 !important;
+  border-radius: 8px !important;
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+
   @media (max-width: 768px) {
-    min-height: 100px !important;
     font-size: 15px !important;
     padding: 16px !important;
-    border-radius: 8px !important;
-    border: 2px solid #e1e5e9 !important;
-    resize: vertical !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
   }
 `;
 
@@ -155,6 +254,7 @@ type DescProps = {
   isMobile: boolean;
   onChangeRefresh?: () => void;
   hasDescriptionConflict?: boolean;
+  descriptionDirtyRef?: React.MutableRefObject<(() => boolean) | null>;
 };
 
 // WidgetComments 컴포넌트 수정
@@ -168,12 +268,21 @@ type WidgetCommentsProps = {
 };
 
 const WidgetComments = (props: WidgetCommentsProps) => {
-  const { widgetComments = [], onAddComment, onDeleteComment, onEditComment, currentUser, item } = props;
-  const [content, setContent] = useState("");
+  const {
+    widgetComments = [],
+    onAddComment,
+    onDeleteComment,
+    onEditComment,
+    currentUser,
+    item,
+  } = props;
+  const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+    null,
+  );
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  const [editingContent, setEditingContent] = useState("");
+  const [editingContent, setEditingContent] = useState('');
   const isMobile = useIsMobile();
 
   const handleChange = (e: React.FormEvent<HTMLElement>) => {
@@ -185,14 +294,17 @@ const WidgetComments = (props: WidgetCommentsProps) => {
     if (!content.trim() || !onAddComment) {
       return;
     }
-    
+
     setIsSubmitting(true);
     try {
       await onAddComment(content);
-      setContent("");
+      setContent('');
     } catch (error: unknown) {
-      console.error("Failed to submit comment:", error);
-      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+      console.error('Failed to submit comment:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '알 수 없는 오류가 발생했습니다.';
       alert(`댓글 저장 실패: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
@@ -200,25 +312,24 @@ const WidgetComments = (props: WidgetCommentsProps) => {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && e.ctrlKey) {
+    if (e.key === 'Enter' && e.ctrlKey) {
       handleSubmit();
     }
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    
     if (!onDeleteComment) {
       alert('댓글 삭제 기능이 설정되지 않았습니다.');
       return;
     }
-    
-    if (window.confirm(__("Are you sure you want to delete this comment?"))) {
+
+    if (window.confirm(__('Are you sure you want to delete this comment?'))) {
       setDeletingCommentId(commentId);
       try {
         await onDeleteComment(commentId);
       } catch (error: unknown) {
-        console.error("🗑️ Failed to delete comment:", error);
-        alert(__("Failed to delete comment"));
+        console.error('🗑️ Failed to delete comment:', error);
+        alert(__('Failed to delete comment'));
       } finally {
         setDeletingCommentId(null);
       }
@@ -226,49 +337,45 @@ const WidgetComments = (props: WidgetCommentsProps) => {
     }
   };
 
-
   // 댓글 수정 권한 확인
   const canEditComment = (comment: any) => {
-
-    
     if (!currentUser || !comment.createdUser) {
-  
       return false;
     }
-    
+
     // 고객 댓글이 아닌 경우에만 수정 가능 (담당자, 일반 직원 등)
     const isCustomerComment = comment.userType === 'client';
-    
+
     // 담당자 여부 확인 (assigned to 포함)
-    const isCurrentUserTeam = currentUser.userType === 'team' || 
-                              currentUser.isOwner === true || 
-                              currentUser.isAdmin === true ||
-                              currentUser.role === 'admin' ||
-                              currentUser.role === 'manager' ||
-                              currentUser.role === 'team' ||
-                              // assigned to로 지정된 사용자인지 확인
-                              (item && item.assignedUserIds && 
-                               item.assignedUserIds.includes(currentUser._id)) ||
-                              // assignedUsers 배열에서도 확인
-                              (item && item.assignedUsers && 
-                               item.assignedUsers.some(user => user._id === currentUser._id));
-    
+    const isCurrentUserTeam =
+      currentUser.userType === 'team' ||
+      currentUser.isOwner === true ||
+      currentUser.isAdmin === true ||
+      currentUser.role === 'admin' ||
+      currentUser.role === 'manager' ||
+      currentUser.role === 'team' ||
+      // assigned to로 지정된 사용자인지 확인
+      (item &&
+        item.assignedUserIds &&
+        item.assignedUserIds.includes(currentUser._id)) ||
+      // assignedUsers 배열에서도 확인
+      (item &&
+        item.assignedUsers &&
+        item.assignedUsers.some((user) => user._id === currentUser._id));
+
     // 댓글 작성자 본인인지 확인
     const isCommentAuthor = currentUser._id === comment.createdUser._id;
-    
 
-    
     if (isCustomerComment) {
       return false;
     }
-    
+
     // 담당자이거나 댓글 작성자 본인인 경우 수정 가능
     const canEdit = isCurrentUserTeam || isCommentAuthor;
-    
+
     if (!canEdit) {
       return false;
     }
-    
 
     return canEdit;
   };
@@ -276,25 +383,26 @@ const WidgetComments = (props: WidgetCommentsProps) => {
   // 수정 모드 시작
   const startEditing = (comment: any) => {
     setEditingCommentId(comment._id);
-    setEditingContent(comment.content ?? "");
+    setEditingContent(comment.content ?? '');
   };
 
   // 수정 취소
   const cancelEditing = () => {
     setEditingCommentId(null);
-    setEditingContent("");
+    setEditingContent('');
   };
 
   // 수정 저장
   const saveEditing = async () => {
-    if (!onEditComment || !editingCommentId || !(editingContent ?? "").trim()) return;
-    
+    if (!onEditComment || !editingCommentId || !(editingContent ?? '').trim())
+      return;
+
     try {
       await onEditComment(editingCommentId, editingContent);
       setEditingCommentId(null);
-      setEditingContent("");
+      setEditingContent('');
     } catch (error: unknown) {
-      console.error("Failed to edit comment:", error);
+      console.error('Failed to edit comment:', error);
     }
   };
 
@@ -303,214 +411,241 @@ const WidgetComments = (props: WidgetCommentsProps) => {
       <TitleRow>
         <ControlLabel>
           <Icon icon="comment-1" />
-          {__("Widget Comments")}
+          {__('Widget Comments')}
         </ControlLabel>
       </TitleRow>
-      
+
       {/* 댓글 목록 */}
       {!widgetComments.length ? (
-        <Content>
-          {__("No widget comments yet")}
-        </Content>
+        <Content>{__('No widget comments yet')}</Content>
       ) : (
         <MobileCommentList isMobile={isMobile}>
           {widgetComments.map((comment) => {
             // 담당자(팀)인지 고객인지 구분
             const isTeam = comment.userType === 'team';
-            
+
             return (
-              <MobileCommentContainer key={comment._id} isMobile={isMobile} style={{ marginLeft: isMobile ? '0px' : (isTeam ? '25px' : '-5px') }}>
+              <MobileCommentContainer
+                key={comment._id}
+                isMobile={isMobile}
+                $isEditing={editingCommentId === comment._id}
+              >
                 {/* 사용자 이름 */}
-                <MobileUserName isMobile={isMobile}>
-                  {comment.createdUser ? 
-                    (comment.createdUser.firstName && comment.createdUser.lastName ? 
-                      `${comment.createdUser.firstName} ${comment.createdUser.lastName}` : 
-                      (comment.createdUser.firstName || comment.createdUser.lastName || ' ')
-                    ) : ' '}
+                <MobileUserName
+                  isMobile={isMobile}
+                  $isEditing={editingCommentId === comment._id}
+                >
+                  {comment.createdUser
+                    ? comment.createdUser.firstName &&
+                      comment.createdUser.lastName
+                      ? `${comment.createdUser.firstName} ${comment.createdUser.lastName}`
+                      : comment.createdUser.firstName ||
+                        comment.createdUser.lastName ||
+                        ' '
+                    : ' '}
                 </MobileUserName>
-                
-                {/* 말풍선 형태의 댓글 내용 */}
-                <MobileCommentBubble isTeam={isTeam} isMobile={isMobile}>
-                     {/* 수정 모드일 때와 일반 모드일 때 구분 */}
-                     {editingCommentId === comment._id ? (
-                       /* 수정 모드 */
-                       <div>
-                         <textarea
-                           value={editingContent}
-                           onChange={(e: any) => setEditingContent(e.target.value)}
-                           style={{
-                             width: '100%',
-                             minHeight: '60px',
-                             border: '1px solid #ddd',
-                             borderRadius: '4px',
-                             padding: '8px',
-                             fontSize: '12px',
-                             resize: 'vertical',
-                             fontFamily: 'inherit'
-                           }}
-                         />
-                         <div style={{
-                           display: 'flex',
-                           justifyContent: 'flex-end',
-                           gap: '5px',
-                           marginTop: '8px'
-                         }}>
-                           <Button
-                             btnStyle="simple"
-                             size="small"
-                             onClick={cancelEditing}
-                             style={{
-                               padding: '3px 8px',
-                               fontSize: '11px',
-                               height: '22px'
-                             }}
-                           >
-                             취소
-                           </Button>
-                           <Button
-                             btnStyle="success"
-                             size="small"
-                             onClick={saveEditing}
-                             disabled={!(editingContent ?? "").trim()}
-                             style={{
-                               padding: '3px 8px',
-                               fontSize: '11px',
-                               height: '22px'
-                             }}
-                           >
-                             저장
-                           </Button>
-                         </div>
-                       </div>
-                     ) : (
-                       /* 일반 모드 */
-                       <div>
-                         {(comment.content && comment.content.trim()) ? (
-                           <div dangerouslySetInnerHTML={{ __html: comment.content }} />
-                         ) : null}
-                         {/* 첨부파일 */}
-                         {comment.attachments && comment.attachments.length > 0 ? (
-                           <div style={{ marginTop: 8 }}>
-                             {comment.attachments.map((att: { name?: string; url?: string; type?: string }, idx: number) => {
-                               const url = att.url ? readFile(att.url) : "";
-                               const isImage = att.type && att.type.startsWith("image/");
-                               const inlineUrl = url ? (url.indexOf("?") >= 0 ? url + "&inline=true" : url + "?inline=true") : "";
-                               return (
-                                 <div key={`${comment._id}-att-${idx}`} style={{ marginBottom: 4 }}>
-                                   {isImage ? (
-                                     <>
-                                       <a href={url} target="_blank" rel="noopener noreferrer">
-                                         <img
-                                           src={url}
-                                           alt={att.name || ""}
-                                           style={{ maxWidth: 200, maxHeight: 200, objectFit: "contain" }}
-                                         />
-                                       </a>
-                                       <div style={{ marginTop: 4, fontSize: 12 }}>
-                                         <a
-                                           href={inlineUrl}
-                                           target="_blank"
-                                           rel="noopener noreferrer"
-                                           style={{ color: "#6569df" }}
-                                         >
-                                           {__("Open in new window to view at full size")}
-                                         </a>
-                                       </div>
-                                     </>
-                                   ) : (
-                                     <a href={url} target="_blank" rel="noopener noreferrer">
-                                       {att.name || __("Attachment")}
-                                     </a>
-                                   )}
-                                 </div>
-                               );
-                             })}
-                           </div>
-                         ) : null}
-                         {/* 시간 표시 */}
-                         <div style={{ 
-                           fontSize: '11px', 
-                           color: isTeam ? '#333' : '#666',
-                           marginTop: '8px',
-                           textAlign: 'right'
-                         }}>
-                           {(() => {
-                             const isModified = comment.updatedAt && comment.updatedAt !== comment.createdAt;
-                             
-                             return isModified ? (
-                               <span>
-                                 {new Date(comment.updatedAt).toLocaleString()}
-                                 <span style={{ fontSize: '10px', color: '#999', marginLeft: '5px' }}>
-                                   (수정됨)
-                                 </span>
-                               </span>
-                             ) : (
-                               new Date(comment.createdAt).toLocaleString()
-                             );
-                           })()}
-                         </div>
-                       </div>
-                     )}
-                </MobileCommentBubble>
-                
-                {/* 수정/삭제 버튼 - 말풍선 외부 오른쪽 하단에 배치 */}
-                {isTeam && (
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    gap: '5px',
-                    marginTop: '8px',
-                    marginLeft: '10px'
-                  }}>
-                     {/* 수정 버튼 */}
-                     {(() => {
-                       const canEdit = canEditComment(comment);
-                       
-                       if (canEdit === true) {
-                         return (
-                           <Button
-                             btnStyle="primary"
-                             size="small"
-                             icon="edit-3"
-                             onClick={() => startEditing(comment)}
-                             style={{
-                               padding: '3px 8px',
-                               fontSize: '11px',
-                               minWidth: 'auto',
-                               height: '22px',
-                               backgroundColor: '#007bff',
-                               borderColor: '#007bff',
-                               color: 'white'
-                             }}
-                           >
-                             
-                           </Button>
-                         );
-                       } else {
-                         return null;
-                       }
-                     })()}
-                     
-                     {/* 삭제 버튼 */}
-                     <Button
-                       btnStyle="danger"
-                       size="small"
-                       icon="trash-alt"
-                       onClick={() => handleDeleteComment(comment._id)}
-                       disabled={deletingCommentId === comment._id}
-                       style={{
-                         padding: '3px 8px',
-                         fontSize: '11px',
-                         minWidth: 'auto',
-                         height: '22px',
-                         backgroundColor: '#dc3545',
-                         borderColor: '#dc3545',
-                         color: 'white'
-                       }}
-                     >
-                       
-                     </Button>
-                  </div>
+
+                {editingCommentId === comment._id ? (
+                  <CommentInputArea style={{ marginTop: 0 }}>
+                    <CommentTextarea
+                      value={editingContent}
+                      onChange={(e) => setEditingContent(e.target.value)}
+                      autoFocus
+                    />
+                    <CommentActionRow>
+                      <Button
+                        btnStyle="simple"
+                        size="small"
+                        onClick={cancelEditing}
+                      >
+                        취소
+                      </Button>
+                      <Button
+                        btnStyle="success"
+                        size="small"
+                        onClick={saveEditing}
+                        disabled={!(editingContent ?? '').trim()}
+                      >
+                        저장
+                      </Button>
+                    </CommentActionRow>
+                  </CommentInputArea>
+                ) : (
+                  <CommentBodyColumn $teamIndent={isTeam && !isMobile}>
+                    {/* 말풍선 형태의 댓글 내용 */}
+                    <MobileCommentBubble isTeam={isTeam} isMobile={isMobile}>
+                      {/* 일반 모드 */}
+                      <div>
+                        {comment.content && comment.content.trim() ? (
+                          <div
+                            style={{
+                              maxWidth: '100%',
+                              overflowWrap: 'break-word',
+                              wordBreak: 'break-word',
+                            }}
+                            dangerouslySetInnerHTML={{
+                              __html: comment.content,
+                            }}
+                          />
+                        ) : null}
+                        {/* 첨부파일 */}
+                        {comment.attachments &&
+                        comment.attachments.length > 0 ? (
+                          <div style={{ marginTop: 8 }}>
+                            {comment.attachments.map(
+                              (
+                                att: {
+                                  name?: string;
+                                  url?: string;
+                                  type?: string;
+                                },
+                                idx: number,
+                              ) => {
+                                const url = att.url ? readFile(att.url) : '';
+                                const isImage =
+                                  att.type && att.type.startsWith('image/');
+                                const inlineUrl = url
+                                  ? url.indexOf('?') >= 0
+                                    ? url + '&inline=true'
+                                    : url + '?inline=true'
+                                  : '';
+                                return (
+                                  <div
+                                    key={`${comment._id}-att-${idx}`}
+                                    style={{ marginBottom: 4 }}
+                                  >
+                                    {isImage ? (
+                                      <>
+                                        <a
+                                          href={url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          <img
+                                            src={url}
+                                            alt={att.name || ''}
+                                            style={{
+                                              maxWidth: 200,
+                                              maxHeight: 200,
+                                              objectFit: 'contain',
+                                            }}
+                                          />
+                                        </a>
+                                        <div
+                                          style={{ marginTop: 4, fontSize: 12 }}
+                                        >
+                                          <a
+                                            href={inlineUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ color: '#6569df' }}
+                                          >
+                                            {__(
+                                              'Open in new window to view at full size',
+                                            )}
+                                          </a>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <a
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        {att.name || __('Attachment')}
+                                      </a>
+                                    )}
+                                  </div>
+                                );
+                              },
+                            )}
+                          </div>
+                        ) : null}
+                        {/* 시간 표시 */}
+                        <div
+                          style={{
+                            fontSize: '11px',
+                            color: isTeam ? '#333' : '#666',
+                            marginTop: '8px',
+                            textAlign: 'right',
+                          }}
+                        >
+                          {(() => {
+                            const isModified =
+                              comment.updatedAt &&
+                              comment.updatedAt !== comment.createdAt;
+
+                            return isModified ? (
+                              <span>
+                                {new Date(comment.updatedAt).toLocaleString()}
+                                <span
+                                  style={{
+                                    fontSize: '10px',
+                                    color: '#999',
+                                    marginLeft: '5px',
+                                  }}
+                                >
+                                  (수정됨)
+                                </span>
+                              </span>
+                            ) : (
+                              new Date(comment.createdAt).toLocaleString()
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </MobileCommentBubble>
+
+                    {/* 수정/삭제 버튼 - 말풍선 아래에 배치 */}
+                    {isTeam && (
+                      <CommentActionRow>
+                        {/* 수정 버튼 */}
+                        {(() => {
+                          const canEdit = canEditComment(comment);
+
+                          if (canEdit === true) {
+                            return (
+                              <Button
+                                btnStyle="primary"
+                                size="small"
+                                icon="edit-3"
+                                onClick={() => startEditing(comment)}
+                                style={{
+                                  padding: '3px 8px',
+                                  fontSize: '11px',
+                                  minWidth: 'auto',
+                                  height: '22px',
+                                  backgroundColor: '#007bff',
+                                  borderColor: '#007bff',
+                                  color: 'white',
+                                }}
+                              ></Button>
+                            );
+                          } else {
+                            return null;
+                          }
+                        })()}
+
+                        {/* 삭제 버튼 */}
+                        <Button
+                          btnStyle="danger"
+                          size="small"
+                          icon="trash-alt"
+                          onClick={() => handleDeleteComment(comment._id)}
+                          disabled={deletingCommentId === comment._id}
+                          style={{
+                            padding: '3px 8px',
+                            fontSize: '11px',
+                            minWidth: 'auto',
+                            height: '22px',
+                            backgroundColor: '#dc3545',
+                            borderColor: '#dc3545',
+                            color: 'white',
+                          }}
+                        ></Button>
+                      </CommentActionRow>
+                    )}
+                  </CommentBodyColumn>
                 )}
               </MobileCommentContainer>
             );
@@ -519,20 +654,13 @@ const WidgetComments = (props: WidgetCommentsProps) => {
       )}
 
       {/* 댓글 입력 폼 */}
-      <div style={{ 
-        marginTop: isMobile ? '20px' : '15px',
-        width: isMobile ? '160%' : '100%',
-        maxWidth: isMobile ? '160%' : '100%',
-        marginLeft: isMobile ? '0' : '0',
-        marginRight: isMobile ? '0' : '0',
-        boxSizing: 'border-box'
-      }}>
+      <CommentInputArea>
         <MobileFormControl
           componentclass="textarea"
           value={content}
           onChange={handleChange}
           onKeyPress={handleKeyPress}
-          placeholder={__("Write a comment...")}
+          placeholder={__('Write a comment...')}
         />
         <div style={{ marginTop: isMobile ? '12px' : '10px' }}>
           {content.length > 0 && (
@@ -543,52 +671,74 @@ const WidgetComments = (props: WidgetCommentsProps) => {
                 icon="message"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                style={isMobile ? {
-                  padding: '8px 16px',
-                  fontSize: '14px',
-                  minHeight: '36px'
-                } : {}}
+                style={
+                  isMobile
+                    ? {
+                        padding: '8px 16px',
+                        fontSize: '14px',
+                        minHeight: '36px',
+                      }
+                    : {}
+                }
               >
-                {isSubmitting ? __("Saving...") : __("Save")}
+                {isSubmitting ? __('Saving...') : __('Save')}
               </Button>
             </div>
           )}
         </div>
-      </div>
+      </CommentInputArea>
     </FormGroup>
   );
 };
 
-const DESCRIPTION_DEBOUNCE_MS = 400;
-
 const Description = React.memo((props: DescProps) => {
-  const { item, saveItem, contentType, isMobile, onChangeRefresh, hasDescriptionConflict } = props;
+  const {
+    item,
+    saveItem,
+    contentType,
+    isMobile,
+    onChangeRefresh,
+    hasDescriptionConflict,
+    descriptionDirtyRef,
+  } = props;
   const [edit, setEdit] = useState(false);
   const [isSubmitted, setSubmit] = useState(false);
   const [description, setDescription] = useState(item.description);
   const descriptionRef = useRef(item.description);
   const savedDescriptionRef = useRef<string | null>(null);
-  const lastSyncedModifiedAtRef = useRef<string | number | Date | undefined>(item.modifiedAt);
 
-  const setDescriptionDebounced = useMemo(
-    () => debounce((value: string) => setDescription(value), DESCRIPTION_DEBOUNCE_MS),
-    []
-  );
+  const isDescriptionDirty = useCallback(() => {
+    const server = item.description ?? '';
+    const local = descriptionRef.current ?? '';
+    return local !== server;
+  }, [item.description]);
 
   useEffect(() => {
+    if (!descriptionDirtyRef) {
+      return;
+    }
+
+    descriptionDirtyRef.current = isDescriptionDirty;
+
     return () => {
-      setDescriptionDebounced.cancel();
+      descriptionDirtyRef.current = null;
     };
-  }, [setDescriptionDebounced]);
+  }, [descriptionDirtyRef, isDescriptionDirty]);
 
   useEffect(() => {
+    // 날짜 등 다른 필드 저장으로 modifiedAt만 바뀐 경우, 미저장 draft는 유지
+    if (isDescriptionDirty()) {
+      return;
+    }
     setDescription(item.description);
     descriptionRef.current = item.description;
-    lastSyncedModifiedAtRef.current = item.modifiedAt;
-  }, [item.description, item.modifiedAt]);
+  }, [item.description, item.modifiedAt, isDescriptionDirty]);
 
   useEffect(() => {
-    if (savedDescriptionRef.current != null && item.description === savedDescriptionRef.current) {
+    if (
+      savedDescriptionRef.current != null &&
+      item.description === savedDescriptionRef.current
+    ) {
       savedDescriptionRef.current = null;
       setSubmit(true);
     }
@@ -608,7 +758,6 @@ const Description = React.memo((props: DescProps) => {
   }, [hasDescriptionConflict]);
 
   const onSend = useCallback(() => {
-    setDescriptionDebounced.flush();
     const latestDescription = descriptionRef.current;
     savedDescriptionRef.current = latestDescription;
     setSubmit(true);
@@ -622,30 +771,38 @@ const Description = React.memo((props: DescProps) => {
           onChangeRefresh();
         }
         savedDescriptionRef.current = null;
-      }
+      },
     );
-  }, [saveItem, onChangeRefresh, setDescriptionDebounced, item.modifiedAt]);
+  }, [saveItem, onChangeRefresh, item.modifiedAt]);
 
   const toggleEdit = () => {
     setEdit((currentValue) => {
       const newValue = !currentValue;
-      
+
       // 편집 모드로 진입할 때
       if (!currentValue && newValue) {
         if (typeof window !== 'undefined') {
           const localStorageKey = `${contentType}_description_${item._id}`;
           const storedData = localStorage.getItem(localStorageKey);
-          
+
           if (storedData) {
             try {
               // JSON 형식으로 저장된 경우 (타임스탬프 포함)
               const parsed = JSON.parse(storedData);
               const storedContent = parsed.content;
-              const storedTimestamp = parsed.timestamp ? new Date(parsed.timestamp) : null;
-              const serverModifiedAt = item.modifiedAt ? new Date(item.modifiedAt) : null;
-              
+              const storedTimestamp = parsed.timestamp
+                ? new Date(parsed.timestamp)
+                : null;
+              const serverModifiedAt = item.modifiedAt
+                ? new Date(item.modifiedAt)
+                : null;
+
               // 서버가 더 최신이면 localStorage 클리어하고 서버 내용 사용
-              if (serverModifiedAt && storedTimestamp && serverModifiedAt > storedTimestamp) {
+              if (
+                serverModifiedAt &&
+                storedTimestamp &&
+                serverModifiedAt > storedTimestamp
+              ) {
                 localStorage.removeItem(localStorageKey);
                 setDescription(item.description);
                 descriptionRef.current = item.description;
@@ -661,8 +818,10 @@ const Description = React.memo((props: DescProps) => {
               if (storedData !== serverContent) {
                 localStorage.removeItem(localStorageKey);
                 setDescription(serverContent);
+                descriptionRef.current = serverContent;
               } else {
                 setDescription(storedData);
+                descriptionRef.current = storedData;
               }
             }
           } else {
@@ -674,7 +833,7 @@ const Description = React.memo((props: DescProps) => {
           descriptionRef.current = item.description;
         }
       }
-      
+
       // 편집 모드를 끌 때 (Cancel 시) localStorage 클리어 및 원본으로 되돌리기
       if (currentValue && !newValue) {
         if (typeof window !== 'undefined') {
@@ -683,9 +842,8 @@ const Description = React.memo((props: DescProps) => {
         }
         setDescription(item.description);
         descriptionRef.current = item.description;
-        setDescriptionDebounced.cancel();
       }
-      
+
       return newValue;
     });
     setSubmit(false);
@@ -693,8 +851,8 @@ const Description = React.memo((props: DescProps) => {
 
   const onChangeDescription = useCallback((content: string) => {
     descriptionRef.current = content;
-    setDescriptionDebounced(content);
-  }, [setDescriptionDebounced]);
+    setDescription(content);
+  }, []);
 
   const renderFooter = () => {
     return (
@@ -707,7 +865,7 @@ const Description = React.memo((props: DescProps) => {
         >
           Cancel
         </Button>
-        {item.description !== descriptionRef.current && (
+        {(item.description ?? '') !== (description ?? '') && (
           <Button
             onClick={onSend}
             btnStyle="success"
@@ -727,7 +885,7 @@ const Description = React.memo((props: DescProps) => {
         <TitleRow>
           <ControlLabel>
             <Icon icon="align-left-justify" />
-            {__("CustomerDescription")}
+            {__('CustomerDescription')}
           </ControlLabel>
         </TitleRow>
 
@@ -739,37 +897,39 @@ const Description = React.memo((props: DescProps) => {
               __html: item.description
                 ? item.description
                     .replace(/<p><\/p>/g, "<div style='height:16px;'></div>")
-                    .replace(/<p><br><\/p>/g, "<div style='height:16px;'></div>")
-                    .replace(/<p><br \/><\/p>/g, "<div style='height:16px;'></div>")
-                : `${__("Add a more detailed description")}...`,
+                    .replace(
+                      /<p><br><\/p>/g,
+                      "<div style='height:16px;'></div>",
+                    )
+                    .replace(
+                      /<p><br \/><\/p>/g,
+                      "<div style='height:16px;'></div>",
+                    )
+                : `${__('Add a more detailed description')}...`,
             }}
           />
         ) : (
           <EditorWrapper>
             <RichTextEditor
-              key={`${contentType}_description_${item._id}_${item.modifiedAt || ""}`}
-              content={
-                item.modifiedAt !== lastSyncedModifiedAtRef.current
-                  ? (item.description ?? "")
-                  : description
-              }
+              key={`${contentType}_description_${item._id}`}
+              content={description}
               onChange={onChangeDescription}
-              height={"max-content"}
+              height={'max-content'}
               isSubmitted={isSubmitted}
               autoFocus={true}
               name={`${contentType}_description_${item._id}`}
               toolbar={[
-                "undo",
-                "redo",
-                "|",
-                "bold",
-                "italic",
-                "orderedList",
-                "bulletList",
-                "link",
-                "unlink",
-                "|",
-                "image",
+                'undo',
+                'redo',
+                '|',
+                'bold',
+                'italic',
+                'orderedList',
+                'bulletList',
+                'link',
+                'unlink',
+                '|',
+                'image',
               ]}
               onCtrlEnter={onSend}
             />
@@ -781,7 +941,7 @@ const Description = React.memo((props: DescProps) => {
     </FormGroup>
   );
 });
-Description.displayName = "Description";
+Description.displayName = 'Description';
 
 type Props = {
   item: IItem;
@@ -800,7 +960,11 @@ type Props = {
   onDeleteComment?: (commentId: string) => void;
   onEditComment?: (commentId: string, content: string) => void;
   currentUser?: any;
-  descriptionConflictPending?: { doc: any; callback: (item: any) => void } | null;
+  descriptionConflictPending?: {
+    doc: any;
+    callback: (item: any) => void;
+  } | null;
+  descriptionDirtyRef?: React.MutableRefObject<(() => boolean) | null>;
 };
 
 const Left = (props: Props) => {
@@ -818,6 +982,7 @@ const Left = (props: Props) => {
     widgetComments,
     onAddComment,
     descriptionConflictPending,
+    descriptionDirtyRef,
   } = props;
 
   const isMobile = useIsMobile();
@@ -851,7 +1016,7 @@ const Left = (props: Props) => {
           <TitleRow>
             <ControlLabel>
               <Icon icon="label-alt" />
-              {__("Labels")}
+              {__('Labels')}
             </ControlLabel>
           </TitleRow>
 
@@ -863,7 +1028,7 @@ const Left = (props: Props) => {
         <TitleRow>
           <ControlLabel>
             <Icon icon="paperclip" />
-            {__("Attachments")}
+            {__('Attachments')}
           </ControlLabel>
         </TitleRow>
 
@@ -877,10 +1042,11 @@ const Left = (props: Props) => {
         isMobile={isMobile}
         onChangeRefresh={onChangeRefresh}
         hasDescriptionConflict={!!descriptionConflictPending}
+        descriptionDirtyRef={descriptionDirtyRef}
       />
 
-      <WidgetComments 
-        widgetComments={widgetComments} 
+      <WidgetComments
+        widgetComments={widgetComments}
         onAddComment={onAddComment}
         onDeleteComment={props.onDeleteComment}
         onEditComment={props.onEditComment}
@@ -911,9 +1077,9 @@ const Left = (props: Props) => {
           contentId={item._id}
           contentType={`tickets:${options.type}`}
           extraTabs={
-            options.type === "tickets:task" && isEnabled("tasks")
+            options.type === 'tickets:task' && isEnabled('tasks')
               ? []
-              : [{ name: "tickets:task", label: "Ticket" }]
+              : [{ name: 'tickets:task', label: 'Ticket' }]
           }
         />
       )}

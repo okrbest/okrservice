@@ -1,22 +1,71 @@
-import { IEditFormContent, IItem, IItemParams, IOptions } from "../../types";
-import { __ } from "coreui/utils";
-import { router as routerUtils } from "@erxes/ui/src/utils";
+import { IEditFormContent, IItem, IItemParams, IOptions } from '../../types';
+import { __ } from 'coreui/utils';
+import { router as routerUtils } from '@erxes/ui/src/utils';
 
-import { ArchiveStatus } from "../../styles/item";
-import { CloseModal } from "@erxes/ui/src/styles/main";
-import Icon from "@erxes/ui/src/components/Icon";
-import React, { useState, useEffect, Fragment } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Dialog, Transition } from "@headlessui/react";
+import { ArchiveStatus } from '../../styles/item';
+import { CloseModal } from '@erxes/ui/src/styles/main';
+import Icon from '@erxes/ui/src/components/Icon';
+import React, { useState, useEffect, Fragment, useRef } from 'react';
+import { confirm } from '@erxes/ui/src/utils';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Dialog, Transition } from '@headlessui/react';
 import {
   DialogContent,
   DialogWrapper,
-  ModalOverlay
-} from "@erxes/ui/src/styles/main";
-import styled from "styled-components";
+  ModalOverlay,
+} from '@erxes/ui/src/styles/main';
+import { colors } from '@erxes/ui/src/styles';
+import { rgba } from '@erxes/ui/src/styles/ecolor';
+import styled from 'styled-components';
 
 const Relative = styled.div`
   position: relative;
+`;
+
+const DesktopCloseButton = styled.div`
+  @media (max-width: 1024px) {
+    display: none;
+  }
+`;
+
+const MobileCloseBar = styled.div`
+  display: none;
+
+  @media (max-width: 1024px) {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: ${colors.colorWhite};
+    padding: 0 0 12px;
+    margin: 0 0 8px;
+    border-bottom: 1px solid ${colors.borderPrimary};
+  }
+`;
+
+const MobileCloseButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 18px;
+  background: ${rgba(colors.colorBlack, 0.08)};
+  color: ${colors.colorCoreDarkGray};
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    background: ${rgba(colors.colorBlack, 0.14)};
+  }
+
+  i {
+    font-size: 18px;
+    line-height: 1;
+  }
 `;
 
 type Props = {
@@ -33,7 +82,10 @@ type Props = {
   isPopupVisible?: boolean;
   hideHeader?: boolean;
   refresh: boolean;
-  descriptionConflictPending?: { doc: any; callback: (item: any) => void } | null;
+  descriptionConflictPending?: {
+    doc: any;
+    callback: (item: any) => void;
+  } | null;
 };
 
 function EditForm(props: Props) {
@@ -46,19 +98,20 @@ function EditForm(props: Props) {
     options,
     beforePopupClose,
     refresh,
-    descriptionConflictPending
+    descriptionConflictPending,
   } = props;
   const location = useLocation();
   const navigate = useNavigate();
   const [stageId, setStageId] = useState(item.stageId);
   const [updatedItem, setUpdatedItem] = useState(item);
-  const [prevStageId, setPrevStageId] = useState<string>("");
+  const [prevStageId, setPrevStageId] = useState<string>('');
+  const descriptionDirtyRef = useRef<(() => boolean) | null>(null);
 
   useEffect(() => {
     if (item.stageId !== stageId) {
       setPrevStageId(item.stageId);
 
-      saveItem({ stageId }, updatedItem => {
+      saveItem({ stageId }, (updatedItem) => {
         if (onUpdate) {
           onUpdate(updatedItem, prevStageId);
         }
@@ -76,7 +129,7 @@ function EditForm(props: Props) {
   };
 
   const saveItemHandler = (doc: { [key: string]: any }) => {
-    saveItem(doc, updatedItem => {
+    saveItem(doc, (updatedItem) => {
       setUpdatedItem(updatedItem);
     });
   };
@@ -97,14 +150,14 @@ function EditForm(props: Props) {
     }
   };
 
-  const onHideModal = () => {
+  const performClose = () => {
     if (refresh) {
       routerUtils.setParams(navigate, location, { key: Math.random() });
     }
 
     closeModal(() => {
       if (updatedItem) {
-        const itemName = localStorage.getItem(`${updatedItem._id}Name`) || "";
+        const itemName = localStorage.getItem(`${updatedItem._id}Name`) || '';
 
         if (itemName && updatedItem.name !== itemName) {
           saveItemHandler({ itemName });
@@ -120,12 +173,34 @@ function EditForm(props: Props) {
     });
   };
 
+  const onHideModal = () => {
+    const isDescriptionDirty = descriptionDirtyRef.current?.() ?? false;
+
+    if (isDescriptionDirty) {
+      confirm(
+        __(
+          'You have unsaved description changes. Are you sure you want to close without saving?',
+        ),
+        {
+          okLabel: __('Close without saving'),
+          cancelLabel: __('Keep editing'),
+          size: 'md',
+        },
+      ).then(() => {
+        performClose();
+      });
+      return;
+    }
+
+    performClose();
+  };
+
   const renderArchiveStatus = () => {
-    if (item.status === "archived") {
+    if (item.status === 'archived') {
       return (
         <ArchiveStatus>
           <Icon icon="archive-alt" />
-          <span>{__("This card is archived.")}</span>
+          <span>{__('This card is archived.')}</span>
         </ArchiveStatus>
       );
     }
@@ -136,17 +211,37 @@ function EditForm(props: Props) {
   const renderHeader = () => {
     if (props.hideHeader) {
       return (
-        <CloseModal onClick={onHideModal}>
-          <Icon icon="times" />
-        </CloseModal>
+        <DesktopCloseButton>
+          <CloseModal onClick={onHideModal}>
+            <Icon icon="times" />
+          </CloseModal>
+        </DesktopCloseButton>
       );
     }
 
     return (
       <Dialog.Title as="h3">
-        {__("Edit")}
+        {__('Edit')}
         <Icon icon="times" size={24} onClick={onHideModal} />
       </Dialog.Title>
+    );
+  };
+
+  const renderMobileCloseBar = () => {
+    if (!props.hideHeader) {
+      return null;
+    }
+
+    return (
+      <MobileCloseBar>
+        <MobileCloseButton
+          type="button"
+          onClick={onHideModal}
+          aria-label={__('Close')}
+        >
+          <Icon icon="times" />
+        </MobileCloseButton>
+      </MobileCloseBar>
     );
   };
 
@@ -173,13 +268,16 @@ function EditForm(props: Props) {
                 <Relative>
                   {renderHeader()}
                   <div className="dialog-description">
+                    {renderMobileCloseBar()}
                     {props.formContent({
                       state: { stageId, updatedItem, prevStageId },
                       saveItem: saveItemHandler,
                       onChangeStage,
                       copy,
                       remove,
-                      descriptionConflictPending: descriptionConflictPending ?? null
+                      descriptionConflictPending:
+                        descriptionConflictPending ?? null,
+                      descriptionDirtyRef,
                     })}
                   </div>
                 </Relative>

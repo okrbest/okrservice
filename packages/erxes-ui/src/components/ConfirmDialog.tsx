@@ -1,13 +1,13 @@
-import { ControlLabel, FormControl } from "./form";
-import { colors, dimensions } from "../styles";
+import { ControlLabel, FormControl } from './form';
+import { colors, dimensions } from '../styles';
 
-import Button from "./Button";
-import Icon from "./Icon";
-import Modal from "react-bootstrap/Modal";
-import React from "react";
-import { __ } from "coreui/utils";
-import { rgba } from "../styles/ecolor";
-import styled from "styled-components";
+import Button from './Button';
+import Icon from './Icon';
+import Modal from 'react-bootstrap/Modal';
+import React from 'react';
+import { __ } from 'coreui/utils';
+import { rgba } from '../styles/ecolor';
+import styled from 'styled-components';
 
 const ModalBody = styled.div`
   text-align: center;
@@ -34,6 +34,13 @@ const ModalFooter = styled.div`
   border-bottom-right-radius: 4px;
   display: flex;
   justify-content: center;
+  flex-wrap: nowrap;
+  gap: 12px;
+
+  button {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 `;
 
 const IconWrapper = styled.div`
@@ -58,6 +65,7 @@ type Props = {
     hasDeleteConfirm?: boolean;
     hasUpdateConfirm?: boolean;
     hasPasswordConfirm?: boolean;
+    size?: 'sm' | 'md' | 'lg';
   };
   confirmation?: string;
   proceed: (value?: string) => void;
@@ -76,7 +84,7 @@ class ConfirmDialog extends React.Component<Props, State> {
 
     this.state = {
       show: true,
-      confirm: "",
+      confirm: '',
       errors: {},
     };
   }
@@ -91,7 +99,7 @@ class ConfirmDialog extends React.Component<Props, State> {
     const { options = {} } = this.props;
     const { hasPasswordConfirm = false } = options;
     this.setState({ show: false }, () => {
-      this.props.proceed(hasPasswordConfirm ? this.state.confirm : "");
+      this.props.proceed(hasPasswordConfirm ? this.state.confirm : '');
     });
   }
 
@@ -100,7 +108,7 @@ class ConfirmDialog extends React.Component<Props, State> {
     const { hasDeleteConfirm, hasUpdateConfirm, hasPasswordConfirm } = options;
 
     if (hasDeleteConfirm) {
-      if (this.state.confirm === "delete") {
+      if (this.state.confirm === 'delete') {
         return this.invokeProceed();
       }
 
@@ -116,7 +124,7 @@ class ConfirmDialog extends React.Component<Props, State> {
     }
 
     if (hasUpdateConfirm) {
-      if (this.state.confirm === "update") {
+      if (this.state.confirm === 'update') {
         return this.invokeProceed();
       }
 
@@ -132,7 +140,7 @@ class ConfirmDialog extends React.Component<Props, State> {
     }
 
     if (hasPasswordConfirm) {
-      if (this.state.confirm !== "") {
+      if (this.state.confirm !== '') {
         return this.invokeProceed();
       }
 
@@ -151,17 +159,17 @@ class ConfirmDialog extends React.Component<Props, State> {
   };
 
   handleKeydown = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       this.proceed();
     }
   };
 
   componentDidMount() {
-    document.addEventListener("keydown", this.handleKeydown);
+    document.addEventListener('keydown', this.handleKeydown);
   }
 
   componentWillUnmount() {
-    document.removeEventListener("keydown", this.handleKeydown);
+    document.removeEventListener('keydown', this.handleKeydown);
   }
 
   handleChange = (e) => {
@@ -188,7 +196,9 @@ class ConfirmDialog extends React.Component<Props, State> {
           <>
             <p
               dangerouslySetInnerHTML={{
-                __html: __('Type <strong>delete</strong> in the field below to confirm.')
+                __html: __(
+                  'Type <strong>delete</strong> in the field below to confirm.',
+                ),
               }}
             />
           </>
@@ -199,7 +209,9 @@ class ConfirmDialog extends React.Component<Props, State> {
           <>
             <p
               dangerouslySetInnerHTML={{
-                __html: __('Type <strong>update</strong> in the field below to confirm.')
+                __html: __(
+                  'Type <strong>update</strong> in the field below to confirm.',
+                ),
               }}
             />
           </>
@@ -219,7 +231,7 @@ class ConfirmDialog extends React.Component<Props, State> {
         </ControlLabel>
         <FormControl
           name="confirm"
-          type={hasPasswordConfirm ? "password" : "text"}
+          type={hasPasswordConfirm ? 'password' : 'text'}
           required={true}
           value={confirm}
           errors={errors}
@@ -231,22 +243,23 @@ class ConfirmDialog extends React.Component<Props, State> {
   }
 
   render() {
-    const { confirmation = "Are you sure?", options = {} } = this.props;
+    const { confirmation = 'Are you sure?', options = {} } = this.props;
     const { hasDeleteConfirm, hasUpdateConfirm, hasPasswordConfirm } = options;
 
     const {
-      okLabel = "Yes, I am",
-      cancelLabel = "No, Cancel",
+      okLabel = 'Yes, I am',
+      cancelLabel = 'No, Cancel',
       enableEscape = true,
+      size = 'sm',
     } = options;
 
     return (
       <Modal
         show={this.state.show}
         onHide={this.dismiss}
-        backdrop={enableEscape ? true : "static"}
+        backdrop={enableEscape ? true : 'static'}
         keyboard={enableEscape}
-        size="sm"
+        size={size}
         centered={true}
         animation={
           hasDeleteConfirm || hasUpdateConfirm || hasPasswordConfirm

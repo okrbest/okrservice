@@ -1,23 +1,23 @@
-import { IEditFormContent, IOptions } from "../../boards/types";
-import { ITicket, ITicketParams } from "../types";
-import React, { useEffect, useState } from "react";
-import Select, { components } from "react-select";
-import { __ } from "@erxes/ui/src/utils";
-import { loadDynamicComponent } from "@erxes/ui/src/utils";
-import { useQuery, useMutation } from "@apollo/client";
-import { gql } from "@apollo/client";
-import { useIsMobile } from "../../boards/utils/mobile";
-import { MobileLayoutComponent } from "../../boards/components/editForm/MobileLayout";
-import MobileSidebar from "../../boards/components/editForm/MobileSidebar";
-import { Alert, confirm } from "@erxes/ui/src/utils";
+import { IEditFormContent, IOptions } from '../../boards/types';
+import { ITicket, ITicketParams } from '../types';
+import React, { useEffect, useState } from 'react';
+import Select, { components } from 'react-select';
+import { __ } from '@erxes/ui/src/utils';
+import { loadDynamicComponent } from '@erxes/ui/src/utils';
+import { useQuery, useMutation } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { useIsMobile } from '../../boards/utils/mobile';
+import { MobileLayoutComponent } from '../../boards/components/editForm/MobileLayout';
+import MobileSidebar from '../../boards/components/editForm/MobileSidebar';
+import { Alert, confirm } from '@erxes/ui/src/utils';
 
-import { Capitalize } from "@erxes/ui-settings/src/permissions/styles";
-import ChildrenSection from "../../boards/containers/editForm/ChildrenSection";
-import ControlLabel from "@erxes/ui/src/components/form/Label";
-import EditForm from "../../boards/components/editForm/EditForm";
-import styled from "styled-components";
-import FormGroup from "@erxes/ui/src/components/form/Group";
-import { ISelectedOption } from "@erxes/ui/src/types";
+import { Capitalize } from '@erxes/ui-settings/src/permissions/styles';
+import ChildrenSection from '../../boards/containers/editForm/ChildrenSection';
+import ControlLabel from '@erxes/ui/src/components/form/Label';
+import EditForm from '../../boards/components/editForm/EditForm';
+import styled from 'styled-components';
+import FormGroup from '@erxes/ui/src/components/form/Group';
+import { ISelectedOption } from '@erxes/ui/src/types';
 
 // PC용 Flex 레이아웃 컴포넌트
 const Flex = styled.div`
@@ -25,17 +25,17 @@ const Flex = styled.div`
   flex-direction: row;
   width: 100%;
 `;
-import { IUser } from "@erxes/ui/src/auth/types";
-import Left from "../../boards/components/editForm/Left";
-import PortableDeals from "@erxes/ui-sales/src/deals/components/PortableDeals";
-import PortablePurchase from "@erxes/ui-purchases/src/purchases/components/PortablePurchases";
-import PortableTasks from "@erxes/ui-tasks/src/tasks/components/PortableTasks";
-import PortableTickets from "./PortableTickets";
-import Sidebar from "../../boards/components/editForm/Sidebar";
-import Top from "../../boards/components/editForm/Top";
-import queryString from "query-string";
-import { isEnabled } from "@erxes/ui/src/utils/core";
-import FormControl from "@erxes/ui/src/components/form/Control";
+import { IUser } from '@erxes/ui/src/auth/types';
+import Left from '../../boards/components/editForm/Left';
+import PortableDeals from '@erxes/ui-sales/src/deals/components/PortableDeals';
+import PortablePurchase from '@erxes/ui-purchases/src/purchases/components/PortablePurchases';
+import PortableTasks from '@erxes/ui-tasks/src/tasks/components/PortableTasks';
+import PortableTickets from './PortableTickets';
+import Sidebar from '../../boards/components/editForm/Sidebar';
+import Top from '../../boards/components/editForm/Top';
+import queryString from 'query-string';
+import { isEnabled } from '@erxes/ui/src/utils/core';
+import FormControl from '@erxes/ui/src/components/form/Control';
 
 type Props = {
   options: IOptions;
@@ -53,7 +53,7 @@ type Props = {
       status,
       timeSpent,
     }: { _id: string; status: string; timeSpent: number; startDate?: string },
-    callback?: () => void
+    callback?: () => void,
   ) => void;
   currentUser: IUser;
   synchSingleCard?: (itemId: string) => void;
@@ -141,20 +141,22 @@ export default function TicketEditForm(props: Props) {
   const { item } = props;
   const [source, setSource] = useState(item.source);
   const [isCheckUserTicket, setIsCheckUserTicket] = useState(
-    item.isCheckUserTicket
+    item.isCheckUserTicket,
   );
   const [requestType, setRequestType] = useState(item.requestType);
-  const [functionCategory, setFunctionCategory] = useState(item.functionCategory);
+  const [functionCategory, setFunctionCategory] = useState(
+    item.functionCategory,
+  );
   const [refresh, setRefresh] = useState(false);
 
   // saveItem을 래핑하여 저장 후 자동으로 UI 새로고침
   const [localItem, setLocalItem] = useState(item);
-  
+
   // props.item이 변경되면 localItem도 업데이트
   useEffect(() => {
     setLocalItem(item);
   }, [item]);
-  
+
   const saveItem = (doc: any, callback?: (item) => void) => {
     props.saveItem(doc, (updatedItem) => {
       setLocalItem(updatedItem);
@@ -168,18 +170,18 @@ export default function TicketEditForm(props: Props) {
           props.onUpdate(updatedItem);
         }
         if (doc.manualEmailRequest === true) {
-          setTimeout(() => setRefresh(prev => !prev), 100);
+          setTimeout(() => setRefresh((prev) => !prev), 100);
         }
       }
     });
   };
 
   // CardDetailAction.tsx와 동일한 방식으로 type 설정
-  const type = item.stage?.type || "ticket";
+  const type = item.stage?.type || 'ticket';
 
   // type이 "ticket"이 아닐 때는 댓글 기능 비활성화
-  const isTicketType = type === "ticket";
-  
+  const isTicketType = type === 'ticket';
+
   // 모바일 여부 확인
   const isMobile = useIsMobile();
 
@@ -188,58 +190,63 @@ export default function TicketEditForm(props: Props) {
 
   // 수동 이메일 발송 함수 (자동화 트리거만 발동)
   const handleSendEmail = () => {
-    confirm(
-      __("정말로 알림 이메일을 전송하시겠습니까?"),
-      {
-        okLabel: __("전송"),
-        cancelLabel: __("취소"),
-      }
-    ).then(() => {
-      saveItem({ manualEmailRequest: true }, (updatedItem) => {
-        if (props.onUpdate) {
-          props.onUpdate(updatedItem);
-        }
-        setTimeout(() => {
-          setRefresh(prev => !prev);
-          if (props.onUpdate && updatedItem) {
+    confirm(__('정말로 알림 이메일을 전송하시겠습니까?'), {
+      okLabel: __('전송'),
+      cancelLabel: __('취소'),
+    })
+      .then(() => {
+        saveItem({ manualEmailRequest: true }, (updatedItem) => {
+          if (props.onUpdate) {
             props.onUpdate(updatedItem);
           }
-        }, 500);
+          setTimeout(() => {
+            setRefresh((prev) => !prev);
+            if (props.onUpdate && updatedItem) {
+              props.onUpdate(updatedItem);
+            }
+          }, 500);
+        });
+        Alert.success('이메일이 발송되었습니다.');
+      })
+      .catch((error: any) => {
+        Alert.error(
+          '이메일 발송에 실패했습니다: ' +
+            (error?.message || '알 수 없는 오류'),
+        );
       });
-      Alert.success("이메일이 발송되었습니다.");
-    }).catch((error: any) => {
-      Alert.error("이메일 발송에 실패했습니다: " + (error?.message || '알 수 없는 오류'));
-    });
   };
 
   // WidgetComments 쿼리 실행 (ticket 타입일 때만)
-  const { data: widgetCommentsData, refetch: refetchWidgetComments } = useQuery(WIDGET_COMMENTS_QUERY, {
-    variables: { 
-      typeId: item._id, 
-      type: type
+  const { data: widgetCommentsData, refetch: refetchWidgetComments } = useQuery(
+    WIDGET_COMMENTS_QUERY,
+    {
+      variables: {
+        typeId: item._id,
+        type: type,
+      },
+      skip: !item._id || !isTicketType,
     },
-    skip: !item._id || !isTicketType,
-  });
+  );
 
   // WidgetComments 추가 뮤테이션 (ticket 타입일 때만)
   const [addWidgetComment] = useMutation(WIDGET_COMMENTS_ADD_MUTATION, {
     onCompleted: (data) => {
       refetchWidgetComments();
-      
+
       // 담당자가 댓글을 추가한 경우 emailSent를 false로 설정하여 Send Email 버튼 활성화
       setLocalItem((prev: any) => ({
         ...prev,
         emailSent: false,
-        widgetAlarm: false
+        widgetAlarm: false,
       }));
-      
+
       // UI 새로고침
       setTimeout(() => {
-        setRefresh(prev => !prev);
+        setRefresh((prev) => !prev);
       }, 100);
     },
     onError: (error) => {
-      console.error("Failed to add comment:", error);
+      console.error('Failed to add comment:', error);
       alert(`댓글 추가 실패: ${error.message}`);
     },
   });
@@ -251,7 +258,7 @@ export default function TicketEditForm(props: Props) {
       refetchWidgetComments();
     },
     onError: (error) => {
-      console.error("Failed to delete comment:", error);
+      console.error('Failed to delete comment:', error);
       alert(`댓글 삭제 실패: ${error.message}`);
     },
   });
@@ -263,7 +270,7 @@ export default function TicketEditForm(props: Props) {
       refetchWidgetComments();
     },
     onError: (error) => {
-      console.error("Failed to edit comment:", error);
+      console.error('Failed to edit comment:', error);
       alert(`댓글 수정 실패: ${error.message}`);
     },
   });
@@ -276,20 +283,19 @@ export default function TicketEditForm(props: Props) {
       return;
     }
 
-   
     try {
       const result = await addWidgetComment({
         variables: {
           type: type,
           typeId: item._id,
           content,
-          userType: "team",
-          customerId: props.currentUser?._id || "",
+          userType: 'team',
+          customerId: props.currentUser?._id || '',
         },
       });
       return result;
     } catch (error) {
-      console.error("Failed to add comment:", error);
+      console.error('Failed to add comment:', error);
       throw error;
     }
   };
@@ -300,23 +306,20 @@ export default function TicketEditForm(props: Props) {
       return;
     }
 
-
-    
     try {
       // 댓글 삭제 뮤테이션 실행
       const result = await deleteWidgetComment({
-        variables: { _id: commentId }
+        variables: { _id: commentId },
       });
-      
-      
+
       // 삭제 성공 시 댓글 목록 새로고침
       if (result.data?.widgetsTicketCommentsRemove) {
         refetchWidgetComments();
       }
-      
+
       return result;
     } catch (error) {
-      console.error("Failed to delete comment:", error);
+      console.error('Failed to delete comment:', error);
       throw error;
     }
   };
@@ -327,25 +330,23 @@ export default function TicketEditForm(props: Props) {
       return;
     }
 
-    
     try {
       // 댓글 수정 뮤테이션 실행
       const result = await editWidgetComment({
-        variables: { 
+        variables: {
           _id: commentId,
-          content: content
-        }
+          content: content,
+        },
       });
-      
-      
+
       // 수정 성공 시 댓글 목록 새로고침
       if (result.data?.widgetsTicketCommentEdit) {
         refetchWidgetComments();
       }
-      
+
       return result;
     } catch (error) {
-      console.error("Failed to edit comment:", error);
+      console.error('Failed to edit comment:', error);
       throw error;
     }
   };
@@ -357,7 +358,6 @@ export default function TicketEditForm(props: Props) {
   }, [item.source, item.requestType, item.functionCategory]);
 
   function renderSidebarFields(saveItem) {
-    
     // Source 필드 주석처리
     // const sourceValues = INTEGRATION_KINDS.ALL.map((kind) => ({
     //   label: __(kind.text),
@@ -414,28 +414,27 @@ export default function TicketEditForm(props: Props) {
 
     // 고객요청구분 필드
     const requestTypeValues = [
-      { label: "단순문의", value: "inquiry" },
-      { label: "개선요청", value: "improvement" },
-      { label: "오류처리", value: "error" },
-      { label: "설정변경", value: "config" },
-      { label: "추가개발", value: "additional_development" },
-      { label: "사용안내", value: "usage_guide" },
-      { label: "데이터작업", value: "data_work" }
+      { label: '단순문의', value: 'inquiry' },
+      { label: '개선요청', value: 'improvement' },
+      { label: '오류처리', value: 'error' },
+      { label: '설정변경', value: 'config' },
+      { label: '추가개발', value: 'additional_development' },
+      { label: '사용안내', value: 'usage_guide' },
+      { label: '데이터작업', value: 'data_work' },
     ];
 
-    const requestTypeValueRenderer = (option: ISelectedOption): React.ReactNode => (
-      <Capitalize>{option.label}</Capitalize>
-    );
+    const requestTypeValueRenderer = (
+      option: ISelectedOption,
+    ): React.ReactNode => <Capitalize>{option.label}</Capitalize>;
 
     const onRequestTypeChange = (option) => {
-      const value = option ? option.value : "";
-
+      const value = option ? option.value : '';
 
       setRequestType(value);
 
       if (saveItem) {
         saveItem({ requestType: value });
-      } 
+      }
     };
 
     const RequestTypeOption = (props) => {
@@ -456,23 +455,23 @@ export default function TicketEditForm(props: Props) {
 
     // 기능분류 필드
     const functionCategoryValues = [
-      { label: "인사", value: "hr" },
-      { label: "조직", value: "organization" },
-      { label: "근태", value: "attendance" },
-      { label: "급여", value: "payroll" },
-      { label: "평가", value: "evaluation" },
-      { label: "교육", value: "education" },
-      { label: "채용", value: "recruitment" },
-      { label: "복리후생", value: "benefits" },
-      { label: "PCOFF", value: "pcoff" },
-      { label: "전자결재", value: "approval" },
-      { label: "시스템", value: "system" },
-      { label: "모바일", value: "mobile" },
-      { label: "티그리스", value: "tigris" },
+      { label: '인사', value: 'hr' },
+      { label: '조직', value: 'organization' },
+      { label: '근태', value: 'attendance' },
+      { label: '급여', value: 'payroll' },
+      { label: '평가', value: 'evaluation' },
+      { label: '교육', value: 'education' },
+      { label: '채용', value: 'recruitment' },
+      { label: '복리후생', value: 'benefits' },
+      { label: 'PCOFF', value: 'pcoff' },
+      { label: '전자결재', value: 'approval' },
+      { label: '시스템', value: 'system' },
+      { label: '모바일', value: 'mobile' },
+      { label: '티그리스', value: 'tigris' },
     ];
 
     const onFunctionCategoryChange = (option) => {
-      const value = option ? option.value : "";
+      const value = option ? option.value : '';
       setFunctionCategory(value);
       if (saveItem) {
         saveItem({ functionCategory: value });
@@ -519,7 +518,10 @@ export default function TicketEditForm(props: Props) {
             options={requestTypeValues}
             onChange={onRequestTypeChange}
             isClearable={true}
-            components={{ Option: RequestTypeOption, SingleValue: RequestTypeSingleValue }}
+            components={{
+              Option: RequestTypeOption,
+              SingleValue: RequestTypeSingleValue,
+            }}
           />
         </FormGroup>
 
@@ -527,7 +529,9 @@ export default function TicketEditForm(props: Props) {
           <ControlLabel>기능분류</ControlLabel>
           <Select
             placeholder="기능분류를 선택하세요"
-            value={functionCategoryValues.find((f) => f.value === functionCategory)}
+            value={functionCategoryValues.find(
+              (f) => f.value === functionCategory,
+            )}
             options={functionCategoryValues}
             onChange={onFunctionCategoryChange}
             isClearable={true}
@@ -541,27 +545,39 @@ export default function TicketEditForm(props: Props) {
     return (
       <>
         <PortableTickets mainType="ticket" mainTypeId={props.item._id} />
-        
-        {isEnabled("sales") && (
-          <PortableDeals mainType="ticket" mainTypeId={props.item._id} initialSkip={true} />
+
+        {isEnabled('sales') && (
+          <PortableDeals
+            mainType="ticket"
+            mainTypeId={props.item._id}
+            initialSkip={true}
+          />
         )}
-        {isEnabled("purchases") && (
-          <PortablePurchase mainType="ticket" mainTypeId={props.item._id} initialSkip={true} />
+        {isEnabled('purchases') && (
+          <PortablePurchase
+            mainType="ticket"
+            mainTypeId={props.item._id}
+            initialSkip={true}
+          />
         )}
 
-        {isEnabled("tasks") && (
-          <PortableTasks mainType="ticket" mainTypeId={props.item._id} initialSkip={true} />
+        {isEnabled('tasks') && (
+          <PortableTasks
+            mainType="ticket"
+            mainTypeId={props.item._id}
+            initialSkip={true}
+          />
         )}
 
         {loadDynamicComponent(
-          "ticketRightSidebarSection",
+          'ticketRightSidebarSection',
           {
             id: props.item._id,
-            mainType: "ticket",
+            mainType: 'ticket',
             mainTypeId: props.item._id,
             object: props.item,
           },
-          true
+          true,
         )}
       </>
     );
@@ -572,7 +588,7 @@ export default function TicketEditForm(props: Props) {
 
     const updatedProps = {
       ...props,
-      type: "ticket",
+      type: 'ticket',
       itemId: item._id,
       stageId: item.stageId,
       pipelineId: item.pipeline._id,
@@ -590,6 +606,7 @@ export default function TicketEditForm(props: Props) {
     saveItem,
     onChangeStage,
     descriptionConflictPending,
+    descriptionDirtyRef,
   }: IEditFormContent) {
     const onCloseDateFieldsChange = (key: string, value: any) => {
       saveItem({ [key]: value });
@@ -628,6 +645,7 @@ export default function TicketEditForm(props: Props) {
         currentUser,
         onSendEmail: handleSendEmail,
         descriptionConflictPending,
+        descriptionDirtyRef,
       };
 
       const sidebarProps = {
@@ -694,6 +712,7 @@ export default function TicketEditForm(props: Props) {
             currentUser={currentUser}
             onSendEmail={handleSendEmail}
             descriptionConflictPending={descriptionConflictPending}
+            descriptionDirtyRef={descriptionDirtyRef}
           />
 
           <Sidebar
