@@ -8,7 +8,7 @@
  *
  * 보안 장치:
  *  - event.source(iframe contentWindow) + event.origin(위젯 서버 origin) 이중 검증
- *  - endpoint allowlist: 정적 20개 + YTA 정규식 외 실행 거부
+ *  - endpoint allowlist: 정적 22개 + YTA 정규식 외 실행 거부
  *  - 범용 endpoint(/CommonCode.do)는 queryId 화이트리스트 병행 — 임의 쿼리 차단
  *  - self 강제: "$SELF_STAFF_ID" 마커를 페이지 DOM의 본인 STAFF_ID로만 치환
  *  - 게이트 스킵 값 차단: searchType=mobile 거부
@@ -23,7 +23,7 @@ const REQUEST_TYPE = "teamplgpt:hr-tool-request";
 const RESULT_TYPE = "teamplgpt:hr-tool-result";
 const FETCH_TIMEOUT_MS = 20000;
 
-// HR 스킬 7종이 사용하는 kiwibox 정적 경로 20개 — 정확 매칭
+// HR 스킬 7종이 사용하는 kiwibox 정적 경로 22개 — 정확 매칭
 // (신판 카탈로그 재정렬: teamplgpt specs/011, 작업지시서 2026-07-24)
 const ALLOWED_PATHS = [
   // hr-attendance
@@ -43,6 +43,7 @@ const ALLOWED_PATHS = [
   "/PRCHrBassiemMgrTab220.do",
   // hr-salary
   "/SALPayslipNewMgr.do",
+  "/SALSalaryDtstmnMgr.do", // 급여명세 정본(getSALSalaryDtstmnMgrList/List2/Map) — PayslipNewMgr는 유령 경로
   "/SALSalaryBassMgr.do", // 월별지급내역(SAL-0050) — specs/011 D5
   "/SALDaylabMgr.do",
   "/CommonCode.do",
@@ -50,6 +51,7 @@ const ALLOWED_PATHS = [
   "/EAPRequestMgr.do",
   // hr-certificate
   "/CTIMcrtfReqstRefromMgr.do",
+  "/CTIMcrtfIssuMgr.do", // 발급내역 목록 정본 (Refrom은 단건/초기조회용)
   // hr-welfare
   "/LONLoanReqstListMgr.do",
 ];
