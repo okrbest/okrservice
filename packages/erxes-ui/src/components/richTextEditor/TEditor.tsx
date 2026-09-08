@@ -1,12 +1,12 @@
-import * as controls from "./RichTextEditorControl/controls";
+import * as controls from './RichTextEditorControl/controls';
 
-import { DEFAULT_LABELS, IRichTextEditorLabels } from "./labels";
-import { DropdownControlType, getToolbar } from "./utils/getToolbarControl";
-import { BubbleMenu, Editor, useEditor } from "@tiptap/react";
+import { DEFAULT_LABELS, IRichTextEditorLabels } from './labels';
+import { DropdownControlType, getToolbar } from './utils/getToolbarControl';
+import { BubbleMenu, Editor, useEditor } from '@tiptap/react';
 import {
   IRichTextEditorContentProps,
   RichTextEditorContent,
-} from "./RichTextEditorContent/RichTextEditorContent";
+} from './RichTextEditorContent/RichTextEditorContent';
 import {
   MoreButtonControl,
   RichTextEditorColorControl,
@@ -17,16 +17,16 @@ import {
   RichTextEditorPlaceholderControl,
   RichTextEditorSourceControl,
   TableControl,
-} from "./RichTextEditorControl";
-import { RichTextEditorControlBase } from "./RichTextEditorControl/RichTextEditorControl";
+} from './RichTextEditorControl';
+import { RichTextEditorControlBase } from './RichTextEditorControl/RichTextEditorControl';
 
-import { Popover } from "@headlessui/react";
-import { CompactPicker } from "react-color";
+import { Popover } from '@headlessui/react';
+import { CompactPicker } from 'react-color';
 import {
   MenuItem,
   ColorPickerWrapper,
   PickerAction,
-} from "./RichTextEditorControl/styles";
+} from './RichTextEditorControl/styles';
 import React, {
   forwardRef,
   useCallback,
@@ -35,32 +35,36 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from 'react';
 import {
   replaceMentionsWithText,
   replaceSpanWithMention,
-} from "./utils/replaceMentionNode";
+} from './utils/replaceMentionNode';
 import useExtensions, {
   generateHTML,
   useGenerateJSON,
-} from "./hooks/useExtensions";
-import { MentionSuggestionParams } from "./utils/getMentionSuggestions";
-import { ReactCodeMirrorRef } from "@uiw/react-codemirror";
-import { RichTextEditorControl } from "./RichTextEditorControl/RichTextEditorControl";
-import { RichTextEditorControlsGroup } from "./RichTextEditorControlsGroup/RichTextEditorControlsGroup";
-import { RichTextEditorProvider } from "./RichTextEditor.context";
-import { RichTextEditorToolbar } from "./RichTextEditorToolbar/RichTextEditorToolbar";
-import { RichTextEditorWrapper } from "./styles";
-import Separator from "./RichTextEditorControlsGroup/Separator";
+} from './hooks/useExtensions';
+import { MentionSuggestionParams } from './utils/getMentionSuggestions';
+import { ReactCodeMirrorRef } from '@uiw/react-codemirror';
+import { RichTextEditorControl } from './RichTextEditorControl/RichTextEditorControl';
+import { RichTextEditorControlsGroup } from './RichTextEditorControlsGroup/RichTextEditorControlsGroup';
+import { RichTextEditorProvider } from './RichTextEditor.context';
+import { RichTextEditorToolbar } from './RichTextEditorToolbar/RichTextEditorToolbar';
+import { RichTextEditorWrapper } from './styles';
+import Separator from './RichTextEditorControlsGroup/Separator';
+import {
+  readDescriptionDraftFromStorage,
+  serializeDescriptionDraft,
+} from '../utils/descriptionDraft';
 
-const POSITION_TOP = "top";
-const POSITION_BOTTOM = "bottom";
-type toolbarLocationOption = "bottom" | "top";
+const POSITION_TOP = 'top';
+const POSITION_BOTTOM = 'bottom';
+type toolbarLocationOption = 'bottom' | 'top';
 type ToolbarItem = string | DropdownControlType;
 export type EditorMethods = {
   getIsFocused: () => boolean | undefined;
   getEditor: () => Editor | null;
-  focus: (position?: "start" | "end" | "all" | number | boolean | null) => void;
+  focus: (position?: 'start' | 'end' | 'all' | number | boolean | null) => void;
 };
 export interface IRichTextEditorProps extends IRichTextEditorContentProps {
   placeholder?: string;
@@ -90,15 +94,17 @@ export interface IRichTextEditorProps extends IRichTextEditorContentProps {
   }) => React.ReactNode;
   initialBlockColor?: string;
   notionMode?: boolean;
+  /** Server description snapshot used to keep local drafts across non-description saves */
+  descriptionBaseline?: string;
 }
 
 const RichTextEditor = forwardRef(function RichTextEditor(
   props: IRichTextEditorProps,
-  ref: React.ForwardedRef<EditorMethods>
+  ref: React.ForwardedRef<EditorMethods>,
 ) {
   const {
-    placeholder = "",
-    content = "",
+    placeholder = '',
+    content = '',
     onChange,
     labels,
     toolbarLocation = POSITION_TOP,
@@ -118,6 +124,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     onCtrlEnter,
     additionalToolbarContent,
     notionMode = false,
+    descriptionBaseline,
   } = props;
   const editorContentProps = {
     height,
@@ -141,51 +148,41 @@ const RichTextEditor = forwardRef(function RichTextEditor(
 
   // ⭐ 초기 content를 useEditor에 전달하여 히스토리에 추가되지 않도록 함
   const initialContent = useMemo(() => {
-    // ⭐ 서버 사이드 렌더링 체크: localStorage는 브라우저에만 존재
     if (typeof window === 'undefined') {
       return content || '';
     }
-    
-    // localStorage 우선
+
     if (name) {
       try {
-        const storedData = localStorage.getItem(name);
-        if (storedData) {
-          let storedContent: string;
-          
-          // JSON 형식으로 저장된 경우 (타임스탬프 포함)
-          try {
-            const parsed = JSON.parse(storedData);
-            storedContent = parsed.content || storedData;
-          } catch (e) {
-            // 기존 형식 (문자열만 저장된 경우) - 하위 호환성
-            storedContent = storedData;
-          }
-          
-          if (storedContent) {
-            const storedContentAsJson = useGenerateJSON(storedContent);
-            return replaceSpanWithMention(storedContentAsJson);
-          }
+        const { content: resolvedContent } = readDescriptionDraftFromStorage(
+          name,
+          descriptionBaseline ?? content,
+        );
+
+        if (resolvedContent) {
+          const storedContentAsJson = useGenerateJSON(resolvedContent);
+          return replaceSpanWithMention(storedContentAsJson);
         }
       } catch (e) {
-        // localStorage 접근 실패 시 content prop 사용
         console.warn('localStorage access failed:', e);
       }
     }
-    // localStorage 없으면 content prop 사용
+
     return content || '';
-  }, []); // 빈 의존성 배열 - 마운트 시 한 번만 실행
+  }, []); // mount only
 
   const editor = useEditor({
     extensions,
-    content: initialContent,  // ⭐ 초기 content 전달
+    content: initialContent, // ⭐ 초기 content 전달
     parseOptions: { preserveWhitespace: true },
     autofocus: autoFocus,
     immediatelyRender: true,
     shouldRerenderOnTransaction: false,
   });
 
-  const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const localStorageDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const LOCAL_STORAGE_DEBOUNCE_MS = 400;
 
   useEffect(() => {
@@ -199,17 +196,16 @@ const RichTextEditor = forwardRef(function RichTextEditor(
         localStorageDebounceRef.current = setTimeout(() => {
           localStorageDebounceRef.current = null;
           const latestContent = editor.getHTML();
-          const dataToStore = JSON.stringify({
-            content: latestContent,
-            timestamp: new Date().toISOString()
-          });
-          localStorage.setItem(name, dataToStore);
+          localStorage.setItem(
+            name,
+            serializeDescriptionDraft(latestContent, descriptionBaseline ?? ''),
+          );
         }, LOCAL_STORAGE_DEBOUNCE_MS);
       }
     };
-    editor && editor.on("update", handleEditorChange);
+    editor && editor.on('update', handleEditorChange);
     return () => {
-      editor && editor.off("update", handleEditorChange);
+      editor && editor.off('update', handleEditorChange);
       if (localStorageDebounceRef.current) {
         clearTimeout(localStorageDebounceRef.current);
         localStorageDebounceRef.current = null;
@@ -265,33 +261,36 @@ const RichTextEditor = forwardRef(function RichTextEditor(
       getIsFocused: () => editorRef.current?.isFocused,
       focus: (position) => editorRef.current?.commands.focus(position),
     }),
-    []
+    [],
   );
 
-  const handleKeyEvents = useCallback((event: KeyboardEvent) => {
-    const isFocused = editorRef?.current?.isFocused;
+  const handleKeyEvents = useCallback(
+    (event: KeyboardEvent) => {
+      const isFocused = editorRef?.current?.isFocused;
 
-    if (!isFocused) return;
+      if (!isFocused) return;
 
-    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-      onCtrlEnter && onCtrlEnter();
-    }
-  }, [onCtrlEnter]);
+      if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+        onCtrlEnter && onCtrlEnter();
+      }
+    },
+    [onCtrlEnter],
+  );
 
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyEvents);
-    return () => window.removeEventListener("keydown", handleKeyEvents);
+    window.addEventListener('keydown', handleKeyEvents);
+    return () => window.removeEventListener('keydown', handleKeyEvents);
   }, [handleKeyEvents]);
 
   const mergedLabels = useMemo(
     () => ({ ...DEFAULT_LABELS, ...labels }),
-    [labels]
+    [labels],
   );
 
   // State for custom block background color
   // Use initialBlockColor only for initial value, then manage via setSelectedColor
   const [selectedColor, setSelectedColor] = useState<string>(() => {
-    return props.initialBlockColor ?? "";
+    return props.initialBlockColor ?? '';
   });
   // Ref to keep track of the last inserted custom block
   const lastInsertedBlockRef = useRef<HTMLDivElement | null>(null);
@@ -314,7 +313,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
                       .insertContent(`{{ ${placeHolder} }}`)
                       .run(),
                 })
-              : ""}
+              : ''}
             <RichTextEditorComponent.Separator />
           </>
         )}
@@ -324,10 +323,10 @@ const RichTextEditor = forwardRef(function RichTextEditor(
           <>
             <RichTextEditorComponent.FontSize />
             <RichTextEditorComponent.Separator />
-            {integrationKind !== "telnyx" && (
+            {integrationKind !== 'telnyx' && (
               <RichTextEditorComponent.ControlsGroup
                 isDropdown={true}
-                controlNames={["heading"]}
+                controlNames={['heading']}
                 toolbarPlacement={toolbarLocation}
               >
                 <RichTextEditorComponent.H1 />
@@ -341,7 +340,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
               <RichTextEditorComponent.HighlightControl />
             </RichTextEditorComponent.ControlsGroup>
             <RichTextEditorComponent.Separator />
-            {integrationKind !== "telnyx" && (
+            {integrationKind !== 'telnyx' && (
               <RichTextEditorComponent.ControlsGroup>
                 <RichTextEditorComponent.Bold />
                 <RichTextEditorComponent.Italic />
@@ -353,10 +352,10 @@ const RichTextEditor = forwardRef(function RichTextEditor(
             <RichTextEditorComponent.ControlsGroup
               isDropdown={true}
               controlNames={[
-                { textAlign: "left" },
-                { textAlign: "center" },
-                { textAlign: "right" },
-                { textAlign: "justify" },
+                { textAlign: 'left' },
+                { textAlign: 'center' },
+                { textAlign: 'right' },
+                { textAlign: 'justify' },
               ]}
               toolbarPlacement={toolbarLocation}
             >
@@ -365,10 +364,10 @@ const RichTextEditor = forwardRef(function RichTextEditor(
               <RichTextEditorComponent.AlignCenter />
               <RichTextEditorComponent.AlignJustify />
             </RichTextEditorComponent.ControlsGroup>
-            {integrationKind !== "telnyx" && (
+            {integrationKind !== 'telnyx' && (
               <RichTextEditorComponent.ControlsGroup
                 isDropdown={true}
-                controlNames={["orderedList", "bulletList"]}
+                controlNames={['orderedList', 'bulletList']}
                 toolbarPlacement={toolbarLocation}
               >
                 <RichTextEditorComponent.BulletList />
@@ -381,7 +380,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
               <RichTextEditorComponent.MoreControl
                 toolbarPlacement={toolbarLocation}
               >
-                {integrationKind !== "telnyx" && (
+                {integrationKind !== 'telnyx' && (
                   <>
                     <RichTextEditorComponent.Blockquote />
                     <RichTextEditorComponent.HorizontalRule />
@@ -400,20 +399,20 @@ const RichTextEditor = forwardRef(function RichTextEditor(
                     icon={CustomBlockIcon}
                     onClick={() => {
                       // Use a fallback neutral color if selectedColor is empty
-                      const newColor = selectedColor || "#f0f0f0";
+                      const newColor = selectedColor || '#f0f0f0';
                       const newBlockHTML = `<div style="background-color:${newColor}; padding:12px; border-radius:6px;" data-custom-block="true"><span style="color:inherit;">사용자 정의 블록 내용</span></div><p></p>`;
                       editor?.chain().focus().insertContent(newBlockHTML).run();
                       // After insertion, update the last inserted block and apply color
                       const blocks = wrapperRef.current?.querySelectorAll(
-                        '[data-custom-block="true"]'
+                        '[data-custom-block="true"]',
                       );
                       if (blocks && blocks.length > 0) {
                         lastInsertedBlockRef.current = blocks[
                           blocks.length - 1
                         ] as HTMLDivElement;
                         lastInsertedBlockRef.current.setAttribute(
-                          "style",
-                          `background-color:${newColor}; padding:12px; border-radius:6px;`
+                          'style',
+                          `background-color:${newColor}; padding:12px; border-radius:6px;`,
                         );
                       }
                     }}
@@ -442,7 +441,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
                                 const newColor = colorResult.hex;
                                 setSelectedColor(newColor);
                                 // Use a fallback neutral color if newColor is empty
-                                const finalColor = newColor || "#f0f0f0";
+                                const finalColor = newColor || '#f0f0f0';
                                 const newBlockHTML = `<div style="background-color:${finalColor}; padding:12px; border-radius:6px;" data-custom-block="true"><span style="color:inherit;">사용자 정의 블록 내용</span></div><p></p>`;
                                 editor
                                   ?.chain()
@@ -476,7 +475,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
         key="erxes-rte-content-key"
       />,
     ],
-    [selectedColor]
+    [selectedColor],
   );
 
   const renderEditor = useCallback(() => {
@@ -497,16 +496,14 @@ const RichTextEditor = forwardRef(function RichTextEditor(
   }, [editorParts, toolbarLocation]);
 
   const toggleSourceView = () => {
-    const editorContent = editor?.getHTML() || "";
+    const editorContent = editor?.getHTML() || '';
     onChange && onChange(editorContent);
 
     if (name && typeof window !== 'undefined') {
-      // 타임스탬프와 함께 저장
-      const dataToStore = JSON.stringify({
-        content: editorContent,
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem(name, dataToStore);
+      localStorage.setItem(
+        name,
+        serializeDescriptionDraft(editorContent, descriptionBaseline ?? ''),
+      );
     }
 
     setIsSourceEnabled(!isSourceEnabled);
@@ -565,14 +562,22 @@ const RichTextEditor = forwardRef(function RichTextEditor(
             </button>
             <div className="bubble-menu-divider" />
             <button
-              onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-              className={editor.isActive('heading', { level: 1 }) ? 'is-active' : ''}
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 1 }).run()
+              }
+              className={
+                editor.isActive('heading', { level: 1 }) ? 'is-active' : ''
+              }
             >
               H1
             </button>
             <button
-              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-              className={editor.isActive('heading', { level: 2 }) ? 'is-active' : ''}
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 2 }).run()
+              }
+              className={
+                editor.isActive('heading', { level: 2 }) ? 'is-active' : ''
+              }
             >
               H2
             </button>

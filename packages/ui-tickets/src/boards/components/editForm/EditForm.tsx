@@ -150,6 +150,14 @@ function EditForm(props: Props) {
     }
   };
 
+  const clearDescriptionDraft = () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    localStorage.removeItem(`${options.type}_description_${item._id}`);
+  };
+
   const performClose = () => {
     if (refresh) {
       routerUtils.setParams(navigate, location, { key: Math.random() });
@@ -187,6 +195,7 @@ function EditForm(props: Props) {
           size: 'md',
         },
       ).then(() => {
+        clearDescriptionDraft();
         performClose();
       });
       return;

@@ -12,6 +12,7 @@ import { IItem, IItemParams, IOptions } from '../../types';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { __, readFile } from 'coreui/utils';
 import { extractAttachment } from '@erxes/ui/src/utils';
+import { readDescriptionDraftFromStorage } from '@erxes/ui/src/utils/descriptionDraft';
 import styled from 'styled-components';
 import { useIsMobile } from '../../utils/mobile';
 
@@ -783,51 +784,13 @@ const Description = React.memo((props: DescProps) => {
       if (!currentValue && newValue) {
         if (typeof window !== 'undefined') {
           const localStorageKey = `${contentType}_description_${item._id}`;
-          const storedData = localStorage.getItem(localStorageKey);
+          const { content: resolvedContent } = readDescriptionDraftFromStorage(
+            localStorageKey,
+            item.description,
+          );
 
-          if (storedData) {
-            try {
-              // JSON 형식으로 저장된 경우 (타임스탬프 포함)
-              const parsed = JSON.parse(storedData);
-              const storedContent = parsed.content;
-              const storedTimestamp = parsed.timestamp
-                ? new Date(parsed.timestamp)
-                : null;
-              const serverModifiedAt = item.modifiedAt
-                ? new Date(item.modifiedAt)
-                : null;
-
-              // 서버가 더 최신이면 localStorage 클리어하고 서버 내용 사용
-              if (
-                serverModifiedAt &&
-                storedTimestamp &&
-                serverModifiedAt > storedTimestamp
-              ) {
-                localStorage.removeItem(localStorageKey);
-                setDescription(item.description);
-                descriptionRef.current = item.description;
-              } else {
-                const content = storedContent || item.description;
-                setDescription(content);
-                descriptionRef.current = content;
-              }
-            } catch (e) {
-              // JSON 파싱 실패 시 기존 형식 (문자열만 저장된 경우)
-              // 내용이 다르면 서버 내용 사용 (다른 사용자가 수정했을 가능성)
-              const serverContent = item.description || '';
-              if (storedData !== serverContent) {
-                localStorage.removeItem(localStorageKey);
-                setDescription(serverContent);
-                descriptionRef.current = serverContent;
-              } else {
-                setDescription(storedData);
-                descriptionRef.current = storedData;
-              }
-            }
-          } else {
-            setDescription(item.description);
-            descriptionRef.current = item.description;
-          }
+          setDescription(resolvedContent);
+          descriptionRef.current = resolvedContent;
         } else {
           setDescription(item.description);
           descriptionRef.current = item.description;
@@ -918,6 +881,7 @@ const Description = React.memo((props: DescProps) => {
               isSubmitted={isSubmitted}
               autoFocus={true}
               name={`${contentType}_description_${item._id}`}
+              descriptionBaseline={item.description ?? ''}
               toolbar={[
                 'undo',
                 'redo',
