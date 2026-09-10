@@ -1,25 +1,25 @@
-import * as routerUtils from "@erxes/ui/src/utils/router";
+import * as routerUtils from '@erxes/ui/src/utils/router';
 
-import { Draggable, Droppable } from "react-beautiful-dnd";
+import { Draggable, Droppable } from 'react-beautiful-dnd';
 import {
   DropZone,
   EmptyContainer,
   ItemContainer,
   NotifiedContainer,
   Wrapper,
-} from "../../styles/common";
-import { IItem, IOptions } from "../../types";
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+} from '../../styles/common';
+import { IItem, IOptions } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import EmptyState from "@erxes/ui/src/components/EmptyState";
-import Icon from "@erxes/ui/src/components/Icon";
-import Item from "./Item";
-import { PipelineConsumer } from "../../containers/PipelineContext";
-import client from "@erxes/ui/src/apolloClient";
-import dayjs from "dayjs";
-import { gql } from "@apollo/client";
-import { mutations } from "@erxes/ui-notifications/src/graphql";
+import EmptyState from '@erxes/ui/src/components/EmptyState';
+import Icon from '@erxes/ui/src/components/Icon';
+import Item from './Item';
+import { PipelineConsumer } from '../../containers/PipelineContext';
+import client from '@erxes/ui/src/apolloClient';
+import dayjs from 'dayjs';
+import { gql } from '@apollo/client';
+import { mutations } from '@erxes/ui-notifications/src/graphql';
 
 type Props = {
   listId: string;
@@ -46,16 +46,30 @@ type DraggableContainerProps = {
 function DraggableContainer(props: DraggableContainerProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const itemIdQueryParam = routerUtils.getParam(location, "itemId");
+  const itemIdQueryParam = routerUtils.getParam(location, 'itemId');
   const { stageId, item, index, options, stageAge } = props;
 
   const [isDragDisabled, setIsDragDisabled] = useState<boolean>(
-    Boolean(itemIdQueryParam)
+    Boolean(itemIdQueryParam),
   );
 
   const touchStartRef = React.useRef<{ x: number; y: number } | null>(null);
 
+  /**
+   * 카드 위에서 직접 발생한 터치인지 판별한다.
+   * 상세 모달은 이 카드의 자식으로 렌더링되지만 DOM은 포털로 body에 붙는다.
+   * React 이벤트는 포털을 넘어 부모로 버블링되므로, 이 검사가 없으면 모달 안의
+   * 터치까지 아래 preventDefault에 걸려 click 합성이 취소되고 입력·포커스가 죽는다.
+   */
+  const isTouchOnCard = (e: React.TouchEvent) =>
+    e.currentTarget.contains(e.target as Node);
+
   const onItemTouchStart = (e: React.TouchEvent) => {
+    if (!isTouchOnCard(e)) {
+      touchStartRef.current = null;
+      return;
+    }
+
     touchStartRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
@@ -64,6 +78,11 @@ function DraggableContainer(props: DraggableContainerProps) {
 
   const onItemTouchEnd = (e: React.TouchEvent) => {
     if (!touchStartRef.current) return;
+    if (!isTouchOnCard(e)) {
+      touchStartRef.current = null;
+      return;
+    }
+
     const dx = Math.abs(e.changedTouches[0].clientX - touchStartRef.current.x);
     const dy = Math.abs(e.changedTouches[0].clientY - touchStartRef.current.y);
     touchStartRef.current = null;
@@ -73,7 +92,7 @@ function DraggableContainer(props: DraggableContainerProps) {
     }
   };
   const [hasNotified, setHasNotified] = useState(
-    item.hasNotified === false ? false : true
+    item.hasNotified === false ? false : true,
   );
   const [currentItem, setCurrentItem] = useState(item);
   const [isAutoCompleting, setIsAutoCompleting] = useState(false);
@@ -89,8 +108,17 @@ function DraggableContainer(props: DraggableContainerProps) {
       // stage 정보를 가져오기 위해 item.stage를 확인
       const stage = currentItem.stage;
 
-      if (stage && stage.probability === 'Resolved' && currentItem.closeDate && !currentItem.isComplete && !isAutoCompleting) {
-        console.log('ItemList: 마지막 단계에서 isComplete를 자동으로 true로 설정합니다:', currentItem._id);
+      if (
+        stage &&
+        stage.probability === 'Resolved' &&
+        currentItem.closeDate &&
+        !currentItem.isComplete &&
+        !isAutoCompleting
+      ) {
+        console.log(
+          'ItemList: 마지막 단계에서 isComplete를 자동으로 true로 설정합니다:',
+          currentItem._id,
+        );
         setIsAutoCompleting(true);
 
         try {
@@ -114,30 +142,36 @@ function DraggableContainer(props: DraggableContainerProps) {
             mutation,
             variables: {
               _id: currentItem._id,
-              isComplete: true
+              isComplete: true,
             },
             // 캐시 업데이트 - 즉시 UI 반영
             update: (cache, { data }) => {
               console.log('ItemList: 캐시 업데이트 - isComplete 변경', data);
-              
+
               // Apollo Client 캐시에서 현재 아이템의 참조 업데이트
               if (data && data.ticketsEdit) {
                 try {
                   // 캐시에서 현재 아이템 직접 업데이트
                   cache.modify({
-                    id: cache.identify({ __typename: 'Ticket', _id: currentItem._id }),
+                    id: cache.identify({
+                      __typename: 'Ticket',
+                      _id: currentItem._id,
+                    }),
                     fields: {
-                      isComplete: () => true
-                    }
+                      isComplete: () => true,
+                    },
                   });
-                  
+
                   console.log('ItemList: 캐시 직접 수정 완료');
                 } catch (cacheError) {
-                  console.log('ItemList: 캐시 직접 수정 실패, 전체 리프레시:', cacheError);
-                  
+                  console.log(
+                    'ItemList: 캐시 직접 수정 실패, 전체 리프레시:',
+                    cacheError,
+                  );
+
                   // 캐시 직접 수정 실패 시 전체 리프레시
                   client.refetchQueries({
-                    include: 'all'
+                    include: 'all',
                   });
                 }
               }
@@ -150,17 +184,20 @@ function DraggableContainer(props: DraggableContainerProps) {
                 isComplete: true,
                 closeDate: currentItem.closeDate,
                 stageId: currentItem.stageId,
-                stage: currentItem.stage
-              }
-            }
+                stage: currentItem.stage,
+              },
+            },
           });
 
-          console.log('ItemList: isComplete 업데이트 성공:', result.data.ticketsEdit);
+          console.log(
+            'ItemList: isComplete 업데이트 성공:',
+            result.data.ticketsEdit,
+          );
 
           // 로컬 상태도 즉시 업데이트
-          setCurrentItem(prevItem => ({
+          setCurrentItem((prevItem) => ({
             ...prevItem,
-            isComplete: true
+            isComplete: true,
           }));
 
           // 부모 컴포넌트들에게 변경사항 전파
@@ -168,8 +205,8 @@ function DraggableContainer(props: DraggableContainerProps) {
             detail: {
               stageId: currentItem.stageId,
               itemId: currentItem._id,
-              isComplete: true
-            }
+              isComplete: true,
+            },
           });
           window.dispatchEvent(updateEvent);
 
@@ -178,7 +215,6 @@ function DraggableContainer(props: DraggableContainerProps) {
             const globalUpdateEvent = new CustomEvent('globalTicketUpdate');
             window.dispatchEvent(globalUpdateEvent);
           }, 200);
-
         } catch (error) {
           console.error('ItemList: isComplete 업데이트 실패:', error);
         } finally {
@@ -191,39 +227,60 @@ function DraggableContainer(props: DraggableContainerProps) {
     const timeoutId = setTimeout(checkAndAutoComplete, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [currentItem.stage, currentItem.closeDate, currentItem.isComplete, currentItem._id]);
+  }, [
+    currentItem.stage,
+    currentItem.closeDate,
+    currentItem.isComplete,
+    currentItem._id,
+  ]);
 
   // ticketUpdated 이벤트 감지하여 실시간 업데이트
   useEffect(() => {
     const handleTicketUpdate = (event: CustomEvent) => {
       const { isComplete } = event.detail;
-      
-      console.log('ItemList: ticketUpdated 이벤트 감지, 모든 아이템 업데이트:', isComplete);
-      
+
+      console.log(
+        'ItemList: ticketUpdated 이벤트 감지, 모든 아이템 업데이트:',
+        isComplete,
+      );
+
       // 현재 아이템의 isComplete 상태를 업데이트 (closeDate가 있는 경우)
       if (currentItem.closeDate) {
-        setCurrentItem(prevItem => ({
+        setCurrentItem((prevItem) => ({
           ...prevItem,
-          isComplete: isComplete
+          isComplete: isComplete,
         }));
-        
-        console.log('아이템 isComplete 상태 업데이트:', currentItem._id, isComplete);
+
+        console.log(
+          '아이템 isComplete 상태 업데이트:',
+          currentItem._id,
+          isComplete,
+        );
       }
     };
 
     // 이벤트 리스너 등록
-    window.addEventListener('ticketUpdated', handleTicketUpdate as EventListener);
+    window.addEventListener(
+      'ticketUpdated',
+      handleTicketUpdate as EventListener,
+    );
 
     // 컴포넌트 언마운트 시 이벤트 리스너 제거
     return () => {
-      window.removeEventListener('ticketUpdated', handleTicketUpdate as EventListener);
+      window.removeEventListener(
+        'ticketUpdated',
+        handleTicketUpdate as EventListener,
+      );
     };
   }, [currentItem._id, props.onRemoveItem]);
 
   const onClick = () => {
     setIsDragDisabled(true);
 
-    routerUtils.setParams(navigate, location, { itemId: currentItem._id, key: "" });
+    routerUtils.setParams(navigate, location, {
+      itemId: currentItem._id,
+      key: '',
+    });
 
     if (!hasNotified) {
       client.mutate({
@@ -238,7 +295,7 @@ function DraggableContainer(props: DraggableContainerProps) {
   const beforePopupClose = () => {
     const { onRemoveItem } = props;
 
-    if (currentItem.status === "archived") {
+    if (currentItem.status === 'archived') {
       onRemoveItem(currentItem._id, currentItem.stageId);
     }
 
@@ -261,7 +318,7 @@ function DraggableContainer(props: DraggableContainerProps) {
   const now = dayjs(new Date());
   const createdAt = dayjs(currentItem.createdAt);
   const isOld =
-    !stageAge || stageAge <= 0 ? false : now.diff(createdAt, "day") > stageAge;
+    !stageAge || stageAge <= 0 ? false : now.diff(createdAt, 'day') > stageAge;
 
   return (
     <Draggable
@@ -286,14 +343,19 @@ function DraggableContainer(props: DraggableContainerProps) {
               <>
                 {isSelectMode && (
                   <div
-                    style={{ position: 'absolute', top: 8, left: 8, zIndex: 10 }}
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      left: 8,
+                      zIndex: 10,
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleItemSelect(currentItem._id);
                     }}
                   >
                     <input
-                      type='checkbox'
+                      type="checkbox"
                       checked={selectedIds.includes(currentItem._id)}
                       onChange={() => {}}
                       style={{ cursor: 'pointer', width: 16, height: 16 }}
@@ -385,7 +447,7 @@ class InnerList extends React.PureComponent<InnerListProps> {
 
 export default class ItemList extends React.Component<Props> {
   static defaultProps = {
-    listId: "LIST",
+    listId: 'LIST',
   };
 
   render() {
