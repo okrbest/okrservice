@@ -256,7 +256,9 @@ function EditForm(props: Props) {
 
   return (
     <Transition appear show={props.isPopupVisible} as={Fragment}>
-      <Dialog as="div" onClose={() => {}} className={` relative z-10`}>
+      {/* ESC 키와 오버레이 탭 모두 onClose로 들어온다. onHideModal이
+            미저장 본문 변경을 확인 후 닫으므로 실수로 작업이 날아가지 않는다. */}
+      <Dialog as="div" onClose={onHideModal} className={` relative z-10`}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
