@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from "react";
-import { useQuery } from "@apollo/client";
-import { gql } from "@apollo/client";
+import React, { useState, useMemo } from 'react';
+import { useQuery } from '@apollo/client';
+import { gql } from '@apollo/client';
 import {
   commonStructureParamsDef,
   commonStructureParamsValue,
-} from "../graphql/queries";
-import { __ } from "@erxes/ui/src/utils/core";
+} from '../graphql/queries';
+import { __ } from '@erxes/ui/src/utils/core';
 
 interface IBranch {
   _id: string;
@@ -48,8 +48,8 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
     BRANCHES_QUERY,
     {
       variables: filterParams,
-      fetchPolicy: "cache-and-network",
-    }
+      fetchPolicy: 'cache-and-network',
+    },
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>(
@@ -57,10 +57,10 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
       ? Array.isArray(initialValue)
         ? initialValue
         : [initialValue]
-      : []
+      : [],
   );
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const branches = useMemo(() => data?.branches || [], [data]);
 
@@ -71,7 +71,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
     if (branch.title.toLowerCase().includes(searchTerm.toLowerCase()))
       return true;
     return branches.some(
-      (b) => b.parentId === branchId && hasMatchingDescendant(b._id)
+      (b) => b.parentId === branchId && hasMatchingDescendant(b._id),
     );
   };
 
@@ -82,7 +82,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
       (branch) =>
         !branch.parentId &&
         (branch.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          hasMatchingDescendant(branch._id))
+          hasMatchingDescendant(branch._id)),
     );
   }, [branches, searchTerm]);
 
@@ -99,7 +99,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
         while (currentId) {
           newExpanded[currentId] = true;
           const parent = branches.find((b) => b._id === currentId);
-          currentId = parent?.parentId || "";
+          currentId = parent?.parentId || '';
         }
       }
     });
@@ -115,10 +115,10 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
       const branch = branches.find((b) => b._id === currentId);
       if (!branch) break;
       path.unshift(branch.title);
-      currentId = branch.parentId || "";
+      currentId = branch.parentId || '';
     }
 
-    return path.join(" > ");
+    return path.join(' > ');
   };
 
   // Function to get all child branch IDs recursively
@@ -136,10 +136,10 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
   const toggleSelection = (branchId: string) => {
     const newSelection = selectedIds.includes(branchId)
       ? selectedIds.filter(
-          (id) => id !== branchId && !getAllChildrenIds(branchId).includes(id)
+          (id) => id !== branchId && !getAllChildrenIds(branchId).includes(id),
         )
       : Array.from(
-          new Set([...selectedIds, branchId, ...getAllChildrenIds(branchId)])
+          new Set([...selectedIds, branchId, ...getAllChildrenIds(branchId)]),
         );
 
     setSelectedIds(newSelection);
@@ -157,7 +157,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
 
     allPaths.forEach((path) => {
       const isAncestor = allPaths.some(
-        (otherPath) => otherPath !== path && otherPath.startsWith(path + " > ")
+        (otherPath) => otherPath !== path && otherPath.startsWith(path + ' > '),
       );
       if (!isAncestor) {
         mostSpecificPaths.push(path);
@@ -179,7 +179,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
         style={{ marginLeft: `${level * 10}px` }}
       >
         <div
-          className={`branch-row ${isSelected ? "selected" : ""}`}
+          className={`branch-row ${isSelected ? 'selected' : ''}`}
           onClick={() => toggleSelection(branch._id)}
         >
           <input
@@ -187,7 +187,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
             type="checkbox"
             checked={isSelected}
             onChange={() => toggleSelection(branch._id)}
-            style={{ marginRight: "10px" }}
+            style={{ marginRight: '10px' }}
           />
           {hasChildren && (
             <span
@@ -197,7 +197,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
                 toggleExpand(branch._id);
               }}
             >
-              {isExpanded ? "▼" : "▶"}
+              {isExpanded ? '▼' : '▶'}
             </span>
           )}
           {!hasChildren && <span className="empty-icon"></span>}
@@ -215,11 +215,11 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
     );
   };
 
-  if (loading) return <div className="loading">{__("Loading...")}</div>;
+  if (loading) return <div className="loading">{__('Loading...')}</div>;
   if (error)
     return (
       <div className="error">
-        {__("Error:")} {error.message}
+        {__('Error:')} {error.message}
       </div>
     );
 
@@ -228,7 +228,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
       <label>{label}</label>
       <input
         type="text"
-        placeholder={__("Search branches...")}
+        placeholder={__('Search branches...')}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="search-input"
@@ -237,18 +237,18 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
         {filteredTopBranches.length > 0 ? (
           filteredTopBranches.map((branch) => renderBranch(branch))
         ) : (
-          <div>{__("No branches found")}</div>
+          <div>{__('No branches found')}</div>
         )}
       </div>
       {selectedIds.length > 0 && (
         <div className="selection-summary">
           <div className="selected-count">
-            {__("Selected:")} {selectedIds.length} {__("branch(es)")}
+            {__('Selected:')} {selectedIds.length} {__('branch(es)')}
           </div>
           <div className="selected-paths">
             {getMostSpecificPaths().map((path, index) => {
               const branchId = selectedIds.find(
-                (id) => getBranchPath(id) === path
+                (id) => getBranchPath(id) === path,
               )!;
               return (
                 <div key={index} className="path-item">
@@ -256,7 +256,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
                     type="checkbox"
                     checked
                     onChange={() => toggleSelection(branchId)}
-                    style={{ marginRight: "8px" }}
+                    style={{ marginRight: '8px' }}
                   />
                   {path}
                 </div>
@@ -277,7 +277,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    label {
+    .branch-selector-container label {
       font-weight: bold;
       margin-bottom: 8px;
       display: block;
@@ -401,7 +401,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
       background: #ffebee;
     }
 
-    input[type="checkbox"] {
+    .branch-selector-container input[type="checkbox"] {
       margin: 0;
       vertical-align: middle;
       border: 1px solid #ccc;
@@ -410,7 +410,7 @@ const SelectNewBranches: React.FC<SelectNewBranchesProps> = ({
       cursor: pointer;
     }
 
-    input[type="checkbox"]:checked {
+    .branch-selector-container input[type="checkbox"]:checked {
       accent-color: #007bff;
       background: #cce5ff;
     }
