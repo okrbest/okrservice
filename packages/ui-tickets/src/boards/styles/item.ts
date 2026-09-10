@@ -1,15 +1,15 @@
-import { colors, dimensions } from "@erxes/ui/src/styles";
-import styled, { css } from "styled-components";
+import { colors, dimensions } from '@erxes/ui/src/styles';
+import styled, { css } from 'styled-components';
 
-import Button from "@erxes/ui/src/components/Button";
-import { Flex } from "@erxes/ui/src/styles/main";
-import { FormContainer } from "../styles/common";
-import { StageInfo } from "./stage";
-import { borderRadius } from "./common";
-import { rgba } from "@erxes/ui/src/styles/ecolor";
-import styledTS from "styled-components-ts";
+import Button from '@erxes/ui/src/components/Button';
+import { Flex } from '@erxes/ui/src/styles/main';
+import { FormContainer } from '../styles/common';
+import { StageInfo } from './stage';
+import { borderRadius } from './common';
+import { rgba } from '@erxes/ui/src/styles/ecolor';
+import styledTS from 'styled-components-ts';
 
-const buttonColor = "#0a1e3c";
+const buttonColor = '#0a1e3c';
 
 export const Content = styled.div`
   padding: 12px 22px;
@@ -161,9 +161,9 @@ export const AddContent = styled.div`
     margin-right: ${dimensions.coreSpacing}px;
 
     &:before {
-      content: "\\e9a8";
+      content: '\\e9a8';
       font-style: normal;
-      font-family: "erxes";
+      font-family: 'erxes';
       font-size: 16px;
       position: absolute;
       color: #777;
@@ -185,7 +185,7 @@ export const NewBranch = styled.div`
   .branch-selector-container {
     min-width: 100%;
   }
-  input[type="checkbox"] {
+  input[type='checkbox'] {
     border: none;
     height: 12px;
     max-width: 10px;
@@ -294,6 +294,15 @@ export const LeftContainer = styled.div`
   textarea {
     resize: none;
   }
+
+  /* 모바일은 MobileLayout이 세로 배치라 좌우 2단용 60%/여백이 필요 없다.
+     좁아진 폭을 자식에서 160%로 되늘리던 보정도 이 값 때문에 생겼다. */
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 100%;
+    margin-right: 0;
+    min-width: 0;
+  }
 `;
 
 export const WatchIndicator = styled.span`
@@ -362,7 +371,7 @@ export const ActionContainer = styled(MoveContainer)`
   > div {
     margin: 0 ${dimensions.unitSpacing / 2}px ${dimensions.unitSpacing / 2}px 0;
   }
-  [id^="headlessui-menu-items-"] {
+  [id^='headlessui-menu-items-'] {
     padding: 7px 0;
   }
 `;
