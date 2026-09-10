@@ -55,7 +55,7 @@ import Separator from './RichTextEditorControlsGroup/Separator';
 import {
   readDescriptionDraftFromStorage,
   serializeDescriptionDraft,
-} from '../utils/descriptionDraft';
+} from '../../utils/descriptionDraft';
 
 const POSITION_TOP = 'top';
 const POSITION_BOTTOM = 'bottom';
