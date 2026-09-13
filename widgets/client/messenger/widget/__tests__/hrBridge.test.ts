@@ -1,6 +1,6 @@
 /**
  * hrBridge 단위 테스트 — R1 브리지 보안 규칙 (작업지시서 §1.4/§1.5/§4)
- * allowlist 거부 / searchType=mobile 거부 / $SELF_STAFF_ID 치환 / origin·source 검증
+ * allowlist 거부 / path+cmd 조합 거부 / searchType=mobile 거부 / $SELF_STAFF_ID 치환 / origin·source 검증
  */
 import { initHrBridge } from "../hrBridge";
 
@@ -80,7 +80,11 @@ describe("initHrBridge", () => {
         transport: "kiwibox-bridge",
         path: "/TAADclzVcatnList.do",
         method: "POST",
-        form: { searchType: "1", cmmSearchStaffId: "$SELF_STAFF_ID" },
+        form: {
+          cmd: "getTAADclzVcatnList1",
+          searchType: "1",
+          cmmSearchStaffId: "$SELF_STAFF_ID",
+        },
       })
     );
     await flush();
@@ -91,7 +95,7 @@ describe("initHrBridge", () => {
       expect.objectContaining({
         method: "POST",
         credentials: "same-origin",
-        body: "searchType=1&cmmSearchStaffId=STAFF123",
+        body: "cmd=getTAADclzVcatnList1&searchType=1&cmmSearchStaffId=STAFF123",
       })
     );
     expect(replyMock).toHaveBeenCalledWith(
@@ -117,7 +121,11 @@ describe("initHrBridge", () => {
   it("확장 정적 경로(hr-welfare 등)를 허용한다", async () => {
     dispatchRequest(
       iframe,
-      request({ path: "/LONLoanReqstListMgr.do", method: "POST", form: {} })
+      request({
+        path: "/LONLoanReqstListMgr.do",
+        method: "POST",
+        form: { cmd: "getLONLoanReqstListMgrList1" },
+      })
     );
     await flush();
 
@@ -128,8 +136,11 @@ describe("initHrBridge", () => {
   });
 
   it("신판 카탈로그 신규 경로(specs/011)를 허용한다", async () => {
-    for (const path of ["/TAADclzVcatnList.do", "/SALSalaryBassMgr.do"]) {
-      dispatchRequest(iframe, request({ path, method: "POST", form: {} }));
+    for (const [path, cmd] of [
+      ["/TAADclzVcatnList.do", "getTAADclzVcatnList2"],
+      ["/SALSalaryBassMgr.do", "getSALSalaryBassMgrTab110List"],
+    ]) {
+      dispatchRequest(iframe, request({ path, method: "POST", form: { cmd } }));
     }
     await flush();
 
@@ -144,22 +155,95 @@ describe("initHrBridge", () => {
     );
   });
 
-  it("폐기 경로 4종은 allowlist에서 제거되어 거부한다", async () => {
+  it("폐기 경로 3종은 allowlist에서 제거되어 거부한다", async () => {
     for (const path of [
       "/TAAWrkTimeListMgrByDate.do",
       "/getMBLLeavDetailStaff.do",
       "/getMBLHomeLeaveDetail.do",
-      "/SALSalaryDtstmnMgr.do",
     ]) {
       dispatchRequest(iframe, request({ path, method: "POST", form: {} }));
     }
     await flush();
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(replyMock).toHaveBeenCalledTimes(4);
+    expect(replyMock).toHaveBeenCalledTimes(3);
     expect(replyMock).toHaveBeenLastCalledWith(
       expect.objectContaining({ ok: false, body: "bridge: path not allowed" }),
       WIDGET_ORIGIN
+    );
+  });
+
+  it("허용 경로라도 저장·삭제 cmd는 fetch 없이 거부한다", async () => {
+    for (const cmd of ["saveCTIMcrtfIssuMgr", "saveCTIMcrtfIssuMgrDelete"]) {
+      dispatchRequest(
+        iframe,
+        request({ path: "/CTIMcrtfIssuMgr.do", method: "POST", form: { cmd } })
+      );
+    }
+    await flush();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(replyMock).toHaveBeenCalledTimes(2);
+    expect(replyMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ ok: false, body: "bridge: cmd not allowed" }),
+      WIDGET_ORIGIN
+    );
+  });
+
+  it("cmd 분기 경로의 cmd 누락·타 경로 cmd 교차 사용은 거부한다", async () => {
+    dispatchRequest(
+      iframe,
+      request({ path: "/CTIMcrtfIssuMgr.do", method: "POST", form: {} })
+    );
+    dispatchRequest(
+      iframe,
+      request(
+        {
+          path: "/CTIMcrtfIssuMgr.do",
+          method: "POST",
+          form: { cmd: "getEAPRequestMgrList" },
+        },
+        "call-2"
+      )
+    );
+    await flush();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(replyMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("cmd 분기가 없는 경로에 cmd를 붙이면 거부한다", async () => {
+    dispatchRequest(
+      iframe,
+      request({
+        path: "/getTodoIconCnt.do",
+        method: "POST",
+        form: { cmd: "getTodoIconCnt" },
+      })
+    );
+    await flush();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(replyMock).toHaveBeenCalledWith(
+      expect.objectContaining({ ok: false, body: "bridge: cmd not allowed" }),
+      WIDGET_ORIGIN
+    );
+  });
+
+  it("증명서 발급내역 조회 cmd는 허용한다", async () => {
+    dispatchRequest(
+      iframe,
+      request({
+        path: "/CTIMcrtfIssuMgr.do",
+        method: "POST",
+        form: { cmd: "getCTIMcrtfIssuMgrList" },
+      })
+    );
+    await flush();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://kiwibox.example.com/CTIMcrtfIssuMgr.do",
+      expect.objectContaining({ body: "cmd=getCTIMcrtfIssuMgrList" })
     );
   });
 
@@ -175,6 +259,7 @@ describe("initHrBridge", () => {
         path: "/TAADclzVcatnList.do",
         method: "POST",
         form: {
+          cmd: "getTAADclzVcatnList1",
           staffId: "$SELF_STAFF_ID",
           cmmSearchStaffId: "$SELF_STAFF_ID",
           searchStaffId: "$SELF_STAFF_ID",
@@ -184,17 +269,33 @@ describe("initHrBridge", () => {
     await flush();
 
     expect(fetchMock.mock.calls[0][1].body).toBe(
-      "staffId=STAFF123&cmmSearchStaffId=STAFF123&searchStaffId=STAFF123"
+      "cmd=getTAADclzVcatnList1&staffId=STAFF123&cmmSearchStaffId=STAFF123&searchStaffId=STAFF123"
     );
   });
 
   it("YTA 정규식: 지원 endpoint×연도는 허용한다", async () => {
     dispatchRequest(
       iframe,
-      request({ path: "/YTASummaryMgr2024.do", method: "POST", form: {} })
+      request({
+        path: "/YTASummaryMgr2024.do",
+        method: "POST",
+        form: { cmd: "getYTASummaryMgrList" },
+      })
+    );
+    dispatchRequest(
+      iframe,
+      request(
+        {
+          path: "/YTAInDctMgr2025.do",
+          method: "POST",
+          form: { cmd: "getYTASummaryMgrList" }, // 타 컨트롤러 cmd — 거부
+        },
+        "call-2"
+      )
     );
     await flush();
 
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
       "https://kiwibox.example.com/YTASummaryMgr2024.do",
       expect.anything()
@@ -226,14 +327,16 @@ describe("initHrBridge", () => {
       request({
         path: "/CommonCode.do",
         method: "POST",
-        form: { queryId: "getSalYmdTypeCdList2" },
+        form: { cmd: "getCommonNSCodeList", queryId: "getSalYmdTypeCdList2" },
       })
     );
     await flush();
 
     expect(fetchMock).toHaveBeenCalledWith(
       "https://kiwibox.example.com/CommonCode.do",
-      expect.objectContaining({ body: "queryId=getSalYmdTypeCdList2" })
+      expect.objectContaining({
+        body: "cmd=getCommonNSCodeList&queryId=getSalYmdTypeCdList2",
+      })
     );
   });
 
@@ -243,12 +346,19 @@ describe("initHrBridge", () => {
       request({
         path: "/CommonCode.do",
         method: "POST",
-        form: { queryId: "getAllStaffSalaries" },
+        form: { cmd: "getCommonNSCodeList", queryId: "getAllStaffSalaries" },
       })
     );
     dispatchRequest(
       iframe,
-      request({ path: "/CommonCode.do", method: "POST", form: {} }, "call-2")
+      request(
+        {
+          path: "/CommonCode.do",
+          method: "POST",
+          form: { cmd: "getCommonNSCodeList" },
+        },
+        "call-2"
+      )
     );
     await flush();
 
@@ -266,7 +376,7 @@ describe("initHrBridge", () => {
       request({
         path: "/TAADclzVcatnList.do",
         method: "POST",
-        form: { searchType: "mobile" },
+        form: { cmd: "getTAADclzVcatnList1", searchType: "mobile" },
       })
     );
     await flush();
@@ -284,7 +394,10 @@ describe("initHrBridge", () => {
       request({
         path: "/TAADclzVcatnList.do",
         method: "POST",
-        form: { cmmSearchStaffId: "$SELF_STAFF_ID" },
+        form: {
+          cmd: "getTAADclzVcatnList1",
+          cmmSearchStaffId: "$SELF_STAFF_ID",
+        },
       })
     );
     await flush();
@@ -310,12 +423,17 @@ describe("initHrBridge", () => {
       request({
         path: "/TAADclzVcatnList.do",
         method: "POST",
-        form: { cmmSearchStaffId: "$SELF_STAFF_ID" },
+        form: {
+          cmd: "getTAADclzVcatnList1",
+          cmmSearchStaffId: "$SELF_STAFF_ID",
+        },
       })
     );
     await flush();
 
-    expect(fetchMock.mock.calls[0][1].body).toBe("cmmSearchStaffId=STAFF777");
+    expect(fetchMock.mock.calls[0][1].body).toBe(
+      "cmd=getTAADclzVcatnList1&cmmSearchStaffId=STAFF777"
+    );
   });
 
   it("origin 불일치 메시지는 무시한다", async () => {

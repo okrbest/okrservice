@@ -77,7 +77,7 @@ teamplgpt 서버가 kiwibox를 직접 호출하면 사용자별 세션이 없어
    → 서버는 broker에 callId를 pending 등록하고 최대 45s 대기
 6. 위젯서버가 SSE 바이트 그대로 릴레이 → chatbot의 teamplgpt.ts가 type 감지
 7. clientTools.ts → window.parent.postMessage({type:"teamplgpt:hr-tool-request", callId, spec})
-8. hrBridge.ts: origin·source 이중 검증 → path allowlist → queryId 화이트리스트
+8. hrBridge.ts: origin·source 이중 검증 → path allowlist → path+cmd allowlist → queryId 화이트리스트
    → $SELF_STAFF_ID 치환 → fetch(hrBase + path, credentials:"same-origin")
    ★ 이 fetch에만 JSESSIONID가 붙는다
 9. 브리지 → iframe.postMessage({type:"teamplgpt:hr-tool-result", callId, ok, status, body})
