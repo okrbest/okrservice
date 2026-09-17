@@ -410,7 +410,12 @@ function renderMarkdown(text: string): React.ReactNode[] {
     const key = `code-${nextKey()}`;
     // specs/014-hr-chatbot-viz — ```viz 블록만 그래프/다이어그램으로 마운트.
     // 파싱·스키마 실패 시 원본 코드블록 평문 표시로 폴백(크래시 없음, FR-006).
-    if (codeLang === 'viz') {
+    // LLM이 간혹 언어 태그를 json으로 잘못 붙이는 사례가 실측됐으므로(가드 지시에도
+    // 재발 가능) viz/json 둘 다 시도하고, 실제로 우리 스키마(type 3종)와 맞을 때만
+    // 렌더한다 — 무관한 일반 json 코드블록은 그대로 dispatch.kind==="invalid"로
+    // 폴백되므로 안전하다.
+    const lang = codeLang.trim().toLowerCase();
+    if (lang === 'viz' || lang === 'json') {
       const dispatch = dispatchViz(codeLines.join('\n'));
       if (dispatch.kind === 'invalid' || dispatch.result.status === 'invalid') {
         flushPlainCodeBlock(key);
