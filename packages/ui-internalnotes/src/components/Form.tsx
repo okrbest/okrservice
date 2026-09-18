@@ -12,6 +12,21 @@ export const EditorActions = styled.div`
   padding: 15px;
   text-align: right;
   margin-top: auto;
+
+  @media (max-width: 768px) {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    text-align: unset;
+
+    button {
+      min-height: 36px;
+      margin-left: 0 !important;
+    }
+  }
 `;
 
 export const EditorWrapper = styled.div`
@@ -21,6 +36,11 @@ export const EditorWrapper = styled.div`
   min-height: 250px;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    min-height: 160px;
+    border-radius: 8px;
+  }
 
   > .cke_chrome {
     border-bottom: 0;
@@ -138,7 +158,7 @@ class Form extends React.PureComponent<Prop, State> {
           showMentions={true}
           content={this.state.content}
           onChange={this.onEditorChange}
-          height={"100%"}
+          height={'100%'}
           name={`${contentType}_note_${contentTypeId}`}
           toolbar={[
             'bold',

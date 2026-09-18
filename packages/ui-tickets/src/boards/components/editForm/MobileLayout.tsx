@@ -10,7 +10,7 @@ const MobileLayout = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  
+
   @media (min-width: 769px) {
     display: none;
   }
@@ -21,7 +21,7 @@ const DesktopLayout = styled.div`
   display: flex;
   flex-direction: row;
   width: 100%;
-  
+
   @media (max-width: 768px) {
     display: none;
   }
@@ -34,17 +34,16 @@ const MobileSidebarContainer = styled.div`
   background: ${colors.colorWhite};
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
+
   @media (min-width: 769px) {
     display: none;
   }
 `;
 
-
 // 모바일용 폼 그룹
 const MobileFormGroup = styled.div`
   margin-bottom: 16px;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -74,7 +73,7 @@ const MobileCard = styled.div`
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -88,7 +87,7 @@ const MobileSectionTitle = styled.h4`
   color: ${colors.colorCoreDarkGray};
   display: flex;
   align-items: center;
-  
+
   i {
     margin-right: 8px;
     color: ${colors.colorPrimary};
@@ -98,17 +97,19 @@ const MobileSectionTitle = styled.h4`
 type Props = {
   children: React.ReactNode;
   sidebarContent?: React.ReactNode;
+  bottomContent?: React.ReactNode;
   isMobile?: boolean;
   item?: any;
   onCloseDateFieldsChange?: (key: string, value: any) => void;
 };
 
-const MobileLayoutComponent: React.FC<Props> = ({ 
-  children, 
-  sidebarContent, 
+const MobileLayoutComponent: React.FC<Props> = ({
+  children,
+  sidebarContent,
+  bottomContent,
   isMobile = false,
   item,
-  onCloseDateFieldsChange
+  onCloseDateFieldsChange,
 }) => {
   if (isMobile) {
     return (
@@ -116,7 +117,14 @@ const MobileLayoutComponent: React.FC<Props> = ({
         {/* 시작일/마감일 섹션 - 스테이지 단계 바로 아래에 위치 */}
         {item && onCloseDateFieldsChange && (
           <>
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', padding: '16px 0' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '16px',
+                flexWrap: 'wrap',
+                padding: '16px 0',
+              }}
+            >
               <StartDate
                 onChangeField={onCloseDateFieldsChange}
                 startDate={item.startDate}
@@ -136,26 +144,27 @@ const MobileLayoutComponent: React.FC<Props> = ({
             <MobileDivider />
           </>
         )}
-        
+
         {children}
-        
+
         {sidebarContent && (
           <>
             <MobileDivider />
-            <MobileSidebarContainer>
-              {sidebarContent}
-            </MobileSidebarContainer>
+            <MobileSidebarContainer>{sidebarContent}</MobileSidebarContainer>
+          </>
+        )}
+
+        {bottomContent && (
+          <>
+            <MobileDivider />
+            {bottomContent}
           </>
         )}
       </MobileLayout>
     );
   }
 
-  return (
-    <DesktopLayout>
-      {children}
-    </DesktopLayout>
-  );
+  return <DesktopLayout>{children}</DesktopLayout>;
 };
 
 export {
@@ -167,5 +176,5 @@ export {
   MobileDivider,
   MobileCard,
   MobileSectionTitle,
-  MobileLayoutComponent
+  MobileLayoutComponent,
 };

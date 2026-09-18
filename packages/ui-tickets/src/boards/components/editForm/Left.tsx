@@ -28,6 +28,7 @@ import FormControl from '@erxes/ui/src/components/form/Control';
 import { IAttachment } from '@erxes/ui/src/types';
 import Icon from '@erxes/ui/src/components/Icon';
 import Labels from '../label/Labels';
+import { MobileCard } from './MobileLayout';
 import Uploader from '@erxes/ui/src/components/Uploader';
 import { isEnabled } from '@erxes/ui/src/utils/core';
 
@@ -49,6 +50,7 @@ const MobileContent = styled(Content)<{ isMobile: boolean }>`
 
 const MobileCommentContainer = styled.div<{
   isMobile: boolean;
+  isTeam?: boolean;
   $isEditing?: boolean;
 }>`
   margin-bottom: 15px;
@@ -70,14 +72,25 @@ const MobileCommentContainer = styled.div<{
 
   ${(props) =>
     props.isMobile &&
+    !props.$isEditing &&
     `
-    margin-bottom: 20px;
-    gap: 12px;
+    margin-bottom: 12px;
+    gap: 4px;
+    max-width: 82%;
+    margin-left: ${props.isTeam ? 'auto' : '0'};
+    margin-right: ${props.isTeam ? '0' : 'auto'};
+    flex-direction: column;
+    align-items: ${props.isTeam ? 'flex-end' : 'flex-start'};
+  `}
+
+  ${(props) =>
+    props.isMobile &&
+    props.$isEditing &&
+    `
     padding: 8px;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    flex-direction: column;
   `}
 `;
 
@@ -115,11 +128,13 @@ const MobileCommentBubble = styled.div<{ isTeam: boolean; isMobile: boolean }>`
   ${(props) =>
     props.isMobile &&
     `
-    padding: 16px 20px;
-    font-size: 15px;
-    line-height: 1.6;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    border-radius: ${
+      props.isTeam ? '16px 16px 4px 16px' : '16px 16px 16px 4px'
+    };
   `}
 `;
 
@@ -170,7 +185,11 @@ const CommentActionRow = styled.div`
   margin-top: 10px;
 `;
 
-const MobileUserName = styled.div<{ isMobile: boolean; $isEditing?: boolean }>`
+const MobileUserName = styled.div<{
+  isMobile: boolean;
+  isTeam?: boolean;
+  $isEditing?: boolean;
+}>`
   flex-shrink: 0;
   min-width: 80px;
   max-width: 120px;
@@ -193,18 +212,26 @@ const MobileUserName = styled.div<{ isMobile: boolean; $isEditing?: boolean }>`
 
   ${(props) =>
     props.isMobile &&
+    !props.$isEditing &&
     `
     min-width: 0;
-    max-width: none;
+    max-width: 100%;
+    width: auto;
+    text-align: ${props.isTeam ? 'right' : 'left'};
+    font-size: 11px;
+    font-weight: 500;
+    color: #8a8a8a;
+    padding: 0 4px;
+  `}
+
+  ${(props) =>
+    props.isMobile &&
+    props.$isEditing &&
+    `
     width: 100%;
     text-align: left;
-    font-size: 14px;
-    padding: 6px 8px;
-    background-color: #f8f9fa;
-    border-radius: 6px;
-    border: 1px solid #e9ecef;
-    margin-bottom: 8px;
-    box-sizing: border-box;
+    font-size: 13px;
+    color: #333;
   `}
 `;
 
@@ -429,11 +456,13 @@ const WidgetComments = (props: WidgetCommentsProps) => {
               <MobileCommentContainer
                 key={comment._id}
                 isMobile={isMobile}
+                isTeam={isTeam}
                 $isEditing={editingCommentId === comment._id}
               >
                 {/* 사용자 이름 */}
                 <MobileUserName
                   isMobile={isMobile}
+                  isTeam={isTeam}
                   $isEditing={editingCommentId === comment._id}
                 >
                   {comment.createdUser
@@ -931,6 +960,47 @@ type Props = {
   descriptionDirtyRef?: React.MutableRefObject<(() => boolean) | null>;
 };
 
+const buildActivityBlocks = (item: IItem, options: IOptions) => ({
+  activityInputs: (
+    <ActivityInputs
+      contentTypeId={item._id}
+      contentType={`tickets:${options.type}`}
+      showEmail={false}
+    />
+  ),
+  activityLogs: (
+    <ActivityLogs
+      target={item.name}
+      contentId={item._id}
+      contentType={`tickets:${options.type}`}
+      extraTabs={
+        options.type === 'tickets:task' && isEnabled('tasks')
+          ? []
+          : [{ name: 'tickets:task', label: 'Ticket' }]
+      }
+    />
+  ),
+});
+
+// 모바일에서 담당자 선택 영역보다 아래(맨 밑)에 배치하기 위해
+// Left 본문과 분리해서 렌더링할 수 있도록 내보낸다.
+export const MobileNoteActivity = ({
+  item,
+  options,
+}: {
+  item: IItem;
+  options: IOptions;
+}) => {
+  const { activityInputs, activityLogs } = buildActivityBlocks(item, options);
+
+  return (
+    <>
+      <MobileCard>{activityInputs}</MobileCard>
+      <MobileCard>{activityLogs}</MobileCard>
+    </>
+  );
+};
+
 const Left = (props: Props) => {
   const {
     item,
@@ -957,6 +1027,8 @@ const Left = (props: Props) => {
 
   const attachments =
     (item.attachments && extractAttachment(item.attachments)) || [];
+
+  const { activityInputs, activityLogs } = buildActivityBlocks(item, options);
 
   return (
     <LeftContainer>
@@ -1027,26 +1099,8 @@ const Left = (props: Props) => {
         />
       )}
 
-      {!isMobile && (
-        <ActivityInputs
-          contentTypeId={item._id}
-          contentType={`tickets:${options.type}`}
-          showEmail={false}
-        />
-      )}
-
-      {!isMobile && (
-        <ActivityLogs
-          target={item.name}
-          contentId={item._id}
-          contentType={`tickets:${options.type}`}
-          extraTabs={
-            options.type === 'tickets:task' && isEnabled('tasks')
-              ? []
-              : [{ name: 'tickets:task', label: 'Ticket' }]
-          }
-        />
-      )}
+      {!isMobile && activityInputs}
+      {!isMobile && activityLogs}
     </LeftContainer>
   );
 };

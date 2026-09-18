@@ -26,7 +26,9 @@ const Flex = styled.div`
   width: 100%;
 `;
 import { IUser } from '@erxes/ui/src/auth/types';
-import Left from '../../boards/components/editForm/Left';
+import Left, {
+  MobileNoteActivity,
+} from '../../boards/components/editForm/Left';
 import PortableDeals from '@erxes/ui-sales/src/deals/components/PortableDeals';
 import PortablePurchase from '@erxes/ui-purchases/src/purchases/components/PortablePurchases';
 import PortableTasks from '@erxes/ui-tasks/src/tasks/components/PortableTasks';
@@ -672,6 +674,9 @@ export default function TicketEditForm(props: Props) {
           <MobileLayoutComponent
             isMobile={true}
             sidebarContent={<MobileSidebar {...sidebarProps} />}
+            bottomContent={
+              <MobileNoteActivity item={currentItem} options={options} />
+            }
             item={currentItem}
             onCloseDateFieldsChange={onCloseDateFieldsChange}
           >
