@@ -15,12 +15,20 @@ import { getThemeItem } from '@erxes/ui/src/utils/core';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import utc from 'dayjs/plugin/utc';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import {
+  BOOT_FAILURE_CODES,
+  markBootRendered,
+  showBootDiagnostics,
+  startBootWatchdog,
+} from './bootDiagnostics';
 
 dayjs.extend(localizedFormat);
 dayjs.extend(relativeTime);
 dayjs.extend(utc, { parseLocal: true });
 
 const NO_OWNER = 'no owner';
+
+startBootWatchdog();
 
 const root = createRoot(document.getElementById('root') as any);
 const envs = getEnv();
@@ -86,14 +94,25 @@ const renderApp = (initialSetup?: string) => {
       <Routes />
     );
 
-  root.render(
-    <ApolloProvider client={apolloClient}>
-      <AppProvider>
-        <GlobalStyle />
-        {body}
-      </AppProvider>
-    </ApolloProvider>,
-  );
+  try {
+    root.render(
+      <ApolloProvider client={apolloClient}>
+        <AppProvider>
+          <GlobalStyle />
+          {body}
+        </AppProvider>
+      </ApolloProvider>,
+    );
+
+    markBootRendered();
+  } catch (e) {
+    // React가 렌더 중 던지면 컨테이너가 비워진 채 남아 배경색만 보인다.
+    // 사용자가 원인을 알 수 있도록 순수 DOM으로 진단 화면을 띄운다.
+    showBootDiagnostics({
+      code: BOOT_FAILURE_CODES.RENDER_FAILED,
+      message: (e as Error).message,
+    });
+  }
 };
 
 fetch(`${envs.REACT_APP_API_URL}/initial-setup?envs=${JSON.stringify(envs)}`, {
@@ -113,4 +132,10 @@ fetch(`${envs.REACT_APP_API_URL}/initial-setup?envs=${JSON.stringify(envs)}`, {
     console.error(`초기 설정을 불러오지 못했습니다: ${e.message}`);
 
     renderApp();
+
+    // renderApp이 화면을 그리지 못했다면 원인을 표시한다.
+    showBootDiagnostics({
+      code: BOOT_FAILURE_CODES.SETUP_FETCH_FAILED,
+      message: e.message,
+    });
   });
