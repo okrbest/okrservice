@@ -66,7 +66,8 @@ const CARD_BASE_STYLE: React.CSSProperties = {
   WebkitTapHighlightColor: 'transparent',
 };
 
-// 사내 AI 어시스턴트(option.insapien.co.kr) 참고 — 무채색 원형 아바타(그라디언트 없음)
+// 사내 AI 어시스턴트(option.insapien.co.kr) 참고 — 무채색 원형 뱃지("AI" 텍스트,
+// 이모지 대신 사용해 나머지 무채색 UI와 톤을 맞춤)
 const BOT_AVATAR_STYLE: React.CSSProperties = {
   width: '28px',
   height: '28px',
@@ -76,7 +77,9 @@ const BOT_AVATAR_STYLE: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: '14px',
+  fontSize: '10px',
+  fontWeight: 700,
+  letterSpacing: '0.02em',
   flexShrink: 0,
 };
 
@@ -920,7 +923,7 @@ const ChatbotView: React.FC = () => {
           <div
             style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}
           >
-            <div style={BOT_AVATAR_STYLE}>🤖</div>
+            <div style={BOT_AVATAR_STYLE}>AI</div>
             <div style={MESSAGE_COLUMN_STYLE}>
               <div style={BUBBLE_STYLE}>
                 안녕하세요! 👋
@@ -943,7 +946,7 @@ const ChatbotView: React.FC = () => {
                     gap: '8px',
                   }}
                 >
-                  <div style={BOT_AVATAR_STYLE}>🤖</div>
+                  <div style={BOT_AVATAR_STYLE}>AI</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={BUBBLE_STYLE}>{msg.text}</div>
                     {msg.buttons && msg.buttons.length > 0 && (
@@ -1003,7 +1006,7 @@ const ChatbotView: React.FC = () => {
                     gap: '8px',
                   }}
                 >
-                  <div style={BOT_AVATAR_STYLE}>🤖</div>
+                  <div style={BOT_AVATAR_STYLE}>AI</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={BUBBLE_STYLE}>{getRpaDisplayText(msg)}</div>
                     {actionButtons.length > 0 && (
@@ -1062,7 +1065,7 @@ const ChatbotView: React.FC = () => {
                     gap: '8px',
                   }}
                 >
-                  <div style={BOT_AVATAR_STYLE}>🤖</div>
+                  <div style={BOT_AVATAR_STYLE}>AI</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={BUBBLE_STYLE}>
                       <strong>{msg.label}</strong> 관련 메뉴입니다.
@@ -1129,7 +1132,7 @@ const ChatbotView: React.FC = () => {
                     gap: '8px',
                   }}
                 >
-                  <div style={BOT_AVATAR_STYLE}>🤖</div>
+                  <div style={BOT_AVATAR_STYLE}>AI</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={MARKDOWN_BUBBLE_STYLE}>
                       {msg.text ? (
@@ -1215,23 +1218,36 @@ const ChatbotView: React.FC = () => {
             type="button"
             onClick={handleSend}
             disabled={isStreaming || !inputValue.trim()}
+            aria-label="전송"
             style={{
               flexShrink: 0,
+              display: 'grid',
+              placeItems: 'center',
+              width: '42px',
+              height: '42px',
+              // 그래프(Chart.js) 강조색과 동일한 톤으로 통일 — 테넌트 브랜드색 대신 사용
               background:
-                isStreaming || !inputValue.trim() ? '#c7c7d4' : primaryColor,
+                isStreaming || !inputValue.trim() ? '#c7c7d4' : T.chartAccent,
               border: 'none',
-              borderRadius: '10px',
-              padding: '10px 16px',
-              color: '#fff',
-              fontSize: '13px',
-              fontWeight: '600',
+              borderRadius: '50%',
               cursor:
                 isStreaming || !inputValue.trim() ? 'not-allowed' : 'pointer',
               outline: 'none',
-              height: '42px',
             }}
           >
-            {isStreaming ? '...' : '전송'}
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#fff"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M22 2 11 13" />
+              <path d="m22 2-7 20-4-9-9-4Z" />
+            </svg>
           </button>
         </div>
 
