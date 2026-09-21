@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { chatbotTheme } from './chatbotTheme';
 
 /**
  * ```viz 코드블록(specs/014-hr-chatbot-viz/contracts/viz-block.schema.md) 소비자.
@@ -87,7 +88,8 @@ export function renderWorkStatusChart(data: unknown): RenderResult<any> {
           {
             label: '근무현황',
             data: values,
-            backgroundColor: '#7c7ee0',
+            backgroundColor: chatbotTheme.chartAccent,
+            borderRadius: 4,
           },
         ],
       },
@@ -95,7 +97,17 @@ export function renderWorkStatusChart(data: unknown): RenderResult<any> {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0, color: chatbotTheme.color.mutedForeground },
+            grid: { color: chatbotTheme.color.border },
+          },
+          x: {
+            ticks: { color: chatbotTheme.color.mutedForeground },
+            grid: { display: false },
+          },
+        },
       },
     },
   };
@@ -117,7 +129,7 @@ export function renderSalaryTrendChart(data: unknown): RenderResult<any> {
   if (!seriesValid) return { status: 'invalid' };
   if (labels.length === 0) return { status: 'empty' };
 
-  const palette = ['#7c7ee0', '#f59e0b', '#10b981', '#ef4444'];
+  const palette = chatbotTheme.chartPalette;
   return {
     status: 'ok',
     payload: {
@@ -129,13 +141,29 @@ export function renderSalaryTrendChart(data: unknown): RenderResult<any> {
           data: s.values,
           borderColor: palette[i % palette.length],
           backgroundColor: palette[i % palette.length],
+          borderWidth: i === 0 ? 2.5 : 1.5,
           tension: 0.25,
         })),
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: series.length > 1 } },
+        plugins: {
+          legend: {
+            display: series.length > 1,
+            labels: { color: chatbotTheme.color.mutedForeground },
+          },
+        },
+        scales: {
+          y: {
+            ticks: { color: chatbotTheme.color.mutedForeground },
+            grid: { color: chatbotTheme.color.border },
+          },
+          x: {
+            ticks: { color: chatbotTheme.color.mutedForeground },
+            grid: { display: false },
+          },
+        },
       },
     },
   };
@@ -185,7 +213,18 @@ function loadMermaid(): Promise<any> {
       /* webpackChunkName: "viz-mermaid" */ 'mermaid'
     ).then((m) => {
       const mermaid = m.default || m;
-      mermaid.initialize({ startOnLoad: false, theme: 'default' });
+      // 조직도 노드도 무채색 팔레트로 통일(참고 UI에 맞춘 재스킨)
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'base',
+        themeVariables: {
+          primaryColor: chatbotTheme.color.muted,
+          primaryTextColor: chatbotTheme.color.foreground,
+          primaryBorderColor: chatbotTheme.color.border,
+          lineColor: chatbotTheme.color.mutedForeground,
+          fontFamily: chatbotTheme.font.sans,
+        },
+      });
       return mermaid;
     });
   }

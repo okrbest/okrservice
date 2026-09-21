@@ -17,6 +17,9 @@ import { streamChat } from './teamplgpt';
 import { useChatbotKeywordSuggestions } from './useChatbotKeywordSuggestions';
 import ChatbotSuggestions from './ChatbotSuggestions';
 import { dispatchViz, VizBlockRenderer } from './vizRenderers';
+import { chatbotTheme } from './chatbotTheme';
+
+const T = chatbotTheme;
 import {
   AiMessage,
   getActiveSessionId,
@@ -28,16 +31,16 @@ import {
 
 const DIVIDER_STYLE: React.CSSProperties = {
   height: '1px',
-  background: 'linear-gradient(90deg, #e0e0f0 0%, transparent 100%)',
+  background: T.color.border,
   margin: '10px 0',
 };
 
 const CARD_BASE_STYLE: React.CSSProperties = {
-  background: '#fff',
-  borderWidth: '1.5px',
+  background: T.color.card,
+  borderWidth: '1px',
   borderStyle: 'solid',
-  borderColor: '#ebebf5',
-  borderRadius: '12px',
+  borderColor: T.color.border,
+  borderRadius: T.radius.lg,
   minHeight: '52px',
   height: 'auto',
   display: 'flex',
@@ -46,11 +49,11 @@ const CARD_BASE_STYLE: React.CSSProperties = {
   textAlign: 'center',
   fontSize: '12px',
   fontWeight: '500',
-  color: '#374151',
+  color: T.color.foreground,
   cursor: 'pointer',
   lineHeight: 1.35,
   padding: '8px 6px',
-  boxShadow: '0 1px 3px rgba(99,102,241,0.06)',
+  boxShadow: T.shadow.subtle,
   transition: 'all 0.18s ease',
   boxSizing: 'border-box' as const,
   whiteSpace: 'normal' as const,
@@ -63,10 +66,12 @@ const CARD_BASE_STYLE: React.CSSProperties = {
   WebkitTapHighlightColor: 'transparent',
 };
 
+// 사내 AI 어시스턴트(option.insapien.co.kr) 참고 — 무채색 원형 아바타(그라디언트 없음)
 const BOT_AVATAR_STYLE: React.CSSProperties = {
   width: '28px',
   height: '28px',
-  background: 'linear-gradient(135deg, #6366f1, #a78bfa)',
+  background: T.color.secondary,
+  color: T.color.secondaryForeground,
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
@@ -84,20 +89,20 @@ const MESSAGE_COLUMN_STYLE: React.CSSProperties = {
   maxWidth: 'calc(100% - 36px)',
 };
 
+// 봇 메시지는 말풍선 배경 없이 아이콘+텍스트만(참고 UI와 동일) — 표/그래프도
+// 카드 없이 본문에 바로 놓인다.
 const BUBBLE_STYLE: React.CSSProperties = {
-  background: '#fff',
-  borderRadius: '4px 14px 14px 14px',
-  padding: '10px 14px',
+  background: 'transparent',
+  padding: '3px 0 0',
   fontSize: '13px',
-  color: '#374151',
-  lineHeight: 1.55,
-  boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+  color: T.color.foreground,
+  lineHeight: 1.65,
   maxWidth: '100%',
   width: 'fit-content',
   alignSelf: 'flex-start',
 };
 
-// 마크다운 렌더링 말풍선 — 코드블록 등이 넘치지 않도록 width: 100%
+// 마크다운 렌더링 영역 — 코드블록 등이 넘치지 않도록 width: 100%
 const MARKDOWN_BUBBLE_STYLE: React.CSSProperties = {
   ...BUBBLE_STYLE,
   width: '100%',
@@ -123,8 +128,10 @@ function createActionButtonStyle(
     width: 'fit-content',
     maxWidth: '100%',
     padding: '10px 18px',
+    // 테넌트 브랜드 색상(primaryColor)은 그대로 쓰되, 고정된 보라색으로
+    // 블렌딩하던 그라디언트/그림자는 제거 — 브랜드색과 무관한 색이 섞이지 않도록
     background: isHovered
-      ? `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`
+      ? `color-mix(in srgb, ${primaryColor} 85%, black)`
       : primaryColor,
     color: '#fff',
     border: 'none',
@@ -137,8 +144,8 @@ function createActionButtonStyle(
     WebkitAppearance: 'none',
     appearance: 'none',
     boxShadow: isHovered
-      ? '0 6px 16px rgba(99,102,241,0.35)'
-      : '0 2px 8px rgba(99,102,241,0.25)',
+      ? '0 6px 16px rgba(0,0,0,0.18)'
+      : '0 2px 8px rgba(0,0,0,0.12)',
     transform: isHovered ? 'translateY(-1px)' : 'none',
     letterSpacing: '0.2px',
     whiteSpace: 'nowrap',
@@ -193,13 +200,13 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
         <code
           key={`${keyPrefix}-${i++}`}
           style={{
-            background: '#eff0fb',
+            background: T.color.muted,
             borderRadius: '4px',
             padding: '1px 5px',
             fontSize: '11.5px',
-            fontFamily: "'SFMono-Regular', Consolas, monospace",
-            color: '#5b5fc7',
-            border: '1px solid #dde0f5',
+            fontFamily: T.font.mono,
+            color: T.color.foreground,
+            border: `1px solid ${T.color.border}`,
           }}
         >
           {match[4]}
@@ -214,7 +221,7 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            color: '#6366f1',
+            color: T.color.primary,
             textDecoration: 'underline',
             textUnderlineOffset: '2px',
           }}
@@ -309,7 +316,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
     ): React.CSSProperties => ({
       padding: '6px 10px',
       textAlign: align,
-      borderBottom: '1px solid #e5e7eb',
+      borderBottom: `1px solid ${T.color.border}`,
       fontSize: '12px',
       lineHeight: 1.5,
       whiteSpace: 'pre-wrap' as const,
@@ -332,15 +339,15 @@ function renderMarkdown(text: string): React.ReactNode[] {
           }}
         >
           <thead>
-            <tr style={{ background: '#f0f0fb' }}>
+            <tr style={{ background: T.color.muted }}>
               {tableHeaders.map((h, ci) => (
                 <th
                   key={ci}
                   style={{
                     ...cellStyle(tableAligns[ci] || 'left'),
                     fontWeight: 700,
-                    color: '#374151',
-                    borderBottom: '2px solid #c7c9ef',
+                    color: T.color.foreground,
+                    borderBottom: `1px solid ${T.color.border}`,
                     whiteSpace: 'nowrap' as const,
                   }}
                 >
@@ -351,10 +358,8 @@ function renderMarkdown(text: string): React.ReactNode[] {
           </thead>
           <tbody>
             {tableRows.map((row, ri) => (
-              <tr
-                key={ri}
-                style={{ background: ri % 2 === 0 ? '#fff' : '#f9f9ff' }}
-              >
+              // 참고 UI와 동일하게 줄무늬 없이 border-bottom만 사용
+              <tr key={ri}>
                 {tableHeaders.map((_, ci) => (
                   <td key={ci} style={cellStyle(tableAligns[ci] || 'left')}>
                     {renderInline(row[ci] ?? '', `td-${key}-${ri}-${ci}`)}
@@ -377,22 +382,22 @@ function renderMarkdown(text: string): React.ReactNode[] {
       <pre
         key={key}
         style={{
-          background: '#1e1e2e',
-          borderRadius: '8px',
+          background: T.color.muted,
+          borderRadius: T.radius.md,
           padding: '12px 14px',
           overflowX: 'auto',
           margin: '8px 0',
           fontSize: '11.5px',
           lineHeight: 1.6,
-          color: '#cdd6f4',
-          fontFamily: "'SFMono-Regular', Consolas, monospace",
+          color: T.color.foreground,
+          fontFamily: T.font.mono,
           WebkitOverflowScrolling: 'touch',
         }}
       >
         {codeLang && (
           <div
             style={{
-              color: '#89b4fa',
+              color: T.color.mutedForeground,
               fontSize: '10px',
               marginBottom: '6px',
               opacity: 0.8,
@@ -548,10 +553,10 @@ function renderMarkdown(text: string): React.ReactNode[] {
         <div
           key={nextKey()}
           style={{
-            borderLeft: '3px solid #6366f1',
+            borderLeft: `3px solid ${T.color.border}`,
             paddingLeft: '10px',
             margin: '4px 0',
-            color: '#6b7280',
+            color: T.color.mutedForeground,
             fontStyle: 'italic',
             fontSize: '12.5px',
             lineHeight: 1.6,
@@ -637,17 +642,17 @@ function buildTimelineItems(
   ].sort((a, b) => a.sortKey - b.sortKey);
 }
 
+// 참고 UI와 동일하게 유저 메시지만 회색 알약 배경(브랜드 컬러 없음)
 const USER_BUBBLE_STYLE: React.CSSProperties = {
-  background: '#6366f1',
-  borderRadius: '14px 4px 14px 14px',
+  background: T.color.muted,
+  borderRadius: T.radius.pill,
   padding: '10px 14px',
   fontSize: '13px',
-  color: '#fff',
+  color: T.color.foreground,
   lineHeight: 1.55,
   maxWidth: '100%',
   width: 'fit-content',
   alignSelf: 'flex-end',
-  boxShadow: '0 2px 8px rgba(99,102,241,0.2)',
 };
 
 const HEADER_ACTION_ROW_STYLE: React.CSSProperties = {
@@ -1191,14 +1196,14 @@ const ChatbotView: React.FC = () => {
             rows={3}
             style={{
               flex: 1,
-              border: `1.5px solid ${inputFocused ? primaryColor : '#e0e0f4'}`,
+              border: `1.5px solid ${inputFocused ? primaryColor : T.color.input}`,
               borderRadius: '10px',
               padding: '10px 12px',
               fontSize: '13px',
-              color: '#374151',
+              color: T.color.foreground,
               outline: 'none',
               boxSizing: 'border-box',
-              background: isStreaming ? '#f5f5f5' : '#f9f9ff',
+              background: isStreaming ? T.color.muted : T.color.background,
               resize: 'none',
               lineHeight: 1.5,
               fontFamily: 'inherit',
