@@ -1,44 +1,50 @@
 /**
- * HR 챗봇 위젯 디자인 토큰 — 사내 관리자용 AI 어시스턴트(option.insapien.co.kr)의
- * shadcn/ui zinc 팔레트를 참고해 라이트 테마로 이식.
- * (다크모드·레이아웃 구조는 그대로 두고 색상·타이포·라운드값만 교체)
+ * HR 챗봇 위젯 디자인 토큰 — 구조/레이아웃은 실제 사내 AI 어시스턴트(kiwibox 내장,
+ * cmmAiAssistantPanel.jsp/.cmm-ai-* 클래스: 양쪽 말풍선 배경, 아바타 없음, 그래프도
+ * 액센트 하나로 통일)를 그대로 따르되, 액센트 색상만 사용자 지정으로 보라 계열
+ * 유지(#6366f1/#a78bfa — 이전 okrservice 위젯이 쓰던 색).
  */
 
 export const chatbotTheme = {
   color: {
     background: '#ffffff',
-    foreground: '#09090b',
+    foreground: '#2b2f36',
+    // 대화 스레드 바탕 — 참고 UI의 .cmm-ai-thread 배경
+    threadBackground: '#f7f9fc',
     card: '#ffffff',
-    cardForeground: '#09090b',
-    muted: '#f4f4f5',
-    mutedForeground: '#71717a',
-    border: '#e4e4e7',
-    input: '#d4d4d8',
-    primary: '#18181b',
-    primaryForeground: '#fafafa',
-    secondary: '#f4f4f5',
-    secondaryForeground: '#18181b',
-    accent: '#f4f4f5',
-    accentForeground: '#18181b',
-    destructive: '#dc2626',
-    ring: '#a1a1aa',
+    cardForeground: '#2b2f36',
+    muted: '#f1f4fb',
+    mutedForeground: '#8a90a0',
+    border: '#e4e8f0',
+    input: '#e1e5ee',
+    // 단일 보라 액센트 — 유저 말풍선/전송 버튼/링크/포커스링/그래프까지 전부 이 색 하나
+    accent: '#6366f1',
+    accent2: '#a78bfa',
+    accentSoft: '#eef0fd',
+    accentForeground: '#ffffff',
+    destructive: '#b3261e',
   },
   radius: {
     sm: '6px',
     md: '8px',
     lg: '12px',
-    pill: '20px',
+    bubble: '16px',
   },
   shadow: {
-    subtle: '0 1px 2px rgba(0, 0, 0, 0.04)',
+    subtle: '0 1px 2px rgba(20, 30, 60, 0.05)',
   },
   font: {
-    sans: "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
-    mono: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
+    sans: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    mono: 'Consolas, monospace',
   },
-  // Chart.js/Mermaid — UI 크롬(말풍선·표·코드블록)은 무채색으로 통일했지만
-  // 그래프는 가독성·구분감을 위해 기존 컬러 아이덴티티(인디고/보라 계열) 유지.
-  // 급여추세처럼 다중 시리즈가 필요한 경우 순서대로 순환.
-  chartPalette: ['#7c7ee0', '#f59e0b', '#10b981', '#ef4444'],
-  chartAccent: '#7c7ee0',
+  // Chart.js — 참고 UI(cmmAiAssistant.js)와 동일하게 무지개 팔레트 대신
+  // 액센트 하나의 투명도만 다르게 써서 시리즈를 구분한다(색상만 보라로 교체).
+  chartAccent: '#6366f1',
+  chartFill: 'rgba(99, 102, 241, 0.5)',
+  chartPalette: [
+    'rgba(99, 102, 241, 0.85)',
+    'rgba(99, 102, 241, 0.6)',
+    'rgba(99, 102, 241, 0.4)',
+    'rgba(99, 102, 241, 0.25)',
+  ],
 } as const;

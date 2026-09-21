@@ -66,40 +66,28 @@ const CARD_BASE_STYLE: React.CSSProperties = {
   WebkitTapHighlightColor: 'transparent',
 };
 
-// 사내 AI 어시스턴트(option.insapien.co.kr) 참고 — 무채색 원형 뱃지("AI" 텍스트,
-// 이모지 대신 사용해 나머지 무채색 UI와 톤을 맞춤)
-const BOT_AVATAR_STYLE: React.CSSProperties = {
-  width: '28px',
-  height: '28px',
-  background: T.color.secondary,
-  color: T.color.secondaryForeground,
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '10px',
-  fontWeight: 700,
-  letterSpacing: '0.02em',
-  flexShrink: 0,
-};
-
+// 사내 AI 어시스턴트(kiwibox 내장, cmmAiAssistantPanel.jsp) 참고 — 메시지별
+// 아바타 아이콘 없음, 말풍선 정렬·색상만으로 유저/봇을 구분한다.
 const MESSAGE_COLUMN_STYLE: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: '6px',
   flex: 1,
   minWidth: 0,
-  maxWidth: 'calc(100% - 36px)',
+  maxWidth: '100%',
 };
 
-// 봇 메시지는 말풍선 배경 없이 아이콘+텍스트만(참고 UI와 동일) — 표/그래프도
-// 카드 없이 본문에 바로 놓인다.
+// 봇 메시지 말풍선 — 참고 UI(.cmm-ai-assistant)와 동일: 흰 배경 + 옅은 테두리 +
+// 은은한 그림자, 좌하단만 각진 라운드(꼬리 표현)
 const BUBBLE_STYLE: React.CSSProperties = {
-  background: 'transparent',
-  padding: '3px 0 0',
+  background: T.color.card,
+  border: `1px solid ${T.color.border}`,
+  borderRadius: `${T.radius.bubble} ${T.radius.bubble} ${T.radius.bubble} 5px`,
+  padding: '11px 14px',
   fontSize: '13px',
   color: T.color.foreground,
-  lineHeight: 1.65,
+  lineHeight: 1.62,
+  boxShadow: T.shadow.subtle,
   maxWidth: '100%',
   width: 'fit-content',
   alignSelf: 'flex-start',
@@ -110,6 +98,15 @@ const MARKDOWN_BUBBLE_STYLE: React.CSSProperties = {
   ...BUBBLE_STYLE,
   width: '100%',
   boxSizing: 'border-box' as const,
+};
+
+// 오류 응답 전용 말풍선 — 참고 UI(.cmm-ai-assistant.cmm-ai-err)와 동일하게
+// 연빨강 배경/테두리로 정상 응답과 구분
+const ERROR_BUBBLE_STYLE: React.CSSProperties = {
+  ...MARKDOWN_BUBBLE_STYLE,
+  background: '#fdecea',
+  border: '1px solid #f5c2c0',
+  color: T.color.destructive,
 };
 
 const ACTION_BUTTON_GROUP_STYLE: React.CSSProperties = {
@@ -224,7 +221,7 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            color: T.color.primary,
+            color: T.color.accent,
             textDecoration: 'underline',
             textUnderlineOffset: '2px',
           }}
@@ -665,14 +662,15 @@ function buildTimelineItems(
   ].sort((a, b) => a.sortKey - b.sortKey);
 }
 
-// 참고 UI와 동일하게 유저 메시지만 회색 알약 배경(브랜드 컬러 없음)
+// 참고 UI(.cmm-ai-user)와 동일 — 액센트 블루 그라디언트 + 흰 텍스트,
+// 우하단만 각진 라운드(꼬리 표현)
 const USER_BUBBLE_STYLE: React.CSSProperties = {
-  background: T.color.muted,
-  borderRadius: T.radius.pill,
-  padding: '10px 14px',
+  background: `linear-gradient(135deg, ${T.color.accent}, ${T.color.accent2})`,
+  borderRadius: `${T.radius.bubble} ${T.radius.bubble} 5px ${T.radius.bubble}`,
+  padding: '11px 14px',
   fontSize: '13px',
-  color: T.color.foreground,
-  lineHeight: 1.55,
+  color: T.color.accentForeground,
+  lineHeight: 1.62,
   maxWidth: '100%',
   width: 'fit-content',
   alignSelf: 'flex-end',
@@ -832,6 +830,7 @@ const ChatbotView: React.FC = () => {
                     text:
                       accumulated || '오류가 발생했습니다. 다시 시도해주세요.',
                     streaming: false,
+                    isError: !accumulated,
                   }
                 : m,
             ),
@@ -864,6 +863,7 @@ const ChatbotView: React.FC = () => {
                   ...m,
                   text: '오류가 발생했습니다. 다시 시도해주세요.',
                   streaming: false,
+                  isError: true,
                 }
               : m,
           ),
@@ -924,7 +924,7 @@ const ChatbotView: React.FC = () => {
           width: '100%',
           minHeight: 0,
           height: '100%',
-          background: '#f5f6fc',
+          background: T.color.threadBackground,
         }}
       >
         {/* ── 채팅 영역: 인사 + 시간대 메시지 (스크롤) ── */}
@@ -943,7 +943,6 @@ const ChatbotView: React.FC = () => {
           <div
             style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}
           >
-            <div style={BOT_AVATAR_STYLE}>AI</div>
             <div style={MESSAGE_COLUMN_STYLE}>
               <div style={BUBBLE_STYLE}>
                 안녕하세요! 👋
@@ -966,7 +965,6 @@ const ChatbotView: React.FC = () => {
                     gap: '8px',
                   }}
                 >
-                  <div style={BOT_AVATAR_STYLE}>AI</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={BUBBLE_STYLE}>{msg.text}</div>
                     {msg.buttons && msg.buttons.length > 0 && (
@@ -1026,7 +1024,6 @@ const ChatbotView: React.FC = () => {
                     gap: '8px',
                   }}
                 >
-                  <div style={BOT_AVATAR_STYLE}>AI</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={BUBBLE_STYLE}>{getRpaDisplayText(msg)}</div>
                     {actionButtons.length > 0 && (
@@ -1085,7 +1082,6 @@ const ChatbotView: React.FC = () => {
                     gap: '8px',
                   }}
                 >
-                  <div style={BOT_AVATAR_STYLE}>AI</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
                     <div style={BUBBLE_STYLE}>
                       <strong>{msg.label}</strong> 관련 메뉴입니다.
@@ -1152,11 +1148,18 @@ const ChatbotView: React.FC = () => {
                     gap: '8px',
                   }}
                 >
-                  <div style={BOT_AVATAR_STYLE}>AI</div>
                   <div style={MESSAGE_COLUMN_STYLE}>
-                    <div style={MARKDOWN_BUBBLE_STYLE}>
+                    <div
+                      style={
+                        msg.isError ? ERROR_BUBBLE_STYLE : MARKDOWN_BUBBLE_STYLE
+                      }
+                    >
                       {msg.text ? (
-                        renderMarkdown(msg.text)
+                        msg.isError ? (
+                          msg.text
+                        ) : (
+                          renderMarkdown(msg.text)
+                        )
                       ) : msg.streaming ? (
                         <span
                           style={{
@@ -1219,7 +1222,10 @@ const ChatbotView: React.FC = () => {
             rows={3}
             style={{
               flex: 1,
-              border: `1.5px solid ${inputFocused ? primaryColor : T.color.input}`,
+              border: `1.5px solid ${inputFocused ? T.color.accent : T.color.input}`,
+              boxShadow: inputFocused
+                ? '0 0 0 3px rgba(99, 102, 241, 0.12)'
+                : 'none',
               borderRadius: '10px',
               padding: '10px 12px',
               fontSize: '13px',
@@ -1245,9 +1251,11 @@ const ChatbotView: React.FC = () => {
               placeItems: 'center',
               width: '42px',
               height: '42px',
-              // 그래프(Chart.js) 강조색과 동일한 톤으로 통일 — 테넌트 브랜드색 대신 사용
+              // 참고 UI(.cmm-ai-send-btn)와 동일한 액센트 블루 그라디언트
               background:
-                isStreaming || !inputValue.trim() ? '#c7c7d4' : T.chartAccent,
+                isStreaming || !inputValue.trim()
+                  ? '#c4cfe6'
+                  : `linear-gradient(135deg, ${T.color.accent}, ${T.color.accent2})`,
               border: 'none',
               borderRadius: '50%',
               cursor:

@@ -213,7 +213,8 @@ function loadMermaid(): Promise<any> {
       /* webpackChunkName: "viz-mermaid" */ 'mermaid'
     ).then((m) => {
       const mermaid = m.default || m;
-      // 조직도 노드도 무채색 팔레트로 통일(참고 UI에 맞춘 재스킨)
+      // 조직도(Mermaid)는 참고 UI에 대응 기능이 없어 자체 판단 — 사용자 요청대로
+      // 무채색(중립 회색조) 유지, 막대·선 그래프만 액센트 블루 사용
       mermaid.initialize({
         startOnLoad: false,
         theme: 'base',
@@ -303,14 +304,30 @@ export function VizBlockRenderer({
   if (dispatch.result.status === 'empty') {
     return React.createElement(
       'div',
-      { style: { padding: '10px 4px', fontSize: '12px', color: '#6b7280' } },
+      {
+        style: {
+          padding: '10px 4px',
+          fontSize: '12px',
+          color: chatbotTheme.color.mutedForeground,
+        },
+      },
       '표시할 데이터가 없습니다.',
     );
   }
 
+  // 참고 UI(.cmm-ai-chart-wrap)와 동일 — 캔버스를 흰 카드로 한 번 더 감싼다.
   const height = dispatch.kind === 'orgchart' ? undefined : 220;
   return React.createElement('div', {
     ref: containerRef,
-    style: { margin: '8px 0', minHeight: height, overflowX: 'auto' },
+    style: {
+      margin: '8px 0',
+      minHeight: height,
+      overflowX: 'auto',
+      padding: '6px',
+      background: chatbotTheme.color.card,
+      border: `1px solid ${chatbotTheme.color.border}`,
+      borderRadius: chatbotTheme.radius.md,
+      boxSizing: 'border-box',
+    },
   });
 }
