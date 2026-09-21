@@ -325,6 +325,15 @@ function renderMarkdown(text: string): React.ReactNode[] {
       whiteSpace: 'pre-wrap' as const,
       wordBreak: 'keep-all' as const,
     });
+    // "요일" 컬럼의 토/일 값만 강조 색상 — 근무현황 등 일자별 표에서 주말을
+    // 한눈에 구분하기 위함(달력 관용 색: 토=파랑, 일=빨강)
+    const weekColIndex = tableHeaders.findIndex((h) => h.trim() === '요일');
+    const weekendColor = (raw: string): string | undefined => {
+      const v = raw.trim();
+      if (v === '토') return '#2563eb';
+      if (v === '일') return T.color.destructive;
+      return undefined;
+    };
     nodes.push(
       <div
         key={key}
@@ -363,11 +372,22 @@ function renderMarkdown(text: string): React.ReactNode[] {
             {tableRows.map((row, ri) => (
               // 참고 UI와 동일하게 줄무늬 없이 border-bottom만 사용
               <tr key={ri}>
-                {tableHeaders.map((_, ci) => (
-                  <td key={ci} style={cellStyle(tableAligns[ci] || 'left')}>
-                    {renderInline(row[ci] ?? '', `td-${key}-${ri}-${ci}`)}
-                  </td>
-                ))}
+                {tableHeaders.map((_, ci) => {
+                  const raw = row[ci] ?? '';
+                  const isWeekCol = ci === weekColIndex;
+                  const color = isWeekCol ? weekendColor(raw) : undefined;
+                  return (
+                    <td
+                      key={ci}
+                      style={{
+                        ...cellStyle(tableAligns[ci] || 'left'),
+                        ...(color ? { color, fontWeight: 700 } : null),
+                      }}
+                    >
+                      {renderInline(raw, `td-${key}-${ri}-${ci}`)}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
