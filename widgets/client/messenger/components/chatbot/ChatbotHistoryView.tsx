@@ -1,6 +1,6 @@
-import * as React from "react";
-import Container from "../common/Container";
-import { useRouter } from "../../context/Router";
+import * as React from 'react';
+import Container from '../common/Container';
+import { useRouter } from '../../context/Router';
 import {
   ChatHistoryEntry,
   deleteIndexEntry,
@@ -8,59 +8,80 @@ import {
   loadIndex,
   setActiveSessionId,
   startNewSession,
-} from "./chatHistory";
+} from './chatHistory';
+import { chatbotTheme } from './chatbotTheme';
+
+const T = chatbotTheme;
 
 const EMPTY_STATE_STYLE: React.CSSProperties = {
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "40px 20px",
-  textAlign: "center",
-  color: "#94a3b8",
-  fontSize: "13px",
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '40px 20px',
+  textAlign: 'center',
+  color: T.color.mutedForeground,
+  fontSize: '13px',
 };
 
 const LIST_STYLE: React.CSSProperties = {
-  width: "100%",
-  boxSizing: "border-box",
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '6px',
 };
 
-const ROW_STYLE: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  padding: "12px 16px",
-  borderBottom: "1px solid #ebebf5",
-  cursor: "pointer",
-};
+// 참고 UI(.cmm-ai-convitem)와 동일 — 둥근 카드형 행, hover 시 옅은 배경
+function rowStyle(isHovered: boolean): React.CSSProperties {
+  return {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '10px 12px',
+    margin: '2px 0',
+    borderRadius: T.radius.md,
+    background: isHovered ? T.color.muted : 'transparent',
+    cursor: 'pointer',
+    transition: 'background 0.12s ease',
+  };
+}
 
 const ROW_TEXT_COLUMN_STYLE: React.CSSProperties = {
   flex: 1,
   minWidth: 0,
-  display: "flex",
-  flexDirection: "column",
-  gap: "2px",
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2px',
 };
 
 const ROW_TITLE_STYLE: React.CSSProperties = {
-  fontSize: "13px",
-  color: "#374151",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
+  fontSize: '13px',
+  fontWeight: 600,
+  color: T.color.foreground,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 };
 
 const ROW_SUBTITLE_STYLE: React.CSSProperties = {
-  fontSize: "11px",
-  color: "#94a3b8",
+  fontSize: '11px',
+  color: T.color.mutedForeground,
 };
 
-const DELETE_BUTTON_STYLE: React.CSSProperties = {
-  flexShrink: 0,
-  fontSize: "16px",
-  cursor: "pointer",
-  padding: "4px",
-  lineHeight: 1,
-};
+function deleteButtonStyle(isHovered: boolean): React.CSSProperties {
+  return {
+    flexShrink: 0,
+    width: '24px',
+    height: '24px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '14px',
+    lineHeight: 1,
+    borderRadius: T.radius.sm,
+    cursor: 'pointer',
+    color: isHovered ? T.color.destructive : T.color.mutedForeground,
+    background: isHovered ? '#fdecea' : 'transparent',
+    transition: 'background 0.12s ease, color 0.12s ease',
+  };
+}
 
 const MAX_TITLE_LENGTH = 40;
 
@@ -73,22 +94,28 @@ function truncate(text: string): string {
 
 function formatEntryTime(updatedAt: number): string {
   const date = new Date(updatedAt);
-  if (Number.isNaN(date.getTime())) return "";
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const dd = String(date.getDate()).padStart(2, "0");
-  const hh = String(date.getHours()).padStart(2, "0");
-  const min = String(date.getMinutes()).padStart(2, "0");
+  if (Number.isNaN(date.getTime())) return '';
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
   return `${mm}/${dd} ${hh}:${min}`;
 }
 
 const ChatbotHistoryView: React.FC = () => {
   const { setRoute } = useRouter();
-  const [entries, setEntries] = React.useState<ChatHistoryEntry[]>(() => loadIndex());
+  const [entries, setEntries] = React.useState<ChatHistoryEntry[]>(() =>
+    loadIndex(),
+  );
   const activeIdRef = React.useRef<string>(getActiveSessionId());
+  const [hoveredRowId, setHoveredRowId] = React.useState<string | null>(null);
+  const [hoveredDeleteId, setHoveredDeleteId] = React.useState<string | null>(
+    null,
+  );
 
   const handleSelect = (id: string) => {
     setActiveSessionId(id);
-    setRoute("chatbot");
+    setRoute('chatbot');
   };
 
   const handleDelete = (event: React.MouseEvent, id: string) => {
@@ -107,16 +134,36 @@ const ChatbotHistoryView: React.FC = () => {
       ) : (
         <div style={LIST_STYLE}>
           {entries.map((entry) => (
-            <div key={entry.id} style={ROW_STYLE} onClick={() => handleSelect(entry.id)}>
+            <div
+              key={entry.id}
+              style={rowStyle(hoveredRowId === entry.id)}
+              onClick={() => handleSelect(entry.id)}
+              onMouseEnter={() => setHoveredRowId(entry.id)}
+              onMouseLeave={() =>
+                setHoveredRowId((cur) => (cur === entry.id ? null : cur))
+              }
+            >
               <div style={ROW_TEXT_COLUMN_STYLE}>
-                <div style={ROW_TITLE_STYLE}>{truncate(entry.firstMessage)}</div>
-                <div style={ROW_SUBTITLE_STYLE}>{formatEntryTime(entry.updatedAt)}</div>
+                <div style={ROW_TITLE_STYLE}>
+                  {truncate(entry.firstMessage)}
+                </div>
+                <div style={ROW_SUBTITLE_STYLE}>
+                  {formatEntryTime(entry.updatedAt)}
+                </div>
               </div>
               <span
                 role="button"
                 aria-label="대화 삭제"
-                style={DELETE_BUTTON_STYLE}
+                style={deleteButtonStyle(hoveredDeleteId === entry.id)}
                 onClick={(e) => handleDelete(e, entry.id)}
+                onMouseEnter={(e) => {
+                  e.stopPropagation();
+                  setHoveredDeleteId(entry.id);
+                }}
+                onMouseLeave={(e) => {
+                  e.stopPropagation();
+                  setHoveredDeleteId((cur) => (cur === entry.id ? null : cur));
+                }}
               >
                 🗑
               </span>

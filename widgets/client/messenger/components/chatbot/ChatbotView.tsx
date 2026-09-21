@@ -682,28 +682,38 @@ const HEADER_ACTION_ROW_STYLE: React.CSSProperties = {
   gap: '8px',
 };
 
-const HEADER_BUTTON_STYLE: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '6px 12px',
-  borderRadius: '16px',
-  border: '1px solid rgba(255,255,255,0.5)',
-  background: 'rgba(255,255,255,0.15)',
-  color: '#fff',
-  fontSize: '12px',
-  fontWeight: 600,
-  cursor: 'pointer',
-  whiteSpace: 'nowrap',
-  outline: 'none',
-  WebkitAppearance: 'none',
-  appearance: 'none',
-};
+// 참고 UI(.cmm-ai-header-btns button)와 동일하게 아이콘 전용 고스트 버튼 —
+// 평소엔 배경 없이 아이콘만, hover 시에만 반투명 배경이 옅게 들어온다.
+// (헤더 배경이 테넌트 브랜드색이라 흰 아이콘 유지, hover는 흰 배경을 더 진하게)
+function headerIconButtonStyle(
+  isHovered: boolean,
+  isDisabled: boolean,
+): React.CSSProperties {
+  return {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    border: 'none',
+    background: isHovered ? 'rgba(255,255,255,0.28)' : 'transparent',
+    color: '#fff',
+    cursor: isDisabled ? 'default' : 'pointer',
+    transition: 'background 0.12s ease',
+    outline: 'none',
+    WebkitAppearance: 'none',
+    appearance: 'none',
+  };
+}
 
 const ChatbotView: React.FC = () => {
   const { setRoute, setChatbotMenu } = useRouter();
   const primaryColor = getColor() || '#6366f1';
   const [hoveredBtn, setHoveredBtn] = React.useState<string | null>(null);
+  const [hoveredHeaderBtn, setHoveredHeaderBtn] = React.useState<
+    'new' | 'history' | null
+  >(null);
   const chatBottomRef = React.useRef<HTMLDivElement>(null);
 
   const scheduledMessages = useChatbotMessages();
@@ -898,20 +908,59 @@ const ChatbotView: React.FC = () => {
             type="button"
             onClick={handleNewChat}
             disabled={aiMessages.length === 0}
+            aria-label="새 채팅"
+            title="새 채팅"
+            onMouseEnter={() => setHoveredHeaderBtn('new')}
+            onMouseLeave={() =>
+              setHoveredHeaderBtn((cur) => (cur === 'new' ? null : cur))
+            }
             style={{
-              ...HEADER_BUTTON_STYLE,
+              ...headerIconButtonStyle(
+                hoveredHeaderBtn === 'new',
+                aiMessages.length === 0,
+              ),
               opacity: aiMessages.length === 0 ? 0.4 : 1,
-              cursor: aiMessages.length === 0 ? 'default' : 'pointer',
             }}
           >
-            새 채팅
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+            </svg>
           </button>
           <button
             type="button"
             onClick={() => setRoute('chatbot-history')}
-            style={HEADER_BUTTON_STYLE}
+            aria-label="채팅 이력"
+            title="채팅 이력"
+            onMouseEnter={() => setHoveredHeaderBtn('history')}
+            onMouseLeave={() =>
+              setHoveredHeaderBtn((cur) => (cur === 'history' ? null : cur))
+            }
+            style={headerIconButtonStyle(hoveredHeaderBtn === 'history', false)}
           >
-            채팅 이력
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+              <path d="M12 7v5l4 2"></path>
+            </svg>
           </button>
         </div>
       }
