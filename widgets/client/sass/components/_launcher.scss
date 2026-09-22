@@ -1,5 +1,5 @@
 .erxes-launcher {
-  animation: pop .2s cubic-bezier(.25, .46, .45, .94) 1;
+  animation: pop .2s $timing-scale 1;
   background-color: $main-color;
   background-image: url($widget-logo);
   background-position: center;
@@ -7,7 +7,7 @@
   background-size: $core-spacing;
   border-radius: 28px;
   bottom: 8px;
-  box-shadow: 0 0 10px 0 rgba($black, .2);
+  box-shadow: 0 10px 24px -6px rgba($black, .35), 0 2px 8px rgba($black, .15);
   color: $main-color;
   cursor: pointer;
   height: 56px;
@@ -20,13 +20,24 @@
   right: 8px;
   text-align: center;
   top: auto;
-  transition: box-shadow .3s ease-in-out, background-image .3s ease-in;
+  transition: transform .25s $timing-scale, box-shadow .25s $timing-scale, background-image .3s ease-in;
   width: 56px;
   z-index: $z-index-above - 1;
 
+  &:hover {
+    box-shadow: 0 14px 32px -6px rgba($black, .4), 0 4px 12px rgba($black, .2);
+    transform: translateY(-3px) scale(1.06);
+  }
+
+  &:active {
+    transform: translateY(-1px) scale(.96);
+  }
+
   span {
+    animation: pop .2s $timing-scale 1;
     background: $red;
     border-radius: 10px;
+    box-shadow: 0 2px 6px rgba($black, .25);
     color: $white;
     display: block;
     font-size: 10px;
@@ -43,7 +54,7 @@
   &.close-launcher {
     background-image: url($close) !important;
     background-position: 50%;
-    transition: box-shadow .3s ease-in-out, background-image .3s ease-in;
+    transition: transform .25s $timing-scale, box-shadow .25s $timing-scale, background-image .3s ease-in;
 
     &::before {
       animation: none;

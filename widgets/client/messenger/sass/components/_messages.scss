@@ -112,14 +112,20 @@ $darker-blue: #3b85f4;
   background-color: $grey;
   border-radius: $core-spacing;
   border-bottom-left-radius: 2px;
-  box-shadow: $message-shadow;
+  box-shadow: 0 2px 8px rgba($black, .08);
   color: $text-color;
   display: inline-block;
   margin: 0 $core-spacing 5px 50px;
   padding: 12px $core-spacing;
   position: relative;
   text-align: left;
+  transition: transform .15s $timing-scale, box-shadow .15s $timing-scale;
   word-break: break-word;
+
+  &:hover {
+    box-shadow: 0 4px 14px rgba($black, .12);
+    transform: translateY(-1px);
+  }
 
   &.top {
     border-top-left-radius: 2px;
@@ -130,9 +136,14 @@ $darker-blue: #3b85f4;
     background-color: $main-color;
     border-bottom-left-radius: $core-spacing;
     border-bottom-right-radius: 2px;
+    box-shadow: 0 2px 8px rgba($black, .15);
     color: $white;
     margin: 0 0 5px $core-spacing;
     text-align: right;
+
+    &:hover {
+      box-shadow: 0 4px 14px rgba($black, .22);
+    }
 
     a {
       color: $white;

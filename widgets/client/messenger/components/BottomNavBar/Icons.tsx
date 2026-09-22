@@ -1,17 +1,18 @@
-import * as React from "react";
+import * as React from 'react';
 
 export type IconBaseProps = {
   filled: boolean;
+  color?: string;
   children: React.ReactNode;
 };
 
-export function IconBase({ filled, children }: IconBaseProps) {
+export function IconBase({ filled, color, children }: IconBaseProps) {
   return (
     <svg
-      width="24"
-      height="24"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
-      fill={filled ? "black" : "#9D9EA1"}
+      fill={filled ? color || 'black' : '#9D9EA1'}
       xmlns="http://www.w3.org/2000/svg"
     >
       {children}
@@ -21,11 +22,12 @@ export function IconBase({ filled, children }: IconBaseProps) {
 
 export type IconProps = {
   filled: boolean;
+  color?: string;
 };
 
-export function IconHome({ filled }: IconProps) {
+export function IconHome({ filled, color }: IconProps) {
   return (
-    <IconBase filled={filled}>
+    <IconBase filled={filled} color={color}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -36,9 +38,9 @@ export function IconHome({ filled }: IconProps) {
   );
 }
 
-export function IconChat({ filled }: IconProps) {
+export function IconChat({ filled, color }: IconProps) {
   return (
-    <IconBase filled={filled}>
+    <IconBase filled={filled} color={color}>
       <path
         shapeRendering="auto"
         d="M4.913 2.658C6.988 2.388 9.103 2.25 11.25 2.25C13.397 2.25 15.512 2.389 17.587 2.658C19.509 2.908 20.878 4.519 20.992 6.385C20.6577 6.27362 20.3112 6.20278 19.96 6.174C17.1582 5.94141 14.3418 5.94141 11.54 6.174C9.182 6.37 7.5 8.364 7.5 10.608V14.894C7.49906 15.7178 7.72577 16.5258 8.15512 17.2288C8.58446 17.9319 9.19973 18.5026 9.933 18.878L7.28 21.53C7.17511 21.6348 7.04153 21.7061 6.89614 21.735C6.75074 21.7638 6.60004 21.749 6.46308 21.6923C6.32611 21.6356 6.20903 21.5395 6.12661 21.4163C6.04419 21.2931 6.00013 21.1482 6 21V16.97C5.6372 16.9314 5.27484 16.8888 4.913 16.842C2.905 16.58 1.5 14.833 1.5 12.862V6.638C1.5 4.668 2.905 2.919 4.913 2.658Z"
@@ -50,9 +52,9 @@ export function IconChat({ filled }: IconProps) {
     </IconBase>
   );
 }
-export function IconPhone({ filled }: IconProps) {
+export function IconPhone({ filled, color }: IconProps) {
   return (
-    <IconBase filled={filled}>
+    <IconBase filled={filled} color={color}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -63,9 +65,9 @@ export function IconPhone({ filled }: IconProps) {
   );
 }
 
-export function IconTicket({ filled }: IconProps) {
+export function IconTicket({ filled, color }: IconProps) {
   return (
-    <IconBase filled={filled}>
+    <IconBase filled={filled} color={color}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -76,9 +78,9 @@ export function IconTicket({ filled }: IconProps) {
   );
 }
 
-export function IconDeal({ filled }: IconProps) {
+export function IconDeal({ filled, color }: IconProps) {
   return (
-    <IconBase filled={filled}>
+    <IconBase filled={filled} color={color}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -97,9 +99,9 @@ export function IconDeal({ filled }: IconProps) {
   );
 }
 
-export function IconChatbot({ filled }: IconProps) {
+export function IconChatbot({ filled, color }: IconProps) {
   return (
-    <IconBase filled={filled}>
+    <IconBase filled={filled} color={color}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -110,9 +112,9 @@ export function IconChatbot({ filled }: IconProps) {
   );
 }
 
-export function IconQuestionMark({ filled }: IconProps) {
+export function IconQuestionMark({ filled, color }: IconProps) {
   return (
-    <IconBase filled={filled}>
+    <IconBase filled={filled} color={color}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"

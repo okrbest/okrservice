@@ -1,24 +1,25 @@
-import * as React from "react";
-import dayjs from "dayjs";
-import xss from "xss";
+import * as React from 'react';
+import dayjs from 'dayjs';
+import { motion } from 'framer-motion';
+import xss from 'xss';
 
-import { IAttachment, ITicketActivityLog, ITicketComment } from "../../types";
+import { IAttachment, ITicketActivityLog, ITicketComment } from '../../types';
 import {
   __,
   openReadFileImageInNewTab,
   readFile,
   readFileViewInline,
   sanitizeAttachmentDownloadBasename,
-} from "../../../utils";
+} from '../../../utils';
 
-import Button from "../common/Button";
-import Container from "../common/Container";
-import Input from "../common/Input";
-import FileUploader from "../common/FileUploader";
-import Attachment from "../common/Attachment";
-import FileTypeIcon from "../common/FileTypeIcon";
-import TicketActivity from "./TicketAcitvity";
-import { useTicket } from "../../context/Ticket";
+import Button from '../common/Button';
+import Container from '../common/Container';
+import Input from '../common/Input';
+import FileUploader from '../common/FileUploader';
+import Attachment from '../common/Attachment';
+import FileTypeIcon from '../common/FileTypeIcon';
+import TicketActivity from './TicketAcitvity';
+import { useTicket } from '../../context/Ticket';
 
 interface FileWithUrl extends File {
   url?: string;
@@ -48,10 +49,25 @@ const TicketShowProgress: React.FC<Props> = ({
   const { ticketData = {} } = useTicket();
   const descriptionRef = React.useRef<HTMLDivElement>(null);
 
+  const getStatusClass = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'closed':
+        return 'status-closed';
+      case 'resolved':
+        return 'status-resolved';
+      case 'in progress':
+        return 'status-in-progress';
+      default:
+        return 'status-open';
+    }
+  };
+
   // description 내 이미지 처리
   React.useEffect(() => {
     if (descriptionRef.current) {
-      const images = descriptionRef.current.querySelectorAll('img:not([data-link-added])');
+      const images = descriptionRef.current.querySelectorAll(
+        'img:not([data-link-added])',
+      );
       images.forEach((imgElement) => {
         const img = imgElement as HTMLImageElement;
         // 이미지 크기를 위젯에 맞게 조정
@@ -59,27 +75,29 @@ const TicketShowProgress: React.FC<Props> = ({
         img.style.height = 'auto';
         img.style.cursor = 'pointer';
         img.setAttribute('data-link-added', 'true');
-        
+
         const originalSrc = img.src || img.getAttribute('src');
         if (originalSrc) {
           // 이미지 아래에 링크 추가
           const linkWrapper = document.createElement('div');
           linkWrapper.className = 'image-view-original-link';
-          linkWrapper.style.cssText = 'margin-top: 4px; margin-bottom: 8px; text-align: center;';
-          
+          linkWrapper.style.cssText =
+            'margin-top: 4px; margin-bottom: 8px; text-align: center;';
+
           const link = document.createElement('a');
           link.href = '#';
           link.textContent = __('원본 이미지 보기');
-          link.style.cssText = 'font-size: 12px; color: #007bff; text-decoration: none; cursor: pointer;';
+          link.style.cssText =
+            'font-size: 12px; color: #007bff; text-decoration: none; cursor: pointer;';
           link.addEventListener('click', async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             openReadFileImageInNewTab(originalSrc);
           });
-          
+
           linkWrapper.appendChild(link);
-          
+
           // 이미지 다음에 링크 삽입
           if (img.parentNode) {
             img.parentNode.insertBefore(linkWrapper, img.nextSibling);
@@ -91,19 +109,24 @@ const TicketShowProgress: React.FC<Props> = ({
 
   const renderAttachments = (attachments: IAttachment[]) => {
     return attachments.map((attachment, index) => {
-      const attachmentName = attachment.url || attachment.name || "";
-      const fileExtension = attachmentName.split(".").pop()?.toLowerCase() || "";
-      const isImage = ["png", "jpeg", "jpg", "gif", "webp", "bmp", "svg"].indexOf(fileExtension) > -1;
-      
-      const rawDownload = (attachment.name || attachment.url || "").trim();
+      const attachmentName = attachment.url || attachment.name || '';
+      const fileExtension =
+        attachmentName.split('.').pop()?.toLowerCase() || '';
+      const isImage =
+        ['png', 'jpeg', 'jpg', 'gif', 'webp', 'bmp', 'svg'].indexOf(
+          fileExtension,
+        ) > -1;
+
+      const rawDownload = (attachment.name || attachment.url || '').trim();
       let downloadName =
-        sanitizeAttachmentDownloadBasename(rawDownload) || "file";
-      
+        sanitizeAttachmentDownloadBasename(rawDownload) || 'file';
+
       // Add name parameter to URL for proper filename in download
-      const downloadUrl = attachment.url && attachment.url.includes('http') 
-        ? attachment.url 
-        : `${readFile(attachment.url)}&name=${encodeURIComponent(downloadName)}`;
-      
+      const downloadUrl =
+        attachment.url && attachment.url.includes('http')
+          ? attachment.url
+          : `${readFile(attachment.url)}&name=${encodeURIComponent(downloadName)}`;
+
       const originalViewUrl = readFileViewInline(attachment.url);
 
       const handleImageClick = (e: React.MouseEvent) => {
@@ -111,15 +134,15 @@ const TicketShowProgress: React.FC<Props> = ({
         e.stopPropagation();
         openReadFileImageInNewTab(originalViewUrl);
       };
-      
+
       return (
         <div
           key={`${attachment.url}-${index}`}
           className="ticket-attachment"
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
         >
           {isImage ? (
-            <div style={{ marginBottom: "8px" }}>
+            <div style={{ marginBottom: '8px' }}>
               <img
                 src={readFile(attachment.url)}
                 alt={`ticket-image-${index}`}
@@ -127,11 +150,17 @@ const TicketShowProgress: React.FC<Props> = ({
                   maxWidth: '100%',
                   height: 'auto',
                   cursor: 'pointer',
-                  display: 'block'
+                  display: 'block',
                 }}
                 onClick={handleImageClick}
               />
-              <div style={{ marginTop: '4px', marginBottom: '8px', textAlign: 'center' }}>
+              <div
+                style={{
+                  marginTop: '4px',
+                  marginBottom: '8px',
+                  textAlign: 'center',
+                }}
+              >
                 <a
                   href="#"
                   onClick={handleImageClick}
@@ -139,7 +168,7 @@ const TicketShowProgress: React.FC<Props> = ({
                     fontSize: '12px',
                     color: '#007bff',
                     textDecoration: 'none',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
                   }}
                 >
                   {__('원본 이미지 보기')}
@@ -153,7 +182,7 @@ const TicketShowProgress: React.FC<Props> = ({
               download={downloadName}
               target="_blank"
               rel="noopener noreferrer"
-              title={`${downloadName} — ${__("Download")}`}
+              title={`${downloadName} — ${__('Download')}`}
             >
               <span className="ticket-attachment-file-icon-wrap">
                 <FileTypeIcon extension={fileExtension} size={44} />
@@ -163,7 +192,7 @@ const TicketShowProgress: React.FC<Props> = ({
                   {downloadName}
                 </span>
                 <span className="ticket-attachment-file-hint">
-                  {__("Download")}
+                  {__('Download')}
                 </span>
               </span>
               <span className="ticket-attachment-file-action" aria-hidden>
@@ -201,19 +230,23 @@ const TicketShowProgress: React.FC<Props> = ({
         </div>
         {description ? (
           <div className="ticket-issue-section ticket-issue-section--description">
-            <div className="ticket-issue-section-label">{__("Description")}</div>
+            <div className="ticket-issue-section-label">
+              {__('Description')}
+            </div>
             <div
               ref={descriptionRef}
               className="ticket-description-content ticket-issue-section-body"
               dangerouslySetInnerHTML={{
-                __html: xss(description.replace(/\n/g, "<br />")),
+                __html: xss(description.replace(/\n/g, '<br />')),
               }}
             />
           </div>
         ) : null}
         {attachments && attachments.length !== 0 ? (
           <div className="ticket-issue-section ticket-issue-section--attachments">
-            <div className="ticket-issue-section-label">{__("Attachments")}</div>
+            <div className="ticket-issue-section-label">
+              {__('Attachments')}
+            </div>
             <div className="ticket-attachments ticket-issue-section-body">
               {renderAttachments(attachments)}
             </div>
@@ -239,26 +272,28 @@ const TicketShowProgress: React.FC<Props> = ({
           img.style.maxHeight = '300px';
           img.style.objectFit = 'contain';
           img.setAttribute('data-link-added', 'true');
-          
+
           const originalSrc = img.src || img.getAttribute('src');
           if (originalSrc) {
             // 이미지 아래에 링크 추가
             const linkWrapper = document.createElement('div');
             linkWrapper.className = 'image-view-original-link';
-            linkWrapper.style.cssText = 'margin-top: 4px; margin-bottom: 8px; text-align: center;';
-            
+            linkWrapper.style.cssText =
+              'margin-top: 4px; margin-bottom: 8px; text-align: center;';
+
             const link = document.createElement('a');
             link.href = '#';
             link.textContent = __('원본 이미지 보기');
-            link.style.cssText = 'font-size: 11px; color: #007bff; text-decoration: none; cursor: pointer;';
+            link.style.cssText =
+              'font-size: 11px; color: #007bff; text-decoration: none; cursor: pointer;';
             link.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
               openReadFileImageInNewTab(originalSrc);
             });
-            
+
             linkWrapper.appendChild(link);
-            
+
             // 이미지 다음에 링크 삽입
             if (img.parentNode) {
               img.parentNode.insertBefore(linkWrapper, img.nextSibling);
@@ -283,10 +318,10 @@ const TicketShowProgress: React.FC<Props> = ({
     return comments.map((comment: ITicketComment) => {
       const { userType, createdUser, createdAt, content, attachments } =
         comment || ({} as ITicketComment);
-      const { firstName, lastName, email, emails, phone, phones, avatar } =
+      const { firstName, lastName, email, emails, phone, phones } =
         createdUser || ({} as any);
 
-      let renderName = __("Visitor");
+      let renderName = __('Visitor');
 
       renderName =
         firstName || lastName
@@ -299,52 +334,48 @@ const TicketShowProgress: React.FC<Props> = ({
                 ? phone
                 : phones && phones.length !== 0
                   ? phones?.[0]
-                  : __("Unknown");
+                  : __('Unknown');
 
       return (
-        <div key={comment._id} className={`ticket-progress-log ${userType}`}>
-          <div className="user">
-            <img
-              src={
-                avatar
-                  ? avatar.includes("read-file")
-                    ? avatar
-                    : readFile(avatar)
-                  : ""
-              }
-              alt=""
-            />
-          </div>
+        <motion.div
+          key={comment._id}
+          className={`ticket-progress-log ${userType}`}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        >
           <span>
             <strong>{renderName}</strong>
             <span
-              dangerouslySetInnerHTML={{ __html: __("added <b>comment</b>") }}
+              dangerouslySetInnerHTML={{ __html: __('added <b>comment</b>') }}
             />
             <div
               ref={(el) => setCommentRef(comment._id, el)}
               className="comment ticket-comment-content ticket-comment-body"
               dangerouslySetInnerHTML={{
-                __html: xss((content || "").replace(/\n/g, "<br />")),
+                __html: xss((content || '').replace(/\n/g, '<br />')),
               }}
             />
             {attachments && attachments.length > 0 && (
               <div className="ticket-comment-attachments ticket-comment-files">
-                <div className="ticket-comment-files-label">{__("Attachments")}</div>
+                <div className="ticket-comment-files-label">
+                  {__('Attachments')}
+                </div>
                 <div className="ticket-comment-files-list">
                   {attachments.map((att, idx) => (
                     <Attachment
                       key={idx}
-                      attachment={{ name: att.name || "", url: att.url || "" }}
+                      attachment={{ name: att.name || '', url: att.url || '' }}
                     />
                   ))}
                 </div>
               </div>
             )}
             <div className="date">
-              {dayjs(createdAt).format("YYYY-MM-DD, LT")}
+              {dayjs(createdAt).format('YYYY-MM-DD, LT')}
             </div>
           </span>
-        </div>
+        </motion.div>
       );
     });
   };
@@ -352,16 +383,16 @@ const TicketShowProgress: React.FC<Props> = ({
   const renderTicketLogs = () => {
     return (
       <div className="ticket-progress-logs">
-        <span>{__("Ticket log")}</span>
+        <span>{__('Ticket log')}</span>
         {activityLoading ? (
           <div style={{ padding: '20px', textAlign: 'center' }}>
             <div className="loader" style={{ margin: '0 auto' }} />
           </div>
         ) : (
           <>
-        {activityLogs.map((log, index) => (
-          <TicketActivity key={index} activity={log} />
-        ))}
+            {activityLogs.map((log, index) => (
+              <TicketActivity key={index} activity={log} />
+            ))}
           </>
         )}
         {renderComments()}
@@ -370,17 +401,17 @@ const TicketShowProgress: React.FC<Props> = ({
   };
 
   const renderContent = () => {
-    const { number, stage } = ticketData;
+    const { number, stage, status } = ticketData;
 
     return (
       <>
-        <div className="ticket-lbl">
-          <label>{__("Ticket number")}:</label>
-          <span>{number}</span>
-        </div>
-        <div className="ticket-lbl">
-          <label>{__("Ticket status")}:</label>
-          <span className="lbl">{stage?.name ? __(stage.name) : ""}</span>
+        <div className="ticket-progress-header">
+          <span className="ticket-progress-number">#{number}</span>
+          {(stage?.name || status) && (
+            <span className={`ticket-status ${getStatusClass(status)}`}>
+              {__(stage?.name || status)}
+            </span>
+          )}
         </div>
         {renderTicketIssue()}
         {renderTicketLogs()}
@@ -391,43 +422,38 @@ const TicketShowProgress: React.FC<Props> = ({
   return (
     <Container
       withBottomNavBar={true}
-      title={__("Ticket progress")}
+      title={__('Ticket progress')}
       backRoute="ticket"
       persistentFooter={
         <Button full onClick={() => onComment()}>
-          <span className="font-semibold">{__("Send comment")}</span>
+          <span className="font-semibold">{__('Send comment')}</span>
         </Button>
       }
     >
-      <div className="ticket-progress-container" style={{ width: "100%", padding: "1.25rem", paddingBottom: "1rem" }}>
-        <div className="ticket-progress-main-content" style={{ maxWidth: "95%", paddingRight: 20 }}>{renderContent()}</div>
-        <div
-          className="ticket-comment-form"
-          style={{
-            position: "static",
-            bottom: "auto",
-            borderTop: "1px solid #ddd",
-            paddingTop: "1rem",
-            paddingBottom: "0.5rem",
-            marginTop: "1rem",
-            width: "100%",
-            maxWidth: "95%",
-            background: "#fff",
-          }}
-        >
+      <div className="ticket-progress-container">
+        <div className="ticket-progress-main-content">{renderContent()}</div>
+        <div className="ticket-comment-form">
           <div className="ticket-form-item">
             <Input
               textArea
               id="comment"
-              label={__("Add a comment")}
+              label={__('Add a comment')}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             />
           </div>
           {handleFiles && (
-            <div className="ticket-form-item" style={{ marginTop: "12px" }}>
-              <label className="ticket-form-label" style={{ display: "block", marginBottom: "8px", fontSize: "13px", color: "#666" }}>
-                {__("Attach file")}
+            <div className="ticket-form-item" style={{ marginTop: '12px' }}>
+              <label
+                className="ticket-form-label"
+                style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  fontSize: '13px',
+                  color: '#666',
+                }}
+              >
+                {__('Attach file')}
               </label>
               <FileUploader handleFiles={handleFiles} />
             </div>

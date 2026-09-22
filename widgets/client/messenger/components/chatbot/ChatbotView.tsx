@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { motion } from 'framer-motion';
 import Container from '../common/Container';
 import { CHATBOT_MENUS, CHATBOT_MENU_CATEGORIES } from './chatbotMenus';
 import { useRouter } from '../../context/Router';
@@ -1212,12 +1213,31 @@ const ChatbotView: React.FC = () => {
                       ) : msg.streaming ? (
                         <span
                           style={{
-                            color: '#94a3b8',
-                            fontSize: '18px',
-                            letterSpacing: '2px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            height: '18px',
                           }}
                         >
-                          ···
+                          {[0, 1, 2].map((i) => (
+                            <motion.span
+                              key={i}
+                              style={{
+                                width: '6px',
+                                height: '6px',
+                                borderRadius: '50%',
+                                background: '#94a3b8',
+                                display: 'inline-block',
+                              }}
+                              animate={{ y: [0, -4, 0] }}
+                              transition={{
+                                duration: 0.8,
+                                repeat: Infinity,
+                                delay: i * 0.15,
+                                ease: 'easeInOut',
+                              }}
+                            />
+                          ))}
                         </span>
                       ) : (
                         ''

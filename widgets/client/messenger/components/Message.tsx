@@ -2,6 +2,7 @@ import * as classNames from 'classnames';
 import * as dayjs from 'dayjs';
 import * as React from 'react';
 import xss from 'xss';
+import { motion } from 'framer-motion';
 import { defaultAvatar } from '../../icons/Icons';
 import { IUser } from '../../types';
 import { __, readFile, urlify } from '../../utils';
@@ -122,10 +123,21 @@ class Message extends React.Component<Props> {
 
   render() {
     const { user, createdAt } = this.props;
-    const itemClasses = classNames({ 'from-customer': !user });
+    const isFromCustomer = !user;
+    const itemClasses = classNames({ 'from-customer': isFromCustomer });
 
     return (
-      <li className={itemClasses}>
+      <motion.li
+        className={itemClasses}
+        initial={{
+          opacity: 0,
+          y: 12,
+          scale: 0.96,
+          x: isFromCustomer ? 20 : -20,
+        }}
+        animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
+        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      >
         {user ? <User user={user} /> : null}
         {this.renderContent()}
         <div className="date">
@@ -136,7 +148,7 @@ class Message extends React.Component<Props> {
             {dayjs(createdAt).format('LT')}
           </span>
         </div>
-      </li>
+      </motion.li>
     );
   }
 }

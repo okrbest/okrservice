@@ -1,12 +1,18 @@
-import * as React from "react";
+import * as React from 'react';
+import { motion } from 'framer-motion';
 
-import { IconCheckTicket, IconTicket } from "../../../icons/Icons";
+import {
+  IconCheckTicket,
+  IconFeaturedChevronRight,
+  IconTicket,
+} from '../../../icons/Icons';
 
-import Button from "../common/Button";
-import Container from "../common/Container";
-import { __ } from "../../../utils";
-import { connection } from "../../connection";
-import { useTicket } from "../../context/Ticket";
+import Button from '../common/Button';
+import Container from '../common/Container';
+import { __ } from '../../../utils';
+import { connection } from '../../connection';
+import { getColor, hexToRGBA } from '../../utils/util';
+import { useTicket } from '../../context/Ticket';
 
 type Props = {
   loading: boolean;
@@ -17,56 +23,70 @@ type Props = {
 
 const Ticket: React.FC<Props> = ({
   loading,
-  activeRoute,
   handleSubmit,
   handleButtonClick,
 }) => {
-  const continueText = __("Continue");
+  const continueText = __('Continue');
   const { unreadTicketCount } = useTicket();
 
   const renderSubmitForm = () => {
     const submitTicketRoute = connection.data.customerId
-      ? "ticket-submit"
-      : "create-customer";
+      ? 'ticket-submit'
+      : 'create-customer';
+    const color = getColor() || '#6335ff';
+
+    const items = [
+      {
+        key: submitTicketRoute,
+        icon: <IconTicket size="22px" />,
+        title: __('Submit a ticket'),
+        description: __('Send us a new request'),
+        onClick: () => handleSubmit(submitTicketRoute),
+        badge: 0,
+      },
+      {
+        key: 'list',
+        icon: <IconCheckTicket size="22px" />,
+        title: __('Ticket List'),
+        description: __('Track your submitted tickets'),
+        onClick: () => handleSubmit('list'),
+        badge: unreadTicketCount,
+      },
+    ];
 
     return (
       <div className="type-choose-container">
-        <div
-          className={`${activeRoute === submitTicketRoute ? "active" : ""} ticket-box`}
-          onClick={() => handleSubmit(submitTicketRoute)}
-        >
-          <IconTicket size="30px" />
-          <span>{__("Submit a ticket")}</span>
-        </div>
-        <div
-          className={`${activeRoute === "list" ? "active" : ""} ticket-box`}
-          onClick={() => handleSubmit("list")}
-          style={{ position: "relative" }}
-        >
-          {unreadTicketCount > 0 && (
-            <span style={{
-              position: "absolute",
-              top: "8px",
-              right: "8px",
-              width: "10px",
-              height: "10px",
-              backgroundColor: "#ff4d4f",
-              borderRadius: "50%",
-              border: "2px solid #fff",
-            }} />
-          )}
-          <IconCheckTicket size="30px" />
-          <span>{__("Ticket List")}</span>
-        </div>
-        {/*
-        <div
-          className={`${activeRoute === "check" ? "active" : ""} ticket-box`}
-          onClick={() => handleSubmit("check")}
-        >
-          <IconCheckTicket size="30px" />
-          <span>{__("Check ticket progress")}</span>
-        </div>
-        */}
+        {items.map((item, index) => (
+          <motion.div
+            key={item.key}
+            className="ticket-menu-item"
+            onClick={item.onClick}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.25,
+              delay: index * 0.05,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            <div
+              className="ticket-menu-icon"
+              style={{ backgroundColor: hexToRGBA(color, 0.12) }}
+            >
+              {item.icon}
+            </div>
+            <div className="ticket-menu-text">
+              <span className="ticket-menu-title">{item.title}</span>
+              <span className="ticket-menu-description">
+                {item.description}
+              </span>
+            </div>
+            {item.badge > 0 && (
+              <span className="ticket-menu-badge">{item.badge}</span>
+            )}
+            <IconFeaturedChevronRight />
+          </motion.div>
+        ))}
       </div>
     );
   };
@@ -74,9 +94,9 @@ const Ticket: React.FC<Props> = ({
   return (
     <Container
       withBottomNavBar={true}
-      title={__("Ticket")}
+      title={__('Ticket')}
       persistentFooter={
-        <div style={{ display: "none" }}>
+        <div style={{ display: 'none' }}>
           <Button full onClick={handleButtonClick}>
             <span className="font-semibold">{continueText}</span>
           </Button>

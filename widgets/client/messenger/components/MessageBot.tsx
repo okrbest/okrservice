@@ -1,11 +1,12 @@
-import * as React from "react";
-import xss from "xss";
-import { IUser } from "../../types";
-import { urlify } from "../../utils";
-import { IBotData } from "../types";
-import Bot from "./bot/Bot";
-import Carousel from "./bot/Carousel";
-import CustomMessage from "./bot/CustomMessage";
+import * as React from 'react';
+import xss from 'xss';
+import { motion } from 'framer-motion';
+import { IUser } from '../../types';
+import { urlify } from '../../utils';
+import { IBotData } from '../types';
+import Bot from './bot/Bot';
+import Carousel from './bot/Carousel';
+import CustomMessage from './bot/CustomMessage';
 
 type Props = {
   botData: IBotData[];
@@ -32,7 +33,7 @@ function MessageBot(props: Props) {
     botData,
     replyAutoAnswer,
     sendTypingInfo,
-    scrollBottom
+    scrollBottom,
   } = props;
 
   if (botData?.length && botData.length === 0) {
@@ -43,22 +44,20 @@ function MessageBot(props: Props) {
     return (
       <div
         key={idx}
-        className='erxes-message top'
-        dangerouslySetInnerHTML={{ __html: xss(urlify(message.text || "")) }}
+        className="erxes-message top"
+        dangerouslySetInnerHTML={{ __html: xss(urlify(message.text || '')) }}
       />
     );
   };
 
   const renderFileMessage = (message: IBotData, idx: number) => {
     return (
-      <div
-        key={idx}
-        className='bot-message'>
+      <div key={idx} className="bot-message">
         <img
-          className='image-message'
+          className="image-message"
           onLoad={scrollBottom}
           src={message.url}
-          alt={message.title || ""}
+          alt={message.title || ''}
         />
       </div>
     );
@@ -67,7 +66,7 @@ function MessageBot(props: Props) {
   const renderCustomMessage = (
     message: IBotData,
     commonProps: CommonProps,
-    idx: number
+    idx: number,
   ) => {
     return (
       <CustomMessage
@@ -82,7 +81,7 @@ function MessageBot(props: Props) {
   const renderCarouselMessage = (
     elements: any,
     commonProps: CommonProps,
-    idx: number
+    idx: number,
   ) => {
     return (
       <Carousel
@@ -99,18 +98,18 @@ function MessageBot(props: Props) {
     const commonProps = {
       conversationId,
       replyAutoAnswer,
-      sendTypingInfo
+      sendTypingInfo,
     };
 
     return botData?.map((item, idx) => {
       switch (item.type) {
-        case "text":
+        case 'text':
           return renderTextMessage(item, idx);
-        case "file":
+        case 'file':
           return renderFileMessage(item, idx);
-        case "carousel":
+        case 'carousel':
           return renderCarouselMessage(item.elements, commonProps, idx);
-        case "custom":
+        case 'custom':
           return renderCustomMessage(item, commonProps, idx);
         default:
           return null;
@@ -119,10 +118,14 @@ function MessageBot(props: Props) {
   }
 
   return (
-    <li>
+    <motion.li
+      initial={{ opacity: 0, y: 12, scale: 0.96, x: -20 }}
+      animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+    >
       <Bot />
       {renderBotMessage()}
-    </li>
+    </motion.li>
   );
 }
 

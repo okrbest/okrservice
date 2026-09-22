@@ -1,57 +1,70 @@
-import * as React from "react";
-import { m } from "framer-motion";
-import { IconProps } from "./Icons";
-import useHover from "../../hooks/useHover";
-import { __ } from "../../../utils";
+import * as React from 'react';
+import { motion } from 'framer-motion';
+import { LucideIcon } from 'lucide-react';
+import { IconProps } from './Icons';
+import useHover from '../../hooks/useHover';
+import { getColor } from '../../utils/util';
+import { __ } from '../../../utils';
 
 type Props = {
   label?: string | React.ReactNode;
   icon: (props: IconProps) => React.ReactNode;
+  outlineIcon: LucideIcon;
   isActive: boolean;
   handleClick: (route: string) => (event: React.MouseEvent) => void;
   route: string;
   badge?: number;
 };
 
-const Item: React.FC<Props> = ({ label, icon, isActive, handleClick, route, badge }) => {
+const Item: React.FC<Props> = ({
+  label,
+  icon,
+  outlineIcon: OutlineIcon,
+  isActive,
+  handleClick,
+  route,
+  badge,
+}) => {
   const [hoverRef, isHovered] = useHover();
+  const accentColor = getColor() || '#673fbd';
+  const showFilled = isActive || isHovered;
 
   return (
-    <m.li
+    <motion.li
       ref={hoverRef}
-      className={`nav-item ${isActive ? "active" : ""}`}
+      className={`nav-item ${isActive ? 'active' : ''}`}
       onClick={handleClick(route)}
+      whileTap={{ scale: 0.9 }}
     >
-      <m.div className="nav-content" style={{ position: "relative" }}>
-        {icon({ filled: isActive || isHovered })}
+      <div className="nav-content" style={{ position: 'relative' }}>
+        {isActive && (
+          <motion.span
+            layoutId="nav-active-pill"
+            className="nav-active-pill"
+            style={{ backgroundColor: `${accentColor}1f` }}
+            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+          />
+        )}
+        <span className="nav-icon-wrap">
+          {showFilled ? (
+            icon({ filled: true, color: accentColor })
+          ) : (
+            <OutlineIcon size={22} color="#9D9EA1" strokeWidth={1.75} />
+          )}
+        </span>
         {badge && badge > 0 ? (
-          <span style={{
-            position: "absolute",
-            top: "-4px",
-            right: "-6px",
-            backgroundColor: "#ff4d4f",
-            color: "#fff",
-            fontSize: "10px",
-            fontWeight: "700",
-            borderRadius: "10px",
-            minWidth: "16px",
-            height: "16px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "0 4px",
-            lineHeight: 1,
-          }}>
-            {badge > 99 ? "99+" : badge}
-          </span>
+          <span className="nav-badge">{badge > 99 ? '99+' : badge}</span>
         ) : null}
         {label && (
-          <span className="nav-label">
-            {typeof label === "string" ? __(label) : label}
+          <span
+            className="nav-label"
+            style={isActive ? { color: accentColor } : undefined}
+          >
+            {typeof label === 'string' ? __(label) : label}
           </span>
         )}
-      </m.div>
-    </m.li>
+      </div>
+    </motion.li>
   );
 };
 

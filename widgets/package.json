@@ -66,6 +66,7 @@
     "graphql-ws": "^5.16.0",
     "i18n-react": "^0.6.4",
     "json-loader": "^0.5.7",
+    "lucide-react": "^0.475.0",
     "mermaid": "11.8.1",
     "node-sass": "^9.0.0",
     "react": "^18.3.1",

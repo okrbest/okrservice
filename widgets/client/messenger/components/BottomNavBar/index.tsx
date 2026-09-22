@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Bot, Handshake, Home, HelpCircle, Phone, Ticket } from 'lucide-react';
 
 import {
   IconChatbot,
@@ -25,6 +26,7 @@ const items = [
   {
     label: 'Home',
     icon: IconHome,
+    outlineIcon: Home,
     route: 'home',
   },
   {
@@ -36,15 +38,17 @@ const items = [
       </>
     ),
     icon: IconChatbot,
+    outlineIcon: Bot,
     route: 'chatbot',
     additionalRoutes: ['chatbot-iframe'],
   },
-  { label: 'Call', icon: IconPhone, route: 'call' },
-  { label: 'Ticket', icon: IconTicket, route: 'ticket' },
-  { label: 'Deal', icon: IconDeal, route: 'deal' },
+  { label: 'Call', icon: IconPhone, outlineIcon: Phone, route: 'call' },
+  { label: 'Ticket', icon: IconTicket, outlineIcon: Ticket, route: 'ticket' },
+  { label: 'Deal', icon: IconDeal, outlineIcon: Handshake, route: 'deal' },
   {
     label: 'Help',
     icon: IconQuestionMark,
+    outlineIcon: HelpCircle,
     route: 'faqCategories',
     additionalRoutes: ['faqCategory', 'faqArticle'],
   },

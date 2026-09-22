@@ -1,9 +1,10 @@
-import * as React from "react";
-import * as dayjs from "dayjs";
+import * as React from 'react';
+import * as dayjs from 'dayjs';
+import { motion } from 'framer-motion';
 
-import { __, readFile } from "../../../utils";
+import { __ } from '../../../utils';
 
-import { ITicketActivityLog } from "../../types";
+import { ITicketActivityLog } from '../../types';
 
 type Props = {
   activity: ITicketActivityLog;
@@ -16,46 +17,27 @@ export const renderUserFullName = (data: any) => {
   }
 
   if (details && (details.firstName || details.lastName)) {
-    return (data.firstName || "") + " " + (data.lastName || "");
+    return (data.firstName || '') + ' ' + (data.lastName || '');
   }
 
   if (data.email || data.username) {
     return data.email || data.username;
   }
 
-  return "Unknown";
+  return 'Unknown';
 };
 
 const TicketActivity: React.FC<Props> = ({ activity }) => {
   const { contentType, action, createdByDetail, content, createdAt } = activity;
-  const type = contentType.split(":")[1];
+  const type = contentType.split(':')[1];
 
-  const renderDetail = (contentType: string, children: React.ReactNode) => {
-    let src =
-      "https://office.erxes.io/gateway/read-file?key=office-erxes-io%2Fchz8U6ErcBCK102DtFGVferxes.png&width=20";
-
-    if (createdByDetail && createdByDetail.type === "user") {
-      const { content } = createdByDetail;
-
-      if (content && content.details) {
-        src = content.details.avatar || "";
-      }
-    }
-
-    return (
-      <>
-        <div className="user">
-          <img src={src.includes("read-file") ? src : readFile(src)} alt="" />
-        </div>
-        {children}
-      </>
-    );
-  };
+  const renderDetail = (_contentType: string, children: React.ReactNode) =>
+    children;
 
   const renderContent = () => {
-    let userName = "Unknown";
+    let userName = 'Unknown';
 
-    if (createdByDetail && createdByDetail.type === "user") {
+    if (createdByDetail && createdByDetail.type === 'user') {
       const { content } = createdByDetail;
 
       if (content && content.details) {
@@ -64,56 +46,57 @@ const TicketActivity: React.FC<Props> = ({ activity }) => {
     }
 
     switch ((action && action) || type) {
-      case "create":
+      case 'create':
         return renderDetail(
           activity.contentType,
           <span>
-            <strong>{userName}</strong> {__("created")} <b>{__("ticket")}</b>
+            <strong>{userName}</strong> {__('created')} <b>{__('ticket')}</b>
             <div className="date">
-              {dayjs(createdAt).format("YYYY-MM-DD, LT")}
+              {dayjs(createdAt).format('YYYY-MM-DD, LT')}
             </div>
-          </span>
+          </span>,
         );
 
-      case "assignee":
+      case 'assignee':
         return renderDetail(
-          "assignee",
+          'assignee',
           <span>
-            <strong>{userName}</strong> {__("assigned")} <b>{__("team member")}</b>
-          </span>
+            <strong>{userName}</strong> {__('assigned')}{' '}
+            <b>{__('team member')}</b>
+          </span>,
         );
 
-      case "archive":
+      case 'archive':
         return renderDetail(
-          "archive",
+          'archive',
           <span>
             <strong>{userName}</strong> {content} this {type}
-          </span>
+          </span>,
         );
 
-      case "moved":
+      case 'moved':
         return renderDetail(
           activity.contentType,
           <span>
             <strong>{userName}</strong>
-            {__("moved")} <b>{content.text || ""}</b>
-          </span>
+            {__('moved')} <b>{content.text || ''}</b>
+          </span>,
         );
 
-      case "convert":
+      case 'convert':
         return renderDetail(
           activity.contentType,
           <span>
-            <strong>{userName}</strong> {__("converted")}
-          </span>
+            <strong>{userName}</strong> {__('converted')}
+          </span>,
         );
 
-      case "delete":
+      case 'delete':
         return renderDetail(
           activity.contentType,
           <span>
-            <strong>{userName}</strong> {__("deleted")}
-          </span>
+            <strong>{userName}</strong> {__('deleted')}
+          </span>,
         );
 
       default:
@@ -121,7 +104,16 @@ const TicketActivity: React.FC<Props> = ({ activity }) => {
     }
   };
 
-  return <div className="ticket-progress-log">{renderContent()}</div>;
+  return (
+    <motion.div
+      className="ticket-progress-log"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {renderContent()}
+    </motion.div>
+  );
 };
 
 export default TicketActivity;

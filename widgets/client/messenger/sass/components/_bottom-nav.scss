@@ -1,0 +1,44 @@
+.nav-icon-wrap {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+// framer-motion의 layoutId 애니메이션이 이 요소의 transform을 자체적으로
+// 덮어써서 translateX(-50%) 가운데 정렬이 무시되므로, transform 대신
+// margin-left로 정렬한다.
+.nav-active-pill {
+  border-radius: 16px;
+  height: 32px;
+  left: 50%;
+  margin-left: -22px;
+  position: absolute;
+  top: -4px;
+  width: 44px;
+  z-index: 0;
+}
+
+.nav-badge {
+  align-items: center;
+  background-color: $red;
+  border-radius: 10px;
+  color: $white;
+  display: flex;
+  font-size: 10px;
+  font-weight: 700;
+  height: 16px;
+  justify-content: center;
+  line-height: 1;
+  min-width: 16px;
+  padding: 0 4px;
+  position: absolute;
+  right: -6px;
+  top: -4px;
+  z-index: 2;
+}
+
+.nav-label {
+  transition: color .15s $timing-scale;
+}
