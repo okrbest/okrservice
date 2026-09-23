@@ -33,6 +33,7 @@ import {
   setDiagnosticTarget,
   isDiagnosticTargetEnabled,
 } from '@erxes/ui/src/utils/diagnosticTarget';
+import { setupPerformanceObserver } from '@erxes/ui/src/utils/perfObserver';
 
 const MainLayout = asyncComponent(
   () =>
@@ -195,6 +196,15 @@ const Routes = ({ currentUser }: { currentUser: IUser }) => {
   React.useEffect(() => {
     // 클릭 이벤트 리스너 설정 (토큰 만료 체크)
     const cleanup = setupTokenExpirationChecker();
+
+    return () => {
+      cleanup();
+    };
+  }, []);
+
+  React.useEffect(() => {
+    // 타이핑 랙(증상 2) 진단용 - 메인 스레드 블로킹/입력 지연을 감지해 breadcrumb만 남김
+    const cleanup = setupPerformanceObserver();
 
     return () => {
       cleanup();

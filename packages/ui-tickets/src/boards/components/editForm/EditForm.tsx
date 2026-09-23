@@ -17,6 +17,7 @@ import {
 import { colors } from '@erxes/ui/src/styles';
 import { rgba } from '@erxes/ui/src/styles/ecolor';
 import styled from 'styled-components';
+import * as Sentry from '@sentry/react';
 
 const Relative = styled.div`
   position: relative;
@@ -106,6 +107,24 @@ function EditForm(props: Props) {
   const [updatedItem, setUpdatedItem] = useState(item);
   const [prevStageId, setPrevStageId] = useState<string>('');
   const descriptionDirtyRef = useRef<(() => boolean) | null>(null);
+  const intentionalCloseRef = useRef(false);
+  const itemIdRef = useRef(item._id);
+  itemIdRef.current = item._id;
+
+  useEffect(() => {
+    // 증상 3(작성 중 창이 갑자기 닫히고 보드로 이동) 진단용 -
+    // X버튼/ESC/오버레이 클릭 등 명시적으로 닫은 경우가 아닌데 언마운트되면 breadcrumb를 남김
+    return () => {
+      if (!intentionalCloseRef.current) {
+        Sentry.addBreadcrumb({
+          category: 'modal',
+          message: 'ticket detail modal closed unexpectedly',
+          level: 'warning',
+          data: { itemId: itemIdRef.current },
+        });
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (item.stageId !== stageId) {
@@ -143,6 +162,8 @@ function EditForm(props: Props) {
   };
 
   const closeModal = (afterPopupClose?: () => void) => {
+    intentionalCloseRef.current = true;
+
     if (beforePopupClose) {
       beforePopupClose(afterPopupClose);
     } else if (afterPopupClose) {
