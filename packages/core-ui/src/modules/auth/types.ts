@@ -3,7 +3,7 @@ import {
   IUserConversation as IUserConversationC,
   IUserDetails as IUserDetailsC,
   IUserDoc as IUserDocC,
-  IUserLinks as IUserLinksC
+  IUserLinks as IUserLinksC,
 } from '@erxes/ui/src/auth/types';
 import { IDepartment } from '@erxes/ui/src/team/types';
 
@@ -16,6 +16,8 @@ export type IUser = IUserC & {
   customFieldsData?: {
     [key: string]: any;
   };
+} & {
+  diagnosticLoggingEnabled?: boolean;
 };
 export type IUserDetails = IUserDetailsC;
 export type IUserLinks = IUserLinksC;

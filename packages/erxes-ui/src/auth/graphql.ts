@@ -71,6 +71,7 @@ export const currentUser = `
       }
       isShowNotification
       score
+      diagnosticLoggingEnabled
     }
   }
 `;
