@@ -3,12 +3,13 @@ import * as jwt from 'jsonwebtoken';
 import { NextFunction, Request, Response } from 'express';
 
 import { getSubdomain, sendMessage } from '../core';
+import { debugError } from '../debuggers';
 import redis from '../redis';
 
 export default async function userMiddleware(
   req: Request & { user?: any },
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   const subdomain = getSubdomain(req);
 
@@ -37,6 +38,7 @@ export default async function userMiddleware(
     });
 
     if (!userDoc) {
+      debugError(`auth failed: user not found (userId: ${user._id})`);
       return next();
     }
 
@@ -44,6 +46,9 @@ export default async function userMiddleware(
 
     // invalid token access.
     if (!validatedToken) {
+      debugError(
+        `auth failed: token not validated in redis, likely invalidated by a newer login (userId: ${user._id})`,
+      );
       return next();
     }
 
@@ -69,8 +74,12 @@ export default async function userMiddleware(
       redis.set('hostname', process.env.DOMAIN || 'http://localhost:3000');
     }
   } catch (e) {
-    console.error(e);
+    if (e.name === 'TokenExpiredError') {
+      debugError(`auth failed: token expired at ${e.expiredAt}`);
+    } else {
+      debugError(`auth failed: ${e.name} - ${e.message}`);
+    }
   }
-  
+
   return next();
 }

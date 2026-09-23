@@ -112,6 +112,7 @@ export const types = `
     score: Float
     leaderBoardPosition: Int
     employeeId: String
+    diagnosticLoggingEnabled: Boolean
   }
 
   type UserMovement {
@@ -172,6 +173,7 @@ export const mutations = `
   usersCreateOwner(email: String!, password: String!, firstName: String!, lastName: String, purpose: String, subscribeEmail: Boolean): String
   login(email: String!, password: String! deviceToken: String): String
   logout: String
+  refreshToken: String
   forgotPassword(email: String!): String!
   resetPassword(token: String!, newPassword: String!): JSON
   usersResetMemberPassword(_id: String!, newPassword: String!): User

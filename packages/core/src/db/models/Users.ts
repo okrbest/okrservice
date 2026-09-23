@@ -1,30 +1,30 @@
-import redis from "@erxes/api-utils/src/redis";
-import { ILink } from "@erxes/api-utils/src/types";
-import { USER_ROLES } from "@erxes/api-utils/src/constants";
+import redis from '@erxes/api-utils/src/redis';
+import { ILink } from '@erxes/api-utils/src/types';
+import { USER_ROLES } from '@erxes/api-utils/src/constants';
 
-import * as bcrypt from "bcryptjs";
-import * as crypto from "crypto";
-import * as jwt from "jsonwebtoken";
-import { Model } from "mongoose";
-import * as sha256 from "sha256";
-import { IModels } from "../../connectionResolver";
-import { userActionsMap } from "@erxes/api-utils/src/core";
+import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
+import * as jwt from 'jsonwebtoken';
+import { Model } from 'mongoose';
+import * as sha256 from 'sha256';
+import { IModels } from '../../connectionResolver';
+import { userActionsMap } from '@erxes/api-utils/src/core';
 import {
   IDetail,
   IEmailSignature,
   IUser,
   IUserDocument,
   userSchema,
-} from "./definitions/users";
-import { IAppDocument } from "./definitions/apps";
-import { saveValidatedToken } from "../../data/utils";
+} from './definitions/users';
+import { IAppDocument } from './definitions/apps';
+import { saveValidatedToken } from '../../data/utils';
 import {
   IUserMovementDocument,
   userMovemmentSchema,
-} from "./definitions/users";
-import { USER_MOVEMENT_STATUSES } from "../../constants";
-import { getService, getServices } from "@erxes/api-utils/src/serviceDiscovery";
-import { sendCommonMessage } from "../../messageBroker";
+} from './definitions/users';
+import { USER_MOVEMENT_STATUSES } from '../../constants';
+import { getService, getServices } from '@erxes/api-utils/src/serviceDiscovery';
+import { sendCommonMessage } from '../../messageBroker';
 
 const SALT_WORK_FACTOR = 10;
 
@@ -89,11 +89,11 @@ export interface IUserModel extends Model<IUserDocument> {
   generateUserCodeField(): Promise<void>;
   configEmailSignatures(
     _id: string,
-    signatures: IEmailSignature[]
+    signatures: IEmailSignature[],
   ): Promise<IUserDocument>;
   configGetNotificationByEmail(
     _id: string,
-    isAllowed: boolean
+    isAllowed: boolean,
   ): Promise<IUserDocument>;
   setUserActiveOrInactive(_id: string): Promise<IUserDocument>;
   generatePassword(password: string): Promise<string>;
@@ -107,7 +107,7 @@ export interface IUserModel extends Model<IUserDocument> {
   }): Promise<IUserDocument>;
   resetMemberPassword(params: IPasswordParams): Promise<IUserDocument>;
   changePassword(
-    params: IPasswordParams & { currentPassword: string }
+    params: IPasswordParams & { currentPassword: string },
   ): Promise<IUserDocument>;
   forgotPassword(email: string): string;
   createTokens(_user: IUserDocument, secret: string): string[];
@@ -136,7 +136,7 @@ export const loadUserClass = (models: IModels) => {
       const user = await models.Users.findOne({ _id });
 
       if (!user) {
-        throw new Error("User not found");
+        throw new Error('User not found');
       }
 
       return user;
@@ -145,7 +145,7 @@ export const loadUserClass = (models: IModels) => {
     public static checkPassword(password: string) {
       if (!password.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/)) {
         throw new Error(
-          "Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters"
+          'Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters',
         );
       }
     }
@@ -177,7 +177,7 @@ export const loadUserClass = (models: IModels) => {
 
         // Checking if duplicated
         if (previousEntry.length > 0) {
-          throw new Error("Duplicated email");
+          throw new Error('Duplicated email');
         }
       }
 
@@ -187,7 +187,7 @@ export const loadUserClass = (models: IModels) => {
 
         // Checking if duplicated
         if (previousEntry) {
-          throw new Error("Duplicated Employee Id");
+          throw new Error('Duplicated Employee Id');
         }
       }
 
@@ -197,13 +197,13 @@ export const loadUserClass = (models: IModels) => {
 
         // Checking if duplicated
         if (previousEntry) {
-          throw new Error("Duplicated User Name Id");
+          throw new Error('Duplicated User Name Id');
         }
       }
     }
 
     public static getSecret() {
-      return process.env.JWT_TOKEN_SECRET || "";
+      return process.env.JWT_TOKEN_SECRET || '';
     }
 
     /**
@@ -222,8 +222,8 @@ export const loadUserClass = (models: IModels) => {
     }: IUser & { notUsePassword?: boolean }) {
       // empty string password validation
 
-      if (password === "" && !notUsePassword) {
-        throw new Error("Password can not be empty");
+      if (password === '' && !notUsePassword) {
+        throw new Error('Password can not be empty');
       }
 
       // Checking duplicated email
@@ -242,7 +242,7 @@ export const loadUserClass = (models: IModels) => {
         groupIds,
         isActive: isActive !== undefined ? isActive : true,
         // hash password
-        password: notUsePassword ? "" : await this.generatePassword(password),
+        password: notUsePassword ? '' : await this.generatePassword(password),
         code: await this.generateUserCode(),
       });
     }
@@ -251,8 +251,8 @@ export const loadUserClass = (models: IModels) => {
      * Update user information
      */
     public static async updateUser(_id: string, doc: IUpdateUser) {
-      doc.password = (doc.password ?? "").trim();
-      doc.email = (doc.email ?? "").toLowerCase().trim();
+      doc.password = (doc.password ?? '').trim();
+      doc.email = (doc.email ?? '').toLowerCase().trim();
 
       if (doc.email) {
         // Checking duplicated email
@@ -287,7 +287,7 @@ export const loadUserClass = (models: IModels) => {
         registrationTokenExpires: 1,
       };
 
-      if (["", undefined, null].includes(doc.employeeId)) {
+      if (['', undefined, null].includes(doc.employeeId)) {
         delete operations.$set.employeeId;
         operations.$unset.employeeId = 1;
       }
@@ -306,7 +306,7 @@ export const loadUserClass = (models: IModels) => {
 
     public static async generateToken() {
       const buffer = await crypto.randomBytes(20);
-      const token = buffer.toString("hex");
+      const token = buffer.toString('hex');
 
       return {
         token,
@@ -323,14 +323,14 @@ export const loadUserClass = (models: IModels) => {
       groupId,
       brandIds,
     }: IInviteParams) {
-      email = (email || "").toLowerCase().trim();
-      password = (password || "").trim();
+      email = (email || '').toLowerCase().trim();
+      password = (password || '').trim();
 
       // Checking duplicated email
       await models.Users.checkDuplication({ email });
 
       if (!(await models.UsersGroups.findOne({ _id: groupId }))) {
-        throw new Error("Invalid group");
+        throw new Error('Invalid group');
       }
 
       const { token, expires } = await User.generateToken();
@@ -359,11 +359,11 @@ export const loadUserClass = (models: IModels) => {
       const user = await models.Users.findOne({ email });
 
       if (!user) {
-        throw new Error("User not found");
+        throw new Error('User not found');
       }
 
       if (!user.registrationToken) {
-        throw new Error("Invalid request");
+        throw new Error('Invalid request');
       }
 
       const { token, expires } = await models.Users.generateToken();
@@ -373,7 +373,7 @@ export const loadUserClass = (models: IModels) => {
         {
           registrationToken: token,
           registrationTokenExpires: expires,
-        }
+        },
       );
 
       return token;
@@ -403,15 +403,15 @@ export const loadUserClass = (models: IModels) => {
       });
 
       if (!user || !token) {
-        throw new Error("Token is invalid or has expired");
+        throw new Error('Token is invalid or has expired');
       }
 
-      if (password === "") {
-        throw new Error("Password can not be empty");
+      if (password === '') {
+        throw new Error('Password can not be empty');
       }
 
       if (password !== passwordConfirmation) {
-        throw new Error("Password does not match");
+        throw new Error('Password does not match');
       }
 
       this.checkPassword(password);
@@ -425,15 +425,15 @@ export const loadUserClass = (models: IModels) => {
             username,
             details: {
               fullName,
-              firstName: (fullName ?? "").split(" ")[0],
-              lastName: (fullName ?? "").split(" ")[1] || "",
+              firstName: (fullName ?? '').split(' ')[0],
+              lastName: (fullName ?? '').split(' ')[1] || '',
             },
           },
           $unset: {
             registrationToken: 1,
             registrationTokenExpires: 1,
           },
-        }
+        },
       );
 
       return user;
@@ -444,7 +444,7 @@ export const loadUserClass = (models: IModels) => {
      */
     public static async editProfile(
       _id: string,
-      { username, email, details, links, employeeId }: IEditProfile
+      { username, email, details, links, employeeId }: IEditProfile,
     ) {
       // Checking duplicated email
       await this.checkDuplication({ email, idsToExclude: _id });
@@ -459,7 +459,7 @@ export const loadUserClass = (models: IModels) => {
 
       await models.Users.updateOne(
         { _id },
-        { $set: { username, email, details, links, employeeId } }
+        { $set: { username, email, details, links, employeeId } },
       );
 
       return models.Users.findOne({ _id });
@@ -470,11 +470,11 @@ export const loadUserClass = (models: IModels) => {
      */
     public static async configEmailSignatures(
       _id: string,
-      signatures: IEmailSignature[]
+      signatures: IEmailSignature[],
     ) {
       await models.Users.updateOne(
         { _id },
-        { $set: { emailSignatures: signatures } }
+        { $set: { emailSignatures: signatures } },
       );
 
       return models.Users.findOne({ _id });
@@ -485,11 +485,11 @@ export const loadUserClass = (models: IModels) => {
      */
     public static async configGetNotificationByEmail(
       _id: string,
-      isAllowed: boolean
+      isAllowed: boolean,
     ) {
       await models.Users.updateOne(
         { _id },
-        { $set: { getNotificationByEmail: isAllowed } }
+        { $set: { getNotificationByEmail: isAllowed } },
       );
 
       return models.Users.findOne({ _id });
@@ -502,7 +502,7 @@ export const loadUserClass = (models: IModels) => {
       const user = await models.Users.findOne({ _id });
 
       if (!user) {
-        throw new Error("User not found");
+        throw new Error('User not found');
       }
 
       if (user.isActive === false) {
@@ -512,7 +512,7 @@ export const loadUserClass = (models: IModels) => {
       }
 
       if (user.isOwner) {
-        throw new Error("Can not deactivate owner");
+        throw new Error('Can not deactivate owner');
       }
 
       await models.Users.updateOne({ _id }, { $set: { isActive: false } });
@@ -557,11 +557,11 @@ export const loadUserClass = (models: IModels) => {
       });
 
       if (!user) {
-        throw new Error("Password reset token is invalid or has expired.");
+        throw new Error('Password reset token is invalid or has expired.');
       }
 
       if (!newPassword) {
-        throw new Error("Password is required.");
+        throw new Error('Password is required.');
       }
 
       this.checkPassword(newPassword);
@@ -573,7 +573,7 @@ export const loadUserClass = (models: IModels) => {
           password: await this.generatePassword(newPassword),
           resetPasswordToken: undefined,
           resetPasswordExpires: undefined,
-        }
+        },
       );
 
       return models.Users.findOne({ _id: user._id });
@@ -592,14 +592,14 @@ export const loadUserClass = (models: IModels) => {
       const user = await models.Users.getUser(_id);
 
       if (!newPassword) {
-        throw new Error("Password is required.");
+        throw new Error('Password is required.');
       }
 
       this.checkPassword(newPassword);
 
       await models.Users.updateOne(
         { _id },
-        { $set: { password: await this.generatePassword(newPassword) } }
+        { $set: { password: await this.generatePassword(newPassword) } },
       );
 
       return models.Users.findOne({ _id: user._id });
@@ -618,8 +618,8 @@ export const loadUserClass = (models: IModels) => {
       newPassword: string;
     }) {
       // Password can not be empty string
-      if (newPassword === "") {
-        throw new Error("Password can not be empty");
+      if (newPassword === '') {
+        throw new Error('Password can not be empty');
       }
 
       this.checkPassword(newPassword);
@@ -630,7 +630,7 @@ export const loadUserClass = (models: IModels) => {
       const valid = await this.comparePassword(currentPassword, user.password);
 
       if (!valid) {
-        throw new Error("Incorrect current password");
+        throw new Error('Incorrect current password');
       }
 
       // set new password
@@ -638,7 +638,7 @@ export const loadUserClass = (models: IModels) => {
         { _id: user._id },
         {
           password: await this.generatePassword(newPassword),
-        }
+        },
       );
 
       return models.Users.findOne({ _id: user._id });
@@ -650,16 +650,16 @@ export const loadUserClass = (models: IModels) => {
     public static async forgotPassword(email: string) {
       // find user
       const user = await models.Users.findOne({
-        email: (email || "").toLowerCase().trim(),
+        email: (email || '').toLowerCase().trim(),
       });
 
       if (!user) {
-        throw new Error("Invalid email");
+        throw new Error('Invalid email');
       }
 
       // create the random token
       const buffer = await crypto.randomBytes(20);
-      const token = buffer.toString("hex");
+      const token = buffer.toString('hex');
 
       // save token & expiration date
       await models.Users.findByIdAndUpdate(
@@ -667,7 +667,7 @@ export const loadUserClass = (models: IModels) => {
         {
           resetPasswordToken: token,
           resetPasswordExpires: Date.now() + 86400000,
-        }
+        },
       );
 
       return token;
@@ -696,10 +696,10 @@ export const loadUserClass = (models: IModels) => {
         isOwner: _user.isOwner,
       };
 
-      const createToken = await jwt.sign({ user }, secret, { expiresIn: "1d" });
+      const createToken = await jwt.sign({ user }, secret, { expiresIn: '1d' });
 
       const createRefreshToken = await jwt.sign({ user }, secret, {
-        expiresIn: "7d",
+        expiresIn: '7d',
       });
 
       return [createToken, createRefreshToken];
@@ -709,7 +709,7 @@ export const loadUserClass = (models: IModels) => {
      * Renews tokens
      */
     public static async refreshTokens(refreshToken: string) {
-      let _id = "";
+      let _id = '';
 
       try {
         // validate refresh token
@@ -726,8 +726,11 @@ export const loadUserClass = (models: IModels) => {
       // recreate tokens
       const [newToken, newRefreshToken] = await this.createTokens(
         dbUser,
-        this.getSecret()
+        this.getSecret(),
       );
+
+      // without this, the new access token fails userMiddleware's redis check
+      await saveValidatedToken(newToken, dbUser);
 
       return {
         token: newToken,
@@ -750,30 +753,30 @@ export const loadUserClass = (models: IModels) => {
       deviceToken?: string;
       subdomain: string;
     }) {
-      email = (email || "").toLowerCase().trim();
-      password = (password || "").trim();
+      email = (email || '').toLowerCase().trim();
+      password = (password || '').trim();
 
       const user = await models.Users.findOne({
         $or: [
-          { email: { $regex: new RegExp(`^${email}$`, "i") } },
-          { username: { $regex: new RegExp(`^${email}$`, "i") } },
+          { email: { $regex: new RegExp(`^${email}$`, 'i') } },
+          { username: { $regex: new RegExp(`^${email}$`, 'i') } },
         ],
         isActive: true,
       });
 
       const services = await getServices();
 
-      if (!services.includes("activedirectory")) {
+      if (!services.includes('activedirectory')) {
         if (!user || !user.password) {
           // user with provided email not found
-          throw new Error("Invalid login");
+          throw new Error('Invalid login');
         }
 
         const valid = await this.comparePassword(password, user.password);
 
         if (!valid) {
           // bad password
-          throw new Error("Invalid login");
+          throw new Error('Invalid login');
         }
       }
 
@@ -785,24 +788,24 @@ export const loadUserClass = (models: IModels) => {
           try {
             const loginValid = await sendCommonMessage({
               subdomain,
-              action: "loginValidator",
+              action: 'loginValidator',
               serviceName,
               data: { email, password },
               isRPC: true,
-              defaultValue: "",
+              defaultValue: '',
             });
 
             if (!loginValid.status) {
               // bad password
               throw new Error(
-                `${serviceName} An error occurred while login, ${loginValid.error}`
+                `${serviceName} An error occurred while login, ${loginValid.error}`,
               );
             }
           } catch (e) {
             return console.error(
               serviceName,
-              "An error occurred while login",
-              e
+              'An error occurred while login',
+              e,
             );
           }
         }
@@ -810,13 +813,13 @@ export const loadUserClass = (models: IModels) => {
 
       if (!user) {
         // user with provided email not found
-        throw new Error("Invalid login");
+        throw new Error('Invalid login');
       }
 
       // create tokens
       const [token, refreshToken] = await this.createTokens(
         user,
-        this.getSecret()
+        this.getSecret(),
       );
 
       // storing tokens in user collection.
@@ -849,12 +852,12 @@ export const loadUserClass = (models: IModels) => {
       const actionMap = await userActionsMap(
         userPermissions,
         groupPermissions,
-        user
+        user,
       );
 
       await redis.set(
         `user_permissions_${user._id}`,
-        JSON.stringify(actionMap)
+        JSON.stringify(actionMap),
       );
 
       return {
@@ -868,16 +871,16 @@ export const loadUserClass = (models: IModels) => {
      */
     public static async logout(user: IUserDocument, currentToken: string) {
       const validatedToken = await redis.get(
-        `user_token_${user._id}_${currentToken}`
+        `user_token_${user._id}_${currentToken}`,
       );
 
       if (validatedToken) {
         await redis.del(`user_token_${user._id}_${currentToken}`);
 
-        return "loggedout";
+        return 'loggedout';
       }
 
-      return "token not found";
+      return 'token not found';
     }
 
     public static async generateUserCodeField() {
@@ -894,7 +897,7 @@ export const loadUserClass = (models: IModels) => {
         };
       }> = [];
 
-      let code = parseInt((await this.generateUserCode()) || "", 10);
+      let code = parseInt((await this.generateUserCode()) || '', 10);
 
       for (const user of users) {
         code++;
@@ -916,12 +919,12 @@ export const loadUserClass = (models: IModels) => {
         .limit(1);
 
       if (users.length === 0) {
-        return "000";
+        return '000';
       }
 
       const [user] = users;
 
-      let code = parseInt(user.code || "", 10);
+      let code = parseInt(user.code || '', 10);
 
       code++;
 
@@ -929,7 +932,7 @@ export const loadUserClass = (models: IModels) => {
     }
 
     public static getCodeString(code: number) {
-      return ("00" + code).slice(-3);
+      return ('00' + code).slice(-3);
     }
 
     public static async createSystemUser(app: IAppDocument) {
@@ -975,22 +978,22 @@ export const loadUserClass = (models: IModels) => {
     }) {
       const user = await models.Users.findOne({
         $or: [
-          { email: { $regex: new RegExp(`^${email}$`, "i") } },
-          { username: { $regex: new RegExp(`^${email}$`, "i") } },
+          { email: { $regex: new RegExp(`^${email}$`, 'i') } },
+          { username: { $regex: new RegExp(`^${email}$`, 'i') } },
         ],
         isActive: true,
       });
 
       if (!user || !user.password) {
         // user with provided email not found
-        throw new Error("Invalid login");
+        throw new Error('Invalid login');
       }
 
       const valid = await this.comparePassword(password, user.password);
 
       if (!valid) {
         // bad password
-        throw new Error("Invalid login");
+        throw new Error('Invalid login');
       }
 
       return user;
@@ -1014,10 +1017,10 @@ type ICommonUserMovement = {
 
 export interface IUserMovemmentModel extends Model<IUserMovementDocument> {
   manageStructureUsersMovement(
-    params: ICommonUserMovement
+    params: ICommonUserMovement,
   ): Promise<IUserMovementDocument>;
   manageUserMovement(
-    params: ICommonUserMovement
+    params: ICommonUserMovement,
   ): Promise<IUserMovementDocument>;
 }
 
@@ -1026,7 +1029,7 @@ export const loadUserMovemmentClass = (models: IModels) => {
     public static async manageUserMovement(params: ICommonUserMovement) {
       const user = params.user as IUserDocument;
 
-      for (const contentType of ["department", "branch"]) {
+      for (const contentType of ['department', 'branch']) {
         const contentTypeIds = user[`${contentType}Ids`] || [];
 
         const removed = (
@@ -1057,7 +1060,7 @@ export const loadUserMovemmentClass = (models: IModels) => {
             },
             {
               $set: { isActive: false },
-            }
+            },
           );
           await models.UserMovements.insertMany(removed);
         }
@@ -1070,7 +1073,7 @@ export const loadUserMovemmentClass = (models: IModels) => {
             isActive: true,
             status: { $ne: USER_MOVEMENT_STATUSES.REMOVED },
           },
-          { $set: { isActive: false } }
+          { $set: { isActive: false } },
         );
 
         for (const contentTypeId of contentTypeIds) {
@@ -1097,7 +1100,7 @@ export const loadUserMovemmentClass = (models: IModels) => {
     }
 
     public static async manageStructureUsersMovement(
-      params: ICommonUserMovement
+      params: ICommonUserMovement,
     ) {
       const { createdBy, userIds, contentType, contentTypeId } = params;
       const fieldName = `${contentType}Ids`;
@@ -1106,12 +1109,12 @@ export const loadUserMovemmentClass = (models: IModels) => {
           _id: { $nin: userIds },
           [fieldName]: { $in: [contentTypeId] },
         },
-        { $pull: { [fieldName]: contentTypeId } }
+        { $pull: { [fieldName]: contentTypeId } },
       );
 
       await models.Users.updateMany(
         { _id: { $in: userIds } },
-        { $addToSet: { [fieldName]: contentTypeId } }
+        { $addToSet: { [fieldName]: contentTypeId } },
       );
 
       const userMovements = await models.UserMovements.find({
@@ -1123,7 +1126,7 @@ export const loadUserMovemmentClass = (models: IModels) => {
       const removedFromContentType = userMovements
         .filter(
           (movement) =>
-            !userIds?.some((userId) => userId === movement.userId) && movement
+            !userIds?.some((userId) => userId === movement.userId) && movement,
         )
         .map(({ createdBy, contentType, contentTypeId, userId }) => ({
           createdBy,
@@ -1144,7 +1147,7 @@ export const loadUserMovemmentClass = (models: IModels) => {
           status: { $ne: USER_MOVEMENT_STATUSES.REMOVED },
           isActive: true,
         },
-        { $set: { isActive: false } }
+        { $set: { isActive: false } },
       );
 
       for (const userId of userIds || []) {
@@ -1165,7 +1168,7 @@ export const loadUserMovemmentClass = (models: IModels) => {
         }
       }
 
-      return "edited";
+      return 'edited';
     }
   }
   userMovemmentSchema.loadClass(UserMovemment);

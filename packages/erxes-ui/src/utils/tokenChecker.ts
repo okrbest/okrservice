@@ -6,18 +6,18 @@
  */
 const getTokenFromCookie = (): string | null => {
   if (typeof document === 'undefined') return null;
-  
+
   try {
     const cookies = document.cookie.split(';');
-    const tokenCookie = cookies.find(cookie => 
-      cookie.trim().startsWith('auth-token=')
+    const tokenCookie = cookies.find((cookie) =>
+      cookie.trim().startsWith('auth-token='),
     );
-    
+
     if (!tokenCookie) {
       // 쿠키가 없으면 null 반환 (만료로 간주하지 않음)
       return null;
     }
-    
+
     const token = tokenCookie.split('=').slice(1).join('=').trim();
     return token || null;
   } catch (e) {
@@ -34,15 +34,15 @@ const decodeJWT = (token: string): any => {
   try {
     const base64Url = token.split('.')[1];
     if (!base64Url) return null;
-    
+
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(''),
     );
-    
+
     return JSON.parse(jsonPayload);
   } catch (e) {
     return null;
@@ -63,7 +63,7 @@ export const isTokenExpired = (): boolean => {
   if (forceExpired) {
     return true;
   }
-  
+
   // httpOnly 쿠키는 JavaScript에서 읽을 수 없으므로,
   // 실제 토큰 만료 체크는 불가능합니다.
   // 서버에서 "Login required" 에러가 발생하면 Apollo Client의 errorLink에서 처리됩니다.
@@ -82,20 +82,22 @@ export const setForceExpired = (expired: boolean) => {
 /**
  * 현재 토큰 정보 확인 (디버깅용)
  * 브라우저 콘솔에서 사용: window.checkTokenInfo()
- * 
+ *
  * 주의: httpOnly 쿠키는 JavaScript에서 읽을 수 없으므로,
  * 실제 토큰 정보는 확인할 수 없습니다.
  */
 export const checkTokenInfo = () => {
   console.log('ℹ️ httpOnly 쿠키는 JavaScript에서 읽을 수 없습니다.');
   console.log('ℹ️ 실제 토큰 만료 체크는 서버에서 이루어집니다.');
-  console.log('ℹ️ 테스트를 위해서는 window.testTokenExpiration(true)를 사용하세요.');
+  console.log(
+    'ℹ️ 테스트를 위해서는 window.testTokenExpiration(true)를 사용하세요.',
+  );
   console.log('ℹ️ 토큰 만료는 서버에서 "Login required" 에러로 감지됩니다.');
-  
+
   return {
     message: 'httpOnly 쿠키는 JavaScript에서 읽을 수 없습니다.',
     testCommand: 'window.testTokenExpiration(true) - 토큰 만료 시뮬레이션',
-    resetCommand: 'window.testTokenExpiration(false) - 정상 상태로 복구'
+    resetCommand: 'window.testTokenExpiration(false) - 정상 상태로 복구',
   };
 };
 
@@ -108,12 +110,12 @@ export const testTokenValidity = async () => {
     // getEnv를 동적으로 import
     const { getEnv } = await import('./core');
     const { REACT_APP_API_URL } = getEnv();
-    
+
     if (!REACT_APP_API_URL) {
       console.error('❌ API URL을 찾을 수 없습니다.');
       return { valid: false, reason: 'No API URL' };
     }
-    
+
     // 간단한 GraphQL 쿼리로 토큰 유효성 확인
     const response = await fetch(`${REACT_APP_API_URL}/graphql`, {
       method: 'POST',
@@ -129,23 +131,26 @@ export const testTokenValidity = async () => {
               email
             }
           }
-        `
-      })
+        `,
+      }),
     });
 
     const result = await response.json();
-    
-    if (result.errors && result.errors.some((e: any) => e.message === 'Login required')) {
+
+    if (
+      result.errors &&
+      result.errors.some((e: any) => e.message === 'Login required')
+    ) {
       console.log('❌ 토큰이 만료되었습니다. (Login required 에러)');
       return { valid: false, reason: 'Login required' };
     }
-    
+
     if (result.data && result.data.currentUser) {
       console.log('✅ 토큰이 유효합니다.');
       console.log('사용자 정보:', result.data.currentUser);
       return { valid: true, user: result.data.currentUser };
     }
-    
+
     console.log('⚠️ 토큰 상태를 확인할 수 없습니다.');
     return { valid: false, reason: 'Unknown' };
   } catch (e) {
@@ -163,14 +168,14 @@ export const forceTokenExpiration = async () => {
     // getEnv를 동적으로 import
     const { getEnv } = await import('./core');
     const { REACT_APP_API_URL } = getEnv();
-    
+
     if (!REACT_APP_API_URL) {
       console.error('❌ API URL을 찾을 수 없습니다.');
       return { success: false, reason: 'No API URL' };
     }
-    
+
     console.log('🔄 서버에서 토큰을 만료시키는 중...');
-    
+
     // 로그아웃 mutation 호출
     const response = await fetch(`${REACT_APP_API_URL}/graphql`, {
       method: 'POST',
@@ -183,29 +188,29 @@ export const forceTokenExpiration = async () => {
           mutation {
             logout
           }
-        `
-      })
+        `,
+      }),
     });
 
     const result = await response.json();
-    
+
     if (result.errors) {
       console.error('❌ 로그아웃 실패:', result.errors);
       return { success: false, errors: result.errors };
     }
-    
+
     if (result.data && result.data.logout) {
       console.log('✅ 토큰이 성공적으로 만료되었습니다. (로그아웃 완료)');
       console.log('이제 로그인 화면으로 리다이렉트됩니다...');
-      
+
       // 로그인 화면으로 리다이렉트
       setTimeout(() => {
         window.location.href = '/';
       }, 500);
-      
+
       return { success: true, message: 'Token expired' };
     }
-    
+
     console.log('⚠️ 로그아웃 결과를 확인할 수 없습니다.');
     return { success: false, reason: 'Unknown' };
   } catch (e) {
@@ -230,11 +235,11 @@ const checkTokenExpirationWithAPI = async (): Promise<boolean> => {
   try {
     const { getEnv } = await import('./core');
     const { REACT_APP_API_URL } = getEnv();
-    
+
     if (!REACT_APP_API_URL) {
       return false;
     }
-    
+
     const response = await fetch(`${REACT_APP_API_URL}/graphql`, {
       method: 'POST',
       headers: {
@@ -248,17 +253,20 @@ const checkTokenExpirationWithAPI = async (): Promise<boolean> => {
               _id
             }
           }
-        `
-      })
+        `,
+      }),
     });
 
     const result = await response.json();
-    
+
     // "Login required" 에러가 있으면 토큰이 만료된 것
-    if (result.errors && result.errors.some((e: any) => e.message === 'Login required')) {
+    if (
+      result.errors &&
+      result.errors.some((e: any) => e.message === 'Login required')
+    ) {
       return true; // 만료됨
     }
-    
+
     return false; // 유효함
   } catch (e) {
     // 에러 발생 시 만료로 간주하지 않음
@@ -272,16 +280,16 @@ const checkTokenExpirationWithAPI = async (): Promise<boolean> => {
  */
 export const setupTokenExpirationChecker = () => {
   if (typeof window === 'undefined') return () => {};
-  
+
   let timeoutId: NodeJS.Timeout | null = null;
   let isChecking = false; // 중복 체크 방지
-  
+
   const checkAndRedirect = async () => {
     // 이미 체크 중이면 무시
     if (isChecking) {
       return;
     }
-    
+
     // 로그인 관련 페이지에서는 체크하지 않음
     const pathname = window.location.pathname;
     if (
@@ -292,20 +300,26 @@ export const setupTokenExpirationChecker = () => {
     ) {
       return;
     }
-    
+
     // 클라이언트 강제 만료 플래그 체크
     if (isTokenExpired()) {
       window.location.href = '/';
       return;
     }
-    
+
     // 실제 API로 토큰 상태 확인
     isChecking = true;
     try {
       const isExpired = await checkTokenExpirationWithAPI();
       if (isExpired) {
-        console.log('토큰이 만료되었습니다. 로그인 화면으로 리다이렉트합니다.');
-        window.location.href = '/';
+        const { refreshAuthToken } = await import('./authRefresh');
+        const refreshed = await refreshAuthToken();
+        if (!refreshed) {
+          console.log(
+            '토큰이 만료되었습니다. 로그인 화면으로 리다이렉트합니다.',
+          );
+          window.location.href = '/';
+        }
       }
     } catch (e) {
       // 에러 발생 시 무시
@@ -313,7 +327,7 @@ export const setupTokenExpirationChecker = () => {
       isChecking = false;
     }
   };
-  
+
   // 정확한 만료 시점에 체크하도록 스케줄링
   // 초기 호출 시에는 즉시 API를 호출하지 않고, 23시간 후에 체크하도록 타이머만 등록.
   // withCurrentUser가 이미 currentUser 쿼리를 담당하므로 중복 호출 불필요.
@@ -344,13 +358,20 @@ export const setupTokenExpirationChecker = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ query: `query { currentUser { _id } }` })
+          body: JSON.stringify({ query: `query { currentUser { _id } }` }),
         });
 
         const result = await response.json();
-        if (result.errors && result.errors.some((e: any) => e.message === 'Login required')) {
-          window.location.href = '/';
-          return;
+        if (
+          result.errors &&
+          result.errors.some((e: any) => e.message === 'Login required')
+        ) {
+          const { refreshAuthToken } = await import('./authRefresh');
+          const refreshed = await refreshAuthToken();
+          if (!refreshed) {
+            window.location.href = '/';
+            return;
+          }
         }
 
         scheduleExpirationCheck();
@@ -359,7 +380,7 @@ export const setupTokenExpirationChecker = () => {
       }
     }, checkInterval);
   };
-  
+
   // 클릭 이벤트 핸들러
   const handleClick = (e: MouseEvent) => {
     const pathname = window.location.pathname;
@@ -371,7 +392,7 @@ export const setupTokenExpirationChecker = () => {
     ) {
       return;
     }
-    
+
     // 클라이언트 강제 만료 플래그만 체크 (빠른 응답)
     if (isTokenExpired()) {
       e.preventDefault();
@@ -379,11 +400,11 @@ export const setupTokenExpirationChecker = () => {
       window.location.href = '/';
     }
   };
-  
+
   // 초기 로드 시 API 호출 없이 23h 타이머만 등록.
   // 토큰 만료 감지는 Apollo errorLink와 withCurrentUser가 담당.
   scheduleExpirationCheck();
-  
+
   // 탭이 다시 활성화될 때도 체크
   const handleVisibilityChange = () => {
     if (!document.hidden) {
@@ -392,11 +413,11 @@ export const setupTokenExpirationChecker = () => {
       scheduleExpirationCheck(); // 스케줄링도 다시 설정
     }
   };
-  
+
   // 캡처 단계에서 이벤트 리스너 추가 (다른 핸들러보다 먼저 실행)
   document.addEventListener('click', handleClick, true);
   document.addEventListener('visibilitychange', handleVisibilityChange);
-  
+
   return () => {
     if (timeoutId) {
       clearTimeout(timeoutId);
@@ -405,4 +426,3 @@ export const setupTokenExpirationChecker = () => {
     document.removeEventListener('visibilitychange', handleVisibilityChange);
   };
 };
-
