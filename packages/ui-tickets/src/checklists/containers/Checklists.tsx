@@ -1,12 +1,13 @@
-import { gql } from "@apollo/client";
-import * as compose from "lodash.flowright";
-import { IItemParams } from "../../boards/types";
-import { withProps } from "@erxes/ui/src/utils";
-import React, { useEffect } from "react";
-import { graphql } from "@apollo/client/react/hoc";
-import { queries, subscriptions } from "../graphql";
-import { ChecklistsQueryResponse, IChecklistsParam } from "../types";
-import List from "./List";
+import { gql } from '@apollo/client';
+import * as compose from 'lodash.flowright';
+import { IItemParams } from '../../boards/types';
+import { withProps } from '@erxes/ui/src/utils';
+import React, { useEffect } from 'react';
+import { graphql } from '@apollo/client/react/hoc';
+import * as Sentry from '@sentry/react';
+import { queries, subscriptions } from '../graphql';
+import { ChecklistsQueryResponse, IChecklistsParam } from '../types';
+import List from './List';
 
 type IProps = {
   contentType: string;
@@ -24,18 +25,36 @@ function ChecklistsContainer(props: FinalProps) {
     props;
 
   useEffect(() => {
-    return checklistsQuery.subscribeToMore({
+    Sentry.addBreadcrumb({
+      category: 'socket',
+      message: 'checklists subscribeToMore start',
+      level: 'info',
+      data: { contentType, contentTypeId },
+    });
+
+    const unsubscribe = checklistsQuery.subscribeToMore({
       document: gql(subscriptions.checklistsChanged),
       variables: { contentType, contentTypeId },
       updateQuery: () => {
         checklistsQuery.refetch();
-      }
+      },
     });
-  });
+
+    return () => {
+      Sentry.addBreadcrumb({
+        category: 'socket',
+        message: 'checklists subscribeToMore stop',
+        level: 'info',
+        data: { contentType, contentTypeId },
+      });
+      unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentType, contentTypeId]);
 
   const checklists = checklistsQuery.ticketsChecklists || [];
 
-  return checklists.map(list => (
+  return checklists.map((list) => (
     <List
       key={list._id}
       listId={list._id}
@@ -51,15 +70,15 @@ export default withProps<IProps>(
     graphql<IProps, ChecklistsQueryResponse, IChecklistsParam>(
       gql(queries.checklists),
       {
-        name: "checklistsQuery",
+        name: 'checklistsQuery',
         options: ({ contentType, contentTypeId }) => ({
           variables: {
             contentType,
-            contentTypeId
+            contentTypeId,
           },
-          refetchQueries: ["checklists"]
-        })
-      }
-    )
-  )(ChecklistsContainer)
+          refetchQueries: ['checklists'],
+        }),
+      },
+    ),
+  )(ChecklistsContainer),
 );
