@@ -3,6 +3,7 @@ import {
   Route,
   BrowserRouter as Router,
   useLocation,
+  useNavigationType,
 } from 'react-router-dom';
 import { pluginLayouts, pluginRouters } from './pluginUtils';
 import * as Sentry from '@sentry/react';
@@ -34,6 +35,7 @@ import {
   isDiagnosticTargetEnabled,
 } from '@erxes/ui/src/utils/diagnosticTarget';
 import { setupPerformanceObserver } from '@erxes/ui/src/utils/perfObserver';
+import { setupLifecycleObserver } from '@erxes/ui/src/utils/lifecycleObserver';
 
 const MainLayout = asyncComponent(
   () =>
@@ -192,6 +194,28 @@ const renderRoutes = (currentUser) => {
   );
 };
 
+// 증상 3(예기치 않은 화면 이동) 진단용 - 라우트 변경을 from→to + navigationType과 함께 기록.
+// navigationType이 POP이면 뒤로/앞으로가기(브라우저 액션), PUSH/REPLACE면 그 외(링크 클릭 또는 코드에 의한 이동)
+const RouteChangeTracker = () => {
+  const location = useLocation();
+  const navigationType = useNavigationType();
+  const prevPathRef = React.useRef(location.pathname);
+
+  React.useEffect(() => {
+    if (prevPathRef.current !== location.pathname) {
+      Sentry.addBreadcrumb({
+        category: 'navigation',
+        message: `route changed (${navigationType})`,
+        level: 'info',
+        data: { from: prevPathRef.current, to: location.pathname },
+      });
+      prevPathRef.current = location.pathname;
+    }
+  }, [location.pathname, navigationType]);
+
+  return null;
+};
+
 const Routes = ({ currentUser }: { currentUser: IUser }) => {
   React.useEffect(() => {
     // 클릭 이벤트 리스너 설정 (토큰 만료 체크)
@@ -212,6 +236,14 @@ const Routes = ({ currentUser }: { currentUser: IUser }) => {
   }, []);
 
   React.useEffect(() => {
+    const cleanup = setupLifecycleObserver();
+
+    return () => {
+      cleanup();
+    };
+  }, []);
+
+  React.useEffect(() => {
     // DB의 diagnosticLoggingEnabled 플래그가 켜진 사용자는 Sentry 트레이싱/리플레이를
     // 표본율과 무관하게 100% 기록하도록 강제한다 (특정 사용자 문제 추적용).
     setDiagnosticTarget(Boolean(currentUser?.diagnosticLoggingEnabled));
@@ -225,6 +257,7 @@ const Routes = ({ currentUser }: { currentUser: IUser }) => {
 
   return (
     <Router>
+      <RouteChangeTracker />
       <BrowserRoutes>
         <Route
           key="/unsubscribe"

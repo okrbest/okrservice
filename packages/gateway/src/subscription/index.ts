@@ -23,6 +23,11 @@ import { getSubdomain } from '../util/subdomain';
 
 let disposable: Disposable | undefined;
 
+// 티켓 상세 화면이 갑자기 닫히는 증상(증상 3) 진단용 - 구독 연결이 얼마나
+// 오래 유지됐다가 어떤 사유로 끊겼는지 기록. ctx 자체는 재사용되지 않으므로
+// WeakMap으로 연결별 시작 시각만 따로 들고 있는다.
+const subscriptionConnectedAt = new WeakMap<object, number>();
+
 export async function stopSubscriptionServer() {
   if (disposable) {
     try {
@@ -77,6 +82,17 @@ export async function startSubscriptionServer(httpServer: http.Server) {
     {
       execute,
       subscribe,
+      onConnect: (ctx) => {
+        subscriptionConnectedAt.set(ctx, Date.now());
+      },
+      onClose: (ctx, code, reason) => {
+        const connectedAt = subscriptionConnectedAt.get(ctx);
+        const durationMs = connectedAt ? Date.now() - connectedAt : undefined;
+        subscriptionConnectedAt.delete(ctx);
+        console.log(
+          `[Subscription] connection closed. code=${code} reason=${reason} durationMs=${durationMs}`,
+        );
+      },
       context: (ctx, _msg: SubscribeMessage, _args: ExecutionArgs) => {
         const gatewayDataSource = new SubscriptionResolver(
           `http://127.0.0.1:${apolloRouterPort}`,

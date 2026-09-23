@@ -2,6 +2,7 @@ import {
   createHttpLink,
   from,
   ApolloClient,
+  ApolloLink,
   InMemoryCache,
 } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
@@ -30,6 +31,18 @@ const httpLink = createHttpLink({
 
 // 중복 리다이렉트 방지를 위한 플래그
 let isRedirecting = false;
+
+// httpOnly 쿠키라 JS에서 JWT exp를 직접 읽을 수 없어서, "마지막으로 요청이
+// 성공한 시각"을 대신 추적한다. 강제 리다이렉트 시점에 이 값과의 차이를
+// 같이 남기면 "활동이 뜸해진 지 오래돼서 만료" vs "활동 중인데 튕김"을 구분할 수 있다.
+let lastSuccessfulRequestAt = Date.now();
+
+const activityTrackingLink = new ApolloLink((operation, forward) => {
+  return forward(operation).map((response) => {
+    lastSuccessfulRequestAt = Date.now();
+    return response;
+  });
+});
 
 const isAuthError = (graphQLErrors: any, networkError: any): boolean => {
   if (
@@ -72,6 +85,9 @@ const redirectToLogin = (reason: string) => {
   Sentry.captureMessage(reason, {
     level: 'warning',
     tags: { session_event: 'forced_redirect' },
+    extra: {
+      msSinceLastSuccessfulRequest: Date.now() - lastSuccessfulRequestAt,
+    },
   });
   window.location.href = '/';
 };
@@ -133,7 +149,12 @@ const authLink = setContext((_, { headers }) => {
 });
 
 // Combining httpLink and warelinks altogether
-const httpLinkWithMiddleware = from([errorLink, authLink, httpLink]);
+const httpLinkWithMiddleware = from([
+  errorLink,
+  authLink,
+  activityTrackingLink,
+  httpLink,
+]);
 
 // Subscription config
 export const wsLink: any = new GraphQLWsLink(

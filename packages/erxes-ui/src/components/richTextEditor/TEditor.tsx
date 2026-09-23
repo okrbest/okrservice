@@ -52,10 +52,37 @@ import { RichTextEditorProvider } from './RichTextEditor.context';
 import { RichTextEditorToolbar } from './RichTextEditorToolbar/RichTextEditorToolbar';
 import { RichTextEditorWrapper } from './styles';
 import Separator from './RichTextEditorControlsGroup/Separator';
+import * as Sentry from '@sentry/react';
 import {
   readDescriptionDraftFromStorage,
   serializeDescriptionDraft,
 } from '../../utils/descriptionDraft';
+
+// 증상 1/3(작성 중 날아감) 진단용 - draft 저장 성공/실패와 내용 길이를 기록.
+// localStorage.setItem은 용량 초과(QuotaExceededError)나 프라이빗 모드에서
+// 예외를 던질 수 있는데, 지금까지 이 실패가 무음으로 삼켜지고 있었다.
+const saveDraftToLocalStorage = (
+  key: string,
+  content: string,
+  baseline: string,
+) => {
+  try {
+    localStorage.setItem(key, serializeDescriptionDraft(content, baseline));
+    Sentry.addBreadcrumb({
+      category: 'editor',
+      message: 'draft saved',
+      level: 'info',
+      data: { contentLength: content.length },
+    });
+  } catch (e: any) {
+    Sentry.addBreadcrumb({
+      category: 'editor',
+      message: 'draft save failed',
+      level: 'error',
+      data: { contentLength: content.length, error: e?.message },
+    });
+  }
+};
 
 const POSITION_TOP = 'top';
 const POSITION_BOTTOM = 'bottom';
@@ -196,9 +223,10 @@ const RichTextEditor = forwardRef(function RichTextEditor(
         localStorageDebounceRef.current = setTimeout(() => {
           localStorageDebounceRef.current = null;
           const latestContent = editor.getHTML();
-          localStorage.setItem(
+          saveDraftToLocalStorage(
             name,
-            serializeDescriptionDraft(latestContent, descriptionBaseline ?? ''),
+            latestContent,
+            descriptionBaseline ?? '',
           );
         }, LOCAL_STORAGE_DEBOUNCE_MS);
       }
@@ -500,10 +528,7 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     onChange && onChange(editorContent);
 
     if (name && typeof window !== 'undefined') {
-      localStorage.setItem(
-        name,
-        serializeDescriptionDraft(editorContent, descriptionBaseline ?? ''),
-      );
+      saveDraftToLocalStorage(name, editorContent, descriptionBaseline ?? '');
     }
 
     setIsSourceEnabled(!isSourceEnabled);
