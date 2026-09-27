@@ -1,37 +1,39 @@
 import { useEffect, useState } from 'react';
-import { CHATBOT_MENUS, ChatbotMenu } from './chatbotMenus';
-import { KEYWORD_MAP } from './chatbotKeywordMap';
+import { ChatbotMenu } from './chatbotMenus';
+import { findKeywordEntry, getMenusForText } from './chatbotMenuMatch';
 
 interface ChatbotSuggestionResult {
-  menus: ChatbotMenu[]
-  questions: string[]
+  // 추천이 반응한 단어 — 팝업 머리말과 질문 속 강조에 쓴다
+  keyword: string;
+  menus: ChatbotMenu[];
+  questions: string[];
 }
 
-const EMPTY: ChatbotSuggestionResult = { menus: [], questions: [] };
+const EMPTY: ChatbotSuggestionResult = {
+  keyword: '',
+  menus: [],
+  questions: [],
+};
 
-export function useChatbotKeywordSuggestions(input: string): ChatbotSuggestionResult {
+export function useChatbotKeywordSuggestions(
+  input: string,
+): ChatbotSuggestionResult {
   const [result, setResult] = useState<ChatbotSuggestionResult>(EMPTY);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (input.trim().length < 2) {
-        setResult(EMPTY);
-        return;
-      }
-
-      // 첫 번째 매칭 키워드만 사용 (복수 키워드 동시 입력 시 우선순위: KEYWORD_MAP 정의 순)
-      const entry = Object.entries(KEYWORD_MAP).find(([keyword]) =>
-        input.includes(keyword)
-      );
+      const entry = findKeywordEntry(input);
 
       if (!entry) {
         setResult(EMPTY);
         return;
       }
 
-      const [, match] = entry;
-      const menus = CHATBOT_MENUS.filter((m) => match.menuIds.includes(m.id));
-      setResult({ menus, questions: match.suggestedQuestions });
+      setResult({
+        keyword: entry.keyword,
+        menus: getMenusForText(input),
+        questions: entry.match.suggestedQuestions,
+      });
     }, 500);
 
     return () => clearTimeout(timer);

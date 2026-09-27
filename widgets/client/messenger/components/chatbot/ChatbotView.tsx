@@ -16,6 +16,10 @@ import { ScheduledMessage } from './chatbotMessages';
 import { RpaMessageItem } from '../../context/RpaMessage';
 import { streamChat } from './teamplgpt';
 import { useChatbotKeywordSuggestions } from './useChatbotKeywordSuggestions';
+import { getMenusForText } from './chatbotMenuMatch';
+import AnswerMenuPanel from './AnswerMenuPanel';
+import MarkdownTable from './MarkdownTable';
+import CopyAnswerButton from './CopyAnswerButton';
 import ChatbotSuggestions from './ChatbotSuggestions';
 import { dispatchViz, VizBlockRenderer } from './vizRenderers';
 import { chatbotTheme } from './chatbotTheme';
@@ -120,6 +124,9 @@ const ACTION_BUTTON_GROUP_STYLE: React.CSSProperties = {
   width: 'fit-content',
   maxWidth: '100%',
 };
+
+// 답변 아래 HR 메뉴 바로가기는 이 개수까지만 — 답변보다 버튼이 눈에 띄지 않게
+const MAX_ANSWER_MENU_BUTTONS = 3;
 
 function createActionButtonStyle(
   primaryColor: string,
@@ -312,85 +319,16 @@ function renderMarkdown(text: string): React.ReactNode[] {
   const flushTable = () => {
     if (tableHeaders.length === 0) return;
     const key = `table-${nextKey()}`;
-    const cellStyle = (
-      align: 'left' | 'center' | 'right',
-    ): React.CSSProperties => ({
-      padding: '6px 10px',
-      textAlign: align,
-      borderBottom: `1px solid ${T.color.border}`,
-      fontSize: '12px',
-      lineHeight: 1.5,
-      whiteSpace: 'pre-wrap' as const,
-      wordBreak: 'keep-all' as const,
-    });
-    // "요일" 컬럼의 토/일 값만 강조 색상 — 근무현황 등 일자별 표에서 주말을
-    // 한눈에 구분하기 위함(달력 관용 색: 토=파랑, 일=빨강)
-    const weekColIndex = tableHeaders.findIndex((h) => h.trim() === '요일');
-    const weekendColor = (raw: string): string | undefined => {
-      const v = raw.trim();
-      if (v === '토') return '#2563eb';
-      if (v === '일') return T.color.destructive;
-      return undefined;
-    };
     nodes.push(
-      <div
+      <MarkdownTable
         key={key}
-        style={{
-          overflowX: 'auto',
-          margin: '8px 0',
-          WebkitOverflowScrolling: 'touch',
-        }}
-      >
-        <table
-          style={{
-            borderCollapse: 'collapse',
-            width: '100%',
-            fontSize: '12px',
-          }}
-        >
-          <thead>
-            <tr style={{ background: T.color.muted }}>
-              {tableHeaders.map((h, ci) => (
-                <th
-                  key={ci}
-                  style={{
-                    ...cellStyle(tableAligns[ci] || 'left'),
-                    fontWeight: 700,
-                    color: T.color.foreground,
-                    borderBottom: `1px solid ${T.color.border}`,
-                    whiteSpace: 'nowrap' as const,
-                  }}
-                >
-                  {renderInline(h, `th-${key}-${ci}`)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {tableRows.map((row, ri) => (
-              // 참고 UI와 동일하게 줄무늬 없이 border-bottom만 사용
-              <tr key={ri}>
-                {tableHeaders.map((_, ci) => {
-                  const raw = row[ci] ?? '';
-                  const isWeekCol = ci === weekColIndex;
-                  const color = isWeekCol ? weekendColor(raw) : undefined;
-                  return (
-                    <td
-                      key={ci}
-                      style={{
-                        ...cellStyle(tableAligns[ci] || 'left'),
-                        ...(color ? { color, fontWeight: 700 } : null),
-                      }}
-                    >
-                      {renderInline(raw, `td-${key}-${ri}-${ci}`)}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>,
+        headers={tableHeaders}
+        aligns={tableAligns}
+        rows={tableRows}
+        renderInline={(text, keyPrefix) =>
+          renderInline(text, `${key}-${keyPrefix}`)
+        }
+      />,
     );
     tableHeaders = [];
     tableAligns = [];
@@ -685,7 +623,7 @@ const HEADER_ACTION_ROW_STYLE: React.CSSProperties = {
 
 // 참고 UI(.cmm-ai-header-btns button)와 동일하게 아이콘 전용 고스트 버튼 —
 // 평소엔 배경 없이 아이콘만, hover 시에만 반투명 배경이 옅게 들어온다.
-// (헤더 배경이 테넌트 브랜드색이라 흰 아이콘 유지, hover는 흰 배경을 더 진하게)
+// (위쪽 막대가 흰 바탕이라 회색 아이콘, hover는 옅은 회색 배경)
 function headerIconButtonStyle(
   isHovered: boolean,
   isDisabled: boolean,
@@ -698,8 +636,8 @@ function headerIconButtonStyle(
     height: '32px',
     borderRadius: '8px',
     border: 'none',
-    background: isHovered ? 'rgba(255,255,255,0.28)' : 'transparent',
-    color: '#fff',
+    background: isHovered ? '#f1f2f5' : 'transparent',
+    color: '#6d6f78',
     cursor: isDisabled ? 'default' : 'pointer',
     transition: 'background 0.12s ease',
     outline: 'none',
@@ -732,12 +670,25 @@ const ChatbotView: React.FC = () => {
   React.useEffect(() => {
     return () => abortRef.current?.abort();
   }, []);
-  const { menus: suggestionMenus, questions: suggestionQuestions } =
-    useChatbotKeywordSuggestions(inputValue);
+  const {
+    keyword: suggestionKeyword,
+    menus: suggestionMenus,
+    questions: suggestionQuestions,
+  } = useChatbotKeywordSuggestions(inputValue);
 
   const showSuggestions =
     dismissedForValue !== inputValue &&
     (suggestionMenus.length > 0 || suggestionQuestions.length > 0);
+
+  // 추천 팝업 키보드 선택 위치 (메뉴 → 질문 순, -1이면 선택 없음 — Enter는 평소처럼 전송)
+  const [activeSuggestion, setActiveSuggestion] = React.useState(-1);
+  const suggestionCount = showSuggestions
+    ? suggestionMenus.length + suggestionQuestions.length
+    : 0;
+
+  React.useEffect(() => {
+    setActiveSuggestion(-1);
+  }, [inputValue, suggestionKeyword, suggestionCount]);
 
   const [sessionId, setSessionId] = React.useState<string>(() =>
     getActiveSessionId(),
@@ -815,6 +766,7 @@ const ChatbotView: React.FC = () => {
       text: '',
       createdAt: now + 1,
       streaming: true,
+      menuIds: getMenusForText(text).map((menu) => menu.id),
     };
 
     setAiMessages((prev) => [...prev, userMsg, botMsg]);
@@ -892,7 +844,47 @@ const ChatbotView: React.FC = () => {
     }
   };
 
+  // 추천 팝업이 떠 있을 때의 ↑↓·Enter·Esc — 처리했으면 true
+  const handleSuggestionKey = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+  ): boolean => {
+    // 한글 조합 중에는 IME가 키를 쓰므로 가로채지 않는다
+    if (suggestionCount === 0 || e.nativeEvent.isComposing) return false;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveSuggestion((i) => (i + 1) % suggestionCount);
+      return true;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveSuggestion((i) => (i <= 0 ? suggestionCount - 1 : i - 1));
+      return true;
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setDismissedForValue(inputValue);
+      return true;
+    }
+    if (e.key === 'Enter' && !e.shiftKey && activeSuggestion >= 0) {
+      e.preventDefault();
+      if (activeSuggestion < suggestionMenus.length) {
+        const menu = suggestionMenus[activeSuggestion];
+        handleMenuClick(menu.label, menu.path);
+        setDismissedForValue(inputValue);
+      } else {
+        const q =
+          suggestionQuestions[activeSuggestion - suggestionMenus.length];
+        setInputValue(q);
+        setDismissedForValue(q);
+      }
+      return true;
+    }
+    return false;
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (handleSuggestionKey(e)) return;
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -1189,6 +1181,17 @@ const ChatbotView: React.FC = () => {
 
             if (item.kind === 'ai-bot') {
               const msg = item.data;
+              // 답변이 끝난 정상 응답에만 바로가기를 붙인다
+              const answerMenus =
+                msg.streaming || msg.isError
+                  ? []
+                  : (msg.menuIds || [])
+                      .map((id) => CHATBOT_MENUS.find((menu) => menu.id === id))
+                      .filter(
+                        (menu): menu is (typeof CHATBOT_MENUS)[number] =>
+                          !!menu,
+                      )
+                      .slice(0, MAX_ANSWER_MENU_BUTTONS);
               return (
                 <div
                   key={`ai-bot-${msg.id}`}
@@ -1243,6 +1246,16 @@ const ChatbotView: React.FC = () => {
                         ''
                       )}
                     </div>
+                    {!msg.streaming && !msg.isError && msg.text && (
+                      <CopyAnswerButton text={msg.text} />
+                    )}
+                    <AnswerMenuPanel
+                      menus={answerMenus}
+                      primaryColor={primaryColor}
+                      onSelect={(menu) =>
+                        handleMenuClick(menu.label, menu.path)
+                      }
+                    />
                   </div>
                 </div>
               );
@@ -1257,6 +1270,9 @@ const ChatbotView: React.FC = () => {
 
         {/* ── 키워드 추천 팝업 (overflow 클리핑 방지를 위해 입력 div 밖 형제 요소로 배치) ── */}
         <ChatbotSuggestions
+          keyword={suggestionKeyword}
+          activeIndex={activeSuggestion}
+          primaryColor={primaryColor}
           menus={showSuggestions ? suggestionMenus : []}
           questions={showSuggestions ? suggestionQuestions : []}
           onMenuClick={(menu) => {

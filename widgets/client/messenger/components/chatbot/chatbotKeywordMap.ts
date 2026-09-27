@@ -1,151 +1,247 @@
 export interface KeywordMatch {
-  menuIds: string[]
-  suggestedQuestions: string[]
+  menuIds: string[];
+  suggestedQuestions: string[];
 }
 
 // ─── 신청 메뉴가 있는 항목 ───────────────────────────────────────────
 
 const ATTENDANCE = {
-  menuIds: ['main', 'worktimechg', 'schedule'],
+  menuIds: ['main', 'worktimechg', 'schedule', 'attendstatus'],
   suggestedQuestions: ['오늘 출근 처리가 됐나요?', '출퇴근 변경 어떻게 해요?'],
-}
+};
 
 const LEAVE = {
-  menuIds: ['leave', 'halfleave', 'conleave'],
+  menuIds: ['leave', 'halfleave', 'conleave', 'leavestatus', 'leavecalendar'],
   suggestedQuestions: ['남은 연차가 며칠인가요?', '반차 신청은 어떻게 해요?'],
-}
+};
 
 const OVERTIME = {
   menuIds: ['overtime'],
-  suggestedQuestions: ['연장근무 신청 어떻게 해요?', '이번 달 연장근무 시간 알려줘'],
-}
+  suggestedQuestions: [
+    '연장근무 신청 어떻게 해요?',
+    '이번 달 연장근무 시간 알려줘',
+  ],
+};
 
 const HALFLEAVE = {
   menuIds: ['halfleave'],
   suggestedQuestions: ['조퇴 신청 어떻게 해요?', '외출 신청은 어디서 하나요?'],
-}
+};
 
 const APPROVAL = {
-  menuIds: ['approval'],
+  menuIds: ['approval', 'cancelappl'],
   suggestedQuestions: ['결재 대기 중인 건이 몇 개인가요?'],
-}
+};
 
 const BUSINESS = {
   menuIds: ['business'],
   suggestedQuestions: ['출장 신청 어떻게 해요?', '출장 내역 조회하고 싶어'],
-}
+};
 
 const CONGRATULATIONS = {
   menuIds: ['conleave', 'ctsmn'],
-  suggestedQuestions: ['경조휴가 신청 어떻게 해요?', '경조금 신청은 어디서 해요?', '경조금 지급 현황 알려줘'],
-}
+  suggestedQuestions: [
+    '경조휴가 신청 어떻게 해요?',
+    '경조금 신청은 어디서 해요?',
+    '경조금 지급 현황 알려줘',
+  ],
+};
 
 // ─── 조회 전용 항목 (menuIds 없음) ──────────────────────────────────
 
 const LEAVE_STATUS = {
-  menuIds: [],
-  suggestedQuestions: ['내 연차 발생·사용 현황 알려줘', '올해 남은 휴가가 며칠인가요?', '신입 연차 소멸 현황 알려줘'],
-}
+  menuIds: ['leavestatus', 'leavecalendar'],
+  suggestedQuestions: [
+    '내 연차 발생·사용 현황 알려줘',
+    '올해 남은 휴가가 며칠인가요?',
+    '신입 연차 소멸 현황 알려줘',
+  ],
+};
 
 const WORKTIME_STATUS = {
   menuIds: ['schedule'],
-  suggestedQuestions: ['이번 달 근무시간 조회하고 싶어', '월별 근무시간 현황 알려줘', '오늘 체류시간이 얼마나 됐나요?'],
-}
+  suggestedQuestions: [
+    '이번 달 근무시간 조회하고 싶어',
+    '월별 근무시간 현황 알려줘',
+    '오늘 체류시간이 얼마나 됐나요?',
+  ],
+};
 
 const EXTRA_WORK_STATUS = {
-  menuIds: ['overtime'],
-  suggestedQuestions: ['이번 달 추가근무 시간 알려줘', '일자별 연장근무 현황 보여줘'],
-}
+  menuIds: ['overtime', 'otschedule', 'otlist'],
+  suggestedQuestions: [
+    '이번 달 추가근무 시간 알려줘',
+    '일자별 연장근무 현황 보여줘',
+  ],
+};
 
 const WORK_PLAN = {
   menuIds: ['schedule'],
-  suggestedQuestions: ['근무계획 신청 내역 조회하고 싶어', '내 근무 계획 확인하고 싶어'],
-}
+  suggestedQuestions: [
+    '근무계획 신청 내역 조회하고 싶어',
+    '내 근무 계획 확인하고 싶어',
+  ],
+};
 
 const ATTENDANCE_STATUS = {
-  menuIds: ['main'],
-  suggestedQuestions: ['이번 달 출근 현황 알려줘', '체류시간 포함 출근 현황 보여줘'],
-}
+  menuIds: ['main', 'attendstatus'],
+  suggestedQuestions: [
+    '이번 달 출근 현황 알려줘',
+    '체류시간 포함 출근 현황 보여줘',
+  ],
+};
 
 const LOAN = {
   menuIds: [],
   suggestedQuestions: ['대출금 현황 알려줘', '개인별 대출금 현황 보여줘'],
-}
+};
 
 const MEDICAL = {
   menuIds: [],
-  suggestedQuestions: ['가족 의료비 지원 현황 알려줘', '의료비 지원 받을 수 있나요?'],
-}
+  suggestedQuestions: [
+    '가족 의료비 지원 현황 알려줘',
+    '의료비 지원 받을 수 있나요?',
+  ],
+};
 
 const TUITION = {
-  menuIds: [],
-  suggestedQuestions: ['학자금 지원 현황 알려줘', '학자금 지원 조건이 어떻게 되나요?'],
-}
+  menuIds: ['tuition'],
+  suggestedQuestions: [
+    '학자금 지원 현황 알려줘',
+    '학자금 지원 조건이 어떻게 되나요?',
+  ],
+};
 
 const HEALTH_CHECK = {
   menuIds: [],
   suggestedQuestions: ['건강검진 현황 알려줘', '건강검진 언제 받을 수 있나요?'],
-}
+};
 
 const RESORT = {
   menuIds: [],
   suggestedQuestions: ['휴양소 이용 현황 알려줘', '휴양소 신청 어떻게 해요?'],
-}
+};
 
 const SOCIAL_INSURANCE = {
   menuIds: [],
-  suggestedQuestions: ['사회보험 가입 현황 알려줘', '4대보험 고지 내역 확인하고 싶어'],
-}
+  suggestedQuestions: [
+    '사회보험 가입 현황 알려줘',
+    '4대보험 고지 내역 확인하고 싶어',
+  ],
+};
 
 const CERTIFICATE = {
-  menuIds: [],
-  suggestedQuestions: ['재직증명서 발급하고 싶어', '증명서 발급 내역 확인하고 싶어'],
-}
+  menuIds: ['certificate'],
+  suggestedQuestions: [
+    '재직증명서 발급하고 싶어',
+    '증명서 발급 내역 확인하고 싶어',
+  ],
+};
 
 const PERSONAL_INFO = {
-  menuIds: [],
+  menuIds: ['empcard', 'orgmembers'],
   suggestedQuestions: ['내 인사카드 조회하고 싶어', '직원 명부 확인하고 싶어'],
-}
+};
 
 const EDUCATION_HISTORY = {
   menuIds: [],
   suggestedQuestions: ['학력 사항 조회하고 싶어', '내 학력 정보 어디서 봐요?'],
-}
+};
 
 const CAREER = {
   menuIds: [],
   suggestedQuestions: ['전직 경력 조회하고 싶어', '경력 사항 확인하고 싶어'],
-}
+};
 
 const QUALIFICATION = {
   menuIds: [],
   suggestedQuestions: ['보유 자격증 조회하고 싶어', '자격 사항 확인하고 싶어'],
-}
+};
 
 const LANGUAGE = {
   menuIds: [],
-  suggestedQuestions: ['어학 사항 조회하고 싶어', '어학 점수 등록은 어디서 해요?'],
-}
+  suggestedQuestions: [
+    '어학 사항 조회하고 싶어',
+    '어학 점수 등록은 어디서 해요?',
+  ],
+};
 
 const MILITARY = {
   menuIds: [],
   suggestedQuestions: ['병역 사항 확인하고 싶어', '병역 정보 어디서 조회해요?'],
-}
+};
 
 const REWARD = {
   menuIds: [],
   suggestedQuestions: ['포상 내역 조회하고 싶어', '내 포상 이력 확인하고 싶어'],
-}
+};
 
 const DISCIPLINE = {
   menuIds: [],
   suggestedQuestions: ['징계 사항 조회하고 싶어', '내 징계 이력 확인하고 싶어'],
-}
+};
 
 const TRAINING = {
-  menuIds: [],
-  suggestedQuestions: ['교육 이수 현황 알려줘', '교육 이력 조회하고 싶어', '기간별 교육 이수 현황 보여줘'],
-}
+  menuIds: ['education'],
+  suggestedQuestions: [
+    '교육 이수 현황 알려줘',
+    '교육 이력 조회하고 싶어',
+    '기간별 교육 이수 현황 보여줘',
+  ],
+};
+
+// ─── HR 모바일 메뉴 중 바로가기에 없던 항목 ─────────────────────────
+
+const SALARY = {
+  menuIds: ['salary'],
+  suggestedQuestions: ['이번 달 급여명세서 보여줘', '상여금 지급 내역 알려줘'],
+};
+
+const RESIGN = {
+  menuIds: ['resign', 'resignhitachi'],
+  suggestedQuestions: [
+    '사직서는 어떻게 제출해요?',
+    '퇴사 절차가 어떻게 되나요?',
+  ],
+};
+
+const UNIFORM = {
+  menuIds: ['uniform'],
+  suggestedQuestions: ['근무복 신청은 어떻게 해요?'],
+};
+
+const GRIEVANCE = {
+  menuIds: ['grievance'],
+  suggestedQuestions: ['고충 신고는 어떻게 하나요?'],
+};
+
+const FLEX_WORK = {
+  menuIds: ['worktype', 'flex2w', 'flex3w', 'flexmonth'],
+  suggestedQuestions: [
+    '탄력근무 신청 어떻게 해요?',
+    '선택근무제는 어떻게 신청하나요?',
+  ],
+};
+
+const REPLACE_HOLIDAY = {
+  menuIds: ['replcholiday', 'replcholidaypers'],
+  suggestedQuestions: ['대체휴무 신청 어떻게 해요?'],
+};
+
+const NOTICE = {
+  menuIds: ['notice'],
+  suggestedQuestions: ['최근 공지사항 알려줘'],
+};
+
+const ORG_MEMBERS = {
+  menuIds: ['orgmembers'],
+  suggestedQuestions: ['조직원 연락처는 어디서 찾아요?'],
+};
+
+const PASSWORD = {
+  menuIds: ['password'],
+  suggestedQuestions: ['비밀번호는 어떻게 바꿔요?'],
+};
 
 export const KEYWORD_MAP: Record<string, KeywordMatch> = {
   // 출퇴근 관련
@@ -269,4 +365,44 @@ export const KEYWORD_MAP: Record<string, KeywordMatch> = {
   교육: TRAINING,
   교육이수: TRAINING,
   교육이력: TRAINING,
-}
+
+  // 급여
+  급여: SALARY,
+  월급: SALARY,
+  명세서: SALARY,
+  상여: SALARY,
+  성과급: SALARY,
+
+  // 사직
+  사직: RESIGN,
+  퇴사: RESIGN,
+
+  // 근무복
+  근무복: UNIFORM,
+  유니폼: UNIFORM,
+
+  // 고충
+  고충: GRIEVANCE,
+
+  // 탄력·선택근무, 근무유형
+  탄력: FLEX_WORK,
+  선택근무: FLEX_WORK,
+  근무유형: FLEX_WORK,
+
+  // 대체휴무
+  대체휴무: REPLACE_HOLIDAY,
+
+  // 게시판
+  게시판: NOTICE,
+  공지: NOTICE,
+
+  // 조직원 조회
+  조직원: ORG_MEMBERS,
+  직원조회: ORG_MEMBERS,
+
+  // 비밀번호
+  비밀번호: PASSWORD,
+
+  // OT
+  OT: EXTRA_WORK_STATUS,
+};

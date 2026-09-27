@@ -7,6 +7,8 @@ export interface AiMessage {
   createdAt: number;
   streaming?: boolean;
   isError?: boolean;
+  // 봇 답변 아래에 보여줄 HR 메뉴 바로가기(보낸 질문의 키워드로 정함)
+  menuIds?: string[];
 }
 
 export interface ChatHistoryEntry {

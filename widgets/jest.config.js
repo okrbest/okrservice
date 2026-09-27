@@ -20,5 +20,10 @@ module.exports = {
       },
     ],
   },
+  // lucide-react는 ESM 전용 진입점이라 ts-jest가 못 읽음 — 테스트에서만 CJS 빌드로 연결
+  moduleNameMapper: {
+    '^lucide-react$':
+      '<rootDir>/node_modules/lucide-react/dist/cjs/lucide-react.js',
+  },
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
 };
