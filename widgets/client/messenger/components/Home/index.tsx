@@ -1,22 +1,22 @@
-import * as React from "react";
+import * as React from 'react';
 
 import {
   IIntegrationMessengerData,
   IIntegrationMessengerDataMessagesItem,
   IUser,
-} from "../../../types";
-import { adjustBrightness, getColor, getUiOptions } from "../../utils/util";
+} from '../../../types';
+import { getColor, getUiOptions } from '../../utils/util';
 
-import Button from "./../common/Button";
-import Card from "./../Card.tsx";
-import Container from "../common/Container";
-import Featured from "../faq/Featured";
-import { IconEnvelope } from "../../../icons/Icons";
-import SocialLink from "./../common/SocialLink";
-import Supporters from "./../common/Supporters";
-import WebsiteApp from "../../containers/websiteApp/WebsiteApp";
-import { __ } from "../../../utils";
-import { useConversation } from "../../context/Conversation";
+import Button from './../common/Button';
+import Card from './../Card.tsx';
+import Container from '../common/Container';
+import Featured from '../faq/Featured';
+import { IconEnvelope } from '../../../icons/Icons';
+import SocialLink from './../common/SocialLink';
+import Supporters from './../common/Supporters';
+import WebsiteApp from '../../containers/websiteApp/WebsiteApp';
+import { __ } from '../../../utils';
+import { useConversation } from '../../context/Conversation';
 
 type Props = {
   supporters: IUser[];
@@ -39,17 +39,6 @@ const Home: React.FC<Props> = ({
   const [headHeight, setHeadHeight] = React.useState(120);
   const [activeSupport, setActiveSupport] = React.useState(true);
 
-  const style = color
-    ? {
-        background: `linear-gradient(
-        119deg,
-        ${adjustBrightness(color, -60)} 2.96%,
-        ${color} 51.52%,
-        #caf4f7 100.08%
-      )`,
-      }
-    : {};
-
   const { logo } = getUiOptions() || {};
 
   const messages =
@@ -71,8 +60,8 @@ const Home: React.FC<Props> = ({
 
   const renderGreetings = () => (
     <div className="greeting-info">
-      <h3>{greetings.title || __("Welcome")}</h3>
-      <div>{greetings.message || __("Welcome description")}</div>
+      <h3>{greetings.title || __('Welcome')}</h3>
+      <div>{greetings.message || __('Welcome description')}</div>
     </div>
   );
 
@@ -86,7 +75,7 @@ const Home: React.FC<Props> = ({
     return (
       <Card>
         <div className="contact-channels">
-          <span>{__("Talk us on your favourite channels")}</span>
+          <span>{__('Talk us on your favourite channels')}</span>
           <div className="channel-list">
             {Object.entries(links).map(([key, { url }]) => {
               return (
@@ -112,7 +101,7 @@ const Home: React.FC<Props> = ({
 
   const renderGettingStarted = () => {
     const color = getColor();
-    
+
     if (supporters.length === 0) {
       return null;
     }
@@ -130,18 +119,20 @@ const Home: React.FC<Props> = ({
               />
             </div>
             <div className="schedule-info-wrapper">
-              <span>{__("Our usually reply time")}</span>{" "}
+              <span>{__('Our usually reply time')}</span>{' '}
               <span
                 className="response-rate"
-                style={{ color: color ? color : "#4f33af" }}
+                style={{ color: color ? color : '#4f33af' }}
               >
-                💬 {__(messengerData.responseRate || "")}
+                💬 {__(messengerData.responseRate || '')}
               </span>
             </div>
             {messengerData.showChat !== false && (
               <div>
                 <Button icon={<IconEnvelope />} onClick={createConversation}>
-                  <span className="font-semibold">{__("Send us a message")}</span>
+                  <span className="font-semibold">
+                    {__('Send us a message')}
+                  </span>
                 </Button>
               </div>
             )}
@@ -181,7 +172,8 @@ const Home: React.FC<Props> = ({
   return (
     <Container showZoomButton={true} showBackButton={false}>
       <div className="home-container">
-        <div className="gradient-bg" style={style}>
+        {/* 홈 위쪽 배경은 옅은 인디고 틴트 한 겹(sass .gradient-bg) — 브랜드 색은 버튼·탭·런처에만 */}
+        <div className="gradient-bg">
           <div className="absorbed" />
         </div>
         <div className="home-header-wrapper">{renderGreetings()}</div>

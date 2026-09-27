@@ -6,7 +6,6 @@ import {
   IconZoomIn,
   IconZoomOut,
 } from '../../../../icons/Icons';
-import { getColor } from '../../../utils/util';
 import { useRouter } from '../../../context/Router';
 
 type Props = {
@@ -36,20 +35,8 @@ const Container: React.FC<Props> = ({
   showBackButton = true,
   showZoomButton = true,
 }) => {
-  const color = getColor();
   const { setActiveRoute, isZoomed, setIsZoomed } = useRouter();
   const [isZoomHovered, setIsZoomHovered] = React.useState(false);
-
-  const style = color
-    ? {
-        background: `linear-gradient(
-      119deg,
-      ${color} 2.96%,
-      ${color} 51.52%,
-      #caf4f7 100.08%
-    )`,
-      }
-    : {};
 
   const handleBackClick = () => {
     if (onBackButton) {
@@ -79,7 +66,8 @@ const Container: React.FC<Props> = ({
       style={{ paddingTop: 2, boxSizing: 'border-box' }}
     >
       {shouldShowTopBar && (
-        <div className="top-nav-container" style={{ ...style, paddingTop: 8 }}>
+        // 위쪽 막대는 흰 바탕(sass .top-nav-container) — 브랜드 색 그라데이션 제거
+        <div className="top-nav-container" style={{ paddingTop: 8 }}>
           <div className="top-nav" style={containerStyle}>
             {showBackButton && (
               <div className="icon" onClick={handleBackClick}>
@@ -108,9 +96,7 @@ const Container: React.FC<Props> = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   borderRadius: '8px',
-                  background: isZoomHovered
-                    ? 'rgba(255,255,255,0.28)'
-                    : 'transparent',
+                  background: isZoomHovered ? '#f1f2f5' : 'transparent',
                   transition: 'background 0.12s ease',
                 }}
               >

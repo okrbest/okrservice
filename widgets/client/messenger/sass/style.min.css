@@ -4885,3 +4885,41 @@ select.form-control:focus,
 .nav-label {
   transition: color 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+
+/* 차분한 헤더 — 위쪽 막대 흰 바탕, 홈 위쪽은 옅은 인디고 틴트 한 겹.
+   브랜드 색은 주 버튼·활성 탭·런처에만 쓴다. */
+.top-nav-container {
+  background: #fff;
+  border-bottom: 1px solid #ececef;
+  color: #1a1a1a;
+}
+.top-nav .title {
+  color: #1a1a1a;
+}
+.top-nav-container svg path[fill='white'] {
+  fill: #6d6f78;
+}
+.gradient-bg {
+  height: 200px;
+  background: #f4f5fd;
+}
+.gradient-bg .absorbed {
+  display: none;
+}
+.greeting-info {
+  color: #1a1a1a;
+}
+.greeting-info div {
+  color: #6d6f78;
+}
+.featured-search svg path[stroke='#0057FF'] {
+  stroke: #8a8f98;
+}
+.featured-search svg path[fill='#0057FF'] {
+  fill: #8a8f98;
+}
+/* 홈에서는 위쪽 막대도 같은 틴트로 이어서 한 겹으로 보이게 */
+.container:has(.home-container) .top-nav-container {
+  background: #f4f5fd;
+  border-bottom: 0;
+}

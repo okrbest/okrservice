@@ -1,14 +1,14 @@
-import * as React from "react";
-import * as classNames from "classnames";
+import * as React from 'react';
+import * as classNames from 'classnames';
 
-import { adjustBrightness, getColor } from "../../../utils/util";
+import { getColor } from '../../../utils/util';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode;
   icon?: React.JSX.Element;
   full?: boolean;
   withDefaultStyle?: boolean;
-  type?: "button" | "submit" | "reset";
+  type?: 'button' | 'submit' | 'reset';
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -16,31 +16,23 @@ const Button: React.FC<ButtonProps> = ({
   icon,
   full,
   withDefaultStyle,
-  type = "button",
+  type = 'button',
   className,
   style: styleProp,
   ...buttonProps
 }) => {
   const color = getColor();
 
-  const style = color
-    ? {
-        background: `linear-gradient(
-        119deg,
-        ${adjustBrightness(color, 40)} 2.96%,
-        ${adjustBrightness(color, -60)} 51.52%,
-        ${color} 100.08%
-      )`,
-      }
-    : {};
+  // 주 버튼은 브랜드 색 단색 — 차분한 위젯 톤(그라데이션 제거)
+  const style = color ? { background: color } : {};
 
   const buttonClassNames = classNames(
-    "base-button",
+    'base-button',
     {
-      "main-button": withDefaultStyle || children,
-      "w-full": full,
+      'main-button': withDefaultStyle || children,
+      'w-full': full,
     },
-    className
+    className,
   );
 
   return (
