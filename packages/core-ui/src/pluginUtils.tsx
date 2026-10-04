@@ -2,39 +2,43 @@ declare var __webpack_init_sharing__;
 declare var __webpack_share_scopes__;
 declare var window;
 
-import { ApolloProvider } from "@apollo/client";
-import { AppProvider } from "./appContext";
-import { BrowserRouter } from "react-router-dom";
-import ErrorBoundary from "@erxes/ui/src/components/ErrorBoundary";
-import { IUser } from "modules/auth/types";
-import { NavItem } from "modules/layout/components/QuickNavigation";
-import React from "react";
-import { __ } from "coreui/utils";
-import apolloClient from "@erxes/ui/src/apolloClient";
-import { createRoot } from "react-dom/client";
+import { ApolloProvider } from '@apollo/client';
+import { AppProvider } from './appContext';
+import { BrowserRouter } from 'react-router-dom';
+import ErrorBoundary from '@erxes/ui/src/components/ErrorBoundary';
+import { IUser } from 'modules/auth/types';
+import { NavItem } from 'modules/layout/components/QuickNavigation';
+import React from 'react';
+import { __ } from 'coreui/utils';
+import apolloClient from '@erxes/ui/src/apolloClient';
+import { createRoot } from 'react-dom/client';
 
 const PLUGIN_LABEL_COLORS: string[] = [
-  "",
-  "#63D2D6", // CYAN
-  "#E91E63", // PINK
-  "#9C27B0", // PURPLE
-  "#673AB7", // DEEP PURPLE
-  "#3F51B5", // INDIGO
-  "#2196F3", // BLUE
-  "#00BCD4", // CYAN
-  "#009688", // TEAL
-  "#4CAF50", // GREEN
-  "#8BC34A", // LIGHT GREEN
-  "#CDDC39", // LIME
-  "#FFC107", // AMBER
-  "#FF9800", // ORANGE
-  "#FF5722", // DEEP ORANGE
+  '',
+  '#63D2D6', // CYAN
+  '#E91E63', // PINK
+  '#9C27B0', // PURPLE
+  '#673AB7', // DEEP PURPLE
+  '#3F51B5', // INDIGO
+  '#2196F3', // BLUE
+  '#00BCD4', // CYAN
+  '#009688', // TEAL
+  '#4CAF50', // GREEN
+  '#8BC34A', // LIGHT GREEN
+  '#CDDC39', // LIME
+  '#FFC107', // AMBER
+  '#FF9800', // ORANGE
+  '#FF5722', // DEEP ORANGE
 ];
 
 class CustomComponent extends React.Component<
   { scope: string; component: any; isTopNav?: boolean },
   { showComponent: boolean }
 > {
+  // 렌더마다 React.lazy를 새로 만들면 다시 그릴 때마다 불러오기가 처음부터 시작돼
+  // 화면 갱신이 끝나지 않는다(새 티켓 알림으로 주소가 바뀔 때 화면 멈춤). 한 번만 만든다.
+  private Component;
+
   constructor(props) {
     super(props);
 
@@ -58,7 +62,11 @@ class CustomComponent extends React.Component<
 
     const { scope, component } = this.props;
 
-    const Component = React.lazy(loadComponent(scope, component));
+    if (!this.Component) {
+      this.Component = React.lazy(loadComponent(scope, component));
+    }
+
+    const Component = this.Component;
 
     return (
       <React.Suspense fallback="">
@@ -105,12 +113,12 @@ const useDynamicScript = (args) => {
       return;
     }
 
-    const element = document.createElement("script");
+    const element = document.createElement('script');
     const id = `dynamic-script-${args.scope}`;
 
     element.src = args.url;
     element.id = id;
-    element.type = "text/javascript";
+    element.type = 'text/javascript';
     element.async = true;
 
     setReady(false);
@@ -144,7 +152,7 @@ const useDynamicScript = (args) => {
 export const loadComponent = (scope, module) => {
   return async () => {
     // Initializes the share scope. This fills it with known provided modules from this build and all remotes
-    await __webpack_init_sharing__("default");
+    await __webpack_init_sharing__('default');
 
     const container = window[scope]; // or get the container somewhere else
 
@@ -152,7 +160,7 @@ export const loadComponent = (scope, module) => {
       // Initialize the container, it may provide shared modules
       await container.init(__webpack_share_scopes__.default);
     } catch (e) {
-      console.error("Container initialization error:", e);
+      console.error('Container initialization error:', e);
     }
 
     try {
@@ -162,7 +170,7 @@ export const loadComponent = (scope, module) => {
         throw new Error(`Module '${module}' not found in scope '${scope}'.`);
       }
 
-      if (typeof factory !== "function") {
+      if (typeof factory !== 'function') {
         throw new Error(`Factory is not a function for module '${module}'.`);
       }
 
@@ -173,7 +181,7 @@ export const loadComponent = (scope, module) => {
       }
       return Module;
     } catch (error) {
-      console.error("Component loading error:", error);
+      console.error('Component loading error:', error);
       throw error; // rethrow the error to let the caller handle it
     }
   };
@@ -192,7 +200,7 @@ const System = (props) => {
   }
 
   const Component = React.lazy(
-    loadComponent(props.system.scope, props.system.module)
+    loadComponent(props.system.scope, props.system.module),
   );
 
   return (
@@ -217,7 +225,7 @@ const SystemWithApolloProvider = (props) => {
   }
 
   const Component = React.lazy(
-    loadComponent(props.system.scope, props.system.module)
+    loadComponent(props.system.scope, props.system.module),
   );
 
   return (
@@ -270,7 +278,7 @@ class SettingsCustomBox extends React.Component<any, any> {
       settingsNav.action,
       settingsNav.permissions,
       settingsNav.scope,
-      color
+      color,
     );
 
     if (settingsNav.component && hasComponent) {
@@ -293,8 +301,8 @@ export const pluginsSettingsNavigations = (
     to: string,
     action: string,
     permissions?: string[],
-    type?: string
-  ) => React.ReactNode
+    type?: string,
+  ) => React.ReactNode,
 ) => {
   const plugins: any[] = (window as any).plugins || [];
   const navigationMenus: any[] = [];
@@ -306,10 +314,10 @@ export const pluginsSettingsNavigations = (
       plugins[i].color = PLUGIN_LABEL_COLORS[i];
     }
 
-    const hasComponent = Object.keys(plugins[i].exposes).includes("./settings");
+    const hasComponent = Object.keys(plugins[i].exposes).includes('./settings');
 
     for (const menu of plugins[i].menus || []) {
-      if (menu.location === "settings") {
+      if (menu.location === 'settings') {
         navigationMenus.push(
           <React.Fragment key={menu.text}>
             <SettingsCustomBox
@@ -318,7 +326,7 @@ export const pluginsSettingsNavigations = (
               renderBox={renderBox}
               hasComponent={hasComponent}
             />
-          </React.Fragment>
+          </React.Fragment>,
         );
       }
     }
@@ -333,7 +341,7 @@ export const pluginsOfTopNavigations = () => {
 
   for (const plugin of plugins) {
     for (const menu of plugin.menus || []) {
-      if (menu.location === "topNavigation") {
+      if (menu.location === 'topNavigation') {
         topNavigationMenus.push(
           <React.Fragment key={menu.text}>
             <CustomComponent
@@ -341,7 +349,7 @@ export const pluginsOfTopNavigations = () => {
               component={menu.component}
               isTopNav={true}
             />
-          </React.Fragment>
+          </React.Fragment>,
         );
       }
     }
@@ -363,7 +371,7 @@ export const pluginLayouts = (currentUser: IUser) => {
           system={plugin.layout}
           currentUser={currentUser}
           pluginName={plugin.name}
-        />
+        />,
       );
     }
   }
@@ -373,10 +381,10 @@ export const pluginLayouts = (currentUser: IUser) => {
 
 export const pluginsInnerWidgets = () => {
   const plugins: any[] = (window as any).plugins || [];
-  const rootDiv = document.getElementById("root");
-  const newDiv = document.createElement("div");
+  const rootDiv = document.getElementById('root');
+  const newDiv = document.createElement('div');
   newDiv.style.cssText =
-    "position:absolute;width:72px;z-index:999999;height:72px;display:flex;align-items:center;justify-content:center;";
+    'position:absolute;width:72px;z-index:999999;height:72px;display:flex;align-items:center;justify-content:center;';
 
   for (const plugin of plugins) {
     if (!plugin.innerWidget) {
@@ -384,7 +392,7 @@ export const pluginsInnerWidgets = () => {
     }
 
     newDiv.style.cssText =
-      newDiv.style.cssText + (plugin.innerWidget.style || "");
+      newDiv.style.cssText + (plugin.innerWidget.style || '');
 
     createRoot(newDiv).render(
       <BrowserRouter>
@@ -394,7 +402,7 @@ export const pluginsInnerWidgets = () => {
           system={plugin.innerWidget}
           pluginName={plugin.name}
         />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
   }
 
@@ -417,7 +425,7 @@ export const pluginRouters = () => {
           loadScript={true}
           system={plugin.routes}
           pluginName={plugin.name}
-        />
+        />,
       );
     }
   }
@@ -426,13 +434,13 @@ export const pluginRouters = () => {
 };
 
 export const pluginsOfPaymentForm = (
-  renderPaymentsByType: (type) => JSX.Element
+  renderPaymentsByType: (type) => JSX.Element,
 ) => {
   const plugins: any[] = (window as any).plugins || [];
 
   return (
     <PluginsWrapper
-      itemName={"payments"}
+      itemName={'payments'}
       plugins={plugins}
       callBack={(_plugin, payments) => {
         const paymentsTypes: JSX.Element[] = [];
@@ -455,11 +463,11 @@ export const pluginsOfProductCategoryActions = (category: any) => {
   return (
     <PluginsWrapper
       plugins={plugins}
-      itemName={"productCategoryActions"}
+      itemName={'productCategoryActions'}
       callBack={(_plugin, actions) => {
         return actions.map((action) => {
           const Component = React.lazy(
-            loadComponent(action.scope, action.component)
+            loadComponent(action.scope, action.component),
           );
 
           return <Component key={Math.random()} productCategory={category} />;
@@ -478,7 +486,7 @@ export const customNavigationLabel = () => {
       customLabels.push(
         <React.Fragment key={lbl.text}>
           <CustomComponent scope={lbl.scope} component={lbl.component} />
-        </React.Fragment>
+        </React.Fragment>,
       );
     }
   }
@@ -492,11 +500,11 @@ export const pluginsOfJobCategoryActions = (productCategoryId: string) => {
   return (
     <PluginsWrapper
       plugins={plugins}
-      itemName={"jobCategoryActions"}
+      itemName={'jobCategoryActions'}
       callBack={(_plugin, actions) => {
         return actions.map((action) => {
           const Component = React.lazy(
-            loadComponent(action.scope, action.component)
+            loadComponent(action.scope, action.component),
           );
 
           return (
