@@ -50,6 +50,30 @@ const decodeJWT = (token: string): any => {
 };
 
 // 개발 모드에서 토큰 만료를 강제로 시뮬레이션하기 위한 플래그
+/**
+ * currentUser 조회 응답으로 로그인이 끊겼는지 판단.
+ * 로그인 토큰(1일)이 만료되면 currentUser는 "Login required" 오류 없이 null을 돌려준다 —
+ * 오류만 보면 만료를 놓쳐 갱신 토큰(7일)을 쓰지 못하고 로그인 화면으로 가게 된다.
+ */
+export const isLoggedOutResponse = (result: any): boolean => {
+  if (!result) {
+    return false;
+  }
+
+  if (
+    Array.isArray(result.errors) &&
+    result.errors.some((e: any) => e?.message === 'Login required')
+  ) {
+    return true;
+  }
+
+  return Boolean(
+    result.data &&
+      'currentUser' in result.data &&
+      result.data.currentUser === null,
+  );
+};
+
 let forceExpired = false;
 
 /**
@@ -259,11 +283,8 @@ const checkTokenExpirationWithAPI = async (): Promise<boolean> => {
 
     const result = await response.json();
 
-    // "Login required" 에러가 있으면 토큰이 만료된 것
-    if (
-      result.errors &&
-      result.errors.some((e: any) => e.message === 'Login required')
-    ) {
+    // "Login required" 오류 또는 currentUser가 null이면 토큰이 만료된 것
+    if (isLoggedOutResponse(result)) {
       return true; // 만료됨
     }
 
@@ -312,14 +333,11 @@ export const setupTokenExpirationChecker = () => {
     try {
       const isExpired = await checkTokenExpirationWithAPI();
       if (isExpired) {
+        // 갱신 토큰으로 조용히 이어 간다. 갱신까지 실패해도 첫 화면(/)으로 강제로
+        // 보내지 않는다 — 다음 요청 때 보던 주소 그대로 로그인 화면이 떠서,
+        // 다시 로그인하면 같은 티켓으로 돌아온다.
         const { refreshAuthToken } = await import('./authRefresh');
-        const refreshed = await refreshAuthToken();
-        if (!refreshed) {
-          console.log(
-            '토큰이 만료되었습니다. 로그인 화면으로 리다이렉트합니다.',
-          );
-          window.location.href = '/';
-        }
+        await refreshAuthToken();
       }
     } catch (e) {
       // 에러 발생 시 무시
@@ -362,16 +380,10 @@ export const setupTokenExpirationChecker = () => {
         });
 
         const result = await response.json();
-        if (
-          result.errors &&
-          result.errors.some((e: any) => e.message === 'Login required')
-        ) {
+        if (isLoggedOutResponse(result)) {
+          // 위 checkAndRedirect와 같은 이유로, 갱신이 실패해도 강제 이동하지 않는다
           const { refreshAuthToken } = await import('./authRefresh');
-          const refreshed = await refreshAuthToken();
-          if (!refreshed) {
-            window.location.href = '/';
-            return;
-          }
+          await refreshAuthToken();
         }
 
         scheduleExpirationCheck();
