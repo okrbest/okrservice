@@ -126,6 +126,7 @@ export interface IItemParams {
   departmentIds?: string[];
   isCheckUserTicket?: boolean;
   expectedModifiedAt?: Date;
+  expectedDescriptionHash?: string;
 }
 
 export type SaveItemMutation = ({ variables: IItemParams }) => Promise<any>;
@@ -442,7 +443,11 @@ export interface INonFilterParams {
 
 export interface IEditFormContent {
   state: any;
-  saveItem: (doc: { [key: string]: any }, callback?: (item) => void) => void;
+  saveItem: (
+    doc: { [key: string]: any },
+    callback?: (item) => void,
+    onError?: () => void,
+  ) => void;
   onChangeStage: (stageId: string) => void;
   copy: () => void;
   remove: (id: string) => void;

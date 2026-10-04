@@ -1,4 +1,4 @@
-import { isEnabled } from "@erxes/ui/src/utils/core";
+import { isEnabled } from '@erxes/ui/src/utils/core';
 
 export const commonMutationVariables = `
   $parentId: String,
@@ -24,7 +24,8 @@ export const commonMutationVariables = `
   $manualEmailRequest: Boolean,
   $emailSent: Boolean,
   $widgetAlarm: Boolean,
-  $expectedModifiedAt: Date
+  $expectedModifiedAt: Date,
+  $expectedDescriptionHash: String
 `;
 
 export const commonMutationParams = `
@@ -51,7 +52,8 @@ export const commonMutationParams = `
   manualEmailRequest: $manualEmailRequest,
   emailSent: $emailSent,
   widgetAlarm: $widgetAlarm,
-  expectedModifiedAt: $expectedModifiedAt
+  expectedModifiedAt: $expectedModifiedAt,
+  expectedDescriptionHash: $expectedDescriptionHash
 `;
 
 export const commonDragVariables = `

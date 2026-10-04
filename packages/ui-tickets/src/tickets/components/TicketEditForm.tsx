@@ -44,6 +44,8 @@ type Props = {
   item: ITicket;
   addItem: (doc: ITicketParams, callback: () => void, msg?: string) => void;
   saveItem: (doc: ITicketParams, callback?: (item) => void) => void;
+  // 설명 충돌 안내에서 "불러오기"를 고를 때마다 올라가는 값(컨테이너가 넘김)
+  descriptionReloadKey?: number;
   copyItem: (itemId: string, callback: (item) => void) => void;
   onUpdate: (item, prevStageId?: string) => void;
   removeItem: (itemId: string, callback: () => void) => void;
@@ -648,6 +650,7 @@ export default function TicketEditForm(props: Props) {
         onSendEmail: handleSendEmail,
         descriptionConflictPending,
         descriptionDirtyRef,
+        descriptionReloadKey: props.descriptionReloadKey,
       };
 
       const sidebarProps = {
@@ -718,6 +721,7 @@ export default function TicketEditForm(props: Props) {
             onSendEmail={handleSendEmail}
             descriptionConflictPending={descriptionConflictPending}
             descriptionDirtyRef={descriptionDirtyRef}
+            descriptionReloadKey={props.descriptionReloadKey}
           />
 
           <Sidebar

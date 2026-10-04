@@ -10,13 +10,27 @@ import {
 } from '@erxes/ui-internalnotes/src/components/Form';
 import { IItem, IItemParams, IOptions } from '../../types';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import * as Sentry from '@sentry/react';
 import { __, readFile } from 'coreui/utils';
 import { extractAttachment } from '@erxes/ui/src/utils';
-import { readDescriptionDraftFromStorage } from '@erxes/ui/src/utils/descriptionDraft';
+import {
+  descriptionFingerprint,
+  hasPendingDescriptionDraft,
+  parseDescriptionDraft,
+  readDescriptionDraftFromStorage,
+} from '@erxes/ui/src/utils/descriptionDraft';
 import styled from 'styled-components';
 import { useIsMobile } from '../../utils/mobile';
 
 import Actions from './Actions';
+import DescriptionHistoryButton, {
+  useDescriptionHistory,
+} from './DescriptionHistory';
+import {
+  DescriptionHistoryMeta,
+  HISTORY_AUTO_INTERVAL_MS,
+} from '../../descriptionHistory';
+import { readDescriptionHistoryContent } from '../../descriptionHistoryStore';
 import ActivityInputs from '@erxes/ui-log/src/activityLogs/components/ActivityInputs';
 import ActivityLogs from '@erxes/ui-log/src/activityLogs/containers/ActivityLogs';
 import Button from '@erxes/ui/src/components/Button';
@@ -33,6 +47,25 @@ import Uploader from '@erxes/ui/src/components/Uploader';
 import { isEnabled } from '@erxes/ui/src/utils/core';
 
 // 모바일용 스타일드 컴포넌트들
+// 편집창을 열기 전에도 임시 저장된 글이 있음을 알린다(열어야만 보여서 사라진 줄 아는 일을 막음)
+const DraftNotice = styled.div`
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 3px;
+  background: #fff8e6;
+  color: #8a5a00;
+  font-size: 12px;
+  cursor: pointer;
+
+  i {
+    margin-right: 6px;
+  }
+
+  &:hover {
+    background: #ffefc7;
+  }
+`;
+
 const MobileContent = styled(Content)<{ isMobile: boolean }>`
   ${(props) =>
     props.isMobile &&
@@ -277,12 +310,18 @@ const MobileFormControl = styled(FormControl)`
 
 type DescProps = {
   item: IItem;
-  saveItem: (doc: { [key: string]: any }, callback?: (item) => void) => void;
+  saveItem: (
+    doc: { [key: string]: any },
+    callback?: (item) => void,
+    onError?: () => void,
+  ) => void;
   contentType: string;
   isMobile: boolean;
   onChangeRefresh?: () => void;
   hasDescriptionConflict?: boolean;
   descriptionDirtyRef?: React.MutableRefObject<(() => boolean) | null>;
+  // 충돌 안내에서 "불러오기"를 고를 때마다 올라간다 — 쓰던 글을 버리고 서버 내용으로
+  descriptionReloadKey?: number;
 };
 
 // WidgetComments 컴포넌트 수정
@@ -721,6 +760,9 @@ const WidgetComments = (props: WidgetCommentsProps) => {
   );
 };
 
+// 저장 응답을 이만큼 기다려도 없으면 "늦어지고 있어요" 안내를 띄운다
+const SLOW_SAVE_MS = 10000;
+
 const Description = React.memo((props: DescProps) => {
   const {
     item,
@@ -730,18 +772,99 @@ const Description = React.memo((props: DescProps) => {
     onChangeRefresh,
     hasDescriptionConflict,
     descriptionDirtyRef,
+    descriptionReloadKey,
   } = props;
   const [edit, setEdit] = useState(false);
   const [isSubmitted, setSubmit] = useState(false);
+  // 저장 요청이 끝날 때까지 편집기와 임시 저장을 그대로 둔다(실패·충돌 시 쓰던 글 보호)
+  const [isSaving, setSaving] = useState(false);
+  // 저장 응답이 오래 안 오면 안내를 띄우고 다시 저장할 수 있게 한다
+  const [isSaveSlow, setSaveSlow] = useState(false);
   const [description, setDescription] = useState(item.description);
+  // 편집을 시작할 때의 서버 설명 — 저장 시 "그 사이 설명이 바뀌었는지" 판단 기준
+  const [baseline, setBaseline] = useState(item.description ?? '');
   const descriptionRef = useRef(item.description);
   const savedDescriptionRef = useRef<string | null>(null);
+  // 저장 요청 번호 — 응답이 늦어 다시 저장한 경우, 앞선 요청의 늦은 응답은 무시한다
+  const saveRequestSeqRef = useRef(0);
+  const editorRef = useRef<any>(null);
+  const [hasPendingDraft, setHasPendingDraft] = useState(false);
+  // 임시저장함: 저장·취소를 누를 때와 쓰는 동안 1분마다, 그리고 직접 저장할 때 남긴다(브라우저에만 보관)
+  const { entries: historyEntries, record: recordHistory } =
+    useDescriptionHistory(`${contentType}_description_${item._id}`, edit);
+
+  // 보낸 글이 서버에 반영됨. 보낸 뒤 더 고친 글이 있으면 닫지 않고 기준만 새로 잡는다.
+  const finishSave = useCallback((savedDescription?: string) => {
+    savedDescriptionRef.current = null;
+    setSaving(false);
+    setSaveSlow(false);
+
+    if ((descriptionRef.current ?? '') !== (savedDescription ?? '')) {
+      setBaseline(savedDescription ?? '');
+      return;
+    }
+
+    setSubmit(true);
+  }, []);
 
   const isDescriptionDirty = useCallback(() => {
     const server = item.description ?? '';
     const local = descriptionRef.current ?? '';
     return local !== server;
   }, [item.description]);
+
+  useEffect(() => {
+    if (!edit) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      if (isDescriptionDirty()) {
+        recordHistory(descriptionRef.current, 'auto');
+      }
+    }, HISTORY_AUTO_INTERVAL_MS);
+
+    return () => clearInterval(timer);
+  }, [edit, isDescriptionDirty, recordHistory]);
+
+  // 편집창이 닫혀 있을 때, 열면 채워질 임시 저장 글이 있는지 본다
+  useEffect(() => {
+    if (edit) {
+      return;
+    }
+
+    try {
+      setHasPendingDraft(
+        hasPendingDescriptionDraft(
+          localStorage.getItem(`${contentType}_description_${item._id}`),
+          item.description,
+        ),
+      );
+    } catch (e) {
+      setHasPendingDraft(false);
+    }
+  }, [edit, contentType, item._id, item.description]);
+
+  // 고른 기록을 편집창에 넣는다. 지금 쓰던 글은 먼저 기록으로 남겨 되돌릴 수 있게 한다.
+  const onRestoreHistory = useCallback(
+    async (entry: DescriptionHistoryMeta) => {
+      const content = await readDescriptionHistoryContent(entry.id);
+      // 본문을 읽는 사이 편집창이 닫혔을 수 있다 — 지금의 편집기를 다시 얻는다
+      const editor = editorRef.current?.getEditor();
+
+      if (content == null || !editor || editor.isDestroyed) {
+        return;
+      }
+
+      // 바꾸기 직전의 글을 남긴다(글은 호출 순간에 확정되므로 기다리지 않는다)
+      if (isDescriptionDirty()) {
+        recordHistory(descriptionRef.current, 'restore');
+      }
+
+      editor.commands.setContent(content, true, { preserveWhitespace: true });
+    },
+    [isDescriptionDirty, recordHistory],
+  );
 
   useEffect(() => {
     if (!descriptionDirtyRef) {
@@ -769,10 +892,54 @@ const Description = React.memo((props: DescProps) => {
       savedDescriptionRef.current != null &&
       item.description === savedDescriptionRef.current
     ) {
-      savedDescriptionRef.current = null;
-      setSubmit(true);
+      finishSave(savedDescriptionRef.current);
     }
-  }, [item.description]);
+  }, [item.description, finishSave]);
+
+  // 저장 응답이 SLOW_SAVE_MS 넘게 없으면: 쓰던 글은 그대로 두고 안내 + 다시 저장 가능 + 기록
+  useEffect(() => {
+    if (!isSaving) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setSaveSlow(true);
+      setSaving(false);
+      Sentry.captureMessage('티켓 설명 저장 응답이 늦음', {
+        level: 'warning',
+        tags: { ticket_description_save: 'slow' },
+        extra: { itemId: item._id, waitedMs: SLOW_SAVE_MS },
+      });
+    }, SLOW_SAVE_MS);
+
+    return () => clearTimeout(timer);
+  }, [isSaving, item._id]);
+
+  // 충돌 안내에서 "불러오기": 쓰던 글을 버리고 새로 불러온 서버 내용으로 돌아간다
+  const reloadKeyRef = useRef(descriptionReloadKey);
+  useEffect(() => {
+    if (reloadKeyRef.current === descriptionReloadKey) {
+      return;
+    }
+    reloadKeyRef.current = descriptionReloadKey;
+    // 쓰던 글을 버리기 전에 기록으로 남긴다
+    if (isDescriptionDirty()) {
+      recordHistory(descriptionRef.current, 'restore');
+    }
+    savedDescriptionRef.current = null;
+    descriptionRef.current = item.description;
+    setDescription(item.description);
+    setBaseline(item.description ?? '');
+    setSaving(false);
+    setSaveSlow(false);
+    setSubmit(false);
+    setEdit(false);
+  }, [
+    descriptionReloadKey,
+    item.description,
+    isDescriptionDirty,
+    recordHistory,
+  ]);
 
   useEffect(() => {
     if (isSubmitted) {
@@ -788,24 +955,64 @@ const Description = React.memo((props: DescProps) => {
   }, [hasDescriptionConflict]);
 
   const onSend = useCallback(() => {
+    if (isSaving) {
+      return;
+    }
+
     const latestDescription = descriptionRef.current;
+    const requestSeq = ++saveRequestSeqRef.current;
+    recordHistory(latestDescription, 'save');
     savedDescriptionRef.current = latestDescription;
-    setSubmit(true);
+    setSaveSlow(false);
+    setSaving(true);
     saveItem(
       {
         description: latestDescription,
         expectedModifiedAt: item.modifiedAt,
+        expectedDescriptionHash: descriptionFingerprint(baseline),
       },
       () => {
+        if (requestSeq !== saveRequestSeqRef.current) {
+          return;
+        }
+        // 저장이 실제로 끝난 뒤에만 편집기를 닫고 임시 저장을 지운다
+        finishSave(latestDescription);
         if (onChangeRefresh) {
           onChangeRefresh();
         }
+      },
+      () => {
+        if (requestSeq !== saveRequestSeqRef.current) {
+          return;
+        }
+        // 실패·충돌: 편집기와 쓰던 글, 임시 저장을 그대로 둔다
         savedDescriptionRef.current = null;
+        setSaving(false);
+        setSaveSlow(false);
+        Sentry.addBreadcrumb({
+          category: 'ticket',
+          message: 'ticket description save failed',
+          level: 'warning',
+          data: { itemId: item._id },
+        });
       },
     );
-  }, [saveItem, onChangeRefresh, item.modifiedAt]);
+  }, [
+    saveItem,
+    onChangeRefresh,
+    item.modifiedAt,
+    baseline,
+    isSaving,
+    finishSave,
+    recordHistory,
+  ]);
 
   const toggleEdit = () => {
+    // 편집 중 취소: 버리는 글을 먼저 기록으로 남긴다
+    if (edit && isDescriptionDirty()) {
+      recordHistory(descriptionRef.current, 'cancel');
+    }
+
     setEdit((currentValue) => {
       const newValue = !currentValue;
 
@@ -813,16 +1020,28 @@ const Description = React.memo((props: DescProps) => {
       if (!currentValue && newValue) {
         if (typeof window !== 'undefined') {
           const localStorageKey = `${contentType}_description_${item._id}`;
-          const { content: resolvedContent } = readDescriptionDraftFromStorage(
-            localStorageKey,
-            item.description,
-          );
+          // 복원하는 임시 저장이 있으면, 그 글을 쓰기 시작했을 때의 서버 내용을 기준으로 삼는다
+          const stored = localStorage.getItem(localStorageKey);
+          const storedBaseline = stored
+            ? parseDescriptionDraft(stored)?.serverDescription
+            : undefined;
+          const { content: resolvedContent, discardStorage } =
+            readDescriptionDraftFromStorage(localStorageKey, item.description, {
+              // 서버 설명이 바뀌었어도 쓰던 글은 살린다 — 겹치면 저장할 때 충돌 안내가 뜬다
+              keepWhenServerChanged: true,
+            });
 
           setDescription(resolvedContent);
           descriptionRef.current = resolvedContent;
+          setBaseline(
+            !discardStorage && storedBaseline !== undefined
+              ? storedBaseline
+              : item.description ?? '',
+          );
         } else {
           setDescription(item.description);
           descriptionRef.current = item.description;
+          setBaseline(item.description ?? '');
         }
       }
 
@@ -839,6 +1058,7 @@ const Description = React.memo((props: DescProps) => {
       return newValue;
     });
     setSubmit(false);
+    setSaveSlow(false);
   };
 
   const onChangeDescription = useCallback((content: string) => {
@@ -849,11 +1069,29 @@ const Description = React.memo((props: DescProps) => {
   const renderFooter = () => {
     return (
       <EditorActions>
+        {isSaveSlow && (
+          <span
+            role="status"
+            style={{ marginRight: 'auto', fontSize: 12, color: '#b7791f' }}
+          >
+            {__(
+              'Saving is taking longer than usual. Your text is kept here — please try saving again.',
+            )}
+          </span>
+        )}
+        {!isSaving && (
+          <DescriptionHistoryButton
+            entries={historyEntries}
+            onSelect={onRestoreHistory}
+            onSaveNow={() => recordHistory(descriptionRef.current, 'manual')}
+          />
+        )}
         <Button
           icon="times-circle"
           btnStyle="simple"
           size="small"
           onClick={toggleEdit}
+          disabled={isSaving}
         >
           Cancel
         </Button>
@@ -863,8 +1101,9 @@ const Description = React.memo((props: DescProps) => {
             btnStyle="success"
             size="small"
             icon="check-circle"
+            disabled={isSaving}
           >
-            Save
+            {isSaving ? __('Saving...') : __('Save')}
           </Button>
         )}
       </EditorActions>
@@ -881,6 +1120,12 @@ const Description = React.memo((props: DescProps) => {
           </ControlLabel>
         </TitleRow>
 
+        {!edit && hasPendingDraft && (
+          <DraftNotice role="button" onClick={toggleEdit}>
+            <Icon icon="edit-alt" />
+            {__('You have an unsaved draft. Click to continue writing.')}
+          </DraftNotice>
+        )}
         {!edit ? (
           <MobileContent
             isMobile={isMobile}
@@ -903,6 +1148,7 @@ const Description = React.memo((props: DescProps) => {
         ) : (
           <EditorWrapper>
             <RichTextEditor
+              ref={editorRef}
               key={`${contentType}_description_${item._id}`}
               content={description}
               onChange={onChangeDescription}
@@ -910,7 +1156,7 @@ const Description = React.memo((props: DescProps) => {
               isSubmitted={isSubmitted}
               autoFocus={true}
               name={`${contentType}_description_${item._id}`}
-              descriptionBaseline={item.description ?? ''}
+              descriptionBaseline={baseline}
               toolbar={[
                 'undo',
                 'redo',
@@ -958,6 +1204,7 @@ type Props = {
     callback: (item: any) => void;
   } | null;
   descriptionDirtyRef?: React.MutableRefObject<(() => boolean) | null>;
+  descriptionReloadKey?: number;
 };
 
 const buildActivityBlocks = (item: IItem, options: IOptions) => ({
@@ -1079,6 +1326,7 @@ const Left = (props: Props) => {
         onChangeRefresh={onChangeRefresh}
         hasDescriptionConflict={!!descriptionConflictPending}
         descriptionDirtyRef={descriptionDirtyRef}
+        descriptionReloadKey={props.descriptionReloadKey}
       />
 
       <WidgetComments

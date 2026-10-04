@@ -1,14 +1,14 @@
-import client from "@erxes/ui/src/apolloClient";
-import { gql } from "@apollo/client";
-import * as compose from "lodash.flowright";
-import Spinner from "@erxes/ui/src/components/Spinner";
-import { Alert, confirm, withProps } from "@erxes/ui/src/utils";
-import { queries as userQueries } from "@erxes/ui/src/team/graphql";
-import { AllUsersQueryResponse, IUser } from "@erxes/ui/src/auth/types";
-import React from "react";
-import { graphql } from "@apollo/client/react/hoc";
-import ErrorMsg from "@erxes/ui/src/components/ErrorMsg";
-import { mutations, queries } from "../../graphql";
+import client from '@erxes/ui/src/apolloClient';
+import { gql } from '@apollo/client';
+import * as compose from 'lodash.flowright';
+import Spinner from '@erxes/ui/src/components/Spinner';
+import { Alert, confirm, withProps } from '@erxes/ui/src/utils';
+import { queries as userQueries } from '@erxes/ui/src/team/graphql';
+import { AllUsersQueryResponse, IUser } from '@erxes/ui/src/auth/types';
+import React from 'react';
+import { graphql } from '@apollo/client/react/hoc';
+import ErrorMsg from '@erxes/ui/src/components/ErrorMsg';
+import { mutations, queries } from '../../graphql';
 import {
   CopyMutation,
   DetailQueryResponse,
@@ -16,14 +16,14 @@ import {
   IItemParams,
   IOptions,
   RemoveMutation,
-  SaveMutation
-} from "../../types";
-import { invalidateCache } from "../../utils";
-import { PipelineConsumer } from "../PipelineContext";
-import withCurrentUser from "@erxes/ui/src/auth/containers/withCurrentUser";
+  SaveMutation,
+} from '../../types';
+import { invalidateCache } from '../../utils';
+import { PipelineConsumer } from '../PipelineContext';
+import withCurrentUser from '@erxes/ui/src/auth/containers/withCurrentUser';
 import DescriptionConflictModal, {
-  DescriptionConflictChoice
-} from "../../components/editForm/DescriptionConflictModal";
+  DescriptionConflictChoice,
+} from '../../components/editForm/DescriptionConflictModal';
 
 type WrapperProps = {
   itemId: string;
@@ -61,11 +61,18 @@ type ConflictPending = {
   callback: (item: IItem) => void;
 };
 
+type ContainerState = {
+  descriptionConflictPending: ConflictPending | null;
+  // "불러오기"를 고를 때마다 올라간다 — 설명 편집기가 쓰던 글을 버리고 서버 내용으로 돌아가는 신호
+  descriptionReloadKey: number;
+};
+
 class EditFormContainer extends React.Component<FinalProps> {
   private relationsRefetchedForItemId: string | null = null;
 
-  state: { descriptionConflictPending: ConflictPending | null } = {
-    descriptionConflictPending: null
+  state: ContainerState = {
+    descriptionConflictPending: null,
+    descriptionReloadKey: 0,
   };
 
   constructor(props) {
@@ -78,8 +85,8 @@ class EditFormContainer extends React.Component<FinalProps> {
   }
 
   isDescriptionConflictError(error: any): boolean {
-    const message = error?.graphQLErrors?.[0]?.message || error?.message || "";
-    return message === "DESCRIPTION_CONFLICT";
+    const message = error?.graphQLErrors?.[0]?.message || error?.message || '';
+    return message === 'DESCRIPTION_CONFLICT';
   }
 
   handleDescriptionConflictChoice = (choice: DescriptionConflictChoice) => {
@@ -88,20 +95,27 @@ class EditFormContainer extends React.Component<FinalProps> {
 
     if (!descriptionConflictPending) return;
 
-    if (choice === "reload") {
-      if (typeof window !== "undefined") {
+    if (choice === 'reload') {
+      if (typeof window !== 'undefined') {
         const descriptionStorageKey = `${options.type}_description_${itemId}`;
         localStorage.removeItem(descriptionStorageKey);
       }
       detailQuery.refetch().then(() => {
-        this.setState({ descriptionConflictPending: null });
+        this.setState((prev: ContainerState) => ({
+          descriptionConflictPending: null,
+          descriptionReloadKey: prev.descriptionReloadKey + 1,
+        }));
       });
       return;
     }
 
-    if (choice === "overwrite") {
+    if (choice === 'overwrite') {
       const { doc, callback } = descriptionConflictPending;
-      const { expectedModifiedAt, ...docWithoutExpected } = doc;
+      const {
+        expectedModifiedAt,
+        expectedDescriptionHash,
+        ...docWithoutExpected
+      } = doc;
 
       editMutation({ variables: { _id: itemId, ...docWithoutExpected } })
         .then(({ data }) => {
@@ -111,7 +125,7 @@ class EditFormContainer extends React.Component<FinalProps> {
           invalidateCache();
           this.setState({ descriptionConflictPending: null });
         })
-        .catch(err => {
+        .catch((err) => {
           Alert.error(err.message);
           this.setState({ descriptionConflictPending: null });
         });
@@ -124,7 +138,7 @@ class EditFormContainer extends React.Component<FinalProps> {
   componentDidUpdate(prevProps: FinalProps) {
     const { detailQuery, itemId, options } = this.props;
     if (
-      options?.type !== "ticket" ||
+      options?.type !== 'ticket' ||
       detailQuery.loading ||
       !detailQuery[options.queriesName.detailQuery] ||
       this.relationsRefetchedForItemId === itemId
@@ -136,15 +150,15 @@ class EditFormContainer extends React.Component<FinalProps> {
       .query({
         query: gql(options.queries.detailQuery),
         variables: { _id: itemId, includeRelations: true },
-        fetchPolicy: "network-only"
+        fetchPolicy: 'network-only',
       })
       .then(({ data }) => {
         const full = data?.[options.queriesName.detailQuery];
         if (!full || !client.cache) return;
         try {
           const id = client.cache.identify({
-            __typename: "Ticket",
-            _id: itemId
+            __typename: 'Ticket',
+            _id: itemId,
           });
           if (id) {
             client.cache.modify({
@@ -152,8 +166,8 @@ class EditFormContainer extends React.Component<FinalProps> {
               fields: {
                 companies: () => full.companies ?? [],
                 customers: () => full.customers ?? [],
-                hasNotified: () => full.hasNotified ?? true
-              }
+                hasNotified: () => full.hasNotified ?? true,
+              },
             });
           }
         } catch (_) {}
@@ -172,7 +186,7 @@ class EditFormContainer extends React.Component<FinalProps> {
       .then(() => {
         callback();
       })
-      .catch(error => {
+      .catch((error) => {
         Alert.error(error.message);
       });
   }
@@ -182,7 +196,7 @@ class EditFormContainer extends React.Component<FinalProps> {
 
     const proccessId = Math.random().toString();
 
-    localStorage.setItem("proccessId", proccessId);
+    localStorage.setItem('proccessId', proccessId);
 
     copyMutation({ variables: { _id: itemId, proccessId } })
       .then(({ data }) => {
@@ -192,17 +206,22 @@ class EditFormContainer extends React.Component<FinalProps> {
           onAdd(stageId, data[options.mutationsName.copyMutation], itemId);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         Alert.error(error.message);
       });
   }
 
-  saveItem = (doc: IItemParams, callback: (item) => void) => {
+  // onError: 저장이 실패(충돌 포함)했음을 호출한 쪽에 알린다 — 설명 편집기가 쓰던 글을 그대로 둔다
+  saveItem = (
+    doc: IItemParams,
+    callback: (item) => void,
+    onError?: () => void,
+  ) => {
     const { itemId, editMutation, options } = this.props;
 
     const proccessId = Math.random().toString();
 
-    localStorage.setItem("proccessId", proccessId);
+    localStorage.setItem('proccessId', proccessId);
 
     doc.proccessId = proccessId;
 
@@ -214,10 +233,13 @@ class EditFormContainer extends React.Component<FinalProps> {
 
         invalidateCache();
       })
-      .catch(error => {
+      .catch((error) => {
+        if (onError) {
+          onError();
+        }
         if (this.isDescriptionConflictError(error)) {
           this.setState({
-            descriptionConflictPending: { doc, callback }
+            descriptionConflictPending: { doc, callback },
           });
           return;
         }
@@ -244,29 +266,29 @@ class EditFormContainer extends React.Component<FinalProps> {
           }
         })
 
-        .catch(error => {
+        .catch((error) => {
           Alert.error(error.message);
-        })
+        }),
     );
   };
 
   updateTimeTrack = (
     doc: { _id: string; status: string; timeSpent: number },
-    callback?
+    callback?,
   ) => {
     const { options } = this.props;
 
     client
       .mutate({
         variables: { ...doc, type: options.type },
-        mutation: gql(mutations.boardItemUpdateTimeTracking)
+        mutation: gql(mutations.boardItemUpdateTimeTracking),
       })
       .then(() => {
         if (callback) {
           callback();
         }
       })
-      .catch(error => {
+      .catch((error) => {
         Alert.error(error.message);
       });
   };
@@ -283,7 +305,7 @@ class EditFormContainer extends React.Component<FinalProps> {
       return <ErrorMsg>{detailQuery.error.message}</ErrorMsg>;
     }
 
-    const users = skipUsers ? [] : (usersQuery?.allUsers || []);
+    const users = skipUsers ? [] : usersQuery?.allUsers || [];
     const item = detailQuery[options.queriesName.detailQuery];
 
     if (!item) {
@@ -299,7 +321,8 @@ class EditFormContainer extends React.Component<FinalProps> {
       copyItem: this.copyItem,
       updateTimeTrack: this.updateTimeTrack,
       users,
-      descriptionConflictPending: this.state.descriptionConflictPending
+      descriptionConflictPending: this.state.descriptionConflictPending,
+      descriptionReloadKey: this.state.descriptionReloadKey,
     };
 
     const EditForm = options.EditForm;
@@ -324,9 +347,9 @@ const withQuery = (props: ContainerProps) => {
     refetchQueries: [
       {
         query: gql(queries.stageDetail),
-        variables: { _id: stageId }
-      }
-    ]
+        variables: { _id: stageId },
+      },
+    ],
   });
 
   return withProps<ContainerProps>(
@@ -336,52 +359,54 @@ const withQuery = (props: ContainerProps) => {
         DetailQueryResponse,
         { _id: string; includeRelations?: boolean }
       >(gql(options.queries.detailQuery), {
-        name: "detailQuery",
+        name: 'detailQuery',
         options: (props: ContainerProps) => ({
           variables: {
             _id: props.itemId,
-            ...(props.options?.type === "ticket" ? { includeRelations: false } : {})
+            ...(props.options?.type === 'ticket'
+              ? { includeRelations: false }
+              : {}),
           },
           // 호버 프리페치 캐시가 있으면 즉시 표시하고 백그라운드에서 갱신
-          fetchPolicy: "cache-and-network"
-        })
+          fetchPolicy: 'cache-and-network',
+        }),
       }),
       graphql<ContainerProps, AllUsersQueryResponse>(
         gql(userQueries.allUsers),
         {
-          name: "usersQuery",
-          skip: ({ options }) => !!options?.skipAllUsersInEditForm
-        }
+          name: 'usersQuery',
+          skip: ({ options }) => !!options?.skipAllUsersInEditForm,
+        },
       ),
       graphql<ContainerProps, SaveMutation, IItemParams>(
         gql(options.mutations.addMutation),
         {
-          name: "addMutation",
-          options: refetchOptions
-        }
+          name: 'addMutation',
+          options: refetchOptions,
+        },
       ),
       graphql<ContainerProps, SaveMutation, IItemParams>(
         gql(options.mutations.copyMutation),
         {
-          name: "copyMutation",
-          options: refetchOptions
-        }
+          name: 'copyMutation',
+          options: refetchOptions,
+        },
       ),
       graphql<ContainerProps, SaveMutation, IItemParams>(
         gql(options.mutations.editMutation),
         {
-          name: "editMutation",
-          options: refetchOptions
-        }
+          name: 'editMutation',
+          options: refetchOptions,
+        },
       ),
       graphql<ContainerProps, RemoveMutation, { _id: string }>(
         gql(options.mutations.removeMutation),
         {
-          name: "removeMutation",
-          options: refetchOptions
-        }
-      )
-    )(EditFormContainer)
+          name: 'removeMutation',
+          options: refetchOptions,
+        },
+      ),
+    )(EditFormContainer),
   );
 };
 
@@ -409,7 +434,7 @@ export default withCurrentUser((props: WrapperProps) => {
         onRemoveItem,
         onUpdateItem,
         synchSingleCard,
-        options
+        options,
       }) => {
         return (
           <WithData

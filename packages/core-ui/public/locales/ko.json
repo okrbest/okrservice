@@ -3206,5 +3206,21 @@
   "Associated Company": "회사명",
   "Assignee": "안내자",
   "Assignee Phone": "연락처",
-  "Assignee Email": "E-mail 주소"
+  "Assignee Email": "E-mail 주소",
+  "Saving...": "저장 중...",
+  "Draft box": "임시저장함",
+  "Save current text": "지금 글 임시저장",
+  "Saved by you": "직접 저장",
+  "Saved to the draft box.": "임시저장했어요.",
+  "The same text is already saved.": "이미 같은 글이 저장돼 있어요.",
+  "There is nothing to save.": "저장할 글이 없어요.",
+  "Could not save in this browser.": "이 브라우저에 저장하지 못했어요.",
+  "No drafts saved yet.": "아직 임시저장한 글이 없어요.",
+  "Kept only in this browser and not visible to others. Pick one to put it back in the editor — what you are writing now is kept here too.": "이 브라우저에만 보관돼요. 다른 사람에게는 보이지 않아요. 고르면 편집창에 다시 넣고, 지금 쓰던 글도 여기에 남아요.",
+  "You have an unsaved draft. Click to continue writing.": "작성 중이던 글이 있어요. 눌러서 이어 쓰기",
+  "On save": "저장 누름",
+  "On cancel": "취소 누름",
+  "Auto-saved": "자동 기록",
+  "Before loading": "불러오기 전",
+  "Saving is taking longer than usual. Your text is kept here — please try saving again.": "저장 응답이 늦어지고 있어요. 쓰던 글은 그대로 보관돼 있으니 다시 저장해 주세요."
 }

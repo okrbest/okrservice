@@ -1,7 +1,7 @@
 import {
   attachmentInput,
   attachmentType,
-} from "@erxes/api-utils/src/commonTypeDefs";
+} from '@erxes/api-utils/src/commonTypeDefs';
 
 const ruleFields = `
   _id : String!,
@@ -112,6 +112,7 @@ export const commonMutationParams = `
   widgetAlarm: Boolean,
   assignAlarm: Boolean,
   expectedModifiedAt: Date,
+  expectedDescriptionHash: String,
 `;
 
 export const commonDragParams = `

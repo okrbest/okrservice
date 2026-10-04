@@ -1,16 +1,17 @@
-import { IItemDragCommonFields } from "../../../models/definitions/boards";
-import { ITicket } from "../../../models/definitions/tickets";
-import { checkPermission } from "@erxes/api-utils/src/permissions";
+import { IItemDragCommonFields } from '../../../models/definitions/boards';
+import { ITicket } from '../../../models/definitions/tickets';
+import { checkPermission } from '@erxes/api-utils/src/permissions';
 import {
   itemsAdd,
   itemsArchive,
   itemsChange,
   itemsCopy,
   itemsEdit,
-  itemsRemove
-} from "./utils";
-import { IContext } from "../../../connectionResolver";
-import { sendCoreMessage } from "../../../messageBroker";
+  itemsRemove,
+} from './utils';
+import { IContext } from '../../../connectionResolver';
+import { hasDescriptionConflict } from '../../../descriptionConflict';
+import { sendCoreMessage } from '../../../messageBroker';
 interface ITicketsEdit extends ITicket {
   _id: string;
 }
@@ -22,15 +23,15 @@ const ticketMutations = {
   async ticketsAdd(
     _root,
     doc: ITicket & { proccessId: string; aboveItemId: string },
-    { user, models, subdomain }: IContext
+    { user, models, subdomain }: IContext,
   ) {
     return itemsAdd(
       models,
       subdomain,
       doc,
-      "ticket",
+      'ticket',
       models.Tickets.createTicket,
-      user
+      user,
     );
   },
   /**
@@ -38,35 +39,50 @@ const ticketMutations = {
    */
   async ticketsEdit(
     _root,
-    { _id, proccessId, expectedModifiedAt, ...doc }: ITicketsEdit & { proccessId: string; expectedModifiedAt?: Date },
-    { user, models, subdomain }: IContext
+    {
+      _id,
+      proccessId,
+      expectedModifiedAt,
+      expectedDescriptionHash,
+      ...doc
+    }: ITicketsEdit & {
+      proccessId: string;
+      expectedModifiedAt?: Date;
+      expectedDescriptionHash?: string;
+    },
+    { user, models, subdomain }: IContext,
   ) {
     const oldTicket = await models.Tickets.getTicket(_id);
 
+    // 설명 내용이 그 사이 실제로 바뀐 경우에만 충돌 — 담당자·날짜 변경이나 자동화로
+    // 수정 시각만 바뀐 경우에는 답변 저장을 막지 않는다
     if (
       doc.description !== undefined &&
-      expectedModifiedAt != null &&
-      oldTicket?.modifiedAt
+      hasDescriptionConflict({
+        expectedDescriptionHash,
+        expectedModifiedAt,
+        currentDescription: oldTicket?.description,
+        currentModifiedAt: oldTicket?.modifiedAt,
+        newDescription: doc.description,
+      })
     ) {
-      const expectedMs = new Date(expectedModifiedAt).getTime();
-      const actualMs = new Date(oldTicket.modifiedAt).getTime();
-      if (Math.abs(expectedMs - actualMs) > 1000) {
-        const err = new Error("DESCRIPTION_CONFLICT") as Error & { code?: string };
-        err.code = "DESCRIPTION_CONFLICT";
-        throw err;
-      }
+      const err = new Error('DESCRIPTION_CONFLICT') as Error & {
+        code?: string;
+      };
+      err.code = 'DESCRIPTION_CONFLICT';
+      throw err;
     }
 
     return itemsEdit(
       models,
       subdomain,
       _id,
-      "ticket",
+      'ticket',
       oldTicket,
       doc,
       proccessId,
       user,
-      models.Tickets.updateTicket
+      models.Tickets.updateTicket,
     );
   },
 
@@ -76,15 +92,15 @@ const ticketMutations = {
   async ticketsChange(
     _root,
     doc: IItemDragCommonFields,
-    { user, models, subdomain }: IContext
+    { user, models, subdomain }: IContext,
   ) {
     return itemsChange(
       models,
       subdomain,
       doc,
-      "ticket",
+      'ticket',
       user,
-      models.Tickets.updateTicket
+      models.Tickets.updateTicket,
     );
   },
 
@@ -94,9 +110,9 @@ const ticketMutations = {
   async ticketsRemove(
     _root,
     { _id }: { _id: string },
-    { user, models, subdomain }: IContext
+    { user, models, subdomain }: IContext,
   ) {
-    return itemsRemove(models, subdomain, _id, "ticket", user);
+    return itemsRemove(models, subdomain, _id, 'ticket', user);
   },
 
   /**
@@ -105,7 +121,7 @@ const ticketMutations = {
   async ticketsWatch(
     _root,
     { _id, isAdd }: { _id: string; isAdd: boolean },
-    { user, models }: IContext
+    { user, models }: IContext,
   ) {
     return models.Tickets.watchTicket(_id, isAdd, user._id);
   },
@@ -113,39 +129,45 @@ const ticketMutations = {
   async ticketsCopy(
     _root,
     { _id, proccessId }: { _id: string; proccessId: string },
-    { user, models, subdomain }: IContext
+    { user, models, subdomain }: IContext,
   ) {
     return itemsCopy(
       models,
       subdomain,
       _id,
       proccessId,
-      "ticket",
+      'ticket',
       user,
-      ["source"],
-      models.Tickets.createTicket
+      ['source'],
+      models.Tickets.createTicket,
     );
   },
 
   async ticketsArchive(
     _root,
     { stageId, proccessId }: { stageId: string; proccessId: string },
-    { user, models, subdomain }: IContext
+    { user, models, subdomain }: IContext,
   ) {
-    return itemsArchive(models, subdomain, stageId, "ticket", proccessId, user);
+    return itemsArchive(models, subdomain, stageId, 'ticket', proccessId, user);
   },
 
   async ticketsBulkArchive(
     _root,
     { ids, pipelineId: _pipelineId }: { ids: string[]; pipelineId: string },
-    { models, user }: IContext
+    { models, user }: IContext,
   ) {
     if (!ids || ids.length === 0) return { count: 0 };
     const limitedIds = ids.slice(0, 500);
 
     await models.Tickets.updateMany(
       { _id: { $in: limitedIds } },
-      { $set: { status: "archived", modifiedAt: new Date(), modifiedBy: user._id } }
+      {
+        $set: {
+          status: 'archived',
+          modifiedAt: new Date(),
+          modifiedBy: user._id,
+        },
+      },
     );
 
     return { count: limitedIds.length };
@@ -154,7 +176,7 @@ const ticketMutations = {
   async ticketsBulkEdit(
     _root,
     { ids, status }: { ids: string[]; status: string },
-    { models, user }: IContext
+    { models, user }: IContext,
   ) {
     if (!ids || ids.length === 0) return { count: 0 };
 
@@ -167,7 +189,7 @@ const ticketMutations = {
 
     await models.Tickets.updateMany(
       { _id: { $in: limitedIds } },
-      { $set: { status, modifiedAt: new Date(), modifiedBy: user._id } }
+      { $set: { status, modifiedAt: new Date(), modifiedBy: user._id } },
     );
 
     return { count: limitedIds.length };
@@ -176,13 +198,15 @@ const ticketMutations = {
   async ticketsBulkRemove(
     _root,
     { ids }: { ids: string[] },
-    { models, subdomain, user }: IContext
+    { models, subdomain, user }: IContext,
   ) {
     if (!ids || ids.length === 0) return 0;
     const limitedIds = ids.slice(0, 500);
 
     const results = await Promise.allSettled(
-      limitedIds.map((id) => itemsRemove(models, subdomain, id, 'ticket', user))
+      limitedIds.map((id) =>
+        itemsRemove(models, subdomain, id, 'ticket', user),
+      ),
     );
 
     return results.filter((r) => r.status === 'fulfilled').length;
@@ -194,34 +218,34 @@ const ticketMutations = {
   async updateWidgetAlarm(
     _root,
     { ticketId }: { ticketId: string },
-    { models }: IContext
+    { models }: IContext,
   ) {
     try {
       await models.Tickets.updateOne(
         { _id: ticketId },
-        { $set: { widgetAlarm: true } }
+        { $set: { widgetAlarm: true } },
       );
-      
+
       return {
         success: true,
-        message: "Widget alarm updated successfully"
+        message: 'Widget alarm updated successfully',
       };
     } catch (error) {
       return {
         success: false,
-        message: error.message
+        message: error.message,
       };
     }
-  }
+  },
 };
 
-checkPermission(ticketMutations, "ticketsAdd", "ticketsAdd");
-checkPermission(ticketMutations, "ticketsEdit", "ticketsEdit");
-checkPermission(ticketMutations, "ticketsRemove", "ticketsRemove");
-checkPermission(ticketMutations, "ticketsWatch", "ticketsWatch");
-checkPermission(ticketMutations, "ticketsArchive", "ticketsArchive");
-checkPermission(ticketMutations, "ticketsBulkArchive", "ticketsArchive");
-checkPermission(ticketMutations, "ticketsBulkEdit", "ticketsEdit");
-checkPermission(ticketMutations, "ticketsBulkRemove", "ticketsRemove");
+checkPermission(ticketMutations, 'ticketsAdd', 'ticketsAdd');
+checkPermission(ticketMutations, 'ticketsEdit', 'ticketsEdit');
+checkPermission(ticketMutations, 'ticketsRemove', 'ticketsRemove');
+checkPermission(ticketMutations, 'ticketsWatch', 'ticketsWatch');
+checkPermission(ticketMutations, 'ticketsArchive', 'ticketsArchive');
+checkPermission(ticketMutations, 'ticketsBulkArchive', 'ticketsArchive');
+checkPermission(ticketMutations, 'ticketsBulkEdit', 'ticketsEdit');
+checkPermission(ticketMutations, 'ticketsBulkRemove', 'ticketsRemove');
 
 export default ticketMutations;

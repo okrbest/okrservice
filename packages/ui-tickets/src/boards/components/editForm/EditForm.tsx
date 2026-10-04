@@ -18,6 +18,8 @@ import { colors } from '@erxes/ui/src/styles';
 import { rgba } from '@erxes/ui/src/styles/ecolor';
 import styled from 'styled-components';
 import * as Sentry from '@sentry/react';
+import { parseDescriptionDraft } from '@erxes/ui/src/utils/descriptionDraft';
+import { recordDescriptionHistory } from '../../descriptionHistoryStore';
 
 const Relative = styled.div`
   position: relative;
@@ -79,7 +81,7 @@ type Props = {
   beforePopupClose: (afterPopupClose?: () => void) => void;
   formContent: ({ state, copy, remove }: IEditFormContent) => React.ReactNode;
   onUpdate: (item: IItem, prevStageId?) => void;
-  saveItem: (doc, callback?: (item) => void) => void;
+  saveItem: (doc, callback?: (item) => void, onError?: () => void) => void;
   isPopupVisible?: boolean;
   hideHeader?: boolean;
   refresh: boolean;
@@ -147,10 +149,22 @@ function EditForm(props: Props) {
     }
   };
 
-  const saveItemHandler = (doc: { [key: string]: any }) => {
-    saveItem(doc, (updatedItem) => {
-      setUpdatedItem(updatedItem);
-    });
+  const saveItemHandler = (
+    doc: { [key: string]: any },
+    callback?: (item) => void,
+    onError?: () => void,
+  ) => {
+    saveItem(
+      doc,
+      (updatedItem) => {
+        setUpdatedItem(updatedItem);
+
+        if (callback) {
+          callback(updatedItem);
+        }
+      },
+      onError,
+    );
   };
 
   const remove = (id: string) => {
@@ -176,7 +190,16 @@ function EditForm(props: Props) {
       return;
     }
 
-    localStorage.removeItem(`${options.type}_description_${item._id}`);
+    const draftKey = `${options.type}_description_${item._id}`;
+    const stored = localStorage.getItem(draftKey);
+    const draft = stored ? parseDescriptionDraft(stored) : null;
+
+    // "저장하지 않고 닫기"로 버리는 글도 임시저장함에 남겨 되찾을 수 있게 한다
+    if (draft) {
+      recordDescriptionHistory(draftKey, draft.content, 'cancel');
+    }
+
+    localStorage.removeItem(draftKey);
   };
 
   const performClose = () => {
