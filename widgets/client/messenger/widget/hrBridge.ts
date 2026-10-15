@@ -8,53 +8,56 @@
  *
  * 보안 장치:
  *  - event.source(iframe contentWindow) + event.origin(위젯 서버 origin) 이중 검증
- *  - endpoint allowlist: 정적 22개 + YTA 정규식 외 실행 거부
+ *  - endpoint allowlist: 정적 21개 + YTA 정규식 외 실행 거부
  *  - path + cmd 조합 allowlist: 허용 경로라도 조회 cmd 외(save*·delete* 등) 거부
  *  - 범용 endpoint(/CommonCode.do)는 queryId 화이트리스트 병행 — 임의 쿼리 차단
- *  - self 강제: "$SELF_STAFF_ID" 마커를 페이지 DOM의 본인 STAFF_ID로만 치환
+ *  - self 강제: "$SELF_STAFF_ID" 마커를 페이지 DOM의 본인 STAFF_ID로만 치환.
+ *    사번 파라미터(STAFF_PARAM_KEYS)는 마커만 허용 — 리터럴 STAFF_ID(다른 직원)는 거부
  *  - 게이트 스킵 값 차단: searchType=mobile 거부
+ *  - 다른 직원 정보 차단(teamplgpt specs/016): 조직 휴가캘린더 경로 제외, 결재함은
+ *    본인 기안함(selectGubun=2)만 — 서버 쪽 방어가 빠져도 페이지 세션으로 실행되지 않게
  *
  * 등록 조건: window.erxesSettings.messenger.hrBaseUrl 존재 시에만
  * (다른 고객사 배포에 무영향).
  */
 declare const window: any;
 
-const SELF_MARKER = "$SELF_STAFF_ID";
-const REQUEST_TYPE = "teamplgpt:hr-tool-request";
-const RESULT_TYPE = "teamplgpt:hr-tool-result";
+const SELF_MARKER = '$SELF_STAFF_ID';
+const REQUEST_TYPE = 'teamplgpt:hr-tool-request';
+const RESULT_TYPE = 'teamplgpt:hr-tool-result';
 const FETCH_TIMEOUT_MS = 20000;
 
-// HR 스킬 7종이 사용하는 kiwibox 정적 경로 22개 — 정확 매칭
+// HR 스킬 7종이 사용하는 kiwibox 정적 경로 21개 — 정확 매칭
 // (신판 카탈로그 재정렬: teamplgpt specs/011, 작업지시서 2026-07-24)
 const ALLOWED_PATHS = [
   // hr-attendance
-  "/TAAWrkTimeStatusMgr.do", // timesheet·work_status (TAA-1410 정본)
-  "/TAADclzWorkSearchCldr.do",
-  "/TAADclzWorkOtSchdul.do",
-  "/TAADclzVcatnCldrMgr.do",
-  "/TAADclzVcatnList.do", // 연차잔여(List1)·휴가상세(List2) — specs/011 D2
+  '/TAAWrkTimeStatusMgr.do', // timesheet·work_status (TAA-1410 정본)
+  '/TAADclzWorkSearchCldr.do',
+  '/TAADclzWorkOtSchdul.do',
+  // "/TAADclzVcatnCldrMgr.do" 조직 휴가캘린더 — 다른 직원 정보라 제외(teamplgpt specs/016)
+  '/TAADclzVcatnList.do', // 연차잔여(List1)·휴가상세(List2) — specs/011 D2
   // hr-personnel (D6 보류로 모바일 경로 유지)
-  "/getMBLPrtEmpCard.do",
-  "/getMBLPrtEmpCardPop.do",
-  "/getMBLHrBassiemOrgList.do",
-  "/getMBLHrBassiemMemberList.do",
-  "/getTodoIconCnt.do",
-  "/getScheduleDay.do",
-  "/getContactList.do",
-  "/PRCHrBassiemMgrTab220.do",
+  '/getMBLPrtEmpCard.do',
+  '/getMBLPrtEmpCardPop.do',
+  '/getMBLHrBassiemOrgList.do',
+  '/getMBLHrBassiemMemberList.do',
+  '/getTodoIconCnt.do',
+  '/getScheduleDay.do',
+  '/getHRDetailList.do', // schedule_titles — 회사 일정·공휴일 제목(개인 정보 없음, teamplgpt specs/016 D6)
+  '/PRCHrBassiemMgrTab220.do',
   // hr-salary
-  "/SALPayslipNewMgr.do",
-  "/SALSalaryDtstmnMgr.do", // 급여명세 정본(getSALSalaryDtstmnMgrList/List2/Map) — PayslipNewMgr는 유령 경로
-  "/SALSalaryBassMgr.do", // 월별지급내역(SAL-0050) — specs/011 D5
-  "/SALDaylabMgr.do",
-  "/CommonCode.do",
+  '/SALPayslipNewMgr.do',
+  '/SALSalaryDtstmnMgr.do', // 급여명세 정본(getSALSalaryDtstmnMgrList/List2/Map) — PayslipNewMgr는 유령 경로
+  '/SALSalaryBassMgr.do', // 월별지급내역(SAL-0050) — specs/011 D5
+  '/SALDaylabMgr.do',
+  '/CommonCode.do',
   // hr-approval
-  "/EAPRequestMgr.do",
+  '/EAPRequestMgr.do',
   // hr-certificate
-  "/CTIMcrtfReqstRefromMgr.do",
-  "/CTIMcrtfIssuMgr.do", // 발급내역 목록 정본 (Refrom은 단건/초기조회용)
+  '/CTIMcrtfReqstRefromMgr.do',
+  '/CTIMcrtfIssuMgr.do', // 발급내역 목록 정본 (Refrom은 단건/초기조회용)
   // hr-welfare
-  "/LONLoanReqstListMgr.do",
+  '/LONLoanReqstListMgr.do',
 ];
 
 // hr-year-end-tax: 연말정산 컨트롤러가 연도별 분리 — endpoint 6개 × 지원연도(2022~2025)만
@@ -68,68 +71,95 @@ const YTA_PATH_RE =
 // (cmd 분기 없는 모바일 경로 등)는 cmd 파라미터 자체를 거부한다.
 // 스킬 handler의 cmd 추가·변경 시 이 목록과 teamplgpt-hr-bridge.js 양쪽 갱신.
 const CMD_ALLOWLIST: Record<string, string[]> = {
-  "/TAAWrkTimeStatusMgr.do": ["getTAAWrkTimeStatusMgrList"],
-  "/TAADclzWorkSearchCldr.do": ["getTAADclzWorkSearchCldr"],
-  "/TAADclzWorkOtSchdul.do": [
-    "getTAADclzWorkOtSchdulList",
-    "getTAADclzWorkOtSchdulList2",
+  '/TAAWrkTimeStatusMgr.do': ['getTAAWrkTimeStatusMgrList'],
+  '/TAADclzWorkSearchCldr.do': ['getTAADclzWorkSearchCldr'],
+  '/TAADclzWorkOtSchdul.do': [
+    'getTAADclzWorkOtSchdulList',
+    'getTAADclzWorkOtSchdulList2',
   ],
-  "/TAADclzVcatnCldrMgr.do": ["getTAADclzVcatnCldrMgr"],
-  "/TAADclzVcatnList.do": ["getTAADclzVcatnList1", "getTAADclzVcatnList2"],
-  "/PRCHrBassiemMgrTab220.do": ["getPRCHrBassiemMgrTab220List"],
-  "/SALPayslipNewMgr.do": [
-    "getSALPayslipNewMgrList",
-    "getSALPayslipNewMgrList2",
-    "getSALPayslipNewMgrMap",
+  '/TAADclzVcatnList.do': ['getTAADclzVcatnList1', 'getTAADclzVcatnList2'],
+  '/PRCHrBassiemMgrTab220.do': ['getPRCHrBassiemMgrTab220List'],
+  '/SALPayslipNewMgr.do': [
+    'getSALPayslipNewMgrList',
+    'getSALPayslipNewMgrList2',
+    'getSALPayslipNewMgrMap',
   ],
-  "/SALSalaryDtstmnMgr.do": [
-    "getSALSalaryDtstmnMgrList",
-    "getSALSalaryDtstmnMgrList2",
-    "getSALSalaryDtstmnMgrMap",
+  '/SALSalaryDtstmnMgr.do': [
+    'getSALSalaryDtstmnMgrList',
+    'getSALSalaryDtstmnMgrList2',
+    'getSALSalaryDtstmnMgrMap',
   ],
-  "/SALSalaryBassMgr.do": ["getSALSalaryBassMgrTab110List"],
-  "/SALDaylabMgr.do": ["getSALDaylabMgrList"],
-  "/CommonCode.do": ["getCommonNSCodeList"],
-  "/EAPRequestMgr.do": ["getEAPRequestMgrList"],
-  "/CTIMcrtfReqstRefromMgr.do": ["getCTIMcrtfReqstRefromMgrList"],
-  "/CTIMcrtfIssuMgr.do": ["getCTIMcrtfIssuMgrList"],
-  "/LONLoanReqstListMgr.do": ["getLONLoanReqstListMgrList1"],
+  '/SALSalaryBassMgr.do': ['getSALSalaryBassMgrTab110List'],
+  '/SALDaylabMgr.do': ['getSALDaylabMgrList'],
+  '/CommonCode.do': ['getCommonNSCodeList'],
+  '/EAPRequestMgr.do': ['getEAPRequestMgrList'],
+  '/CTIMcrtfReqstRefromMgr.do': ['getCTIMcrtfReqstRefromMgrList'],
+  '/CTIMcrtfIssuMgr.do': ['getCTIMcrtfIssuMgrList'],
+  '/LONLoanReqstListMgr.do': ['getLONLoanReqstListMgrList1'],
 };
 
 // YTA 경로는 연도를 뗀 컨트롤러명 기준 cmd allowlist
 const YTA_CMD_ALLOWLIST: Record<string, string[]> = {
-  YTASummaryMgr: ["getYTASummaryMgrList"],
-  YTAYndMedDtlMgr: ["getYTAYndMedDtlMgrList"],
-  YTAYtaFamilySttusMgr: ["getYTAYtaFamilySttusMgrList"],
-  YTAYndBefWrkDtlMgr: ["getYTAYndBefWrkDtlMgrList"],
-  YTAYndGivPayDtlMgr: ["getYTAYndGivPayDtlMgrList"],
+  YTASummaryMgr: ['getYTASummaryMgrList'],
+  YTAYndMedDtlMgr: ['getYTAYndMedDtlMgrList'],
+  YTAYtaFamilySttusMgr: ['getYTAYtaFamilySttusMgrList'],
+  YTAYndBefWrkDtlMgr: ['getYTAYndBefWrkDtlMgrList'],
+  YTAYndGivPayDtlMgr: ['getYTAYndGivPayDtlMgrList'],
   YTAInDctMgr: [
-    "getYTAInDctMgrTab06List",
-    "getYTAInDctMgrTab08List",
-    "getYTAInDctMgrTab13List",
-    "getYTAInDctMgrTab15List",
+    'getYTAInDctMgrTab06List',
+    'getYTAInDctMgrTab08List',
+    'getYTAInDctMgrTab13List',
+    'getYTAInDctMgrTab15List',
   ],
 };
 
 function isCmdAllowed(path: string, formObj: Record<string, unknown>): boolean {
-  const hasCmd = Object.prototype.hasOwnProperty.call(formObj, "cmd");
+  const hasCmd = Object.prototype.hasOwnProperty.call(formObj, 'cmd');
   const yta = YTA_PATH_RE.exec(path);
-  const allowed = yta
-    ? YTA_CMD_ALLOWLIST[`YTA${yta[1]}`]
-    : CMD_ALLOWLIST[path];
+  const allowed = yta ? YTA_CMD_ALLOWLIST[`YTA${yta[1]}`] : CMD_ALLOWLIST[path];
   if (!allowed) return !hasCmd;
   return hasCmd && allowed.indexOf(String(formObj.cmd)) !== -1;
 }
 
 // 게이트 스킵/위험 파라미터 값 차단 (작업지시서 §1.5)
+// 대상 사번 파라미터 — 값은 반드시 self 마커여야 한다(teamplgpt specs/016). 서버가 리터럴
+// STAFF_ID를 보내면(버그·조작) 다른 직원의 데이터를 이 페이지 세션으로 조회하게 되므로 거부한다.
+const STAFF_PARAM_KEYS = [
+  'staffId',
+  'cmmSearchStaffId',
+  'searchStaffId',
+  'searchId',
+];
+
 const FORBIDDEN_PARAM_VALUES: Record<string, string[]> = {
-  searchType: ["mobile"],
+  searchType: ['mobile'],
 };
+
+// 파라미터 값 allowlist — 같은 cmd가 값에 따라 다른 사람의 데이터를 돌려주는 경로.
+// 키는 반드시 있어야 하고 값은 목록 안이어야 한다(미지정 = 서버 기본 범위라 거부).
+// EAPRequestMgr selectGubun: 2=기안함(본인 기안)만. 3 미결·4 기결·5 참조·6 반려(내가 반려한
+// 남의 문서 — EAPRequestMgr_SQL appl_kind=6)는 다른 직원 문서다(teamplgpt specs/016 D4).
+const PARAM_VALUE_ALLOWLIST: Record<string, Record<string, string[]>> = {
+  '/EAPRequestMgr.do': { selectGubun: ['2'] },
+};
+
+function areParamValuesAllowed(
+  path: string,
+  formObj: Record<string, unknown>,
+): boolean {
+  const rules = PARAM_VALUE_ALLOWLIST[path];
+  if (!rules) return true;
+  return Object.keys(rules).every(
+    (key) =>
+      Object.prototype.hasOwnProperty.call(formObj, key) &&
+      rules[key].indexOf(String(formObj[key])) !== -1,
+  );
+}
 
 // 범용 endpoint는 queryId 화이트리스트 병행 — 임의 쿼리 실행 차단 (작업지시서 §1.5).
 // 목록에 없는 path는 이 제약을 받지 않음.
 const QUERY_ID_ALLOWLIST: Record<string, string[]> = {
-  "/CommonCode.do": ["getSalYmdTypeCdList", "getSalYmdTypeCdList2"],
+  '/CommonCode.do': ['getSalYmdTypeCdList', 'getSalYmdTypeCdList2'],
 };
 
 interface BridgeReply {
@@ -145,10 +175,10 @@ interface BridgeReply {
  * ⚠️ 사번(#userNo, ssnStaffNo)과 다른 값 — userNo 치환 금지.
  */
 function resolveStaffId(): string | null {
-  const el = document.getElementById("searchUserId") as HTMLInputElement | null;
+  const el = document.getElementById('searchUserId') as HTMLInputElement | null;
   if (el && el.value) return el.value;
   const fallback = document.querySelector(
-    'input#searchUserId[value]:not([value=""])'
+    'input#searchUserId[value]:not([value=""])',
   ) as HTMLInputElement | null;
   if (fallback && fallback.value) return fallback.value;
   return null;
@@ -161,7 +191,7 @@ function resolveStaffId(): string | null {
  * 배포는 hrBaseUrl 값에 이미 포함돼 있다. 값이 비면 location.origin 폴백.
  */
 function resolveHrBase(hrBaseUrl: string): string {
-  const base = String(hrBaseUrl || "").replace(/\/$/, "");
+  const base = String(hrBaseUrl || '').replace(/\/$/, '');
   return base || window.location.origin;
 }
 
@@ -182,11 +212,11 @@ export function initHrBridge(iframe: HTMLIFrameElement): void {
     if (!iframe.contentWindow) return;
     iframe.contentWindow.postMessage(
       { type: RESULT_TYPE, callId, ...result },
-      widgetOrigin
+      widgetOrigin,
     );
   };
 
-  window.addEventListener("message", (event: MessageEvent) => {
+  window.addEventListener('message', (event: MessageEvent) => {
     // 이중 검증: chatbot iframe에서 온, 위젯 서버 origin의 메시지만 처리
     if (event.source !== iframe.contentWindow) return;
     if (event.origin !== widgetOrigin) return;
@@ -200,7 +230,7 @@ export function initHrBridge(iframe: HTMLIFrameElement): void {
       ALLOWED_PATHS.indexOf(spec.path) === -1 &&
       !YTA_PATH_RE.test(spec.path)
     ) {
-      reply(callId, { ok: false, status: 0, body: "bridge: path not allowed" });
+      reply(callId, { ok: false, status: 0, body: 'bridge: path not allowed' });
       return;
     }
 
@@ -208,19 +238,28 @@ export function initHrBridge(iframe: HTMLIFrameElement): void {
     const formObj: Record<string, unknown> = spec.form || {};
 
     if (!isCmdAllowed(spec.path, formObj)) {
-      reply(callId, { ok: false, status: 0, body: "bridge: cmd not allowed" });
+      reply(callId, { ok: false, status: 0, body: 'bridge: cmd not allowed' });
+      return;
+    }
+
+    if (!areParamValuesAllowed(spec.path, formObj)) {
+      reply(callId, {
+        ok: false,
+        status: 0,
+        body: 'bridge: param not allowed',
+      });
       return;
     }
 
     const allowedQueryIds = QUERY_ID_ALLOWLIST[spec.path];
     if (
       allowedQueryIds &&
-      allowedQueryIds.indexOf(String(formObj.queryId ?? "")) === -1
+      allowedQueryIds.indexOf(String(formObj.queryId ?? '')) === -1
     ) {
       reply(callId, {
         ok: false,
         status: 0,
-        body: "bridge: queryId not allowed",
+        body: 'bridge: queryId not allowed',
       });
       return;
     }
@@ -234,7 +273,15 @@ export function initHrBridge(iframe: HTMLIFrameElement): void {
         reply(callId, {
           ok: false,
           status: 0,
-          body: "bridge: forbidden param value",
+          body: 'bridge: forbidden param value',
+        });
+        return;
+      }
+      if (STAFF_PARAM_KEYS.indexOf(key) !== -1 && value !== SELF_MARKER) {
+        reply(callId, {
+          ok: false,
+          status: 0,
+          body: 'bridge: staff param must be self',
         });
         return;
       }
@@ -244,7 +291,7 @@ export function initHrBridge(iframe: HTMLIFrameElement): void {
           reply(callId, {
             ok: false,
             status: 0,
-            body: "bridge: staffId not found",
+            body: 'bridge: staffId not found',
           });
           return;
         }
@@ -257,16 +304,16 @@ export function initHrBridge(iframe: HTMLIFrameElement): void {
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
     fetch(hrBase + spec.path, {
-      method: "POST",
-      credentials: "same-origin", // JSESSIONID 자동 동반 — 세션은 페이지 밖으로 안 나감
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      method: 'POST',
+      credentials: 'same-origin', // JSESSIONID 자동 동반 — 세션은 페이지 밖으로 안 나감
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: form.toString(),
       signal: controller.signal,
     })
       .then((response) =>
         response.text().then((body) => {
           reply(callId, { ok: response.ok, status: response.status, body });
-        })
+        }),
       )
       .catch((e: Error) => {
         reply(callId, {
