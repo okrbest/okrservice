@@ -2,6 +2,8 @@ import {
   cellText,
   isNumericColumn,
   isTimeColumn,
+  issueTarget,
+  rowIssues,
   parseAmount,
   statusKind,
   isTotalRow,
@@ -28,6 +30,14 @@ describe('markdownTableUtils', () => {
     expect(isTimeColumn(['8.3', '10.3'])).toBe(false);
   });
 
+  it('4자리 시각(0900)은 머리글이 시각 열일 때만 시각으로 본다', () => {
+    expect(isTimeColumn(['0855', '0910', '-'], '출근')).toBe(true);
+    expect(isTimeColumn(['0900', '1000'], '기준출근')).toBe(true);
+    expect(isTimeColumn(['0900', '1000'], '금액')).toBe(false);
+    expect(isTimeColumn(['0900', '1000'])).toBe(false);
+    expect(isTimeColumn(['2500', '0900'], '출근')).toBe(false);
+  });
+
   it('숫자 값을 읽는다', () => {
     expect(parseAmount('3,200,000')).toBe(3200000);
     expect(parseAmount('412,500원')).toBe(412500);
@@ -50,5 +60,29 @@ describe('markdownTableUtils', () => {
     expect(isTotalRow(['계', '3'])).toBe(true);
     expect(isTotalRow(['기본급', '3,200,000'])).toBe(false);
     expect(isTotalRow(['계약직 수당', '100'])).toBe(false);
+  });
+
+  it('지각·조퇴 여부를 상태·지각 칸·분 칸에서 읽는다', () => {
+    const h = ['일자', '출근', '퇴근', '상태', '지각', '조퇴(분)'];
+    expect(rowIssues(h, ['7/3', '09:10', '18:05', '정상', 'Y', ''])).toEqual({
+      late: true,
+      early: false,
+    });
+    expect(rowIssues(h, ['7/4', '08:50', '17:30', '정상', '', '30'])).toEqual({
+      late: false,
+      early: true,
+    });
+    expect(rowIssues(h, ['7/5', '08:50', '18:00', '정상', '', '0'])).toEqual({
+      late: false,
+      early: false,
+    });
+    expect(rowIssues(['상태'], ['지각'])).toEqual({ late: true, early: false });
+  });
+
+  it('강조 대상은 출근·퇴근 칸이고 기준 칸은 제외한다', () => {
+    expect(issueTarget('출근')).toBe('late');
+    expect(issueTarget('퇴근')).toBe('early');
+    expect(issueTarget('기준출근')).toBeNull();
+    expect(issueTarget('상태')).toBeNull();
   });
 });

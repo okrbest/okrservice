@@ -7,7 +7,9 @@ import {
   isNumericColumn,
   isTimeColumn,
   isTotalRow,
+  issueTarget,
   parseAmount,
+  rowIssues,
   statusKind,
 } from './markdownTableUtils';
 
@@ -38,6 +40,9 @@ const STATUS_STYLE: Record<StatusKind, { background: string; color: string }> =
   };
 
 const WEEKEND_COLOR = { sat: '#2563eb', sun: T.color.destructive } as const;
+
+// 지각한 날의 출근 칸, 조퇴한 날의 퇴근 칸 — 상태 알약의 주황(warn)과 같은 색
+const ISSUE_COLOR = STATUS_STYLE.warn.color;
 
 const rowDelay = (index: number) =>
   index < COLLAPSED_ROWS
@@ -70,7 +75,10 @@ const MarkdownTable: React.FC<Props> = ({
       .filter((n): n is number => n !== null);
     const max = Math.max(0, ...amounts);
     const hasBars =
-      numeric && !isTimeColumn(values) && amounts.length >= 2 && max > 0;
+      numeric &&
+      !isTimeColumn(values, headers[ci]) &&
+      amounts.length >= 2 &&
+      max > 0;
     const explicit = aligns[ci];
     const align: Align =
       explicit && explicit !== 'left' ? explicit : numeric ? 'right' : 'left';
@@ -170,46 +178,63 @@ const MarkdownTable: React.FC<Props> = ({
     return renderInline(raw, key);
   };
 
-  const renderRow = (row: string[], ri: number, isTotal: boolean) => (
-    <motion.tr
-      key={isTotal ? `total-${ri}` : ri}
-      data-total={isTotal ? 'true' : undefined}
-      initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.35,
-        ease: EASE,
-        delay: isTotal ? 0 : rowDelay(ri),
-      }}
-      onMouseEnter={() => setHoveredRow(isTotal ? null : ri)}
-      onMouseLeave={() => setHoveredRow(null)}
-      style={{
-        background: isTotal
-          ? T.color.accentSoft
-          : hoveredRow === ri
-            ? '#f7f8fd'
-            : 'transparent',
-        fontWeight: isTotal ? 700 : undefined,
-        transition: 'background 0.15s ease',
-      }}
-    >
-      {headers.map((_, ci) => (
-        <td
-          key={ci}
-          style={{
-            ...cellStyle(ci),
-            borderTop: isTotal ? `1px solid ${T.color.border}` : undefined,
-            borderBottom:
-              !isTotal && ri < visibleBody.length - 1
-                ? `1px solid #eef0f5`
-                : undefined,
-          }}
-        >
-          {renderCell(row[ci] ?? '', ri, ci, isTotal)}
-        </td>
-      ))}
-    </motion.tr>
-  );
+  const renderRow = (row: string[], ri: number, isTotal: boolean) => {
+    const issues = isTotal
+      ? { late: false, early: false }
+      : rowIssues(headers, row);
+    const issueStyle = (ci: number): React.CSSProperties => {
+      const target = issueTarget(headers[ci]);
+      return target && issues[target]
+        ? { color: ISSUE_COLOR, fontWeight: 700 }
+        : {};
+    };
+    return (
+      <motion.tr
+        key={isTotal ? `total-${ri}` : ri}
+        data-total={isTotal ? 'true' : undefined}
+        initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.35,
+          ease: EASE,
+          delay: isTotal ? 0 : rowDelay(ri),
+        }}
+        onMouseEnter={() => setHoveredRow(isTotal ? null : ri)}
+        onMouseLeave={() => setHoveredRow(null)}
+        style={{
+          background: isTotal
+            ? T.color.accentSoft
+            : hoveredRow === ri
+              ? '#f7f8fd'
+              : 'transparent',
+          fontWeight: isTotal ? 700 : undefined,
+          transition: 'background 0.15s ease',
+        }}
+      >
+        {headers.map((_, ci) => (
+          <td
+            key={ci}
+            data-issue={
+              issueTarget(headers[ci]) && issues[issueTarget(headers[ci])!]
+                ? 'true'
+                : undefined
+            }
+            style={{
+              ...cellStyle(ci),
+              ...issueStyle(ci),
+              borderTop: isTotal ? `1px solid ${T.color.border}` : undefined,
+              borderBottom:
+                !isTotal && ri < visibleBody.length - 1
+                  ? `1px solid #eef0f5`
+                  : undefined,
+            }}
+          >
+            {renderCell(row[ci] ?? '', ri, ci, isTotal)}
+          </td>
+        ))}
+      </motion.tr>
+    );
+  };
 
   return (
     <div style={{ margin: '8px 0' }}>

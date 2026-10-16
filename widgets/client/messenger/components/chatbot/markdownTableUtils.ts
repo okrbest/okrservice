@@ -50,10 +50,19 @@ export const isNumericColumn = (values: string[]): boolean => {
   );
 };
 
+// 콜론 없는 4자리 시각(0900, 1805) — 머리글이 시각 열일 때만 시각으로 본다(1500원 같은 숫자 오인 방지)
+const HHMM_RE = /^([01]\d|2[0-3])[0-5]\d$/;
+const TIME_HEADER_RE = /출근|퇴근|시각|기준시간|시작시간|종료시간/;
+
 // 시각 열은 크기 비교가 의미 없어 막대를 그리지 않는다
-export const isTimeColumn = (values: string[]): boolean => {
+export const isTimeColumn = (values: string[], header = ''): boolean => {
   const cells = filled(values).map(cellText);
-  return cells.length > 0 && cells.every((v) => TIME_RE.test(v));
+  if (cells.length === 0) return false;
+  if (cells.every((v) => TIME_RE.test(v))) return true;
+  return (
+    TIME_HEADER_RE.test(cellText(header)) &&
+    cells.every((v) => TIME_RE.test(v) || HHMM_RE.test(v))
+  );
 };
 
 export const parseAmount = (raw: string): number | null => {
@@ -75,4 +84,42 @@ export const isTotalRow = (row: string[]): boolean => {
     /^(합계|총계|소계)\s/.test(first) ||
     /^총\s*(지급|공제|근무|금액|합계|액|시간|일수|연장)/.test(first)
   );
+};
+
+// 같은 행의 지각·조퇴 여부 — 상태 칸이 "정상"이어도 지각 칸(Y)·지각(분)>0이면 지각으로 본다
+// (HR 데이터에 지각한 날 상태가 "정상"으로 오는 경우가 있다)
+const YES_RE = /^(Y|예|O|true|지각|조퇴)$/i;
+
+const flagFor = (
+  headers: string[],
+  row: string[],
+  word: '지각' | '조퇴',
+): boolean =>
+  headers.some((h, i) => {
+    const head = cellText(h);
+    const value = cellText(row[i] ?? '');
+    if (head === '상태') return value.includes(word);
+    if (head === word) return YES_RE.test(value);
+    if (head.startsWith(word) && /\(분\)$/.test(head)) {
+      const n = parseFloat(value);
+      return Number.isFinite(n) && n > 0;
+    }
+    return false;
+  });
+
+export const rowIssues = (
+  headers: string[],
+  row: string[],
+): { late: boolean; early: boolean } => ({
+  late: flagFor(headers, row, '지각'),
+  early: flagFor(headers, row, '조퇴'),
+});
+
+// 지각이면 출근 칸, 조퇴면 퇴근 칸을 강조한다 — 기준출근·기준퇴근 칸은 제외
+export const issueTarget = (header: string): 'late' | 'early' | null => {
+  const head = cellText(header);
+  if (head.includes('기준')) return null;
+  if (head === '출근' || head === '출근시각') return 'late';
+  if (head === '퇴근' || head === '퇴근시각') return 'early';
+  return null;
 };

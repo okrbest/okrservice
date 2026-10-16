@@ -79,6 +79,40 @@ describe('MarkdownTable', () => {
     expect(container.querySelectorAll('[data-bar]')).toHaveLength(0);
   });
 
+  it('콜론 없는 4자리 시각(0900) 열에도 막대를 그리지 않는다', () => {
+    const { container } = render(
+      <MarkdownTable
+        headers={['일자', '출근', '기준퇴근']}
+        aligns={[]}
+        rows={[
+          ['9/1', '0855', '1800'],
+          ['9/2', '0910', '2200'],
+        ]}
+        renderInline={renderInline}
+      />,
+    );
+    expect(container.querySelectorAll('[data-bar]')).toHaveLength(0);
+  });
+
+  it('지각한 날은 출근 칸을, 조퇴한 날은 퇴근 칸을 강조한다(상태가 정상이어도)', () => {
+    const { container } = render(
+      <MarkdownTable
+        headers={['일자', '출근', '퇴근', '상태', '지각', '조퇴(분)']}
+        aligns={[]}
+        rows={[
+          ['7/1', '08:55', '18:10', '정상', '', ''],
+          ['7/3', '09:10', '18:05', '정상', 'Y', ''],
+          ['7/4', '08:50', '17:30', '정상', '', '30'],
+        ]}
+        renderInline={renderInline}
+      />,
+    );
+    const flagged = Array.from(
+      container.querySelectorAll('[data-issue="true"]'),
+    ).map((td) => td.textContent);
+    expect(flagged).toEqual(['09:10', '17:30']);
+  });
+
   it('7줄이 넘으면 접고, 더 보기로 펼치고 접기로 다시 접는다', () => {
     render(
       <MarkdownTable
