@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { chatbotTheme as T } from './chatbotTheme';
+import LimitGauge from './LimitGauge';
 import {
   StatusKind,
   cellText,
@@ -8,7 +9,9 @@ import {
   isTimeColumn,
   isTotalRow,
   issueTarget,
+  limitTableKind,
   parseAmount,
+  plainNumber,
   rowIssues,
   statusKind,
 } from './markdownTableUtils';
@@ -59,10 +62,19 @@ const MarkdownTable: React.FC<Props> = ({
   const [hoveredRow, setHoveredRow] = React.useState<number | null>(null);
   const reduceMotion = useReducedMotion();
 
+  // 한도·사용·잔여 표(teamplgpt specs/018 D11): 월별 표는 접지 않고 사용 칸에만 그 달 한도 기준 막대
+  const limitKind = limitTableKind(headers);
+  const monthly = limitKind === 'monthly';
+  const usedCol = headers.findIndex((h) => cellText(h) === '사용');
+  const limitCol = headers.findIndex((h) => cellText(h) === '한도');
+
   const bodyRows = rows.filter((row) => !isTotalRow(row));
   const totalRows = rows.filter((row) => isTotalRow(row));
-  const hiddenCount = Math.max(bodyRows.length - COLLAPSED_ROWS, 0);
-  const visibleBody = expanded ? bodyRows : bodyRows.slice(0, COLLAPSED_ROWS);
+  const hiddenCount = monthly
+    ? 0
+    : Math.max(bodyRows.length - COLLAPSED_ROWS, 0);
+  const visibleBody =
+    expanded || monthly ? bodyRows : bodyRows.slice(0, COLLAPSED_ROWS);
 
   const weekColIndex = headers.findIndex((h) => cellText(h) === '요일');
 
@@ -75,6 +87,7 @@ const MarkdownTable: React.FC<Props> = ({
       .filter((n): n is number => n !== null);
     const max = Math.max(0, ...amounts);
     const hasBars =
+      !monthly &&
       numeric &&
       !isTimeColumn(values, headers[ci]) &&
       amounts.length >= 2 &&
@@ -94,11 +107,65 @@ const MarkdownTable: React.FC<Props> = ({
     fontVariantNumeric: columns[ci].numeric ? 'tabular-nums' : undefined,
   });
 
+  // 월별 사용 칸 — [막대 48px][값 고정폭] 격자라 값 길이가 달라도 막대 시작점이 같다.
+  // 막대 바탕 전체 = 그 줄 한도, 채운 부분 = 사용. 값이 숫자가 아닌 줄·합계 줄은 막대 없이 값만.
+  const renderUsageCell = (row: string[], isTotal: boolean) => {
+    const used = plainNumber(row[usedCol] ?? '');
+    const limit = plainNumber(row[limitCol] ?? '');
+    const showBar = !isTotal && used !== null && limit !== null && limit > 0;
+    const pct = showBar
+      ? Math.round((Math.min(used!, limit!) / limit!) * 100)
+      : 0;
+    return (
+      <span
+        data-usage-cell="true"
+        style={{
+          display: 'inline-grid',
+          gridTemplateColumns: '48px 4.5ch',
+          alignItems: 'center',
+          gap: '8px',
+        }}
+      >
+        {showBar ? (
+          <span
+            data-usage={String(pct)}
+            aria-hidden="true"
+            style={{
+              display: 'block',
+              height: '6px',
+              borderRadius: '99px',
+              overflow: 'hidden',
+              background: T.color.accentSoft,
+            }}
+          >
+            <motion.span
+              initial={reduceMotion ? false : { width: 0 }}
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: 0.9, ease: EASE, delay: 0.1 }}
+              style={{
+                display: 'block',
+                height: '100%',
+                borderRadius: '99px',
+                background: T.color.accent,
+              }}
+            />
+          </span>
+        ) : (
+          <span aria-hidden="true" />
+        )}
+        <span style={{ textAlign: 'right' }}>
+          {cellText(row[usedCol] ?? '')}
+        </span>
+      </span>
+    );
+  };
+
   const renderCell = (
     raw: string,
     ri: number,
     ci: number,
     isTotal: boolean,
+    row: string[] = [],
   ) => {
     const key = `td-${ri}-${ci}`;
     const text = cellText(raw);
@@ -124,6 +191,8 @@ const MarkdownTable: React.FC<Props> = ({
         </span>
       );
     }
+
+    if (monthly && ci === usedCol) return renderUsageCell(row, isTotal);
 
     const status = statusKind(raw);
     if (status) {
@@ -229,12 +298,15 @@ const MarkdownTable: React.FC<Props> = ({
                   : undefined,
             }}
           >
-            {renderCell(row[ci] ?? '', ri, ci, isTotal)}
+            {renderCell(row[ci] ?? '', ri, ci, isTotal, row)}
           </td>
         ))}
       </motion.tr>
     );
   };
+
+  if (limitKind === 'gauge')
+    return <LimitGauge headers={headers} rows={rows} />;
 
   return (
     <div style={{ margin: '8px 0' }}>

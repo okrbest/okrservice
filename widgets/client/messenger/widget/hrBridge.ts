@@ -33,7 +33,9 @@ const ALLOWED_PATHS = [
   // hr-attendance
   '/TAAWrkTimeStatusMgr.do', // timesheet·work_status (TAA-1410 정본)
   '/TAADclzWorkSearchCldr.do',
-  '/TAADclzWorkOtSchdul.do',
+  '/TAADclzWorkOtSchdul.do', // 구 연장근무(PC) — teamplgpt specs/017 배포 확인 후 제거 예정(R8)
+  '/getMBLDclzWorkOtSchdul.do', // 연장근무 한도·사용·잔여(모바일 연장근무현황) — teamplgpt specs/017
+  '/getMBLDclzWorkOtSchdulPerson.do', // 연장근무 날짜별 내역 — teamplgpt specs/017
   // "/TAADclzVcatnCldrMgr.do" 조직 휴가캘린더 — 다른 직원 정보라 제외(teamplgpt specs/016)
   '/TAADclzVcatnList.do', // 연차잔여(List1)·휴가상세(List2) — specs/011 D2
   // hr-personnel (D6 보류로 모바일 경로 유지)
@@ -124,35 +126,103 @@ function isCmdAllowed(path: string, formObj: Record<string, unknown>): boolean {
 // 게이트 스킵/위험 파라미터 값 차단 (작업지시서 §1.5)
 // 대상 사번 파라미터 — 값은 반드시 self 마커여야 한다(teamplgpt specs/016). 서버가 리터럴
 // STAFF_ID를 보내면(버그·조작) 다른 직원의 데이터를 이 페이지 세션으로 조회하게 되므로 거부한다.
+// staffIdNm: 증명서 발급내역의 사번·성명 검색 칸(LIKE '값%') — 비우면 조회 권한 범위 전체(specs/017).
 const STAFF_PARAM_KEYS = [
   'staffId',
   'cmmSearchStaffId',
   'searchStaffId',
   'searchId',
+  'staffIdNm',
 ];
 
 const FORBIDDEN_PARAM_VALUES: Record<string, string[]> = {
   searchType: ['mobile'],
 };
 
+const hasOwn = (obj: object, key: string) =>
+  Object.prototype.hasOwnProperty.call(obj, key);
+
 // 파라미터 값 allowlist — 같은 cmd가 값에 따라 다른 사람의 데이터를 돌려주는 경로.
 // 키는 반드시 있어야 하고 값은 목록 안이어야 한다(미지정 = 서버 기본 범위라 거부).
 // EAPRequestMgr selectGubun: 2=기안함(본인 기안)만. 3 미결·4 기결·5 참조·6 반려(내가 반려한
 // 남의 문서 — EAPRequestMgr_SQL appl_kind=6)는 다른 직원 문서다(teamplgpt specs/016 D4).
+// 연장근무현황 searchType: 2=주간, 3=월간 한도·사용·잔여(teamplgpt specs/017).
 const PARAM_VALUE_ALLOWLIST: Record<string, Record<string, string[]>> = {
   '/EAPRequestMgr.do': { selectGubun: ['2'] },
+  '/getMBLDclzWorkOtSchdul.do': { searchType: ['2', '3'] },
 };
+
+// 사번 키가 반드시 있어야 하는 경로 — 키가 아예 없으면 값 검사(아래 키별 루프)를 건너뛰고,
+// kiwibox SQL 다수가 대상 직원이 비면 "본인소속조회"/"null이면 전체"로 조회 권한 범위 직원
+// 전체를 돌려준다(MBLDclzWorkOtSchdul·TAADclzWorkOtSchdul·TAAWrkTimeStatusMgr_SQL 등).
+// 목록 = teamplgpt HR handler가 각 경로에 항상 보내는 사번 키(specs/017 보안 리뷰 전수 조사).
+// handler의 사번 키를 바꾸면 이 목록과 teamplgpt-hr-bridge.js 양쪽 갱신.
+const REQUIRED_STAFF_PARAMS: Record<string, string[]> = {
+  '/TAAWrkTimeStatusMgr.do': ['cmmSearchStaffId'],
+  '/TAADclzWorkSearchCldr.do': ['cmmSearchStaffId', 'searchId'],
+  '/TAADclzWorkOtSchdul.do': ['cmmSearchStaffId'],
+  '/getMBLDclzWorkOtSchdul.do': ['cmmSearchStaffId'],
+  '/getMBLDclzWorkOtSchdulPerson.do': ['cmmSearchStaffId'],
+  '/TAADclzVcatnList.do': ['staffId', 'cmmSearchStaffId'],
+  '/getMBLPrtEmpCard.do': ['searchStaffId'],
+  '/getMBLPrtEmpCardPop.do': ['searchStaffId'],
+  '/PRCHrBassiemMgrTab220.do': ['staffId', 'cmmSearchStaffId', 'searchStaffId'],
+  '/CommonCode.do': ['staffId'],
+  '/SALSalaryBassMgr.do': ['staffId'],
+  '/SALSalaryDtstmnMgr.do': ['cmmSearchStaffId'],
+  '/SALDaylabMgr.do': ['cmmSearchStaffId'],
+  '/CTIMcrtfIssuMgr.do': ['staffIdNm'],
+  '/LONLoanReqstListMgr.do': ['cmmSearchStaffId'],
+};
+
+// 연말정산(YTA*)은 경로에 연도가 붙어 컨트롤러명으로 찾는다 — InDctMgr만 searchStaffId
+function requiredStaffKeys(path: string): string[] {
+  const yta = YTA_PATH_RE.exec(path);
+  if (yta)
+    return yta[1] === 'InDctMgr' ? ['searchStaffId'] : ['cmmSearchStaffId'];
+  return hasOwn(REQUIRED_STAFF_PARAMS, path) ? REQUIRED_STAFF_PARAMS[path] : [];
+}
+
+function hasRequiredStaffParams(
+  path: string,
+  formObj: Record<string, unknown>,
+): boolean {
+  return requiredStaffKeys(path).every((key) => hasOwn(formObj, key));
+}
+
+// 키를 정확히 정한 경로 — 그 밖의 키는 거부한다. 쓸모없는 키 수천 개로 파라미터 수 한도를
+// 넘겨 사번 키를 잘라내는 시도까지 막는다(specs/017 보안 리뷰 MEDIUM-1). 신규 경로부터 적용.
+const ALLOWED_PARAM_KEYS: Record<string, string[]> = {
+  '/getMBLDclzWorkOtSchdul.do': [
+    'searchType',
+    'searchBaseSYmd',
+    'cmmSearchStaffId',
+  ],
+  '/getMBLDclzWorkOtSchdulPerson.do': [
+    'searchBaseSYmd',
+    'searchBaseEYmd',
+    'cmmSearchStaffId',
+  ],
+};
+
+function areParamKeysAllowed(
+  path: string,
+  formObj: Record<string, unknown>,
+): boolean {
+  if (!hasOwn(ALLOWED_PARAM_KEYS, path)) return true;
+  const allowed = ALLOWED_PARAM_KEYS[path];
+  return Object.keys(formObj).every((key) => allowed.indexOf(key) !== -1);
+}
 
 function areParamValuesAllowed(
   path: string,
   formObj: Record<string, unknown>,
 ): boolean {
+  if (!hasOwn(PARAM_VALUE_ALLOWLIST, path)) return true;
   const rules = PARAM_VALUE_ALLOWLIST[path];
-  if (!rules) return true;
   return Object.keys(rules).every(
     (key) =>
-      Object.prototype.hasOwnProperty.call(formObj, key) &&
-      rules[key].indexOf(String(formObj[key])) !== -1,
+      hasOwn(formObj, key) && rules[key].indexOf(String(formObj[key])) !== -1,
   );
 }
 
@@ -176,11 +246,14 @@ interface BridgeReply {
  */
 function resolveStaffId(): string | null {
   const el = document.getElementById('searchUserId') as HTMLInputElement | null;
-  if (el && el.value) return el.value;
+  // 공백뿐인 값은 SQL에서 빈 값(XTRIM → NULL) = 조회 권한 범위 전체가 된다 — 없는 것으로 본다
+  const own = el ? el.value.trim() : '';
+  if (own) return own;
   const fallback = document.querySelector(
     'input#searchUserId[value]:not([value=""])',
   ) as HTMLInputElement | null;
-  if (fallback && fallback.value) return fallback.value;
+  const alt = fallback ? fallback.value.trim() : '';
+  if (alt) return alt;
   return null;
 }
 
@@ -251,6 +324,24 @@ export function initHrBridge(iframe: HTMLIFrameElement): void {
       return;
     }
 
+    if (!hasRequiredStaffParams(spec.path, formObj)) {
+      reply(callId, {
+        ok: false,
+        status: 0,
+        body: 'bridge: staff param required',
+      });
+      return;
+    }
+
+    if (!areParamKeysAllowed(spec.path, formObj)) {
+      reply(callId, {
+        ok: false,
+        status: 0,
+        body: 'bridge: param key not allowed',
+      });
+      return;
+    }
+
     const allowedQueryIds = QUERY_ID_ALLOWLIST[spec.path];
     if (
       allowedQueryIds &&
@@ -267,7 +358,7 @@ export function initHrBridge(iframe: HTMLIFrameElement): void {
     for (const key of Object.keys(formObj)) {
       let value = String(formObj[key]);
       if (
-        FORBIDDEN_PARAM_VALUES[key] &&
+        hasOwn(FORBIDDEN_PARAM_VALUES, key) &&
         FORBIDDEN_PARAM_VALUES[key].indexOf(value) !== -1
       ) {
         reply(callId, {

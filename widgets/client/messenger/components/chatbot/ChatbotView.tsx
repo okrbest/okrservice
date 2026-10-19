@@ -23,6 +23,7 @@ import CopyAnswerButton from './CopyAnswerButton';
 import ChatbotSuggestions from './ChatbotSuggestions';
 import { dispatchViz, VizBlockRenderer } from './vizRenderers';
 import { chatbotTheme } from './chatbotTheme';
+import { safeHref } from './linkSafety';
 
 const T = chatbotTheme;
 import {
@@ -220,12 +221,19 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
           {match[4]}
         </code>,
       );
+    } else if (
+      match[5] !== undefined &&
+      match[6] !== undefined &&
+      !safeHref(match[6])
+    ) {
+      // [link text](url) — 안전하지 않은 주소(javascript: 등)는 링크 없이 글자만(teamplgpt specs/018 M1)
+      parts.push(match[5]);
     } else if (match[5] !== undefined && match[6] !== undefined) {
       // [link text](url)
       parts.push(
         <a
           key={`${keyPrefix}-${i++}`}
-          href={match[6]}
+          href={safeHref(match[6]) as string}
           target="_blank"
           rel="noopener noreferrer"
           style={{

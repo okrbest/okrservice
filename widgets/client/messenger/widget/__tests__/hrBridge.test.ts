@@ -32,6 +32,15 @@ function dispatchRequest(
   window.dispatchEvent(event);
 }
 
+// 서버가 실제로 보내는 형태 — 사번 키 필수 경로는 본인 마커를 넣는다(teamplgpt specs/017)
+const SELF = '$SELF_STAFF_ID';
+function addSelfInput(value = 'STAFF123') {
+  const input = document.createElement('input');
+  input.id = 'searchUserId';
+  input.value = value;
+  document.body.appendChild(input);
+}
+
 const request = (spec: any, callId = 'call-1') => ({
   type: 'teamplgpt:hr-tool-request',
   callId,
@@ -84,6 +93,7 @@ describe('initHrBridge', () => {
           cmd: 'getTAADclzVcatnList1',
           searchType: '1',
           cmmSearchStaffId: '$SELF_STAFF_ID',
+          staffId: '$SELF_STAFF_ID',
         },
       }),
     );
@@ -95,7 +105,7 @@ describe('initHrBridge', () => {
       expect.objectContaining({
         method: 'POST',
         credentials: 'same-origin',
-        body: 'cmd=getTAADclzVcatnList1&searchType=1&cmmSearchStaffId=STAFF123',
+        body: 'cmd=getTAADclzVcatnList1&searchType=1&cmmSearchStaffId=STAFF123&staffId=STAFF123',
       }),
     );
     expect(replyMock).toHaveBeenCalledWith(
@@ -124,12 +134,13 @@ describe('initHrBridge', () => {
   });
 
   it('확장 정적 경로(hr-welfare 등)를 허용한다', async () => {
+    addSelfInput();
     dispatchRequest(
       iframe,
       request({
         path: '/LONLoanReqstListMgr.do',
         method: 'POST',
-        form: { cmd: 'getLONLoanReqstListMgrList1' },
+        form: { cmd: 'getLONLoanReqstListMgrList1', cmmSearchStaffId: SELF },
       }),
     );
     await flush();
@@ -141,11 +152,18 @@ describe('initHrBridge', () => {
   });
 
   it('신판 카탈로그 신규 경로(specs/011)를 허용한다', async () => {
-    for (const [path, cmd] of [
-      ['/TAADclzVcatnList.do', 'getTAADclzVcatnList2'],
-      ['/SALSalaryBassMgr.do', 'getSALSalaryBassMgrTab110List'],
-    ]) {
-      dispatchRequest(iframe, request({ path, method: 'POST', form: { cmd } }));
+    addSelfInput();
+    for (const [path, form] of [
+      [
+        '/TAADclzVcatnList.do',
+        { cmd: 'getTAADclzVcatnList2', staffId: SELF, cmmSearchStaffId: SELF },
+      ],
+      [
+        '/SALSalaryBassMgr.do',
+        { cmd: 'getSALSalaryBassMgrTab110List', staffId: SELF },
+      ],
+    ] as const) {
+      dispatchRequest(iframe, request({ path, method: 'POST', form }));
     }
     await flush();
 
@@ -298,10 +316,10 @@ describe('initHrBridge', () => {
         iframe,
         request(
           {
-            path: '/TAAWrkTimeStatusMgr.do',
+            // 사번 키 필수 검사보다 값 규칙을 보려고 필수 키가 없는 경로를 쓴다
+            path: '/getTodoIconCnt.do',
             method: 'POST',
             form: {
-              cmd: 'getTAAWrkTimeStatusMgrList',
               [key]: 'OTHER_STAFF_999',
             },
           },
@@ -379,19 +397,22 @@ describe('initHrBridge', () => {
   });
 
   it('증명서 발급내역 조회 cmd는 허용한다', async () => {
+    addSelfInput();
     dispatchRequest(
       iframe,
       request({
         path: '/CTIMcrtfIssuMgr.do',
         method: 'POST',
-        form: { cmd: 'getCTIMcrtfIssuMgrList' },
+        form: { cmd: 'getCTIMcrtfIssuMgrList', staffIdNm: SELF },
       }),
     );
     await flush();
 
     expect(fetchMock).toHaveBeenCalledWith(
       'https://kiwibox.example.com/CTIMcrtfIssuMgr.do',
-      expect.objectContaining({ body: 'cmd=getCTIMcrtfIssuMgrList' }),
+      expect.objectContaining({
+        body: 'cmd=getCTIMcrtfIssuMgrList&staffIdNm=STAFF123',
+      }),
     );
   });
 
@@ -422,12 +443,13 @@ describe('initHrBridge', () => {
   });
 
   it('YTA 정규식: 지원 endpoint×연도는 허용한다', async () => {
+    addSelfInput();
     dispatchRequest(
       iframe,
       request({
         path: '/YTASummaryMgr2024.do',
         method: 'POST',
-        form: { cmd: 'getYTASummaryMgrList' },
+        form: { cmd: 'getYTASummaryMgrList', cmmSearchStaffId: SELF },
       }),
     );
     dispatchRequest(
@@ -470,12 +492,17 @@ describe('initHrBridge', () => {
   });
 
   it('CommonCode.do는 허용 queryId만 통과시킨다', async () => {
+    addSelfInput();
     dispatchRequest(
       iframe,
       request({
         path: '/CommonCode.do',
         method: 'POST',
-        form: { cmd: 'getCommonNSCodeList', queryId: 'getSalYmdTypeCdList2' },
+        form: {
+          cmd: 'getCommonNSCodeList',
+          queryId: 'getSalYmdTypeCdList2',
+          staffId: SELF,
+        },
       }),
     );
     await flush();
@@ -483,7 +510,7 @@ describe('initHrBridge', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       'https://kiwibox.example.com/CommonCode.do',
       expect.objectContaining({
-        body: 'cmd=getCommonNSCodeList&queryId=getSalYmdTypeCdList2',
+        body: 'cmd=getCommonNSCodeList&queryId=getSalYmdTypeCdList2&staffId=STAFF123',
       }),
     );
   });
@@ -494,7 +521,11 @@ describe('initHrBridge', () => {
       request({
         path: '/CommonCode.do',
         method: 'POST',
-        form: { cmd: 'getCommonNSCodeList', queryId: 'getAllStaffSalaries' },
+        form: {
+          cmd: 'getCommonNSCodeList',
+          queryId: 'getAllStaffSalaries',
+          staffId: SELF,
+        },
       }),
     );
     dispatchRequest(
@@ -503,7 +534,7 @@ describe('initHrBridge', () => {
         {
           path: '/CommonCode.do',
           method: 'POST',
-          form: { cmd: 'getCommonNSCodeList' },
+          form: { cmd: 'getCommonNSCodeList', staffId: SELF },
         },
         'call-2',
       ),
@@ -527,7 +558,12 @@ describe('initHrBridge', () => {
       request({
         path: '/TAADclzVcatnList.do',
         method: 'POST',
-        form: { cmd: 'getTAADclzVcatnList1', searchType: 'mobile' },
+        form: {
+          cmd: 'getTAADclzVcatnList1',
+          searchType: 'mobile',
+          staffId: SELF,
+          cmmSearchStaffId: SELF,
+        },
       }),
     );
     await flush();
@@ -551,6 +587,7 @@ describe('initHrBridge', () => {
         form: {
           cmd: 'getTAADclzVcatnList1',
           cmmSearchStaffId: '$SELF_STAFF_ID',
+          staffId: '$SELF_STAFF_ID',
         },
       }),
     );
@@ -580,13 +617,14 @@ describe('initHrBridge', () => {
         form: {
           cmd: 'getTAADclzVcatnList1',
           cmmSearchStaffId: '$SELF_STAFF_ID',
+          staffId: '$SELF_STAFF_ID',
         },
       }),
     );
     await flush();
 
     expect(fetchMock.mock.calls[0][1].body).toBe(
-      'cmd=getTAADclzVcatnList1&cmmSearchStaffId=STAFF777',
+      'cmd=getTAADclzVcatnList1&cmmSearchStaffId=STAFF777&staffId=STAFF777',
     );
   });
 
@@ -661,5 +699,228 @@ describe('initHrBridge', () => {
       'https://kiwibox.example.com/kiwibox/getTodoIconCnt.do',
       expect.anything(),
     );
+  });
+
+  // 연장근무현황(모바일) — 대상 직원이 비면 kiwibox가 조회 권한 범위 직원 전체를 돌려준다
+  // (MBLDclzWorkOtSchdul_SQL "본인소속조회"). 사번 키가 아예 없는 요청도 막는다(teamplgpt specs/017).
+  describe('연장근무현황 경로 (teamplgpt specs/017)', () => {
+    const OT_LIMIT = '/getMBLDclzWorkOtSchdul.do';
+    const OT_PERSON = '/getMBLDclzWorkOtSchdulPerson.do';
+    const addStaff = () => {
+      const input = document.createElement('input');
+      input.id = 'searchUserId';
+      input.value = 'STAFF123';
+      document.body.appendChild(input);
+    };
+    const send = (
+      path: string,
+      form: Record<string, unknown>,
+      callId: string,
+    ) =>
+      dispatchRequest(iframe, request({ path, method: 'POST', form }, callId));
+    const lastBody = () =>
+      replyMock.mock.calls[replyMock.mock.calls.length - 1][0].body;
+
+    it('본인 마커가 있으면 두 경로 모두 본인 STAFF_ID로 조회한다', async () => {
+      addStaff();
+      send(
+        OT_LIMIT,
+        {
+          searchType: '3',
+          searchBaseSYmd: '2026-10-19',
+          cmmSearchStaffId: '$SELF_STAFF_ID',
+        },
+        'ok-1',
+      );
+      send(
+        OT_PERSON,
+        {
+          searchBaseSYmd: '2026-10-01',
+          searchBaseEYmd: '2026-10-19',
+          cmmSearchStaffId: '$SELF_STAFF_ID',
+        },
+        'ok-2',
+      );
+      await flush();
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock).toHaveBeenCalledWith(
+        `https://kiwibox.example.com${OT_LIMIT}`,
+        expect.objectContaining({
+          body: 'searchType=3&searchBaseSYmd=2026-10-19&cmmSearchStaffId=STAFF123',
+        }),
+      );
+      expect(fetchMock).toHaveBeenCalledWith(
+        `https://kiwibox.example.com${OT_PERSON}`,
+        expect.objectContaining({
+          body: 'searchBaseSYmd=2026-10-01&searchBaseEYmd=2026-10-19&cmmSearchStaffId=STAFF123',
+        }),
+      );
+    });
+
+    it('사번 키가 없으면 fetch 없이 거부한다', async () => {
+      addStaff();
+      send(
+        OT_LIMIT,
+        { searchType: '2', searchBaseSYmd: '2026-10-19' },
+        'no-key-1',
+      );
+      await flush();
+      expect(lastBody()).toBe('bridge: staff param required');
+      send(
+        OT_PERSON,
+        { searchBaseSYmd: '2026-10-01', searchBaseEYmd: '2026-10-19' },
+        'no-key-2',
+      );
+      await flush();
+      expect(lastBody()).toBe('bridge: staff param required');
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('사번이 빈 값이면 fetch 없이 거부한다', async () => {
+      addStaff();
+      send(OT_LIMIT, { searchType: '2', cmmSearchStaffId: '' }, 'empty');
+      await flush();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(lastBody()).toBe('bridge: staff param must be self');
+    });
+
+    it('한도 경로는 searchType 2·3만 허용한다', async () => {
+      addStaff();
+      send(
+        OT_LIMIT,
+        { searchType: '1', cmmSearchStaffId: '$SELF_STAFF_ID' },
+        'type-1',
+      );
+      send(OT_LIMIT, { cmmSearchStaffId: '$SELF_STAFF_ID' }, 'type-none');
+      await flush();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(lastBody()).toBe('bridge: param not allowed');
+    });
+
+    it('cmd를 붙이면 거부한다', async () => {
+      addStaff();
+      send(
+        OT_LIMIT,
+        {
+          cmd: 'anything',
+          searchType: '2',
+          cmmSearchStaffId: '$SELF_STAFF_ID',
+        },
+        'cmd',
+      );
+      await flush();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(lastBody()).toBe('bridge: cmd not allowed');
+    });
+
+    it('정해진 키 외의 파라미터는 거부한다(파라미터 수 한도로 사번 키를 잘라내는 시도 포함)', async () => {
+      addStaff();
+      const padding = Object.fromEntries(
+        Array.from({ length: 3 }, (_, i) => [`x${i}`, '1']),
+      );
+      send(
+        OT_LIMIT,
+        { searchType: '2', ...padding, cmmSearchStaffId: '$SELF_STAFF_ID' },
+        'extra',
+      );
+      await flush();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(lastBody()).toBe('bridge: param key not allowed');
+    });
+  });
+
+  // 대상 직원 키가 없으면 kiwibox가 조회 권한 범위 직원 전체를 돌려주는 경로들 —
+  // 서버는 항상 본인 마커를 보내므로 키 필수로 막는다(teamplgpt specs/017 보안 리뷰).
+  describe('사번 키 필수 경로 (teamplgpt specs/017 보안 리뷰)', () => {
+    const send = (
+      path: string,
+      form: Record<string, unknown>,
+      callId: string,
+    ) =>
+      dispatchRequest(iframe, request({ path, method: 'POST', form }, callId));
+
+    it.each([
+      ['/TAAWrkTimeStatusMgr.do', { cmd: 'getTAAWrkTimeStatusMgrList' }],
+      [
+        '/TAADclzWorkOtSchdul.do',
+        {
+          cmd: 'getTAADclzWorkOtSchdulList',
+          searchType: '2',
+          searchYm: '202610',
+        },
+      ],
+      ['/TAADclzVcatnList.do', { cmd: 'getTAADclzVcatnList1' }],
+      ['/SALSalaryDtstmnMgr.do', { cmd: 'getSALSalaryDtstmnMgrList' }],
+      ['/CTIMcrtfIssuMgr.do', { cmd: 'getCTIMcrtfIssuMgrList' }],
+      ['/YTASummaryMgr2025.do', { cmd: 'getYTASummaryMgrList' }],
+      ['/YTAInDctMgr2025.do', { cmd: 'getYTAInDctMgrTab06List' }],
+    ])('%s: 사번 키 없이 요청하면 거부한다', async (path, form) => {
+      send(path, form, 'no-key');
+      await flush();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(replyMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          ok: false,
+          body: 'bridge: staff param required',
+        }),
+        WIDGET_ORIGIN,
+      );
+    });
+
+    it('증명서 검색 칸(staffIdNm)도 본인 마커만 허용한다', async () => {
+      send(
+        '/CTIMcrtfIssuMgr.do',
+        { cmd: 'getCTIMcrtfIssuMgrList', staffIdNm: '김' },
+        'literal',
+      );
+      send(
+        '/CTIMcrtfIssuMgr.do',
+        { cmd: 'getCTIMcrtfIssuMgrList', staffIdNm: '' },
+        'empty',
+      );
+      await flush();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(replyMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          ok: false,
+          body: 'bridge: staff param must be self',
+        }),
+        WIDGET_ORIGIN,
+      );
+    });
+
+    it('페이지의 본인 ID가 공백뿐이면 거부한다(SQL에서 빈 값 = 팀 전체)', async () => {
+      const input = document.createElement('input');
+      input.id = 'searchUserId';
+      input.value = '   ';
+      document.body.appendChild(input);
+      send(
+        '/TAAWrkTimeStatusMgr.do',
+        {
+          cmd: 'getTAAWrkTimeStatusMgrList',
+          cmmSearchStaffId: '$SELF_STAFF_ID',
+        },
+        'blank',
+      );
+      await flush();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(replyMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          ok: false,
+          body: 'bridge: staffId not found',
+        }),
+        WIDGET_ORIGIN,
+      );
+    });
+
+    it('예약어 키(constructor)가 와도 예외로 멈추지 않고 응답한다', async () => {
+      send('/getTodoIconCnt.do', { constructor: 'x' }, 'proto');
+      await flush();
+      expect(replyMock).toHaveBeenCalledWith(
+        expect.objectContaining({ callId: 'proto' }),
+        WIDGET_ORIGIN,
+      );
+    });
   });
 });

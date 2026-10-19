@@ -123,3 +123,22 @@ export const issueTarget = (header: string): 'late' | 'early' | null => {
   if (head === '퇴근' || head === '퇴근시각') return 'early';
   return null;
 };
+
+// 한도·사용·잔여 표(teamplgpt specs/018 D11) — 열마다 막대를 그리면 기간이 다른 한도끼리 비교하게 돼
+// 뜻이 없다. 'gauge'는 줄마다 잔여 중심 게이지, 'monthly'는 사용 칸에 그 달 한도 기준 막대.
+export type LimitTableKind = 'gauge' | 'monthly';
+
+export const limitTableKind = (headers: string[]): LimitTableKind | null => {
+  const heads = headers.map(cellText);
+  const has = (h: string) => heads.indexOf(h) !== -1;
+  if (!has('한도') || !has('사용') || !has('잔여')) return null;
+  if (heads[0] === '구분') return 'gauge';
+  if (heads[0] === '월') return 'monthly';
+  return null;
+};
+
+// 소수까지의 십진수만 숫자로 본다("—", "조회 실패"는 null)
+export const plainNumber = (raw: string): number | null => {
+  const v = cellText(raw).replace(/,/g, '');
+  return /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : null;
+};
