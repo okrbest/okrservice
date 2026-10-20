@@ -137,6 +137,19 @@ export const limitTableKind = (headers: string[]): LimitTableKind | null => {
   return null;
 };
 
+// 휴가 발생·사용·잔여 표(teamplgpt hr-attendance annual_leave_balance) — 잔여 칸에만 그 휴가 발생일수 기준 막대.
+// 열마다 따로 최대값을 잡으면 사용 1.4일 막대가 발생 15일 막대보다 길어 보인다(사용자 지적 2026-10-20).
+export const leaveTableCols = (
+  headers: string[],
+): { created: number; remain: number } | null => {
+  const heads = headers.map(cellText);
+  const created = heads.indexOf('발생일수');
+  const remain = heads.indexOf('잔여일수');
+  if (created === -1 || remain === -1 || heads.indexOf('사용일수') === -1)
+    return null;
+  return { created, remain };
+};
+
 // 소수까지의 십진수만 숫자로 본다("—", "조회 실패"는 null)
 export const plainNumber = (raw: string): number | null => {
   const v = cellText(raw).replace(/,/g, '');

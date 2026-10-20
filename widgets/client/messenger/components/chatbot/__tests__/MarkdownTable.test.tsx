@@ -287,3 +287,71 @@ describe('MarkdownTable — 한도·사용·잔여', () => {
     expect(screen.getByText(/나머지 3줄 더 보기/)).toBeInTheDocument();
   });
 });
+
+describe('MarkdownTable — 휴가 발생·사용·잔여', () => {
+  const LEAVE_HEADERS = ['휴가종류', '발생일수', '사용일수', '잔여일수'];
+  const leaves = [
+    ['연차✈️', '15', '1.4', '13.6'],
+    ['병가휴가🏥', '30', '0', '30'],
+    ['공가(훈련 등)⏰', '5', '0', '5'],
+    ['월차💤', '12', '0', '12'],
+  ];
+
+  it('잔여 칸에만 그 휴가 발생일수 기준 막대(다른 열 막대 없음)', () => {
+    const { container } = render(
+      <MarkdownTable
+        headers={LEAVE_HEADERS}
+        aligns={[]}
+        rows={leaves}
+        renderInline={renderInline}
+      />,
+    );
+    const remain = Array.from(container.querySelectorAll('[data-remain]')).map(
+      (el) => el.getAttribute('data-remain'),
+    );
+    // 연차 13.6/15=91, 나머지는 하나도 안 써서 100
+    expect(remain).toEqual(['91', '100', '100', '100']);
+    expect(container.querySelectorAll('[data-bar]')).toHaveLength(0);
+    expect(container).toHaveTextContent('13.6');
+  });
+
+  it('막대 시작점이 모든 줄에서 같다(값 칸 고정폭 격자)', () => {
+    const { container } = render(
+      <MarkdownTable
+        headers={LEAVE_HEADERS}
+        aligns={[]}
+        rows={leaves}
+        renderInline={renderInline}
+      />,
+    );
+    const cells = Array.from(
+      container.querySelectorAll('[data-remain-cell]'),
+    ) as HTMLElement[];
+    expect(cells).toHaveLength(4);
+    for (const cell of cells) {
+      expect(cell.style.display).toBe('inline-grid');
+      expect(cell.style.gridTemplateColumns).toBe('48px 4.5ch');
+    }
+  });
+
+  it('잔여가 음수면 0, 발생이 0이거나 숫자가 아니면 막대 없이 값만', () => {
+    const { container } = render(
+      <MarkdownTable
+        headers={LEAVE_HEADERS}
+        aligns={[]}
+        rows={[
+          ['연차', '15', '16', '-1'],
+          ['보상휴가', '0', '0', '0'],
+          ['포상휴가', '—', '—', '—'],
+        ]}
+        renderInline={renderInline}
+      />,
+    );
+    const remain = Array.from(container.querySelectorAll('[data-remain]')).map(
+      (el) => el.getAttribute('data-remain'),
+    );
+    expect(remain).toEqual(['0']);
+    expect(container.querySelectorAll('[data-remain-cell]')).toHaveLength(3);
+    expect(container).toHaveTextContent('-1');
+  });
+});

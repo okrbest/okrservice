@@ -9,6 +9,7 @@ import {
   isTimeColumn,
   isTotalRow,
   issueTarget,
+  leaveTableCols,
   limitTableKind,
   parseAmount,
   plainNumber,
@@ -67,6 +68,8 @@ const MarkdownTable: React.FC<Props> = ({
   const monthly = limitKind === 'monthly';
   const usedCol = headers.findIndex((h) => cellText(h) === '사용');
   const limitCol = headers.findIndex((h) => cellText(h) === '한도');
+  // 휴가 발생·사용·잔여 표: 열 막대 대신 잔여 칸에만 그 휴가 발생일수 기준 막대
+  const leave = leaveTableCols(headers);
 
   const bodyRows = rows.filter((row) => !isTotalRow(row));
   const totalRows = rows.filter((row) => isTotalRow(row));
@@ -88,6 +91,7 @@ const MarkdownTable: React.FC<Props> = ({
     const max = Math.max(0, ...amounts);
     const hasBars =
       !monthly &&
+      !leave &&
       numeric &&
       !isTimeColumn(values, headers[ci]) &&
       amounts.length >= 2 &&
@@ -107,57 +111,75 @@ const MarkdownTable: React.FC<Props> = ({
     fontVariantNumeric: columns[ci].numeric ? 'tabular-nums' : undefined,
   });
 
-  // 월별 사용 칸 — [막대 48px][값 고정폭] 격자라 값 길이가 달라도 막대 시작점이 같다.
-  // 막대 바탕 전체 = 그 줄 한도, 채운 부분 = 사용. 값이 숫자가 아닌 줄·합계 줄은 막대 없이 값만.
+  // [막대 48px][값 고정폭] 격자 칸 — 값 길이가 달라도 막대 시작점이 같다.
+  // 막대 바탕 전체 = 기준값(그 줄 한도·발생일수), 채운 부분 = pct. pct가 null이면 막대 없이 값만.
+  const renderMeterCell = (
+    raw: string,
+    pct: number | null,
+    kind: 'usage' | 'remain',
+  ) => (
+    <span
+      {...{ [`data-${kind}-cell`]: 'true' }}
+      style={{
+        display: 'inline-grid',
+        gridTemplateColumns: '48px 4.5ch',
+        alignItems: 'center',
+        gap: '8px',
+      }}
+    >
+      {pct !== null ? (
+        <span
+          {...{ [`data-${kind}`]: String(pct) }}
+          aria-hidden="true"
+          style={{
+            display: 'block',
+            height: '6px',
+            borderRadius: '99px',
+            overflow: 'hidden',
+            background: T.color.accentSoft,
+          }}
+        >
+          <motion.span
+            initial={reduceMotion ? false : { width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.9, ease: EASE, delay: 0.1 }}
+            style={{
+              display: 'block',
+              height: '100%',
+              borderRadius: '99px',
+              background: T.color.accent,
+            }}
+          />
+        </span>
+      ) : (
+        <span aria-hidden="true" />
+      )}
+      <span style={{ textAlign: 'right' }}>{cellText(raw)}</span>
+    </span>
+  );
+
+  // 월별 사용 칸 — 막대 전체 = 그 줄 한도, 채운 부분 = 사용. 값이 숫자가 아닌 줄·합계 줄은 막대 없이 값만.
   const renderUsageCell = (row: string[], isTotal: boolean) => {
     const used = plainNumber(row[usedCol] ?? '');
     const limit = plainNumber(row[limitCol] ?? '');
     const showBar = !isTotal && used !== null && limit !== null && limit > 0;
     const pct = showBar
       ? Math.round((Math.min(used!, limit!) / limit!) * 100)
-      : 0;
-    return (
-      <span
-        data-usage-cell="true"
-        style={{
-          display: 'inline-grid',
-          gridTemplateColumns: '48px 4.5ch',
-          alignItems: 'center',
-          gap: '8px',
-        }}
-      >
-        {showBar ? (
-          <span
-            data-usage={String(pct)}
-            aria-hidden="true"
-            style={{
-              display: 'block',
-              height: '6px',
-              borderRadius: '99px',
-              overflow: 'hidden',
-              background: T.color.accentSoft,
-            }}
-          >
-            <motion.span
-              initial={reduceMotion ? false : { width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.9, ease: EASE, delay: 0.1 }}
-              style={{
-                display: 'block',
-                height: '100%',
-                borderRadius: '99px',
-                background: T.color.accent,
-              }}
-            />
-          </span>
-        ) : (
-          <span aria-hidden="true" />
-        )}
-        <span style={{ textAlign: 'right' }}>
-          {cellText(row[usedCol] ?? '')}
-        </span>
-      </span>
-    );
+      : null;
+    return renderMeterCell(row[usedCol] ?? '', pct, 'usage');
+  };
+
+  // 휴가 잔여 칸 — 막대 전체 = 그 휴가 발생일수, 채운 부분 = 잔여(0~100%로 자름)
+  const renderRemainCell = (row: string[], isTotal: boolean) => {
+    const remainRaw = row[leave!.remain] ?? '';
+    const remain = plainNumber(remainRaw);
+    const created = plainNumber(row[leave!.created] ?? '');
+    const showBar =
+      !isTotal && remain !== null && created !== null && created > 0;
+    const pct = showBar
+      ? Math.round((Math.min(Math.max(remain!, 0), created!) / created!) * 100)
+      : null;
+    return renderMeterCell(remainRaw, pct, 'remain');
   };
 
   const renderCell = (
@@ -193,6 +215,7 @@ const MarkdownTable: React.FC<Props> = ({
     }
 
     if (monthly && ci === usedCol) return renderUsageCell(row, isTotal);
+    if (leave && ci === leave.remain) return renderRemainCell(row, isTotal);
 
     const status = statusKind(raw);
     if (status) {
