@@ -30,13 +30,7 @@ const items = [
     route: 'home',
   },
   {
-    label: (
-      <>
-        Chatbot
-        <br />
-        (준비중)
-      </>
-    ),
+    label: 'Chatbot',
     icon: IconChatbot,
     outlineIcon: Bot,
     route: 'chatbot',
