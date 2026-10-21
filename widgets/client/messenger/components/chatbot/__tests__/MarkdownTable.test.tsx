@@ -355,3 +355,18 @@ describe('MarkdownTable — 휴가 발생·사용·잔여', () => {
     expect(container).toHaveTextContent('-1');
   });
 });
+
+describe('MarkdownTable — 월 근무시간 (teamplgpt specs/019)', () => {
+  it('근무시간 표는 표 대신 게이지로 그린다', () => {
+    const { container } = render(
+      <MarkdownTable
+        headers={['구분', '누적 근로', '월간 소정', '최대 가능', '소정까지']}
+        aligns={[]}
+        rows={[['이번 달(10월)', '82.5', '171.0', '224.0', '88.5']]}
+        renderInline={renderInline}
+      />,
+    );
+    expect(container.querySelector('table')).toBeNull();
+    expect(container.querySelector('[data-work-hours]')).not.toBeNull();
+  });
+});

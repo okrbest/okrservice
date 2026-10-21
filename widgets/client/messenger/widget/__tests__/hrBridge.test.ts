@@ -830,6 +830,77 @@ describe('initHrBridge', () => {
     });
   });
 
+  // 월 근무시간(5240 홈 "월별 근무현황") — /Home.do에는 팀·회사 단위 홈 위젯 조회가 함께 있어
+  // 이 cmd 하나만 허용한다(teamplgpt specs/019 contracts/bridge-contract.md).
+  describe('월 근무시간 경로 (teamplgpt specs/019)', () => {
+    const HOME = '/Home.do';
+    const CMD = 'getHomeWorkStatusBarWidgetMap';
+    const addStaff = () => {
+      const input = document.createElement('input');
+      input.id = 'searchUserId';
+      input.value = 'STAFF123';
+      document.body.appendChild(input);
+    };
+    const send = (form: Record<string, unknown>, callId: string) =>
+      dispatchRequest(
+        iframe,
+        request({ path: HOME, method: 'POST', form }, callId),
+      );
+    const lastBody = () =>
+      replyMock.mock.calls[replyMock.mock.calls.length - 1][0].body;
+    const ok = {
+      cmd: CMD,
+      searchYmd: '2026-10-21',
+      cmmSearchStaffId: '$SELF_STAFF_ID',
+    };
+
+    it('정상 요청은 본인 STAFF_ID로 조회한다', async () => {
+      addStaff();
+      send(ok, 'ok');
+      await flush();
+      expect(fetchMock).toHaveBeenCalledWith(
+        `https://kiwibox.example.com${HOME}`,
+        expect.objectContaining({
+          body: `cmd=${CMD}&searchYmd=2026-10-21&cmmSearchStaffId=STAFF123`,
+        }),
+      );
+    });
+
+    it.each([
+      [
+        '다른 홈 위젯 cmd',
+        { ...ok, cmd: 'getHomeOverTimeChartMapDetailStaff' },
+        'bridge: cmd not allowed',
+      ],
+      [
+        'cmd 없음',
+        { searchYmd: '2026-10-21', cmmSearchStaffId: '$SELF_STAFF_ID' },
+        'bridge: cmd not allowed',
+      ],
+      [
+        '사번 키 없음',
+        { cmd: CMD, searchYmd: '2026-10-21' },
+        'bridge: staff param required',
+      ],
+      [
+        '본인 아닌 사번',
+        { ...ok, cmmSearchStaffId: 'S9999' },
+        'bridge: staff param must be self',
+      ],
+      [
+        '정해진 키 외 파라미터',
+        { ...ok, searchOrgCd: '100' },
+        'bridge: param key not allowed',
+      ],
+    ])('%s → fetch 없이 거부', async (_label, form, reason) => {
+      addStaff();
+      send(form, 'bad');
+      await flush();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(lastBody()).toBe(reason);
+    });
+  });
+
   // 대상 직원 키가 없으면 kiwibox가 조회 권한 범위 직원 전체를 돌려주는 경로들 —
   // 서버는 항상 본인 마커를 보내므로 키 필수로 막는다(teamplgpt specs/017 보안 리뷰).
   describe('사번 키 필수 경로 (teamplgpt specs/017 보안 리뷰)', () => {

@@ -152,6 +152,53 @@ export const leaveTableCols = (
   return { created, remain };
 };
 
+// 월 근무시간 표(teamplgpt specs/019, 5240 홈 "월별 근무현황") — 줄마다 누적 근로 게이지로 그린다.
+// 구분·누적 근로·월간 소정·최대 가능이 모두 있어야 한다(소정까지는 선택).
+export type WorkHoursCols = {
+  label: number;
+  worked: number;
+  normal: number;
+  max: number;
+  toNormal: number;
+};
+
+export const workHoursTable = (headers: string[]): WorkHoursCols | null => {
+  const heads = headers.map(cellText);
+  const cols = {
+    label: heads.indexOf('구분'),
+    worked: heads.indexOf('누적 근로'),
+    normal: heads.indexOf('월간 소정'),
+    max: heads.indexOf('최대 가능'),
+    toNormal: heads.indexOf('소정까지'),
+  };
+  const required = [cols.label, cols.worked, cols.normal, cols.max];
+  return required.every((i) => i !== -1) ? cols : null;
+};
+
+// 근무시간 막대 위치(정수 %) — 모든 위치를 최대 가능 기준 하나로 잰다(019 코드 리뷰 M-1).
+// fill = 누적 채움, normalAt = 소정 세로선, split = 채움 안에서 주황(소정 초과)이 시작되는 지점.
+export type WorkHoursGeometry = {
+  fill: number;
+  normalAt: number;
+  split: number;
+  over: boolean;
+};
+
+const clampPct = (part: number, whole: number) =>
+  Math.round(Math.min(Math.max(part / whole, 0), 1) * 100);
+
+export const workHoursGeometry = (
+  worked: number,
+  normal: number,
+  max: number,
+): WorkHoursGeometry => {
+  const fill = clampPct(worked, max);
+  const normalAt = clampPct(normal, max);
+  const split =
+    fill > 0 ? Math.min(Math.round((normalAt / fill) * 100), 100) : 100;
+  return { fill, normalAt, split, over: worked > normal };
+};
+
 // 소수까지의 십진수만 숫자로 본다("—", "조회 실패"는 null)
 export const plainNumber = (raw: string): number | null => {
   const v = cellText(raw).replace(/,/g, '');

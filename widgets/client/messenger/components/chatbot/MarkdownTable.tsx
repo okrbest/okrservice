@@ -2,6 +2,7 @@ import * as React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { chatbotTheme as T } from './chatbotTheme';
 import LimitGauge from './LimitGauge';
+import WorkHoursGauge from './WorkHoursGauge';
 import {
   StatusKind,
   cellText,
@@ -11,6 +12,7 @@ import {
   issueTarget,
   leaveTableCols,
   limitTableKind,
+  workHoursTable,
   parseAmount,
   plainNumber,
   rowIssues,
@@ -328,6 +330,9 @@ const MarkdownTable: React.FC<Props> = ({
     );
   };
 
+  // 월 근무시간 표(teamplgpt specs/019)는 한도 표보다 먼저 본다 — 머리글이 겹치지 않지만 순서를 고정
+  if (workHoursTable(headers))
+    return <WorkHoursGauge headers={headers} rows={rows} />;
   if (limitKind === 'gauge')
     return <LimitGauge headers={headers} rows={rows} />;
 

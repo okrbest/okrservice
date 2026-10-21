@@ -7,6 +7,8 @@ import {
   parseAmount,
   statusKind,
   isTotalRow,
+  workHoursTable,
+  workHoursGeometry,
 } from '../markdownTableUtils';
 
 describe('markdownTableUtils', () => {
@@ -118,5 +120,52 @@ describe('markdownTableUtils', () => {
     expect(issueTarget('퇴근')).toBe('early');
     expect(issueTarget('기준출근')).toBeNull();
     expect(issueTarget('상태')).toBeNull();
+  });
+});
+
+describe('workHoursTable (teamplgpt specs/019)', () => {
+  it('구분·누적 근로·월간 소정·최대 가능이 모두 있으면 칸 위치를 돌려준다', () => {
+    expect(
+      workHoursTable([
+        '구분',
+        '누적 근로',
+        '월간 소정',
+        '최대 가능',
+        '소정까지',
+      ]),
+    ).toEqual({ label: 0, worked: 1, normal: 2, max: 3, toNormal: 4 });
+  });
+
+  it('소정까지 칸이 없어도 판별한다', () => {
+    expect(
+      workHoursTable(['구분', '누적 근로', '월간 소정', '최대 가능']),
+    ).toEqual({ label: 0, worked: 1, normal: 2, max: 3, toNormal: -1 });
+  });
+
+  it.each([
+    [['구분', '한도', '사용', '잔여']],
+    [['구분', '누적 근로', '월간 소정']],
+    [['월', '누적 근로', '월간 소정', '최대 가능']],
+  ])('다른 표 %p → null', (headers) => {
+    expect(workHoursTable(headers)).toBeNull();
+  });
+});
+
+describe('workHoursGeometry — 막대 안 위치는 모두 최대 가능 기준 (019 코드 리뷰 M-1)', () => {
+  it.each([
+    // [누적, 소정, 최대] → fill, normalAt, split(채움 안에서 주황 시작 %), over
+    [82.5, 171, 224, { fill: 37, normalAt: 76, split: 100, over: false }],
+    [176, 168, 220, { fill: 80, normalAt: 76, split: 95, over: true }],
+    // 누적 > 최대: 채움 100에서 멈추고, 주황은 소정 세로선(76%)에서 시작해야 한다
+    [250, 171, 224, { fill: 100, normalAt: 76, split: 76, over: true }],
+    [0, 171, 224, { fill: 0, normalAt: 76, split: 100, over: false }],
+    // 소정 0: 전부 소정 초과
+    [10, 0, 52, { fill: 19, normalAt: 0, split: 0, over: true }],
+    // 소정 > 최대(데이터 이상): 세로선은 끝에서 멈춘다
+    [100, 300, 224, { fill: 45, normalAt: 100, split: 100, over: false }],
+    // 음수 누적은 0으로
+    [-5, 171, 224, { fill: 0, normalAt: 76, split: 100, over: false }],
+  ])('누적 %p 소정 %p 최대 %p', (worked, normal, max, expected) => {
+    expect(workHoursGeometry(worked, normal, max)).toEqual(expected);
   });
 });

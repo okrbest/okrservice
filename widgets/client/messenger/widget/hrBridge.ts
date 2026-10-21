@@ -36,6 +36,7 @@ const ALLOWED_PATHS = [
   '/TAADclzWorkOtSchdul.do', // 구 연장근무(PC) — teamplgpt specs/017 배포 확인 후 제거 예정(R8)
   '/getMBLDclzWorkOtSchdul.do', // 연장근무 한도·사용·잔여(모바일 연장근무현황) — teamplgpt specs/017
   '/getMBLDclzWorkOtSchdulPerson.do', // 연장근무 날짜별 내역 — teamplgpt specs/017
+  '/Home.do', // 월 근무시간(5240 홈 "월별 근무현황") — cmd 하나만, teamplgpt specs/019
   // "/TAADclzVcatnCldrMgr.do" 조직 휴가캘린더 — 다른 직원 정보라 제외(teamplgpt specs/016)
   '/TAADclzVcatnList.do', // 연차잔여(List1)·휴가상세(List2) — specs/011 D2
   // hr-personnel (D6 보류로 모바일 경로 유지)
@@ -98,6 +99,8 @@ const CMD_ALLOWLIST: Record<string, string[]> = {
   '/CTIMcrtfReqstRefromMgr.do': ['getCTIMcrtfReqstRefromMgrList'],
   '/CTIMcrtfIssuMgr.do': ['getCTIMcrtfIssuMgrList'],
   '/LONLoanReqstListMgr.do': ['getLONLoanReqstListMgrList1'],
+  // 홈 경로에는 팀·회사 단위 위젯 조회가 함께 있다 — 본인 월 근무시간 하나만(teamplgpt specs/019)
+  '/Home.do': ['getHomeWorkStatusBarWidgetMap'],
 };
 
 // YTA 경로는 연도를 뗀 컨트롤러명 기준 cmd allowlist
@@ -173,6 +176,7 @@ const REQUIRED_STAFF_PARAMS: Record<string, string[]> = {
   '/SALDaylabMgr.do': ['cmmSearchStaffId'],
   '/CTIMcrtfIssuMgr.do': ['staffIdNm'],
   '/LONLoanReqstListMgr.do': ['cmmSearchStaffId'],
+  '/Home.do': ['cmmSearchStaffId'],
 };
 
 // 연말정산(YTA*)은 경로에 연도가 붙어 컨트롤러명으로 찾는다 — InDctMgr만 searchStaffId
@@ -203,6 +207,7 @@ const ALLOWED_PARAM_KEYS: Record<string, string[]> = {
     'searchBaseEYmd',
     'cmmSearchStaffId',
   ],
+  '/Home.do': ['cmd', 'searchYmd', 'cmmSearchStaffId'],
 };
 
 function areParamKeysAllowed(
