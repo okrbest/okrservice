@@ -79,6 +79,40 @@ describe('markdownTableUtils', () => {
     expect(rowIssues(['상태'], ['지각'])).toEqual({ late: true, early: false });
   });
 
+  it('근무판정 칸(teamplgpt 2026-10-21)에서 지각·조퇴를 읽는다', () => {
+    const h = ['일자', '요일', '출근', '퇴근', '근무판정', '근무특이사항'];
+    expect(
+      rowIssues(h, [
+        '10-13',
+        '화',
+        '09:20',
+        '17:00',
+        '지각, 조퇴',
+        '지각 / 조퇴',
+      ]),
+    ).toEqual({
+      late: true,
+      early: true,
+    });
+    expect(
+      rowIssues(h, ['10-12', '월', '08:55', '18:05', '정상', '출근']),
+    ).toEqual({
+      late: false,
+      early: false,
+    });
+    // 근무특이사항에 "지각"이 있어도 근무판정이 기준 — 특이사항 문구는 판정이 아니다
+    expect(
+      rowIssues(h, ['10-14', '화', '08:55', '18:05', '', '지각 처리 취소']),
+    ).toEqual({
+      late: false,
+      early: false,
+    });
+  });
+
+  it('출퇴근 누락은 경고색', () => {
+    expect(statusKind('출퇴근 누락')).toBe('danger');
+  });
+
   it('강조 대상은 출근·퇴근 칸이고 기준 칸은 제외한다', () => {
     expect(issueTarget('출근')).toBe('late');
     expect(issueTarget('퇴근')).toBe('early');

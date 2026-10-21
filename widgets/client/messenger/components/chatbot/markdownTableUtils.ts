@@ -25,6 +25,7 @@ const STATUS_MAP: Record<string, StatusKind> = {
   결근: 'danger',
   반려: 'danger',
   미출근: 'danger',
+  '출퇴근 누락': 'danger',
   휴무: 'off',
   휴가: 'off',
   연차: 'off',
@@ -98,7 +99,8 @@ const flagFor = (
   headers.some((h, i) => {
     const head = cellText(h);
     const value = cellText(row[i] ?? '');
-    if (head === '상태') return value.includes(word);
+    // 근무판정 = teamplgpt 출퇴근 기록·근무현황의 5240 판정 칸("지각, 조퇴" 등, 2026-10-21)
+    if (head === '상태' || head === '근무판정') return value.includes(word);
     if (head === word) return YES_RE.test(value);
     if (head.startsWith(word) && /\(분\)$/.test(head)) {
       const n = parseFloat(value);
