@@ -1,0 +1,73 @@
+# Research: 위젯 티켓 "새 탭에서 보기"
+
+조사 대상 코드: `widgets/client/messenger`(티켓 화면·업로드·번역), `widgets/server/index.ts`·`widgets/webpack.config.js`(페이지·번들), `packages/plugin-inbox-api/src/graphql`(위젯 GraphQL), `packages/plugin-tickets-api/src/messageBroker.ts`(위젯 RPC).
+
+## 현재 구조에서 확인한 사실
+
+- 위젯의 티켓 조회·댓글은 **inbox-api의 위젯 GraphQL**(`widgetsTicketComments`, `widgetsTicketCommentAdd`, `widgetsTicketStages` 등)이 받아 **tickets-api RPC**(`tickets:widgets.comments.find`, `tickets:widgets.commentAdd` …)로 넘긴다. 처리 기록은 core의 `activityLogs.findOne`.
+- 이 위젯 조회들은 로그인 없이 열려 있고 **티켓·고객 id만 알면** 부를 수 있다(예: `widgetsTicketComments(typeId)`, `widgetsTicketCommentAdd(typeId, customerId)`). 새 탭은 이 방식을 따르지 않고 링크 열쇠로만 접근하게 한다.
+- 진행 상황 화면의 부품 중 `TicketProgressHero`·`TicketThread`·`TicketComposer`는 화면만 그리는 부품이라 재사용할 수 있다. `TicketShowPropgress`(화면 껍데기)와 컨테이너는 메신저 문맥(`useTicket`, `connection`)에 묶여 있어 재사용하지 않는다.
+- 파일 첨부는 공개 업로드 주소(`${API_URL}/upload-file`)를 쓰고, 허용 형식은 메신저 연동 설정(`messengerData.allowedFileTypes`)에서 읽는다(`useAttachUpload`가 `connection`에 의존).
+- 위젯 서버는 `GET /messenger` 등에서 `widget.ejs`에 종류(type)만 바꿔 `/build/<type>.bundle.js`를 싣는다. 번들 진입점은 `webpack.config.js`의 `entry`.
+
+## 결정
+
+### D1. 링크 열쇠의 형태와 보관
+
+- **Decision**: 32바이트 무작위 값(base64url)을 열쇠로 쓰고, 서버에는 **SHA-256 지문만** 저장한다. 보관소는 tickets-api의 새 컬렉션(`ticket_view_links`). 문서마다 `expiresAt`을 두고 TTL 인덱스로 자동 삭제한다.
+- **Rationale**: 추측 불가(FR-009), DB가 유출돼도 열쇠 원문은 남지 않는다. 티켓 데이터를 가진 tickets-api가 소유자 확인과 만료를 같이 판단하기 쉽다. TTL 인덱스로 정리 작업이 따로 필요 없다.
+- **Alternatives**: 서명된 JWT(무상태) — 쓰는 동안 자동 연장(FR-006)을 하려면 매번 새 토큰을 발급해 주소를 바꿔야 해서 탈락. Redis — 다른 위젯 데이터와 달리 영속성이 약하고 이 저장소의 티켓 쪽 관행이 아님.
+
+### D2. 자동 연장 방식
+
+- **Decision**: 열쇠로 상세 조회나 댓글 등록에 성공할 때마다 `expiresAt = 지금 + 24시간`으로 늦춘다. 단, `lastUsedAt`이 5분 이내면 쓰기를 건너뛴다.
+- **Rationale**: FR-006 충족. 새로 고침을 반복해도 DB 쓰기가 몰리지 않는다(헌장 IV). 5분 오차는 "하루" 기준에서 무시할 만하다.
+- **Alternatives**: 매 요청마다 쓰기 — 불필요한 쓰기. 연 시점 고정 — 사용자가 "쓰는 동안 자동 연장"을 골라 탈락.
+
+### D3. GraphQL 위치
+
+- **Decision**: 새 연산 3개를 **inbox-api 위젯 스키마**에 둔다(기존 위젯 티켓 연산과 같은 자리·같은 공개 경로). 열쇠 발급·확인·연장과 상세 묶음은 **tickets-api RPC**로 처리한다.
+  - `widgetsTicketViewLinkCreate(customerId, ticketId)` → 열쇠 발급
+  - `widgetsTicketView(token)` → 티켓·단계·댓글·처리 기록·첨부 허용 형식을 한 번에
+  - `widgetsTicketViewCommentAdd(token, content, attachments)` → 댓글 등록
+- **Rationale**: 위젯이 이미 쓰는 게이트웨이 경로와 인증 없음 규칙을 그대로 탄다. 상세를 한 번에 받아 새 탭 첫 화면의 왕복을 줄인다.
+- **Alternatives**: tickets-api 스키마에 직접 — 위젯 공개 연산이 inbox-api에 모여 있는 기존 관행과 어긋남.
+
+### D4. 발급 권한 (FR-010)
+
+- **Decision**: 발급 시 tickets-api가 `ticket.customerIds`에 그 고객이 있거나, 위젯 "회사 티켓"과 같은 규칙(`widgets.ticketList.find`의 회사 연결 판단)으로 그 고객이 볼 수 있는 티켓인지 확인한다. 아니면 거부한다.
+- **Rationale**: "위젯에서 이미 볼 수 있는 티켓만"이라는 스펙과 일치. 위젯 연결로 확인된 고객 id를 믿는 기존 위젯 신뢰 모델은 그대로다(스펙 Assumptions).
+- **Alternatives**: 확인 없이 발급 — 다른 고객 티켓 링크를 만들 수 있어 탈락.
+
+### D5. 새 탭 페이지
+
+- **Decision**: 위젯 서버에 `GET /ticket-view` 경로를 추가하고 `widget.ejs`(type `ticketview`)로 새 번들 `ticketview.bundle.js`를 싣는다. 열쇠는 주소의 **조각(#) 부분**에, 언어는 `?lang=` 으로 넘긴다. 링크 주소는 위젯이 자기 `ROOT_URL` 기준으로 만든다.
+- **Rationale**: 조각은 서버 요청·접속 기록·Referer에 실리지 않아 유출 경로가 줄어든다. `ROOT_URL` 기준이면 리버스 프록시 경로 접두사(`/widgets` 등)가 유지된다(헌장 Stack Constraints). 기존 페이지 방식 그대로라 서버 변경이 작다.
+- **Alternatives**: 고객 포털에 페이지 — 포털 로그인이 필요해 FR-011 위반. 메신저 번들 안에 경로 추가 — 메신저 부팅(연결·방문자 식별)을 거치게 돼 새 탭에서 불필요한 연결이 생김.
+
+### D6. 화면 재사용
+
+- **Decision**: `TicketProgressHero`·`TicketThread`·`TicketComposer`와 `progressHelpers`를 그대로 쓰고, 새 탭 전용 껍데기(`TicketViewPage`)가 데이터를 넣는다. 첨부 업로드 훅은 `allowedFileTypes`를 인자로 받을 수 있게 넓혀 `connection` 의존을 뺀다(기존 호출부는 기존 값을 그대로 넘김).
+- **Rationale**: 위젯과 같은 내용·같은 모양(FR-003, FR-004). 기존 위젯 동작 불변(FR-015).
+
+### D7. 팝업 차단 (FR-017)
+
+- **Decision**: 버튼을 누른 즉시 빈 탭을 먼저 연다(사용자 동작 직후라 차단되지 않음). 열쇠를 받으면 그 탭의 주소를 바꾼다. 빈 탭 열기가 막혔으면(null) 위젯 안에 "새 탭에서 열기" 링크를 보여 준다. 발급 실패 시 빈 탭을 닫고 다시 시도 안내(FR-012).
+- **Rationale**: 열쇠 발급을 기다린 뒤 `window.open`하면 대부분 브라우저가 팝업으로 막는다.
+
+### D8. 만료·없는 티켓 처리
+
+- **Decision**: 서버는 만료·없는 열쇠에 `TICKET_VIEW_LINK_EXPIRED`, 삭제·보관된 티켓에 `TICKET_VIEW_NOT_FOUND` 오류 코드를 준다. 두 경우 모두 티켓·고객 정보를 응답에 담지 않는다. 화면은 코드별 안내를 보여 주고, 댓글 입력값은 지우지 않는다(FR-014).
+
+### D9. 새 소식 반영
+
+- **Decision**: 구독(실시간) 없이 페이지 로드 시 조회한다. 새로 고침으로 최신 내용을 본다(스펙 User Story 4).
+- **Rationale**: 스펙 범위 안에서 가장 단순. 새 리스너·주기 조회를 늘리지 않는다(헌장 IV).
+
+### D10. 배포 순서 (FR-015)
+
+- **Decision**: 새 연산은 모두 추가만 한다. tickets-api → inbox-api → widgets 순서로 배포한다. 위젯이 먼저 배포돼 발급 연산이 없으면 버튼을 눌렀을 때 다시 시도 안내가 뜬다. 기존 위젯 연산은 바꾸지 않는다.
+
+### D11. 테스트
+
+- **Decision**: 열쇠 생성·지문·만료·연장 판단과 발급 권한 판단은 순수 함수로 빼서 tickets-api 단위 테스트(widgets jest를 rootDir로 빌려 실행 — 기존 `descriptionConflict.test.ts`와 같은 방식). 위젯의 링크 주소 만들기·팝업 대체 판단도 순수 함수로 빼서 widgets jest. 전체 흐름은 로컬 Playwright로 확인(quickstart).
