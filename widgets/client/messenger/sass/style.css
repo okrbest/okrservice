@@ -7034,7 +7034,7 @@ select.form-control:focus,
   text-decoration: none;
 }
 
-/* 새 탭 페이지: 가운데 한 열(최대 760px) */
+/* 새 탭 페이지: 가운데 한 열(최대 1200px) — 위젯 폭에 맞출 필요가 없어 넓게 */
 .tv-page {
   min-height: 100vh;
   background: #f4f5f9;
@@ -7048,14 +7048,14 @@ select.form-control:focus,
   border-bottom: 1px solid #e8e9f0;
 }
 .tv-title {
-  max-width: 760px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 14px 20px;
   font-size: 16px;
   font-weight: 600;
 }
 .tv-main {
-  max-width: 760px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 16px 16px 48px;
 }
@@ -7100,7 +7100,7 @@ select.form-control:focus,
   border-top: 1px solid #e8e9f0;
 }
 .tv-composer-inner {
-  max-width: 760px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 .tv-send-notice {
@@ -7122,4 +7122,13 @@ select.form-control:focus,
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+}
+/* 새 탭 대화 속 사진: 위젯(최대 200px)보다 크게, 비율 그대로 — 인라인 스타일을 이기려고 !important, 폭 상한은 % 대신 화면 폭 기준(%면 사진이 칸 왼쪽으로 밀림) */
+.tv-page .tp-msg-files .download-attachment img {
+  max-width: min(560px, calc(100vw - 120px)) !important;
+  max-height: 480px !important;
+  border-radius: 10px;
+}
+.tv-page .tp-msg.is-mine .tp-msg-files {
+  align-items: flex-end;
 }
