@@ -14,10 +14,12 @@ module.exports = {
     eventsWidget: './client/events/widget/index.ts',
     clientportal: './client/clientportal/index.ts',
     clientportalWidget: './client/clientportal/widget/index.ts',
+    // 위젯 티켓을 새 탭에서 보는 페이지(/ticket-view)
+    ticketview: './client/ticketview/index.tsx',
   },
 
   output: {
-    path: path.join(__dirname,'static'),
+    path: path.join(__dirname, 'static'),
     filename: '[name].bundle.js',
     chunkFilename: '[name].[contenthash].js',
   },
@@ -58,15 +60,15 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader','css-loader'],
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.scss$/,
         include: [
-          path.resolve(__dirname,'client'),
-          path.resolve(__dirname,'node_modules/@nateradebaugh/react-datetime'),
+          path.resolve(__dirname, 'client'),
+          path.resolve(__dirname, 'node_modules/@nateradebaugh/react-datetime'),
         ],
-        use: ['style-loader','css-loader','sass-loader'],
+        use: ['style-loader', 'css-loader', 'sass-loader'],
       },
       {
         test: /\.(eot|woff|woff2|ttf|svg|png|jpg|gif)$/,
@@ -89,10 +91,10 @@ module.exports = {
   devtool: 'source-map',
 
   resolve: {
-    extensions: ['.js','.ts','.tsx','.json'],
-    modules: [path.resolve(__dirname,'node_modules'),'node_modules'],
+    extensions: ['.js', '.ts', '.tsx', '.json'],
+    modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
     alias: {
-      'zen-observable-ts': require.resolve('zen-observable-ts')
-    }
+      'zen-observable-ts': require.resolve('zen-observable-ts'),
+    },
   },
 };

@@ -38,10 +38,7 @@ const getHeaderValue = (value: string | string[] | undefined): string => {
   return value || ''; // Return empty string if undefined
 };
 
-function buildClientPortalWidgetTestLocals(
-  req: express.Request,
-  env: string,
-) {
+function buildClientPortalWidgetTestLocals(req: express.Request, env: string) {
   const email = String(req.query.email ?? '');
   const code = String(req.query.code ?? req.query.password ?? '');
   const clientPortalId = String(req.query.clientPortalId ?? '');
@@ -115,6 +112,18 @@ app.get('/events', (req, res) => {
 
 app.get('/messenger', (req, res) => {
   res.render('widget', { type: 'messenger', env: getEnv(req) });
+});
+
+// 위젯 티켓을 새 탭에서 보는 페이지 — 열쇠는 주소 조각(#)에 있어 서버로 오지 않는다
+app.get('/ticket-view', (req, res) => {
+  // 고객 티켓을 보여 주는 페이지: 다른 사이트로 주소를 넘기지 않고, 검색에 안 잡히고, 다른 사이트에 끼워지지 않게
+  res.set({
+    'Referrer-Policy': 'no-referrer',
+    'X-Robots-Tag': 'noindex, nofollow',
+    'X-Frame-Options': 'DENY',
+    'Content-Security-Policy': "frame-ancestors 'none'",
+  });
+  res.render('widget', { type: 'ticketview', env: getEnv(req) });
 });
 
 app.get('/form', (req, res) => {
@@ -224,7 +233,9 @@ app.post('/ai-chat/stream', async (req, res) => {
     );
 
     if (!upstream.ok || !upstream.body) {
-      res.status(upstream.status || 502).json({ error: 'AI chat upstream error' });
+      res
+        .status(upstream.status || 502)
+        .json({ error: 'AI chat upstream error' });
       return;
     }
 
@@ -267,7 +278,9 @@ app.post('/ai-chat/stream', async (req, res) => {
     );
   } catch (e: any) {
     if (e?.name === 'AbortError') {
-      console.warn(`[ai-chat/stream] ${sidTag} aborted @${ms()}ms bytes=${bytes}`);
+      console.warn(
+        `[ai-chat/stream] ${sidTag} aborted @${ms()}ms bytes=${bytes}`,
+      );
       res.end();
       return;
     }
@@ -304,7 +317,12 @@ app.post('/ai-chat/tool-result', async (req, res) => {
 
   const { callId, sessionId, ok, status, body } = req.body || {};
 
-  if (typeof callId !== 'string' || !callId || typeof sessionId !== 'string' || !sessionId) {
+  if (
+    typeof callId !== 'string' ||
+    !callId ||
+    typeof sessionId !== 'string' ||
+    !sessionId
+  ) {
     res.status(400).json({ error: 'callId and sessionId are required' });
     return;
   }
@@ -328,7 +346,7 @@ app.post('/ai-chat/tool-result', async (req, res) => {
           status: Number(status) || 0,
           body: bodyText,
         }),
-      }
+      },
     );
 
     const text = await upstream.text();
@@ -346,7 +364,10 @@ app.post('/ai-chat/tool-result', async (req, res) => {
       );
     }
     res.status(upstream.status);
-    res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/json');
+    res.setHeader(
+      'Content-Type',
+      upstream.headers.get('content-type') || 'application/json',
+    );
     res.send(text);
   } catch (e: any) {
     console.error(

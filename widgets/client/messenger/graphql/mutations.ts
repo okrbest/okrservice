@@ -236,8 +236,22 @@ const DEAL_ADD = gql`
 `;
 
 const CUSTOMER_EDIT = gql`
-  mutation WidgetsTicketCustomersEdit($customerId: String, $firstName: String, $lastName: String, $emails: [String], $phones: [String], $companyName: String) {
-    widgetsTicketCustomersEdit(customerId: $customerId, firstName: $firstName, lastName: $lastName, emails: $emails, phones: $phones, companyName: $companyName) {
+  mutation WidgetsTicketCustomersEdit(
+    $customerId: String
+    $firstName: String
+    $lastName: String
+    $emails: [String]
+    $phones: [String]
+    $companyName: String
+  ) {
+    widgetsTicketCustomersEdit(
+      customerId: $customerId
+      firstName: $firstName
+      lastName: $lastName
+      emails: $emails
+      phones: $phones
+      companyName: $companyName
+    ) {
       _id
       firstName
       email
@@ -269,6 +283,19 @@ const TICKET_COMMENTS_ADD = gql`
   }
 `;
 
+// 티켓 "새 탭에서 보기" 링크 열쇠 발급 — 그 티켓에만 통하고 마지막 사용 후 하루 동안 유효
+const TICKET_VIEW_LINK_CREATE = gql`
+  mutation widgetsTicketViewLinkCreate(
+    $customerId: String!
+    $ticketId: String!
+  ) {
+    widgetsTicketViewLinkCreate(customerId: $customerId, ticketId: $ticketId) {
+      token
+      expiresAt
+    }
+  }
+`;
+
 const TICKET_CHECK_PROGRESS = gql`
   mutation widgetsTicketCheckProgress($number: String!) {
     widgetsTicketCheckProgress(number: $number) {
@@ -294,7 +321,10 @@ const TICKET_CHECK_PROGRESS = gql`
 `;
 
 const TICKET_CHECK_PROGRESS_FORGET = gql`
-  mutation widgetsTicketCheckProgressForget($email: String, $phoneNumber: String) {
+  mutation widgetsTicketCheckProgressForget(
+    $email: String
+    $phoneNumber: String
+  ) {
     widgetsTicketCheckProgressForget(email: $email, phoneNumber: $phoneNumber)
   }
 `;
@@ -315,8 +345,9 @@ const connect = (isCloudFlareEnabled?: boolean, isTicketEnabled?: boolean) => `
       cachedCustomerId: $cachedCustomerId, visitorId: $visitorId) {
       integrationId,
       messengerData,
-      ${isCloudFlareEnabled
-    ? `
+      ${
+        isCloudFlareEnabled
+          ? `
       callData {
         header
         description
@@ -330,15 +361,16 @@ const connect = (isCloudFlareEnabled?: boolean, isTicketEnabled?: boolean) => `
         isReceiveWebCall
       },
     `
-    : ''
-  }
+          : ''
+      }
       
-      ${isTicketEnabled
-    ? `
+      ${
+        isTicketEnabled
+          ? `
         ticketData
       `
-    : ``
-  }
+          : ``
+      }
       dealData
       languageCode,
       uiOptions,
@@ -381,6 +413,7 @@ export {
   DEAL_ADD,
   CUSTOMER_EDIT,
   TICKET_COMMENTS_ADD,
+  TICKET_VIEW_LINK_CREATE,
   TICKET_CHECK_PROGRESS,
   TICKET_CHECK_PROGRESS_FORGET,
   connect,

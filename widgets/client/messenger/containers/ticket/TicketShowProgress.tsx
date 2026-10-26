@@ -9,6 +9,9 @@ import { useMutation, useQuery } from '@apollo/client';
 
 import { ITicketComment } from '../../types';
 import { TICKET_COMMENTS_ADD } from '../../graphql/mutations';
+import { NewTabControl } from '../../components/ticket/TicketProgressHero';
+import { __ } from '../../../utils';
+import { useTicketViewLink } from './useTicketViewLink';
 import TicketShowProgress from '../../components/ticket/TicketShowPropgress';
 import { connection } from '../../connection';
 import { useTicket } from '../../context/Ticket';
@@ -79,6 +82,19 @@ const TicketShowProgressContainer = (props: Props) => {
     skip: !stageId,
   });
 
+  // "새 탭에서 보기" 링크를 화면을 열 때 미리 받아 둔다(누르면 바로 열림)
+  const viewLink = useTicketViewLink(ticketData._id, customerId);
+  // 방문자이거나 이 고객이 볼 수 없는 티켓(번호로 조회한 남의 티켓 등)이면 버튼을 그리지 않는다
+  const newTab: NewTabControl | undefined = viewLink.unavailable
+    ? undefined
+    : {
+        url: viewLink.url,
+        onRetry: viewLink.failed ? viewLink.retry : undefined,
+        notice: viewLink.failed
+          ? __('Please try again in a moment.')
+          : undefined,
+      };
+
   const onComment = () => {
     const attachments =
       files.length > 0
@@ -120,6 +136,7 @@ const TicketShowProgressContainer = (props: Props) => {
       files={files}
       handleFiles={setFiles}
       stages={stagesData?.widgetsTicketStages || []}
+      newTab={newTab}
     />
   );
 };

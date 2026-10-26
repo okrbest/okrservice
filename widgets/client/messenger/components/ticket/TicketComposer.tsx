@@ -9,6 +9,8 @@ type Props = {
   onSend: () => void;
   files?: FileWithUrl[];
   handleFiles?: (files: FileWithUrl[]) => void;
+  // 새 탭 화면처럼 메신저 연결이 없을 때 첨부 허용 형식을 직접 넘긴다
+  allowedFileTypes?: string[];
 };
 
 const MAX_TEXTAREA_HEIGHT = 120;
@@ -20,9 +22,10 @@ const TicketComposer: React.FC<Props> = ({
   onSend,
   files = [],
   handleFiles,
+  allowedFileTypes,
 }) => {
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
-  const attach = useAttachUpload(files, handleFiles);
+  const attach = useAttachUpload(files, handleFiles, allowedFileTypes);
   const { uploading } = attach;
 
   React.useEffect(() => {

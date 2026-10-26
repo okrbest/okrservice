@@ -5,7 +5,7 @@ import { __ } from '../../../utils';
 
 import Container from '../common/Container';
 import { useTicket } from '../../context/Ticket';
-import TicketProgressHero from './TicketProgressHero';
+import TicketProgressHero, { NewTabControl } from './TicketProgressHero';
 import TicketThread from './TicketThread';
 import TicketComposer from './TicketComposer';
 import { WidgetStage, buildThread, progressSteps } from './progressHelpers';
@@ -24,6 +24,7 @@ type Props = {
   files?: FileWithUrl[];
   handleFiles?: (files: FileWithUrl[]) => void;
   stages?: WidgetStage[];
+  newTab?: NewTabControl;
 };
 
 // 고객이 보는 티켓 진행 상황: 위 요약 카드(단계 막대), 가운데 대화, 아래 한 줄 입력
@@ -37,6 +38,7 @@ const TicketShowProgress: React.FC<Props> = ({
   files = [],
   handleFiles,
   stages,
+  newTab,
 }) => {
   const { ticketData = {} } = useTicket();
 
@@ -66,7 +68,7 @@ const TicketShowProgress: React.FC<Props> = ({
       }
     >
       <div className="tp-screen">
-        <TicketProgressHero ticket={ticketData} steps={steps} />
+        <TicketProgressHero ticket={ticketData} steps={steps} newTab={newTab} />
         <TicketThread thread={thread} loading={activityLoading} />
       </div>
     </Container>

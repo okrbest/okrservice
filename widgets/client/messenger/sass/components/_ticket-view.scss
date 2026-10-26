@@ -1,0 +1,124 @@
+// 위젯 티켓 "새 탭에서 보기" — 진행 상황 카드의 버튼과 새 탭 페이지 배치
+
+// 카드 머리줄: 번호 왼쪽, 단계·버튼 오른쪽(버튼이 없으면 지금과 같은 배치)
+.tp-hero-row {
+  flex-wrap: wrap;
+}
+.tp-hero-row > .tp-status {
+  margin-left: auto;
+}
+.tp-newtab {
+  flex: none;
+  padding: 3px 10px;
+  border: 1px solid #dfe1f6;
+  border-radius: 999px;
+  background: #fff;
+  color: #4b4fc4;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tp-newtab:hover {
+  background: #f1f2fd;
+}
+.tp-newtab:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.tp-newtab-note {
+  font-size: 12px;
+  color: #6d6f78;
+}
+.tp-newtab {
+  text-decoration: none;
+}
+
+// 새 탭 페이지: 가운데 한 열(최대 760px)
+.tv-page {
+  min-height: 100vh;
+  background: #f4f5f9;
+  color: #26272e;
+}
+.tv-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+  border-bottom: 1px solid #e8e9f0;
+}
+.tv-title {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.tv-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+}
+.tv-content {
+  background: #fff;
+  border: 1px solid #e8e9f0;
+  border-radius: 16px;
+  padding: 20px;
+}
+.tv-message {
+  margin: 48px 4px;
+  text-align: center;
+  color: #6d6f78;
+  font-size: 14px;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .tv-main {
+    padding: 0 0 32px;
+  }
+  .tv-content {
+    border: 0;
+    border-radius: 0;
+    padding: 16px;
+  }
+}
+
+// 새 탭 아래쪽 댓글 입력창: 화면 아래에 붙어 있고 가운데 열 폭을 따른다
+.tv-page {
+  display: flex;
+  flex-direction: column;
+}
+.tv-main {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+.tv-composer {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid #e8e9f0;
+}
+.tv-composer-inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.tv-send-notice {
+  padding: 8px 14px 0;
+  font-size: 12px;
+  color: #c2620c;
+}
+
+// 새 탭 안내 화면의 다시 시도 버튼
+.tv-message p {
+  margin: 0 0 14px;
+}
+.tv-retry {
+  padding: 8px 16px;
+  border: 1px solid #dfe1f6;
+  border-radius: 999px;
+  background: #fff;
+  color: #4b4fc4;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}

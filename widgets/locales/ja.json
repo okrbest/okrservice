@@ -147,5 +147,10 @@
   "요청": "リクエスト",
   "접수": "受付",
   "처리중": "処理中",
-  "완료": "完了"
+  "완료": "完了",
+  "Open in new tab": "新しいタブで表示",
+  "Please try again in a moment.": "しばらくしてからもう一度お試しください。",
+  "The link has expired. Please press 'Open in new tab' again in the widget.": "リンクの有効期限が切れました。ウィジェットで「新しいタブで表示」をもう一度押してください。",
+  "We couldn't find this ticket.": "チケットが見つかりません。",
+  "Try again": "再試行"
 }

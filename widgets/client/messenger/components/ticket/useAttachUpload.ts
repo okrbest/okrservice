@@ -8,10 +8,12 @@ export interface FileWithUrl extends File {
 }
 
 // 작은 📎 버튼으로 파일을 골라 바로 올리고, 올라간 파일 목록을 부모(files/handleFiles)에 넘긴다.
-// 티켓 진행 상황 입력창과 티켓 제출 화면이 함께 쓴다.
+// 티켓 진행 상황 입력창과 티켓 제출 화면, 새 탭 티켓 화면이 함께 쓴다.
+// allowedFileTypes를 넘기지 않으면 메신저 연동 설정(connection)의 값을 쓴다 — 새 탭은 연결이 없어 직접 넘긴다.
 export const useAttachUpload = (
   files: FileWithUrl[],
   handleFiles?: (files: FileWithUrl[]) => void,
+  allowedFileTypes?: string[],
 ) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const filesRef = React.useRef<FileWithUrl[]>(files);
@@ -20,7 +22,7 @@ export const useAttachUpload = (
   filesRef.current = files;
 
   const allowedTypes: string[] =
-    connection.data?.messengerData?.allowedFileTypes || [];
+    allowedFileTypes || connection.data?.messengerData?.allowedFileTypes || [];
   const accept = allowedTypes.length ? allowedTypes.join(',') : undefined;
 
   const openPicker = () => inputRef.current?.click();

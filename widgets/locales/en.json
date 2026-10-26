@@ -147,5 +147,10 @@
   "요청": "Request",
   "접수": "Received",
   "처리중": "In Progress",
-  "완료": "Completed"
+  "완료": "Completed",
+  "Open in new tab": "Open in new tab",
+  "Please try again in a moment.": "Please try again in a moment.",
+  "The link has expired. Please press 'Open in new tab' again in the widget.": "The link has expired. Please press 'Open in new tab' again in the widget.",
+  "We couldn't find this ticket.": "We couldn't find this ticket.",
+  "Try again": "Try again"
 }

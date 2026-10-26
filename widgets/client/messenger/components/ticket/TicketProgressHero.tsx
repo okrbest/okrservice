@@ -16,9 +16,20 @@ import { useOriginalImageLinks } from './useOriginalImageLinks';
 
 const IMAGE_EXTENSIONS = ['png', 'jpeg', 'jpg', 'gif', 'webp', 'bmp', 'svg'];
 
+// 위젯에서만 쓰는 "새 탭에서 보기". 새 탭 페이지는 넘기지 않아 버튼이 안 보인다.
+// 링크는 화면을 열 때 미리 받아 두어 일반 링크로 그린다 — 누르자마자 열리고 팝업 차단에 걸리지 않는다.
+export type NewTabControl = {
+  // 받아 둔 새 탭 주소(받는 중이면 비어 있음)
+  url?: string;
+  // 받기에 실패했을 때 다시 받기
+  onRetry?: () => void;
+  notice?: string;
+};
+
 type Props = {
   ticket: any;
   steps: ProgressStep[];
+  newTab?: NewTabControl;
 };
 
 const StepBar = ({ steps }: { steps: ProgressStep[] }) => (
@@ -84,7 +95,7 @@ const AttachmentItem = ({ attachment }: { attachment: IAttachment }) => {
 };
 
 // 위: 번호·현재 단계·제목·접수일, 단계 막대, 내용과 첨부
-const TicketProgressHero: React.FC<Props> = ({ ticket, steps }) => {
+const TicketProgressHero: React.FC<Props> = ({ ticket, steps, newTab }) => {
   const descriptionRef = React.useRef<HTMLDivElement>(null);
   const {
     number,
@@ -111,7 +122,32 @@ const TicketProgressHero: React.FC<Props> = ({ ticket, steps }) => {
             {__(stage?.name || status)}
           </span>
         )}
+        {newTab &&
+          (newTab.url ? (
+            <a
+              className="tp-newtab"
+              href={newTab.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {__('Open in new tab')}
+            </a>
+          ) : (
+            <button
+              type="button"
+              className="tp-newtab"
+              onClick={newTab.onRetry}
+              disabled={!newTab.onRetry}
+            >
+              {__('Open in new tab')}
+            </button>
+          ))}
       </div>
+      {newTab && newTab.notice && (
+        <div className="tp-newtab-note" role="status">
+          {newTab.notice}
+        </div>
+      )}
       <h2 className="tp-title">{name}</h2>
       <div className="tp-meta">
         {[

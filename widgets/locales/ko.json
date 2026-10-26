@@ -210,5 +210,10 @@
   "Support team": "담당자",
   "Original": "원본",
   "Search scope": "검색 범위",
-  "Edit": "수정"
+  "Edit": "수정",
+  "Open in new tab": "새 탭에서 보기",
+  "Please try again in a moment.": "잠시 후 다시 시도해 주세요.",
+  "The link has expired. Please press 'Open in new tab' again in the widget.": "링크가 만료됐어요. 위젯에서 '새 탭에서 보기'를 다시 눌러 주세요",
+  "We couldn't find this ticket.": "티켓을 찾을 수 없어요",
+  "Try again": "다시 시도"
 }
