@@ -6,6 +6,11 @@ import { isEnabled } from '@erxes/api-utils/src/serviceDiscovery';
 import { IBrowserInfo } from '@erxes/api-utils/src/definitions/common';
 import { IIntegrationDocument } from '../../models/definitions/integrations';
 import { getOrCreateEngageMessage } from '../../widgetUtils';
+import { getConfig } from '../../utils';
+import {
+  hashTicketViewToken,
+  parseAllowedFileTypes,
+} from '../../ticketViewWidget';
 import {
   sendAutomationsMessage,
   sendTicketsMessage,
@@ -155,6 +160,48 @@ export default {
       order,
       status,
     }));
+  },
+
+  // 위젯 티켓 "새 탭에서 보기": 열쇠 확인(쓰는 중이면 만료 연장) → 티켓·단계·댓글·처리 기록·첨부 허용 형식.
+  // 열쇠가 없거나 만료면 TICKET_VIEW_LINK_EXPIRED, 티켓이 없거나 보관됐으면 TICKET_VIEW_NOT_FOUND를 그대로 던진다.
+  async widgetsTicketView(
+    _root,
+    { token }: { token: string },
+    { models, subdomain }: IContext,
+  ) {
+    const link = await sendTicketsMessage({
+      subdomain,
+      action: 'widgets.ticketViewLink.use',
+      data: { tokenHash: hashTicketViewToken(token) },
+      isRPC: true,
+    });
+
+    // 서로 기다릴 필요가 없어 동시에 부른다
+    const [detail, activityLogs, fileTypes] = await Promise.all([
+      sendTicketsMessage({
+        subdomain,
+        action: 'widgets.ticketView.detail',
+        data: { ticketId: link.ticketId },
+        isRPC: true,
+      }),
+      sendCoreMessage({
+        subdomain,
+        action: 'activityLogs.findOne',
+        data: { contentType: 'tickets:ticket', contentId: link.ticketId },
+        isRPC: true,
+        defaultValue: [],
+      }),
+      // 첨부 허용 형식은 위젯 연결과 같은 설정에서 읽는다
+      getConfig('WIDGETS_UPLOAD_FILE_TYPES', '', models, subdomain),
+    ]);
+
+    return {
+      ticket: detail.ticket,
+      stages: detail.stages || [],
+      comments: detail.comments || [],
+      activityLogs: Array.isArray(activityLogs) ? activityLogs : [],
+      allowedFileTypes: parseAllowedFileTypes(fileTypes),
+    };
   },
 
   async widgetsTicketList(

@@ -29,6 +29,21 @@ export const types = ({
   }
   extend type TicketComment @key(fields: "_id") {
     _id: String! @external
+  }
+
+  # 위젯 티켓 "새 탭에서 보기" — 열쇠 원문은 발급 응답으로 한 번만 내려간다
+  type WidgetTicketViewLink {
+    token: String!
+    expiresAt: Date!
+  }
+
+  # ticket은 화면에 필요한 항목만 담은 JSON(번호·제목·상태·설명·구분·접수일·단계·첨부)
+  type WidgetTicketView {
+    ticket: JSON
+    stages: [JSON]
+    comments: [TicketComment]
+    activityLogs: [ActivityLog]
+    allowedFileTypes: [String]
   }`
       : ``
   }
@@ -119,6 +134,7 @@ export const queries = ({ products, knowledgeBase, tickets, sales }) => `
   widgetsTicketActivityLogs(contentType: String!, contentId: String): [ActivityLog]
   widgetsTicketList(customerId: String!, includeCompanyTickets: Boolean): [Ticket]
   widgetsTicketStages(stageId: String!): [JSON]
+  widgetsTicketView(token: String!): WidgetTicketView
   `
       : ``
   }
@@ -226,6 +242,12 @@ export const mutations = ({ tickets, sales }) => `
   ): TicketComment
   widgetsTicketCommentEdit(_id: String!, content: String!): TicketComment
   widgetsTicketCommentsRemove(_id: String!): String
+  widgetsTicketViewLinkCreate(customerId: String!, ticketId: String!): WidgetTicketViewLink
+  widgetsTicketViewCommentAdd(
+    token: String!
+    content: String!
+    attachments: [AttachmentInput]
+  ): TicketComment
   widgetTicketCreated(
     name: String!
     description: String
