@@ -1,64 +1,69 @@
 import type {
   MessageArgs,
-  MessageArgsOmitService
-} from "@erxes/api-utils/src/core";
+  MessageArgsOmitService,
+} from '@erxes/api-utils/src/core';
 import {
   consumeQueue,
-  consumeRPCQueue
-} from "@erxes/api-utils/src/messageBroker";
+  consumeRPCQueue,
+} from '@erxes/api-utils/src/messageBroker';
 import {
   conversationConvertToCard,
   createBoardItem,
-  updateName
-} from "./models/utils";
+  updateName,
+} from './models/utils';
 import {
   createConformity,
   notifiedUserIds,
-  sendNotifications
-} from "./graphql/utils";
-import { itemsEdit, publishHelper } from "./graphql/resolvers/mutations/utils";
+  sendNotifications,
+} from './graphql/utils';
+import { itemsEdit, publishHelper } from './graphql/resolvers/mutations/utils';
 
-import { checkItemPermByUser } from "../src/graphql/resolvers/queries/utils";
-import { generateModels } from "./connectionResolver";
-import { getCardItem } from "./utils";
-import graphqlPubsub from "@erxes/api-utils/src/graphqlPubsub";
-import { itemsAdd } from "../src/graphql/resolvers/mutations/utils";
-import { sendMessage } from "@erxes/api-utils/src/core";
-import { TICKET_AUTOMATION_TRIGGER_SOURCE } from "./constants";
+import { checkItemPermByUser } from '../src/graphql/resolvers/queries/utils';
+import { generateModels } from './connectionResolver';
+import { getCardItem } from './utils';
+import graphqlPubsub from '@erxes/api-utils/src/graphqlPubsub';
+import { itemsAdd } from '../src/graphql/resolvers/mutations/utils';
+import { sendMessage } from '@erxes/api-utils/src/core';
+import { TICKET_AUTOMATION_TRIGGER_SOURCE } from './constants';
+import {
+  createTicketViewLink,
+  getTicketViewDetail,
+  useTicketViewLink,
+} from './ticketViewRpc';
 
 export const setupMessageConsumers = async () => {
-  consumeRPCQueue("tickets:tickets.create", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:tickets.create', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
     const tickets = await models.Tickets.create(data);
 
-    const { customerId = "" } = data;
+    const { customerId = '' } = data;
 
     if (customerId) {
       await createConformity(subdomain, {
         customerIds: [customerId],
-        mainType: "ticket",
-        mainTypeId: tickets._id
+        mainType: 'ticket',
+        mainTypeId: tickets._id,
       });
     }
     return {
-      status: "success",
-      data: tickets
+      status: 'success',
+      data: tickets,
     };
   });
 
-  consumeRPCQueue("tickets:editItem", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:editItem', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     const objModels = {
-      ticket: models.Tickets
+      ticket: models.Tickets,
     };
 
     const { itemId, processId, type, user, ...doc } = data;
 
     if (!itemId || !type || !user || !processId) {
       return {
-        status: "error",
-        errorMessage: "you must provide some params"
+        status: 'error',
+        errorMessage: 'you must provide some params',
       };
     }
     const collection = objModels[type];
@@ -67,10 +72,14 @@ export const setupMessageConsumers = async () => {
     const typeUpperCase = type.charAt(0).toUpperCase() + type.slice(1);
 
     // 티켓의 description이 수정된 경우 widgetAlarm을 false로 설정
-    if (type === "ticket" && doc.description && doc.description !== oldItem.description) {
+    if (
+      type === 'ticket' &&
+      doc.description &&
+      doc.description !== oldItem.description
+    ) {
       // widgetAlarm이 true에서 false로 바뀌는지 확인
       const wasWidgetAlarmTrue = (oldItem as any).widgetAlarm === true;
-      
+
       // description 수정 후 widgetAlarm을 false로 설정
       const updatedItem = await itemsEdit(
         models,
@@ -81,32 +90,32 @@ export const setupMessageConsumers = async () => {
         doc,
         processId,
         user,
-        collection[`update${typeUpperCase}`]
+        collection[`update${typeUpperCase}`],
       );
-      
+
       // widgetAlarm이 true인 경우에만 false로 업데이트
       // assignAlarm을 true로 설정 (description 변경 시)
       if (wasWidgetAlarmTrue) {
         await models.Tickets.updateOne(
           { _id: itemId },
-          { $set: { widgetAlarm: false, assignAlarm: true } }
+          { $set: { widgetAlarm: false, assignAlarm: true } },
         );
       } else {
         // widgetAlarm이 이미 false인 경우에도 assignAlarm은 true로 설정
         await models.Tickets.updateOne(
           { _id: itemId },
-          { $set: { assignAlarm: true } }
+          { $set: { assignAlarm: true } },
         );
       }
-      
+
       return {
-        status: "success",
-        data: updatedItem
+        status: 'success',
+        data: updatedItem,
       };
     }
 
     return {
-      status: "success",
+      status: 'success',
       data: await itemsEdit(
         models,
         subdomain,
@@ -116,13 +125,13 @@ export const setupMessageConsumers = async () => {
         doc,
         processId,
         user,
-        collection[`update${typeUpperCase}`]
-      )
+        collection[`update${typeUpperCase}`],
+      ),
     };
   });
 
   // tickets:edit action 추가 (티켓 수정 시 widgetAlarm 처리)
-  consumeRPCQueue("tickets:edit", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:edit', async ({ subdomain, data }) => {
     console.log('🔔 tickets:edit called with:', { subdomain, data });
     const models = await generateModels(subdomain);
 
@@ -130,18 +139,18 @@ export const setupMessageConsumers = async () => {
 
     if (!_id) {
       return {
-        status: "error",
-        errorMessage: "Ticket ID is required"
+        status: 'error',
+        errorMessage: 'Ticket ID is required',
       };
     }
 
     // 기존 티켓 정보 가져오기
     const oldTicket = await models.Tickets.findOne({ _id });
-    
+
     if (!oldTicket) {
       return {
-        status: "error",
-        errorMessage: "Ticket not found"
+        status: 'error',
+        errorMessage: 'Ticket not found',
       };
     }
 
@@ -149,81 +158,84 @@ export const setupMessageConsumers = async () => {
     if (doc.description && doc.description !== oldTicket.description) {
       // widgetAlarm이 true에서 false로 바뀌는지 확인
       const wasWidgetAlarmTrue = (oldTicket as any).widgetAlarm === true;
-      
+
       let updatedTicket;
-      
+
       // widgetAlarm이 true인 경우에만 false로 업데이트
       if (wasWidgetAlarmTrue) {
         updatedTicket = await models.Tickets.updateOne(
           { _id },
-          { $set: { ...doc, widgetAlarm: false } }
+          { $set: { ...doc, widgetAlarm: false } },
         );
       } else {
         // widgetAlarm이 이미 false인 경우 description만 업데이트
-        updatedTicket = await models.Tickets.updateOne(
-          { _id },
-          { $set: doc }
-        );
+        updatedTicket = await models.Tickets.updateOne({ _id }, { $set: doc });
       }
-      
+
       return {
-        status: "success",
-        data: updatedTicket
+        status: 'success',
+        data: updatedTicket,
       };
     }
 
     // description이 수정되지 않은 경우 일반 업데이트
     const updatedTicket = await models.Tickets.updateOne(
       { _id },
-      { $set: doc }
+      { $set: doc },
     );
 
     return {
-      status: "success",
-      data: updatedTicket
+      status: 'success',
+      data: updatedTicket,
     };
   });
 
   // tickets:updateName action에도 widgetAlarm 처리 추가
-  consumeRPCQueue("tickets:updateName", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:updateName', async ({ subdomain, data }) => {
     console.log('🔔 tickets:updateName called with:', { subdomain, data });
-    
+
     // 기존 updateName 로직 실행
     await updateName(subdomain, data.mainType, data.itemId);
-    
+
     // 티켓인 경우 widgetAlarm을 false로 설정
     if (data.mainType === 'ticket') {
-      console.log('🔔 tickets:updateName - Ticket updated, setting widgetAlarm to false');
-      
+      console.log(
+        '🔔 tickets:updateName - Ticket updated, setting widgetAlarm to false',
+      );
+
       const models = await generateModels(subdomain);
       await models.Tickets.updateOne(
         { _id: data.itemId },
-        { $set: { widgetAlarm: false } }
+        { $set: { widgetAlarm: false } },
       );
-      
-      console.log('🔔 Widget alarm set to false for ticket:', data.itemId, 'due to updateName');
+
+      console.log(
+        '🔔 Widget alarm set to false for ticket:',
+        data.itemId,
+        'due to updateName',
+      );
     }
-    
+
     return {
-      status: "success",
-      data: {}
+      status: 'success',
+      data: {},
     };
   });
 
-  consumeRPCQueue("tickets:createChildItem", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:createChildItem', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     const { type, itemId, ...doc } = data;
 
     const parent = await getCardItem(models, {
       contentType: type,
-      contentTypeId: itemId
+      contentTypeId: itemId,
     });
 
     if (!parent) {
       return {
-        status: "error",
-        errorMessage: "Parent not found"
+        status: 'error',
+        errorMessage: 'Parent not found',
       };
     }
 
@@ -231,16 +243,16 @@ export const setupMessageConsumers = async () => {
       models,
       subdomain,
       { parentId: itemId, stageId: parent.stageId, ...doc },
-      type
+      type,
     );
 
     return {
-      status: "success",
-      data: childCard
+      status: 'success',
+      data: childCard,
     };
   });
 
-  consumeRPCQueue("tickets:createRelatedItem", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:createRelatedItem', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     const { type, sourceType, itemId, name, stageId } = data;
@@ -249,318 +261,343 @@ export const setupMessageConsumers = async () => {
       models,
       subdomain,
       { name, stageId },
-      type
+      type,
     );
 
     await sendCoreMessage({
       subdomain,
-      action: "conformities.addConformity",
+      action: 'conformities.addConformity',
       data: {
         mainType: sourceType,
         mainTypeId: itemId,
         relType: type,
-        relTypeId: relatedCard._id
-      }
+        relTypeId: relatedCard._id,
+      },
     });
 
     return {
-      status: "success",
-      data: relatedCard
+      status: 'success',
+      data: relatedCard,
     };
   });
 
   consumeRPCQueue(
-    "tickets:tickets.remove",
+    'tickets:tickets.remove',
     async ({ subdomain, data: { _ids } }) => {
       const models = await generateModels(subdomain);
 
       return {
-        status: "success",
-        data: await models.Tickets.removeTickets(_ids)
+        status: 'success',
+        data: await models.Tickets.removeTickets(_ids),
       };
-    }
+    },
   );
 
-  consumeRPCQueue("tickets:stages.find", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:stages.find', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     return {
-      status: "success",
-      data: await models.Stages.find(data).sort({ order: 1 }).lean()
+      status: 'success',
+      data: await models.Stages.find(data).sort({ order: 1 }).lean(),
     };
   });
 
-  consumeRPCQueue("tickets:stages.findOne", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:stages.findOne', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     return {
-      status: "success",
-      data: await models.Stages.findOne(data).lean()
+      status: 'success',
+      data: await models.Stages.findOne(data).lean(),
     };
   });
 
-  consumeRPCQueue("tickets:pipelines.find", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:pipelines.find', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     return {
-      status: "success",
-      data: await models.Pipelines.find(data).lean()
+      status: 'success',
+      data: await models.Pipelines.find(data).lean(),
     };
   });
 
-  consumeRPCQueue("tickets:boards.find", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:boards.find', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     return {
-      status: "success",
-      data: await models.Boards.find(data).lean()
+      status: 'success',
+      data: await models.Boards.find(data).lean(),
     };
   });
 
-  consumeRPCQueue("tickets:boards.findOne", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:boards.findOne', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     return {
-      status: "success",
-      data: await models.Boards.findOne(data).lean()
+      status: 'success',
+      data: await models.Boards.findOne(data).lean(),
     };
   });
 
   consumeRPCQueue(
-    "tickets:boards.count",
+    'tickets:boards.count',
     async ({ subdomain, data: { selector } }) => {
       const models = await generateModels(subdomain);
 
       return {
-        status: "success",
-        data: await models.Boards.find(selector).countDocuments()
+        status: 'success',
+        data: await models.Boards.find(selector).countDocuments(),
       };
-    }
+    },
   );
 
   consumeQueue(
-    "tickets:checklists.removeChecklists",
+    'tickets:checklists.removeChecklists',
     async ({ subdomain, data: { type, itemIds } }) => {
       const models = await generateModels(subdomain);
 
       return {
-        status: "success",
-        data: await models.Checklists.removeChecklists(type, itemIds)
+        status: 'success',
+        data: await models.Checklists.removeChecklists(type, itemIds),
       };
-    }
+    },
   );
 
   consumeRPCQueue(
-    "tickets:conversationConvert",
+    'tickets:conversationConvert',
     async ({ subdomain, data }) => {
       const models = await generateModels(subdomain);
 
       return {
-        status: "success",
-        data: await conversationConvertToCard(models, subdomain, data)
+        status: 'success',
+        data: await conversationConvertToCard(models, subdomain, data),
       };
-    }
+    },
   );
 
-  consumeRPCQueue("tickets:tickets.find", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:tickets.find', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     if (!data.query) {
       return {
-        status: "success",
-        data: await models.Tickets.find(data).lean()
+        status: 'success',
+        data: await models.Tickets.find(data).lean(),
       };
     }
 
     const { query, skip, limit, sort = {} } = data;
 
     return {
-      status: "success",
+      status: 'success',
       data: await models.Tickets.find(query)
         .skip(skip || 0)
         .limit(limit || 20)
         .sort(sort)
-        .lean()
+        .lean(),
     };
   });
 
-  consumeRPCQueue("tickets:tickets.count", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:tickets.count', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     return {
-      status: "success",
-      data: await models.Tickets.find(data).countDocuments()
+      status: 'success',
+      data: await models.Tickets.find(data).countDocuments(),
     };
   });
 
-  consumeRPCQueue("tickets:tickets.findOne", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:tickets.findOne', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     return {
-      status: "success",
-      data: await models.Tickets.findOne(data).lean()
+      status: 'success',
+      data: await models.Tickets.findOne(data).lean(),
     };
   });
 
+  consumeRPCQueue(
+    'tickets:widgets.createTicket',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+      const { doc } = data;
+      const customerIds = doc.customerIds || [];
 
-
-  consumeRPCQueue("tickets:widgets.createTicket", async ({ subdomain, data }) => {
-    const models = await generateModels(subdomain);
-    const { doc } = data;
-    const customerIds = doc.customerIds || [];
-
-    const customer = await sendCoreMessage({
-      subdomain,
-      action: "customers.find",
-      data: {
-        _id: { $in: customerIds },
-      },
-      isRPC: true,
-      defaultValue: null
-    });
-
-    // Widget에서 description의 엔터키(\n)를 HTML <p> 태그로 변환
-    let description = doc.description;
-    if (description && typeof description === 'string') {
-      // 이미 HTML 태그가 있는지 확인 (일반 텍스트인 경우만 변환)
-      const hasHtmlTags = /<[^>]+>/.test(description);
-      if (!hasHtmlTags) {
-        // 일반 텍스트인 경우 \n을 <p> 태그로 변환
-        description = description
-          .split(/\r\n|\r|\n/) // 줄바꿈 문자로 분리
-          .filter(line => line.trim() !== '') // 빈 줄 제거
-          .map(line => `<p>${line}</p>`) // 각 줄을 <p> 태그로 감싸기
-          .join('') || description; // 빈 배열인 경우 원본 반환
-      }
-    }
-
-    // Widget에서 선택한 ticketType을 requestType 필드에도 저장
-    const modifiedDoc = {
-      ...doc,
-      requestType: doc.type,
-      description: description
-    };
-
-    return {
-      status: "success",
-      data: await itemsAdd(
-        models,
+      const customer = await sendCoreMessage({
         subdomain,
-        modifiedDoc,
-        "ticket",
-        models.Tickets.createTicket,
-        customer
-      )
-    };
-  });
-  consumeRPCQueue("tickets:widgets.fetchTicketProgress", async ({ subdomain, data }) => {
-    const models = await generateModels(subdomain);
-    const { number, user } = data;
-    if (!number) {
-      throw new Error("Ticket number is required");
-    }
-
-    const ticket = await models.Tickets.findOne({ number });
-
-    if (!ticket) {
-      throw new Error("Ticket not found");
-    }
-    const result = await checkItemPermByUser(subdomain, models, user, ticket);
-    return {
-      status: "success",
-      data: result
-    };
-  });
-
-
-  consumeRPCQueue("tickets:widgets.fetchTicketProgressForget", async ({ subdomain, data }) => {
-    const models = await generateModels(subdomain);
-    const { email, phoneNumber } = data;
-    const field = email ? 'emails' : phoneNumber ? 'phones' : null;
-    const value = email || phoneNumber;
-
-    const customer = field
-      ? await sendCoreMessage({
-        subdomain,
-        action: "customers.findOne",
-        data: { [field]: value },
+        action: 'customers.find',
+        data: {
+          _id: { $in: customerIds },
+        },
         isRPC: true,
-        defaultValue: null
-      })
-      : null;
-    if (!customer) {
-      throw new Error("Customer not found");
-    }
-    const customerIds = [customer._id];
-    const mainTypeIds = await sendCoreMessage({
-      subdomain,
-      action: "conformities.findConformities",
-      data: {
-        mainType: "ticket",
-        relType: "customer",
-        relTypeId: customerIds
-      },
-      isRPC: true,
-      defaultValue: []
-    });
-    const ticketIds = mainTypeIds.map((mainType) => mainType.mainTypeId);
+        defaultValue: null,
+      });
 
-    const tickets = await models.Tickets.find({
-      _id: { $in: ticketIds },
-      number: { $exists: true, $ne: null }
-    });
-    const formattedTickets = tickets.map((ticket) => ({
-      userId: ticket.userId,
-      name: ticket.name,
-      stageId: ticket.stageId,
-      number: ticket.number,
-      type: ticket.type
-    }));
-    return {
-      status: "success",
-      data: formattedTickets
-    };
-  });
-  consumeRPCQueue("tickets:widgets.commentAdd", async ({ subdomain, data }) => {
+      // Widget에서 description의 엔터키(\n)를 HTML <p> 태그로 변환
+      let description = doc.description;
+      if (description && typeof description === 'string') {
+        // 이미 HTML 태그가 있는지 확인 (일반 텍스트인 경우만 변환)
+        const hasHtmlTags = /<[^>]+>/.test(description);
+        if (!hasHtmlTags) {
+          // 일반 텍스트인 경우 \n을 <p> 태그로 변환
+          description =
+            description
+              .split(/\r\n|\r|\n/) // 줄바꿈 문자로 분리
+              .filter((line) => line.trim() !== '') // 빈 줄 제거
+              .map((line) => `<p>${line}</p>`) // 각 줄을 <p> 태그로 감싸기
+              .join('') || description; // 빈 배열인 경우 원본 반환
+        }
+      }
+
+      // Widget에서 선택한 ticketType을 requestType 필드에도 저장
+      const modifiedDoc = {
+        ...doc,
+        requestType: doc.type,
+        description: description,
+      };
+
+      return {
+        status: 'success',
+        data: await itemsAdd(
+          models,
+          subdomain,
+          modifiedDoc,
+          'ticket',
+          models.Tickets.createTicket,
+          customer,
+        ),
+      };
+    },
+  );
+  consumeRPCQueue(
+    'tickets:widgets.fetchTicketProgress',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+      const { number, user } = data;
+      if (!number) {
+        throw new Error('Ticket number is required');
+      }
+
+      const ticket = await models.Tickets.findOne({ number });
+
+      if (!ticket) {
+        throw new Error('Ticket not found');
+      }
+      const result = await checkItemPermByUser(subdomain, models, user, ticket);
+      return {
+        status: 'success',
+        data: result,
+      };
+    },
+  );
+
+  consumeRPCQueue(
+    'tickets:widgets.fetchTicketProgressForget',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+      const { email, phoneNumber } = data;
+      const field = email ? 'emails' : phoneNumber ? 'phones' : null;
+      const value = email || phoneNumber;
+
+      const customer = field
+        ? await sendCoreMessage({
+            subdomain,
+            action: 'customers.findOne',
+            data: { [field]: value },
+            isRPC: true,
+            defaultValue: null,
+          })
+        : null;
+      if (!customer) {
+        throw new Error('Customer not found');
+      }
+      const customerIds = [customer._id];
+      const mainTypeIds = await sendCoreMessage({
+        subdomain,
+        action: 'conformities.findConformities',
+        data: {
+          mainType: 'ticket',
+          relType: 'customer',
+          relTypeId: customerIds,
+        },
+        isRPC: true,
+        defaultValue: [],
+      });
+      const ticketIds = mainTypeIds.map((mainType) => mainType.mainTypeId);
+
+      const tickets = await models.Tickets.find({
+        _id: { $in: ticketIds },
+        number: { $exists: true, $ne: null },
+      });
+      const formattedTickets = tickets.map((ticket) => ({
+        userId: ticket.userId,
+        name: ticket.name,
+        stageId: ticket.stageId,
+        number: ticket.number,
+        type: ticket.type,
+      }));
+      return {
+        status: 'success',
+        data: formattedTickets,
+      };
+    },
+  );
+  consumeRPCQueue('tickets:widgets.commentAdd', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
     const { type, typeId, content, userType, customerId, attachments } = data;
-    
+
     // 댓글 생성 (첨부파일 포함)
-    const comment = await models.Tickets.createTicketComment(type, typeId, content, userType, customerId, attachments);
-    
+    const comment = await models.Tickets.createTicketComment(
+      type,
+      typeId,
+      content,
+      userType,
+      customerId,
+      attachments,
+    );
+
     // 티켓 정보 가져오기
     const ticket = await models.Tickets.findOne({ _id: typeId });
     if (ticket) {
       // 고객 정보 가져오기
-      let customerName = "고객";
+      let customerName = '고객';
       if (customerId) {
         const customer = await sendCoreMessage({
           subdomain,
-          action: "customers.findOne",
+          action: 'customers.findOne',
           data: { _id: customerId },
           isRPC: true,
-          defaultValue: null
+          defaultValue: null,
         });
         if (customer) {
-          customerName = customer.firstName || customer.lastName || customer.primaryEmail || "고객";
+          customerName =
+            customer.firstName ||
+            customer.lastName ||
+            customer.primaryEmail ||
+            '고객';
         }
       }
-      
+
       // 티켓 담당자들에게 알림 보내기 (고객이 댓글을 남긴 경우에만)
       const assignedUserIds = ticket.assignedUserIds || [];
-      
+
       // userType이 "client"가 아닌 경우 (담당자 등이 댓글을 단 경우)
       // 해당 티켓의 widgetAlarm을 false로, emailSent도 false로 설정하여 Send Email 버튼 활성화
-      if (userType !== "client") {
-        console.log('🔔 Setting widgetAlarm and emailSent to false for ticket:', typeId, 'userType:', userType);
-        
+      if (userType !== 'client') {
+        console.log(
+          '🔔 Setting widgetAlarm and emailSent to false for ticket:',
+          typeId,
+          'userType:',
+          userType,
+        );
+
         await models.Tickets.updateOne(
           { _id: typeId },
-          { $set: { widgetAlarm: false, emailSent: false } }
+          { $set: { widgetAlarm: false, emailSent: false } },
         );
-        
-        console.log('✅ Widget alarm and emailSent set to false - Send Email button enabled');
-        
+
+        console.log(
+          '✅ Widget alarm and emailSent set to false - Send Email button enabled',
+        );
+
         // 🔥 자동 이메일 발송 비활성화 - 수동 버튼으로만 발송
         // if (wasWidgetAlarmTrue) {
         //   try {
@@ -581,23 +618,29 @@ export const setupMessageConsumers = async () => {
         //   }
         // }
       }
-      
+
       // userType이 "client"인 경우에만 알림 보내기 (담당자 댓글은 제외)
-      if (assignedUserIds.length > 0 && userType === "client") {
+      if (assignedUserIds.length > 0 && userType === 'client') {
         // assignAlarm을 true로 설정 (client가 댓글을 단 경우)
         await models.Tickets.updateOne(
           { _id: typeId },
-          { $set: { assignAlarm: true } }
+          { $set: { assignAlarm: true } },
         );
-        console.log('🔔 Assign alarm set to true for ticket:', typeId, 'due to client comment');
-        
+        console.log(
+          '🔔 Assign alarm set to true for ticket:',
+          typeId,
+          'due to client comment',
+        );
+
         // 티켓 정보를 가져와서 자동화 트리거에 전달할 수 있도록 업데이트된 티켓 사용
         const updatedTicket = await models.Tickets.findOne({ _id: typeId });
-        
+
         // assignAlarm이 true로 설정되었으므로 자동화 트리거 전송
         if (updatedTicket) {
-          const ticketForAutomation: any = updatedTicket.toObject ? updatedTicket.toObject() : { ...updatedTicket };
-          ticketForAutomation.assignAlarm = true;  // 자동화 트리거를 위해 true로 명시적 설정
+          const ticketForAutomation: any = updatedTicket.toObject
+            ? updatedTicket.toObject()
+            : { ...updatedTicket };
+          ticketForAutomation.assignAlarm = true; // 자동화 트리거를 위해 true로 명시적 설정
           ticketForAutomation.assignAlarmComment = true; // 세그먼트 assignAlarmComment 조건용
           ticketForAutomation.assignAlarmTriggerSource =
             TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_COMMENT;
@@ -605,423 +648,632 @@ export const setupMessageConsumers = async () => {
           try {
             await sendMessage({
               subdomain,
-              serviceName: "automations",
-              action: "trigger",
+              serviceName: 'automations',
+              action: 'trigger',
               data: {
-                type: "tickets:ticket",
-                targets: [ticketForAutomation],  // assignAlarm: true인 데이터 전달
+                type: 'tickets:ticket',
+                targets: [ticketForAutomation], // assignAlarm: true인 데이터 전달
                 triggerSource:
-                  TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_COMMENT
-              }
+                  TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_COMMENT,
+              },
             });
-            console.log('✅ assignAlarmComment 자동화 트리거 전송 완료 (client comment)');
-            
+            console.log(
+              '✅ assignAlarmComment 자동화 트리거 전송 완료 (client comment)',
+            );
+
             // 자동화 트리거 전송 후 10초 뒤에 assignAlarm을 false로 리셋
             // 이렇게 해야 고객이 다시 댓글을 달면 자동화가 재등록(재실행)될 수 있음
             setTimeout(async () => {
               try {
                 await models.Tickets.updateOne(
                   { _id: typeId },
-                  { $set: { assignAlarm: false } }
+                  { $set: { assignAlarm: false } },
                 );
-                console.log('✅ Assign alarm set to false after 10 seconds for ticket:', typeId, '(client comment)');
+                console.log(
+                  '✅ Assign alarm set to false after 10 seconds for ticket:',
+                  typeId,
+                  '(client comment)',
+                );
               } catch (error) {
-                console.error(`❌ Failed to reset assignAlarm for ticket ${typeId}:`, error);
+                console.error(
+                  `❌ Failed to reset assignAlarm for ticket ${typeId}:`,
+                  error,
+                );
               }
             }, 10000); // 10초 대기
           } catch (error) {
-            console.error('❌ Failed to send assignAlarm automation trigger (client comment):', error);
+            console.error(
+              '❌ Failed to send assignAlarm automation trigger (client comment):',
+              error,
+            );
             // 에러 발생해도 계속 진행 (assignAlarm은 그대로 유지)
           }
         }
-        
+
         // stage와 pipeline 정보 가져오기
         const stage = await models.Stages.findOne({ _id: ticket.stageId });
-        let boardId = "";
-        let pipelineId = "";
-        
+        let boardId = '';
+        let pipelineId = '';
+
         if (stage) {
           pipelineId = stage.pipelineId;
-          const pipeline = await models.Pipelines.findOne({ _id: stage.pipelineId });
+          const pipeline = await models.Pipelines.findOne({
+            _id: stage.pipelineId,
+          });
           if (pipeline) {
             boardId = pipeline.boardId;
           }
         }
-        
+
         // notifications 서비스에 알림 요청
         await sendMessage({
           subdomain,
-          serviceName: "notifications",
-          action: "send",
+          serviceName: 'notifications',
+          action: 'send',
           data: {
-            notifType: "ticketComment",
-            title: "새로운 댓글이 추가되었습니다",
+            notifType: 'ticketComment',
+            title: '새로운 댓글이 추가되었습니다',
             content: `${customerName}님이 티켓 '${ticket.name}'에 댓글을 달았습니다: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`,
-            action: "새로운 댓글",
+            action: '새로운 댓글',
             link: `ticket/board?id=${boardId}&pipelineId=${pipelineId}&itemId=${ticket._id}`,
-            createdUser: { _id: customerId, details: { fullName: customerName } },
-            contentType: "ticket",
+            createdUser: {
+              _id: customerId,
+              details: { fullName: customerName },
+            },
+            contentType: 'ticket',
             contentTypeId: ticket._id,
-            receivers: assignedUserIds
-          }
+            receivers: assignedUserIds,
+          },
         });
       }
     }
-    
-    return {
-      status: "success",
-      data: comment
-    };
-  });
-  consumeRPCQueue("tickets:widgets.comment.remove", async ({ subdomain, data }) => {
-    const models = await generateModels(subdomain);
-    const { _id } = data;
-    await models.Comments.deleteComment(_id)
-    return {
-      status: "success",
-    };
-  });
 
-  consumeRPCQueue("tickets:widgets.comment.edit", async ({ subdomain, data }) => {
-    const models = await generateModels(subdomain);
-    const { _id, content } = data;
-    
-    const comment = await models.Comments.findOne({ _id });
-    if (!comment) {
+    return {
+      status: 'success',
+      data: comment,
+    };
+  });
+  // 위젯 티켓 "새 탭에서 보기": 열쇠 발급·확인(연장)·상세
+  consumeRPCQueue(
+    'tickets:widgets.ticketViewLink.create',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+
       return {
-        status: "error",
-        errorMessage: "Comment not found"
-      };
-    }
-
-    // 댓글 내용 업데이트
-    console.log('🔧 Updating comment:', { _id, content, beforeUpdate: comment.toObject() });
-    
-    await models.Comments.updateComment(_id, { content } as any);
-    
-    // 업데이트된 댓글 반환
-    const updatedComment = await models.Comments.findOne({ _id });
-    console.log('🔧 Comment updated:', { _id, afterUpdate: updatedComment?.toObject() });
-    
-    return {
-      status: "success",
-      data: updatedComment
-    };
-  });
-  consumeRPCQueue("tickets:widgets.comments.find", async ({ subdomain, data }) => {
-    const models = await generateModels(subdomain);
-    const { typeId } = data;
-    const comments = await models.Comments.find({ typeId }).sort({ createdAt: 1 });
-    
-    // updatedAt 필드가 있는지 확인하고 반환
-    const commentsWithUpdatedAt = comments.map(comment => {
-      const commentObj = comment.toObject();
-      console.log('🔍 Comment data:', {
-        _id: commentObj._id,
-        content: commentObj.content?.substring(0, 50),
-        createdAt: commentObj.createdAt,
-        updatedAt: commentObj.updatedAt,
-        hasUpdatedAt: !!commentObj.updatedAt
-      });
-      
-      return {
-        ...commentObj,
-        updatedAt: commentObj.updatedAt || commentObj.createdAt
-      };
-    });
-    
-    return {
-      status: "success",
-      data: commentsWithUpdatedAt
-    };
-  });
-  consumeRPCQueue("tickets:widgets.ticketList.find", async ({ subdomain, data }) => {
-    console.log('🔔 tickets:widgets.ticketList.find called with:', { subdomain, data });
-    console.log('🔔 includeCompanyTickets value:', data?.includeCompanyTickets, 'type:', typeof data?.includeCompanyTickets);
-    const models = await generateModels(subdomain);
-    const { customerId, includeCompanyTickets } = data;
-    console.log('🔔 Extracted includeCompanyTickets:', includeCompanyTickets, 'type:', typeof includeCompanyTickets);
-
-    if (!customerId) {
-      return {
-        status: "error",
-        errorMessage: "Customer ID is required"
-      };
-    }
-
-    // 티켓 조회: 먼저 customerIds로 직접 조회 시도
-    let tickets = await models.Tickets.find({
-      customerIds: { $in: [customerId] }
-    }).sort({ createdAt: -1 });
-    
-    console.log('🔔 Found tickets via customerIds:', tickets.length);
-
-    // customerIds로 티켓을 찾지 못한 경우 conformities를 통해 조회
-    if (tickets.length === 0) {
-      console.log('🔔 No tickets found via customerIds, trying conformities...');
-      const mainTypeIds = await sendCoreMessage({
-        subdomain,
-        action: "conformities.findConformities",
-        data: {
-          mainType: "ticket",
-          relType: "customer",
-          relTypeId: [customerId]
-        },
-        isRPC: true,
-        defaultValue: []
-      });
-
-      const ticketIds = mainTypeIds.map((mainType) => mainType.mainTypeId);
-      console.log('🔔 Found ticket IDs via conformities:', ticketIds.length);
-
-      if (ticketIds.length > 0) {
-        tickets = await models.Tickets.find({
-          _id: { $in: ticketIds }
-        }).sort({ createdAt: -1 });
-        console.log('🔔 Found tickets via conformities:', tickets.length);
-      }
-    }
-
-    // 회사 티켓 포함 옵션이 활성화된 경우
-    if (includeCompanyTickets) {
-      try {
-        let companyIds: string[] = [];
-
-        // 먼저 customer.companyIds 확인
-        const customer = await sendCoreMessage({
+        status: 'success',
+        data: await createTicketViewLink(
+          models,
           subdomain,
-          action: 'customers.findOne',
-          data: { _id: customerId },
-          isRPC: true,
-          defaultValue: null
+          sendCoreMessage,
+          data,
+        ),
+      };
+    },
+  );
+
+  consumeRPCQueue(
+    'tickets:widgets.ticketViewLink.use',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+
+      return {
+        status: 'success',
+        data: await useTicketViewLink(models, data),
+      };
+    },
+  );
+
+  consumeRPCQueue(
+    'tickets:widgets.ticketView.detail',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+
+      return {
+        status: 'success',
+        data: await getTicketViewDetail(models, data),
+      };
+    },
+  );
+
+  consumeRPCQueue(
+    'tickets:widgets.comment.remove',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+      const { _id } = data;
+      await models.Comments.deleteComment(_id);
+      return {
+        status: 'success',
+      };
+    },
+  );
+
+  consumeRPCQueue(
+    'tickets:widgets.comment.edit',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+      const { _id, content } = data;
+
+      const comment = await models.Comments.findOne({ _id });
+      if (!comment) {
+        return {
+          status: 'error',
+          errorMessage: 'Comment not found',
+        };
+      }
+
+      // 댓글 내용 업데이트
+      console.log('🔧 Updating comment:', {
+        _id,
+        content,
+        beforeUpdate: comment.toObject(),
+      });
+
+      await models.Comments.updateComment(_id, { content } as any);
+
+      // 업데이트된 댓글 반환
+      const updatedComment = await models.Comments.findOne({ _id });
+      console.log('🔧 Comment updated:', {
+        _id,
+        afterUpdate: updatedComment?.toObject(),
+      });
+
+      return {
+        status: 'success',
+        data: updatedComment,
+      };
+    },
+  );
+  consumeRPCQueue(
+    'tickets:widgets.comments.find',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+      const { typeId } = data;
+      const comments = await models.Comments.find({ typeId }).sort({
+        createdAt: 1,
+      });
+
+      // updatedAt 필드가 있는지 확인하고 반환
+      const commentsWithUpdatedAt = comments.map((comment) => {
+        const commentObj = comment.toObject();
+        console.log('🔍 Comment data:', {
+          _id: commentObj._id,
+          content: commentObj.content?.substring(0, 50),
+          createdAt: commentObj.createdAt,
+          updatedAt: commentObj.updatedAt,
+          hasUpdatedAt: !!commentObj.updatedAt,
         });
 
-        if (customer && customer.companyIds && customer.companyIds.length > 0) {
-          companyIds = customer.companyIds;
-          console.log('🔔 Using customer.companyIds:', companyIds);
-        } else {
-          // customer.companyIds가 없으면 conformities 테이블을 통해 조회
-          const customerCompanyIds = await sendCoreMessage({
-            subdomain,
-            action: "conformities.savedConformity",
-            data: {
-              mainType: "customer",
-              mainTypeId: customerId,
-              relTypes: ["company"],
-            },
-            isRPC: true,
-            defaultValue: [],
-          });
+        return {
+          ...commentObj,
+          updatedAt: commentObj.updatedAt || commentObj.createdAt,
+        };
+      });
 
-          if (customerCompanyIds && customerCompanyIds.length > 0) {
-            companyIds = customerCompanyIds;
-            console.log('🔔 Using conformities.savedConformity:', companyIds);
-          }
+      return {
+        status: 'success',
+        data: commentsWithUpdatedAt,
+      };
+    },
+  );
+  consumeRPCQueue(
+    'tickets:widgets.ticketList.find',
+    async ({ subdomain, data }) => {
+      console.log('🔔 tickets:widgets.ticketList.find called with:', {
+        subdomain,
+        data,
+      });
+      console.log(
+        '🔔 includeCompanyTickets value:',
+        data?.includeCompanyTickets,
+        'type:',
+        typeof data?.includeCompanyTickets,
+      );
+      const models = await generateModels(subdomain);
+      const { customerId, includeCompanyTickets } = data;
+      console.log(
+        '🔔 Extracted includeCompanyTickets:',
+        includeCompanyTickets,
+        'type:',
+        typeof includeCompanyTickets,
+      );
+
+      if (!customerId) {
+        return {
+          status: 'error',
+          errorMessage: 'Customer ID is required',
+        };
+      }
+
+      // 티켓 조회: 먼저 customerIds로 직접 조회 시도
+      let tickets = await models.Tickets.find({
+        customerIds: { $in: [customerId] },
+      }).sort({ createdAt: -1 });
+
+      console.log('🔔 Found tickets via customerIds:', tickets.length);
+
+      // customerIds로 티켓을 찾지 못한 경우 conformities를 통해 조회
+      if (tickets.length === 0) {
+        console.log(
+          '🔔 No tickets found via customerIds, trying conformities...',
+        );
+        const mainTypeIds = await sendCoreMessage({
+          subdomain,
+          action: 'conformities.findConformities',
+          data: {
+            mainType: 'ticket',
+            relType: 'customer',
+            relTypeId: [customerId],
+          },
+          isRPC: true,
+          defaultValue: [],
+        });
+
+        const ticketIds = mainTypeIds.map((mainType) => mainType.mainTypeId);
+        console.log('🔔 Found ticket IDs via conformities:', ticketIds.length);
+
+        if (ticketIds.length > 0) {
+          tickets = await models.Tickets.find({
+            _id: { $in: ticketIds },
+          }).sort({ createdAt: -1 });
+          console.log('🔔 Found tickets via conformities:', tickets.length);
         }
+      }
 
-        if (companyIds.length > 0) {
-          // 같은 회사의 모든 티켓 조회 (공개 티켓만)
-          // customerIds로 직접 조회
-          const companyTicketsByCustomerIds = await models.Tickets.find({
-            customerIds: { $in: [customerId] },
-            visibility: { $in: ["public", null, undefined] } // 공개 티켓만 (기본값도 포함)
-          }).sort({ createdAt: -1 });
-          
-          // companyIds로 조회
-          const companyTicketsByCompanyIds = await models.Tickets.find({
-            companyIds: { $in: companyIds },
-            visibility: { $in: ["public", null, undefined] } // 공개 티켓만
-          }).sort({ createdAt: -1 });
+      // 회사 티켓 포함 옵션이 활성화된 경우
+      if (includeCompanyTickets) {
+        try {
+          let companyIds: string[] = [];
 
-          // conformities를 통해 회사 티켓 조회
-          const companyMainTypeIds = await sendCoreMessage({
+          // 먼저 customer.companyIds 확인
+          const customer = await sendCoreMessage({
             subdomain,
-            action: "conformities.findConformities",
-            data: {
-              mainType: "ticket",
-              relType: "company",
-              relTypeId: companyIds
-            },
+            action: 'customers.findOne',
+            data: { _id: customerId },
             isRPC: true,
-            defaultValue: []
+            defaultValue: null,
           });
-          const companyTicketIds = companyMainTypeIds.map((mainType) => mainType.mainTypeId);
-          const companyTicketsByConformities = companyTicketIds.length > 0 
-            ? await models.Tickets.find({
-                _id: { $in: companyTicketIds },
-                visibility: { $in: ["public", null, undefined] } // 공개 티켓만
-              }).sort({ createdAt: -1 })
-            : [];
 
-          // 모든 티켓을 합치고 중복 제거
-          const allTicketIds = new Set<string>();
-          [...companyTicketsByCustomerIds, ...companyTicketsByCompanyIds, ...companyTicketsByConformities].forEach(t => allTicketIds.add(t._id));
-          
-          if (allTicketIds.size > 0) {
-            tickets = await models.Tickets.find({
-              _id: { $in: Array.from(allTicketIds) },
-              $or: [
-                { visibility: "public" },
-                { visibility: { $exists: false } },
-                { visibility: null }
-              ]
+          if (
+            customer &&
+            customer.companyIds &&
+            customer.companyIds.length > 0
+          ) {
+            companyIds = customer.companyIds;
+            console.log('🔔 Using customer.companyIds:', companyIds);
+          } else {
+            // customer.companyIds가 없으면 conformities 테이블을 통해 조회
+            const customerCompanyIds = await sendCoreMessage({
+              subdomain,
+              action: 'conformities.savedConformity',
+              data: {
+                mainType: 'customer',
+                mainTypeId: customerId,
+                relTypes: ['company'],
+              },
+              isRPC: true,
+              defaultValue: [],
+            });
+
+            if (customerCompanyIds && customerCompanyIds.length > 0) {
+              companyIds = customerCompanyIds;
+              console.log('🔔 Using conformities.savedConformity:', companyIds);
+            }
+          }
+
+          if (companyIds.length > 0) {
+            // 같은 회사의 모든 티켓 조회 (공개 티켓만)
+            // customerIds로 직접 조회
+            const companyTicketsByCustomerIds = await models.Tickets.find({
+              customerIds: { $in: [customerId] },
+              visibility: { $in: ['public', null, undefined] }, // 공개 티켓만 (기본값도 포함)
             }).sort({ createdAt: -1 });
-            console.log('🔔 Including company tickets, total:', tickets.length);
+
+            // companyIds로 조회
+            const companyTicketsByCompanyIds = await models.Tickets.find({
+              companyIds: { $in: companyIds },
+              visibility: { $in: ['public', null, undefined] }, // 공개 티켓만
+            }).sort({ createdAt: -1 });
+
+            // conformities를 통해 회사 티켓 조회
+            const companyMainTypeIds = await sendCoreMessage({
+              subdomain,
+              action: 'conformities.findConformities',
+              data: {
+                mainType: 'ticket',
+                relType: 'company',
+                relTypeId: companyIds,
+              },
+              isRPC: true,
+              defaultValue: [],
+            });
+            const companyTicketIds = companyMainTypeIds.map(
+              (mainType) => mainType.mainTypeId,
+            );
+            const companyTicketsByConformities =
+              companyTicketIds.length > 0
+                ? await models.Tickets.find({
+                    _id: { $in: companyTicketIds },
+                    visibility: { $in: ['public', null, undefined] }, // 공개 티켓만
+                  }).sort({ createdAt: -1 })
+                : [];
+
+            // 모든 티켓을 합치고 중복 제거
+            const allTicketIds = new Set<string>();
+            [
+              ...companyTicketsByCustomerIds,
+              ...companyTicketsByCompanyIds,
+              ...companyTicketsByConformities,
+            ].forEach((t) => allTicketIds.add(t._id));
+
+            if (allTicketIds.size > 0) {
+              tickets = await models.Tickets.find({
+                _id: { $in: Array.from(allTicketIds) },
+                $or: [
+                  { visibility: 'public' },
+                  { visibility: { $exists: false } },
+                  { visibility: null },
+                ],
+              }).sort({ createdAt: -1 });
+              console.log(
+                '🔔 Including company tickets, total:',
+                tickets.length,
+              );
+            }
           }
+        } catch (error) {
+          console.error(
+            `Failed to get companies for customer ${customerId}:`,
+            error,
+          );
         }
-      } catch (error) {
-        console.error(
-          `Failed to get companies for customer ${customerId}:`,
-          error
+      }
+
+      console.log(
+        '🔔 Found tickets:',
+        tickets.length,
+        'for customerId:',
+        customerId,
+        'includeCompanyTickets:',
+        includeCompanyTickets,
+      );
+      console.log(
+        '🔔 Raw ticket data:',
+        tickets.map((t) => ({
+          _id: t._id,
+          hasNotified: (t as any).hasNotified,
+          type: typeof (t as any).hasNotified,
+        })),
+      );
+
+      // Populate stage information and customer information
+      const ticketsWithStages = await Promise.all(
+        tickets.map(async (ticket) => {
+          const stage = await models.Stages.findOne({ _id: ticket.stageId });
+
+          const hasNotified =
+            (ticket as any).hasNotified !== undefined
+              ? (ticket as any).hasNotified
+              : true;
+          console.log(
+            '🔔 Ticket hasNotified:',
+            ticket._id,
+            'hasNotified:',
+            hasNotified,
+            'original:',
+            (ticket as any).hasNotified,
+            'type:',
+            typeof (ticket as any).hasNotified,
+          );
+
+          // 고객 정보 가져오기 (회사 티켓보기 모드일 때 필요)
+          let customerName: string | null = null;
+          console.log(
+            '🔔 Checking customer name for ticket',
+            ticket._id,
+            'includeCompanyTickets:',
+            includeCompanyTickets,
+            'customerIds:',
+            ticket.customerIds,
+          );
+
+          if (includeCompanyTickets) {
+            try {
+              // 먼저 ticket.customerIds 확인
+              let ticketCustomerId: string | null = null;
+
+              if (ticket.customerIds && ticket.customerIds.length > 0) {
+                ticketCustomerId = ticket.customerIds[0];
+                console.log('🔔 Using ticket.customerIds:', ticketCustomerId);
+              } else {
+                // ticket.customerIds가 없으면 conformities를 통해 고객 ID 가져오기
+                console.log(
+                  '🔔 ticket.customerIds is empty, fetching from conformities...',
+                );
+                const customerIds = await sendCoreMessage({
+                  subdomain,
+                  action: 'conformities.savedConformity',
+                  data: {
+                    mainType: 'ticket',
+                    mainTypeId: ticket._id,
+                    relTypes: ['customer'],
+                  },
+                  isRPC: true,
+                  defaultValue: [],
+                });
+
+                if (customerIds && customerIds.length > 0) {
+                  ticketCustomerId = customerIds[0];
+                  console.log(
+                    '🔔 Found customer ID via conformities:',
+                    ticketCustomerId,
+                  );
+                } else {
+                  console.log(
+                    '🔔 No customer found via conformities for ticket',
+                    ticket._id,
+                  );
+                }
+              }
+
+              if (ticketCustomerId) {
+                console.log(
+                  '🔔 Fetching customer for ticket',
+                  ticket._id,
+                  'customerId:',
+                  ticketCustomerId,
+                );
+                const customer = await sendCoreMessage({
+                  subdomain,
+                  action: 'customers.findOne',
+                  data: { _id: ticketCustomerId },
+                  isRPC: true,
+                  defaultValue: null,
+                });
+
+                console.log(
+                  '🔔 Customer fetched for ticket',
+                  ticket._id,
+                  ':',
+                  customer ? 'found' : 'not found',
+                  customer
+                    ? {
+                        firstName: customer.firstName,
+                        lastName: customer.lastName,
+                        primaryEmail: customer.primaryEmail,
+                        emails: customer.emails,
+                      }
+                    : null,
+                );
+
+                if (customer) {
+                  // firstName과 lastName 조합
+                  if (customer.firstName || customer.lastName) {
+                    customerName =
+                      `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
+                  }
+                  // primaryEmail 확인
+                  else if (customer.primaryEmail) {
+                    customerName = customer.primaryEmail;
+                  }
+                  // emails 배열 확인
+                  else if (customer.emails && customer.emails.length > 0) {
+                    customerName = customer.emails[0];
+                  }
+                  // phones 배열 확인
+                  else if (customer.phones && customer.phones.length > 0) {
+                    customerName = customer.phones[0];
+                  }
+                  // phone 필드 확인
+                  else if (customer.phone) {
+                    customerName = customer.phone;
+                  }
+                  // email 필드 확인
+                  else if (customer.email) {
+                    customerName = customer.email;
+                  }
+
+                  console.log(
+                    '🔔 Customer name for ticket',
+                    ticket._id,
+                    ':',
+                    customerName,
+                    'from customer:',
+                    JSON.stringify(customer).substring(0, 200),
+                  );
+                } else {
+                  console.log(
+                    '🔔 Customer not found for ticket',
+                    ticket._id,
+                    'customerId:',
+                    ticketCustomerId,
+                  );
+                }
+              }
+            } catch (error) {
+              console.error(
+                `Failed to get customer for ticket ${ticket._id}:`,
+                error,
+              );
+            }
+          } else {
+            console.log(
+              '🔔 Skipping customer name fetch for ticket',
+              ticket._id,
+              'includeCompanyTickets:',
+              includeCompanyTickets,
+            );
+          }
+
+          return {
+            _id: ticket._id,
+            name: ticket.name,
+            number: ticket.number,
+            status: ticket.status,
+            stage: stage ? { _id: stage._id, name: stage.name } : null,
+            description: ticket.description,
+            type: ticket.type,
+            requestType: ticket.requestType,
+            createdAt: ticket.createdAt,
+            priority: ticket.priority,
+            widgetAlarm: (ticket as any).widgetAlarm,
+            hasNotified: hasNotified,
+            attachments: ticket.attachments || [],
+            customerName: customerName,
+          };
+        }),
+      );
+
+      console.log(
+        '🔔 tickets:widgets.ticketList.find returning data:',
+        ticketsWithStages.length,
+        'tickets',
+      );
+      if (ticketsWithStages.length > 0) {
+        console.log(
+          '🔔 First ticket customerName:',
+          ticketsWithStages[0]?.customerName,
+        );
+        console.log(
+          '🔔 Sample ticket:',
+          JSON.stringify(ticketsWithStages[0], null, 2).substring(0, 500),
         );
       }
-    }
-    
-    console.log('🔔 Found tickets:', tickets.length, 'for customerId:', customerId, 'includeCompanyTickets:', includeCompanyTickets);
-    console.log('🔔 Raw ticket data:', tickets.map(t => ({ _id: t._id, hasNotified: (t as any).hasNotified, type: typeof (t as any).hasNotified })));
 
-    // Populate stage information and customer information
-    const ticketsWithStages = await Promise.all(
-      tickets.map(async (ticket) => {
-        const stage = await models.Stages.findOne({ _id: ticket.stageId });
-        
-        const hasNotified = (ticket as any).hasNotified !== undefined ? (ticket as any).hasNotified : true;
-        console.log('🔔 Ticket hasNotified:', ticket._id, 'hasNotified:', hasNotified, 'original:', (ticket as any).hasNotified, 'type:', typeof (ticket as any).hasNotified);
-        
-        // 고객 정보 가져오기 (회사 티켓보기 모드일 때 필요)
-        let customerName: string | null = null;
-        console.log('🔔 Checking customer name for ticket', ticket._id, 'includeCompanyTickets:', includeCompanyTickets, 'customerIds:', ticket.customerIds);
-        
-        if (includeCompanyTickets) {
-          try {
-            // 먼저 ticket.customerIds 확인
-            let ticketCustomerId: string | null = null;
-            
-            if (ticket.customerIds && ticket.customerIds.length > 0) {
-              ticketCustomerId = ticket.customerIds[0];
-              console.log('🔔 Using ticket.customerIds:', ticketCustomerId);
-            } else {
-              // ticket.customerIds가 없으면 conformities를 통해 고객 ID 가져오기
-              console.log('🔔 ticket.customerIds is empty, fetching from conformities...');
-              const customerIds = await sendCoreMessage({
-                subdomain,
-                action: "conformities.savedConformity",
-                data: {
-                  mainType: "ticket",
-                  mainTypeId: ticket._id,
-                  relTypes: ["customer"],
-                },
-                isRPC: true,
-                defaultValue: [],
-              });
-              
-              if (customerIds && customerIds.length > 0) {
-                ticketCustomerId = customerIds[0];
-                console.log('🔔 Found customer ID via conformities:', ticketCustomerId);
-              } else {
-                console.log('🔔 No customer found via conformities for ticket', ticket._id);
-              }
-            }
-            
-            if (ticketCustomerId) {
-              console.log('🔔 Fetching customer for ticket', ticket._id, 'customerId:', ticketCustomerId);
-              const customer = await sendCoreMessage({
-                subdomain,
-                action: 'customers.findOne',
-                data: { _id: ticketCustomerId },
-                isRPC: true,
-                defaultValue: null
-              });
-              
-              console.log('🔔 Customer fetched for ticket', ticket._id, ':', customer ? 'found' : 'not found', customer ? { firstName: customer.firstName, lastName: customer.lastName, primaryEmail: customer.primaryEmail, emails: customer.emails } : null);
-              
-              if (customer) {
-                // firstName과 lastName 조합
-                if (customer.firstName || customer.lastName) {
-                  customerName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
-                } 
-                // primaryEmail 확인
-                else if (customer.primaryEmail) {
-                  customerName = customer.primaryEmail;
-                }
-                // emails 배열 확인
-                else if (customer.emails && customer.emails.length > 0) {
-                  customerName = customer.emails[0];
-                }
-                // phones 배열 확인
-                else if (customer.phones && customer.phones.length > 0) {
-                  customerName = customer.phones[0];
-                }
-                // phone 필드 확인
-                else if (customer.phone) {
-                  customerName = customer.phone;
-                }
-                // email 필드 확인
-                else if (customer.email) {
-                  customerName = customer.email;
-                }
-                
-                console.log('🔔 Customer name for ticket', ticket._id, ':', customerName, 'from customer:', JSON.stringify(customer).substring(0, 200));
-              } else {
-                console.log('🔔 Customer not found for ticket', ticket._id, 'customerId:', ticketCustomerId);
-              }
-            }
-          } catch (error) {
-            console.error(`Failed to get customer for ticket ${ticket._id}:`, error);
-          }
-        } else {
-          console.log('🔔 Skipping customer name fetch for ticket', ticket._id, 'includeCompanyTickets:', includeCompanyTickets);
-        }
-        
-        return {
-          _id: ticket._id,
-          name: ticket.name,
-          number: ticket.number,
-          status: ticket.status,
-          stage: stage ? { _id: stage._id, name: stage.name } : null,
-          description: ticket.description,
-          type: ticket.type,
-          requestType: ticket.requestType,
-          createdAt: ticket.createdAt,
-          priority: ticket.priority,
-          widgetAlarm: (ticket as any).widgetAlarm,
-          hasNotified: hasNotified,
-          attachments: ticket.attachments || [],
-          customerName: customerName
-        };
-      })
-    );
+      return {
+        status: 'success',
+        data: ticketsWithStages,
+      };
+    },
+  );
 
-    console.log('🔔 tickets:widgets.ticketList.find returning data:', ticketsWithStages.length, 'tickets');
-    if (ticketsWithStages.length > 0) {
-      console.log('🔔 First ticket customerName:', ticketsWithStages[0]?.customerName);
-      console.log('🔔 Sample ticket:', JSON.stringify(ticketsWithStages[0], null, 2).substring(0, 500));
-    }
-    
-    return {
-      status: "success",
-      data: ticketsWithStages
-    };
-  });
-  
   // widgets.ticketList.find action 추가 (sendTicketsMessage용)
-  consumeRPCQueue("widgets.ticketList.find", async ({ subdomain, data }) => {
+  consumeRPCQueue('widgets.ticketList.find', async ({ subdomain, data }) => {
     console.log('🔔 widgets.ticketList.find called with:', { subdomain, data });
-    console.log('🔔 includeCompanyTickets value:', data?.includeCompanyTickets, 'type:', typeof data?.includeCompanyTickets);
+    console.log(
+      '🔔 includeCompanyTickets value:',
+      data?.includeCompanyTickets,
+      'type:',
+      typeof data?.includeCompanyTickets,
+    );
     const models = await generateModels(subdomain);
     const { customerId, includeCompanyTickets } = data;
-    console.log('🔔 Extracted includeCompanyTickets:', includeCompanyTickets, 'type:', typeof includeCompanyTickets);
+    console.log(
+      '🔔 Extracted includeCompanyTickets:',
+      includeCompanyTickets,
+      'type:',
+      typeof includeCompanyTickets,
+    );
 
     if (!customerId) {
       return {
-        status: "error",
-        errorMessage: "Customer ID is required"
+        status: 'error',
+        errorMessage: 'Customer ID is required',
       };
     }
 
     // 티켓 조회 조건 설정
     let ticketQuery: any = {
-      customerIds: { $in: [customerId] }
+      customerIds: { $in: [customerId] },
     };
 
     // 회사 티켓 포함 옵션이 활성화된 경우
@@ -1035,7 +1287,7 @@ export const setupMessageConsumers = async () => {
           action: 'customers.findOne',
           data: { _id: customerId },
           isRPC: true,
-          defaultValue: null
+          defaultValue: null,
         });
 
         if (customer && customer.companyIds && customer.companyIds.length > 0) {
@@ -1045,11 +1297,11 @@ export const setupMessageConsumers = async () => {
           // customer.companyIds가 없으면 conformities 테이블을 통해 조회
           const customerCompanyIds = await sendCoreMessage({
             subdomain,
-            action: "conformities.savedConformity",
+            action: 'conformities.savedConformity',
             data: {
-              mainType: "customer",
+              mainType: 'customer',
               mainTypeId: customerId,
-              relTypes: ["company"],
+              relTypes: ['company'],
             },
             isRPC: true,
             defaultValue: [],
@@ -1069,90 +1321,155 @@ export const setupMessageConsumers = async () => {
               {
                 companyIds: { $in: companyIds },
                 $or: [
-                  { visibility: "public" },
+                  { visibility: 'public' },
                   { visibility: { $exists: false } },
-                  { visibility: null }
-                ]
-              }
-            ]
+                  { visibility: null },
+                ],
+              },
+            ],
           };
-          console.log('🔔 Including company tickets for companyIds:', companyIds);
+          console.log(
+            '🔔 Including company tickets for companyIds:',
+            companyIds,
+          );
         }
       } catch (error) {
         console.error(
           `Failed to get companies for customer ${customerId}:`,
-          error
+          error,
         );
       }
     }
 
     // 고객이 생성한 티켓들을 가져오기
-    const tickets = await models.Tickets.find(ticketQuery).sort({ createdAt: -1 });
-    
-    console.log('🔔 Found tickets:', tickets.length, 'for customerId:', customerId, 'includeCompanyTickets:', includeCompanyTickets);
-    console.log('🔔 Raw ticket data:', tickets.map(t => ({ _id: t._id, hasNotified: (t as any).hasNotified, type: typeof (t as any).hasNotified })));
+    const tickets = await models.Tickets.find(ticketQuery).sort({
+      createdAt: -1,
+    });
+
+    console.log(
+      '🔔 Found tickets:',
+      tickets.length,
+      'for customerId:',
+      customerId,
+      'includeCompanyTickets:',
+      includeCompanyTickets,
+    );
+    console.log(
+      '🔔 Raw ticket data:',
+      tickets.map((t) => ({
+        _id: t._id,
+        hasNotified: (t as any).hasNotified,
+        type: typeof (t as any).hasNotified,
+      })),
+    );
 
     // Populate stage information and customer information
     const ticketsWithStages = await Promise.all(
       tickets.map(async (ticket) => {
         const stage = await models.Stages.findOne({ _id: ticket.stageId });
-        
+
         // hasNotified 필드 확인
-        const hasNotified = (ticket as any).hasNotified !== undefined ? (ticket as any).hasNotified : true;
-        console.log('🔔 Ticket hasNotified:', ticket._id, 'hasNotified:', hasNotified, 'original:', (ticket as any).hasNotified, 'type:', typeof (ticket as any).hasNotified);
-        
+        const hasNotified =
+          (ticket as any).hasNotified !== undefined
+            ? (ticket as any).hasNotified
+            : true;
+        console.log(
+          '🔔 Ticket hasNotified:',
+          ticket._id,
+          'hasNotified:',
+          hasNotified,
+          'original:',
+          (ticket as any).hasNotified,
+          'type:',
+          typeof (ticket as any).hasNotified,
+        );
+
         // 고객 정보 가져오기 (회사 티켓보기 모드일 때 필요)
         let customerName: string | null = null;
-        console.log('🔔 Checking customer name for ticket', ticket._id, 'includeCompanyTickets:', includeCompanyTickets, 'customerIds:', ticket.customerIds);
-        
+        console.log(
+          '🔔 Checking customer name for ticket',
+          ticket._id,
+          'includeCompanyTickets:',
+          includeCompanyTickets,
+          'customerIds:',
+          ticket.customerIds,
+        );
+
         if (includeCompanyTickets) {
           try {
             // 먼저 ticket.customerIds 확인
             let ticketCustomerId: string | null = null;
-            
+
             if (ticket.customerIds && ticket.customerIds.length > 0) {
               ticketCustomerId = ticket.customerIds[0];
               console.log('🔔 Using ticket.customerIds:', ticketCustomerId);
             } else {
               // ticket.customerIds가 없으면 conformities를 통해 고객 ID 가져오기
-              console.log('🔔 ticket.customerIds is empty, fetching from conformities...');
+              console.log(
+                '🔔 ticket.customerIds is empty, fetching from conformities...',
+              );
               const customerIds = await sendCoreMessage({
                 subdomain,
-                action: "conformities.savedConformity",
+                action: 'conformities.savedConformity',
                 data: {
-                  mainType: "ticket",
+                  mainType: 'ticket',
                   mainTypeId: ticket._id,
-                  relTypes: ["customer"],
+                  relTypes: ['customer'],
                 },
                 isRPC: true,
                 defaultValue: [],
               });
-              
+
               if (customerIds && customerIds.length > 0) {
                 ticketCustomerId = customerIds[0];
-                console.log('🔔 Found customer ID via conformities:', ticketCustomerId);
+                console.log(
+                  '🔔 Found customer ID via conformities:',
+                  ticketCustomerId,
+                );
               } else {
-                console.log('🔔 No customer found via conformities for ticket', ticket._id);
+                console.log(
+                  '🔔 No customer found via conformities for ticket',
+                  ticket._id,
+                );
               }
             }
-            
+
             if (ticketCustomerId) {
-              console.log('🔔 Fetching customer for ticket', ticket._id, 'customerId:', ticketCustomerId);
+              console.log(
+                '🔔 Fetching customer for ticket',
+                ticket._id,
+                'customerId:',
+                ticketCustomerId,
+              );
               const customer = await sendCoreMessage({
                 subdomain,
                 action: 'customers.findOne',
                 data: { _id: ticketCustomerId },
                 isRPC: true,
-                defaultValue: null
+                defaultValue: null,
               });
-              
-              console.log('🔔 Customer fetched for ticket', ticket._id, ':', customer ? 'found' : 'not found', customer ? { firstName: customer.firstName, lastName: customer.lastName, primaryEmail: customer.primaryEmail, emails: customer.emails } : null);
-              
+
+              console.log(
+                '🔔 Customer fetched for ticket',
+                ticket._id,
+                ':',
+                customer ? 'found' : 'not found',
+                customer
+                  ? {
+                      firstName: customer.firstName,
+                      lastName: customer.lastName,
+                      primaryEmail: customer.primaryEmail,
+                      emails: customer.emails,
+                    }
+                  : null,
+              );
+
               if (customer) {
                 // firstName과 lastName 조합
                 if (customer.firstName || customer.lastName) {
-                  customerName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
-                } 
+                  customerName =
+                    `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
+                }
                 // primaryEmail 확인
                 else if (customer.primaryEmail) {
                   customerName = customer.primaryEmail;
@@ -1173,19 +1490,39 @@ export const setupMessageConsumers = async () => {
                 else if (customer.email) {
                   customerName = customer.email;
                 }
-                
-                console.log('🔔 Customer name for ticket', ticket._id, ':', customerName, 'from customer:', JSON.stringify(customer).substring(0, 200));
+
+                console.log(
+                  '🔔 Customer name for ticket',
+                  ticket._id,
+                  ':',
+                  customerName,
+                  'from customer:',
+                  JSON.stringify(customer).substring(0, 200),
+                );
               } else {
-                console.log('🔔 Customer not found for ticket', ticket._id, 'customerId:', ticketCustomerId);
+                console.log(
+                  '🔔 Customer not found for ticket',
+                  ticket._id,
+                  'customerId:',
+                  ticketCustomerId,
+                );
               }
             }
           } catch (error) {
-            console.error(`Failed to get customer for ticket ${ticket._id}:`, error);
+            console.error(
+              `Failed to get customer for ticket ${ticket._id}:`,
+              error,
+            );
           }
         } else {
-          console.log('🔔 Skipping customer name fetch for ticket', ticket._id, 'includeCompanyTickets:', includeCompanyTickets);
+          console.log(
+            '🔔 Skipping customer name fetch for ticket',
+            ticket._id,
+            'includeCompanyTickets:',
+            includeCompanyTickets,
+          );
         }
-        
+
         return {
           _id: ticket._id,
           name: ticket.name,
@@ -1200,273 +1537,396 @@ export const setupMessageConsumers = async () => {
           widgetAlarm: (ticket as any).widgetAlarm,
           hasNotified: hasNotified,
           attachments: ticket.attachments || [],
-          customerName: customerName
+          customerName: customerName,
         };
-      })
+      }),
     );
 
-    console.log('🔔 widgets.ticketList.find returning data:', ticketsWithStages.length, 'tickets');
+    console.log(
+      '🔔 widgets.ticketList.find returning data:',
+      ticketsWithStages.length,
+      'tickets',
+    );
     if (ticketsWithStages.length > 0) {
-      console.log('🔔 First ticket customerName:', ticketsWithStages[0]?.customerName);
-      console.log('🔔 Sample ticket:', JSON.stringify(ticketsWithStages[0], null, 2).substring(0, 500));
+      console.log(
+        '🔔 First ticket customerName:',
+        ticketsWithStages[0]?.customerName,
+      );
+      console.log(
+        '🔔 Sample ticket:',
+        JSON.stringify(ticketsWithStages[0], null, 2).substring(0, 500),
+      );
     }
-    
+
     return {
-      status: "success",
-      data: ticketsWithStages
+      status: 'success',
+      data: ticketsWithStages,
     };
   });
-  
+
   // tickets:widgets.ticketList.find action 추가
-  consumeRPCQueue("tickets:widgets.ticketList.find", async ({ subdomain, data }) => {
-    console.log('🔔 tickets:widgets.ticketList.find called with:', { subdomain, data });
-    console.log('🔔 includeCompanyTickets value:', data?.includeCompanyTickets, 'type:', typeof data?.includeCompanyTickets);
-    const models = await generateModels(subdomain);
-    const { customerId, includeCompanyTickets } = data;
-    console.log('🔔 Extracted includeCompanyTickets:', includeCompanyTickets, 'type:', typeof includeCompanyTickets);
+  consumeRPCQueue(
+    'tickets:widgets.ticketList.find',
+    async ({ subdomain, data }) => {
+      console.log('🔔 tickets:widgets.ticketList.find called with:', {
+        subdomain,
+        data,
+      });
+      console.log(
+        '🔔 includeCompanyTickets value:',
+        data?.includeCompanyTickets,
+        'type:',
+        typeof data?.includeCompanyTickets,
+      );
+      const models = await generateModels(subdomain);
+      const { customerId, includeCompanyTickets } = data;
+      console.log(
+        '🔔 Extracted includeCompanyTickets:',
+        includeCompanyTickets,
+        'type:',
+        typeof includeCompanyTickets,
+      );
 
-    if (!customerId) {
-      return {
-        status: "error",
-        errorMessage: "Customer ID is required"
+      if (!customerId) {
+        return {
+          status: 'error',
+          errorMessage: 'Customer ID is required',
+        };
+      }
+
+      // 티켓 조회 조건 설정
+      let ticketQuery: any = {
+        customerIds: { $in: [customerId] },
       };
-    }
 
-    // 티켓 조회 조건 설정
-    let ticketQuery: any = {
-      customerIds: { $in: [customerId] }
-    };
+      // 회사 티켓 포함 옵션이 활성화된 경우
+      if (includeCompanyTickets) {
+        try {
+          let companyIds: string[] = [];
 
-    // 회사 티켓 포함 옵션이 활성화된 경우
-    if (includeCompanyTickets) {
-      try {
-        let companyIds: string[] = [];
-
-        // 먼저 customer.companyIds 확인
-        const customer = await sendCoreMessage({
-          subdomain,
-          action: 'customers.findOne',
-          data: { _id: customerId },
-          isRPC: true,
-          defaultValue: null
-        });
-
-        if (customer && customer.companyIds && customer.companyIds.length > 0) {
-          companyIds = customer.companyIds;
-          console.log('🔔 Using customer.companyIds:', companyIds);
-        } else {
-          // customer.companyIds가 없으면 conformities 테이블을 통해 조회
-          const customerCompanyIds = await sendCoreMessage({
+          // 먼저 customer.companyIds 확인
+          const customer = await sendCoreMessage({
             subdomain,
-            action: "conformities.savedConformity",
-            data: {
-              mainType: "customer",
-              mainTypeId: customerId,
-              relTypes: ["company"],
-            },
+            action: 'customers.findOne',
+            data: { _id: customerId },
             isRPC: true,
-            defaultValue: [],
+            defaultValue: null,
           });
 
-          if (customerCompanyIds && customerCompanyIds.length > 0) {
-            companyIds = customerCompanyIds;
-            console.log('🔔 Using conformities.savedConformity:', companyIds);
-          }
-        }
+          if (
+            customer &&
+            customer.companyIds &&
+            customer.companyIds.length > 0
+          ) {
+            companyIds = customer.companyIds;
+            console.log('🔔 Using customer.companyIds:', companyIds);
+          } else {
+            // customer.companyIds가 없으면 conformities 테이블을 통해 조회
+            const customerCompanyIds = await sendCoreMessage({
+              subdomain,
+              action: 'conformities.savedConformity',
+              data: {
+                mainType: 'customer',
+                mainTypeId: customerId,
+                relTypes: ['company'],
+              },
+              isRPC: true,
+              defaultValue: [],
+            });
 
-        if (companyIds.length > 0) {
-          // 같은 회사의 모든 티켓 조회
-          ticketQuery = {
-            $or: [
-              { customerIds: { $in: [customerId] } },
-              { companyIds: { $in: companyIds } }
-            ]
-          };
-          console.log('🔔 Including company tickets for companyIds:', companyIds);
+            if (customerCompanyIds && customerCompanyIds.length > 0) {
+              companyIds = customerCompanyIds;
+              console.log('🔔 Using conformities.savedConformity:', companyIds);
+            }
+          }
+
+          if (companyIds.length > 0) {
+            // 같은 회사의 모든 티켓 조회
+            ticketQuery = {
+              $or: [
+                { customerIds: { $in: [customerId] } },
+                { companyIds: { $in: companyIds } },
+              ],
+            };
+            console.log(
+              '🔔 Including company tickets for companyIds:',
+              companyIds,
+            );
+          }
+        } catch (error) {
+          console.error(
+            `Failed to get companies for customer ${customerId}:`,
+            error,
+          );
         }
-      } catch (error) {
-        console.error(
-          `Failed to get companies for customer ${customerId}:`,
-          error
+      }
+
+      // 고객이 생성한 티켓들을 가져오기
+      const tickets = await models.Tickets.find(ticketQuery).sort({
+        createdAt: -1,
+      });
+
+      console.log(
+        '🔔 Found tickets:',
+        tickets.length,
+        'for customerId:',
+        customerId,
+        'includeCompanyTickets:',
+        includeCompanyTickets,
+      );
+      console.log(
+        '🔔 Raw ticket data:',
+        tickets.map((t) => ({
+          _id: t._id,
+          hasNotified: (t as any).hasNotified,
+          type: typeof (t as any).hasNotified,
+        })),
+      );
+
+      // Populate stage information and customer information
+      const ticketsWithStages = await Promise.all(
+        tickets.map(async (ticket) => {
+          const stage = await models.Stages.findOne({ _id: ticket.stageId });
+
+          // hasNotified 필드 확인
+          const hasNotified =
+            (ticket as any).hasNotified !== undefined
+              ? (ticket as any).hasNotified
+              : true;
+          console.log(
+            '🔔 Ticket hasNotified:',
+            ticket._id,
+            'hasNotified:',
+            hasNotified,
+            'original:',
+            (ticket as any).hasNotified,
+            'type:',
+            typeof (ticket as any).hasNotified,
+          );
+
+          // 고객 정보 가져오기 (회사 티켓보기 모드일 때 필요)
+          let customerName: string | null = null;
+          console.log(
+            '🔔 Checking customer name for ticket',
+            ticket._id,
+            'includeCompanyTickets:',
+            includeCompanyTickets,
+            'customerIds:',
+            ticket.customerIds,
+          );
+
+          if (
+            includeCompanyTickets &&
+            ticket.customerIds &&
+            ticket.customerIds.length > 0
+          ) {
+            try {
+              console.log(
+                '🔔 Fetching customer for ticket',
+                ticket._id,
+                'customerId:',
+                ticket.customerIds[0],
+              );
+              const customer = await sendCoreMessage({
+                subdomain,
+                action: 'customers.findOne',
+                data: { _id: ticket.customerIds[0] },
+                isRPC: true,
+                defaultValue: null,
+              });
+
+              console.log(
+                '🔔 Customer fetched for ticket',
+                ticket._id,
+                ':',
+                customer ? 'found' : 'not found',
+                customer
+                  ? {
+                      firstName: customer.firstName,
+                      lastName: customer.lastName,
+                      primaryEmail: customer.primaryEmail,
+                      emails: customer.emails,
+                    }
+                  : null,
+              );
+
+              if (customer) {
+                // firstName과 lastName 조합
+                if (customer.firstName || customer.lastName) {
+                  customerName =
+                    `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
+                }
+                // primaryEmail 확인
+                else if (customer.primaryEmail) {
+                  customerName = customer.primaryEmail;
+                }
+                // emails 배열 확인
+                else if (customer.emails && customer.emails.length > 0) {
+                  customerName = customer.emails[0];
+                }
+                // phones 배열 확인
+                else if (customer.phones && customer.phones.length > 0) {
+                  customerName = customer.phones[0];
+                }
+                // phone 필드 확인
+                else if (customer.phone) {
+                  customerName = customer.phone;
+                }
+                // email 필드 확인
+                else if (customer.email) {
+                  customerName = customer.email;
+                }
+
+                console.log(
+                  '🔔 Customer name for ticket',
+                  ticket._id,
+                  ':',
+                  customerName,
+                  'from customer:',
+                  JSON.stringify(customer).substring(0, 200),
+                );
+              } else {
+                console.log(
+                  '🔔 Customer not found for ticket',
+                  ticket._id,
+                  'customerId:',
+                  ticket.customerIds[0],
+                );
+              }
+            } catch (error) {
+              console.error(
+                `Failed to get customer for ticket ${ticket._id}:`,
+                error,
+              );
+            }
+          } else {
+            console.log(
+              '🔔 Skipping customer name fetch for ticket',
+              ticket._id,
+              'includeCompanyTickets:',
+              includeCompanyTickets,
+              'hasCustomerIds:',
+              !!ticket.customerIds,
+            );
+          }
+
+          return {
+            _id: ticket._id,
+            name: ticket.name,
+            number: ticket.number,
+            status: ticket.status,
+            stage: stage ? { _id: stage._id, name: stage.name } : null,
+            description: ticket.description,
+            type: ticket.type,
+            requestType: ticket.requestType,
+            createdAt: ticket.createdAt,
+            priority: ticket.priority,
+            widgetAlarm: (ticket as any).widgetAlarm,
+            hasNotified: hasNotified,
+            attachments: ticket.attachments || [],
+            customerName: customerName,
+          };
+        }),
+      );
+
+      console.log(
+        '🔔 tickets:widgets.ticketList.find returning data:',
+        ticketsWithStages.length,
+        'tickets',
+      );
+      if (ticketsWithStages.length > 0) {
+        console.log(
+          '🔔 First ticket customerName:',
+          ticketsWithStages[0]?.customerName,
+        );
+        console.log(
+          '🔔 Sample ticket:',
+          JSON.stringify(ticketsWithStages[0], null, 2).substring(0, 500),
         );
       }
-    }
 
-    // 고객이 생성한 티켓들을 가져오기
-    const tickets = await models.Tickets.find(ticketQuery).sort({ createdAt: -1 });
-    
-    console.log('🔔 Found tickets:', tickets.length, 'for customerId:', customerId, 'includeCompanyTickets:', includeCompanyTickets);
-    console.log('🔔 Raw ticket data:', tickets.map(t => ({ _id: t._id, hasNotified: (t as any).hasNotified, type: typeof (t as any).hasNotified })));
+      return {
+        status: 'success',
+        data: ticketsWithStages,
+      };
+    },
+  );
 
-    // Populate stage information and customer information
-    const ticketsWithStages = await Promise.all(
-      tickets.map(async (ticket) => {
-        const stage = await models.Stages.findOne({ _id: ticket.stageId });
-        
-        // hasNotified 필드 확인
-        const hasNotified = (ticket as any).hasNotified !== undefined ? (ticket as any).hasNotified : true;
-        console.log('🔔 Ticket hasNotified:', ticket._id, 'hasNotified:', hasNotified, 'original:', (ticket as any).hasNotified, 'type:', typeof (ticket as any).hasNotified);
-        
-        // 고객 정보 가져오기 (회사 티켓보기 모드일 때 필요)
-        let customerName: string | null = null;
-        console.log('🔔 Checking customer name for ticket', ticket._id, 'includeCompanyTickets:', includeCompanyTickets, 'customerIds:', ticket.customerIds);
-        
-        if (includeCompanyTickets && ticket.customerIds && ticket.customerIds.length > 0) {
-          try {
-            console.log('🔔 Fetching customer for ticket', ticket._id, 'customerId:', ticket.customerIds[0]);
-            const customer = await sendCoreMessage({
-              subdomain,
-              action: 'customers.findOne',
-              data: { _id: ticket.customerIds[0] },
-              isRPC: true,
-              defaultValue: null
-            });
-            
-            console.log('🔔 Customer fetched for ticket', ticket._id, ':', customer ? 'found' : 'not found', customer ? { firstName: customer.firstName, lastName: customer.lastName, primaryEmail: customer.primaryEmail, emails: customer.emails } : null);
-            
-            if (customer) {
-              // firstName과 lastName 조합
-              if (customer.firstName || customer.lastName) {
-                customerName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
-              } 
-              // primaryEmail 확인
-              else if (customer.primaryEmail) {
-                customerName = customer.primaryEmail;
-              }
-              // emails 배열 확인
-              else if (customer.emails && customer.emails.length > 0) {
-                customerName = customer.emails[0];
-              }
-              // phones 배열 확인
-              else if (customer.phones && customer.phones.length > 0) {
-                customerName = customer.phones[0];
-              }
-              // phone 필드 확인
-              else if (customer.phone) {
-                customerName = customer.phone;
-              }
-              // email 필드 확인
-              else if (customer.email) {
-                customerName = customer.email;
-              }
-              
-              console.log('🔔 Customer name for ticket', ticket._id, ':', customerName, 'from customer:', JSON.stringify(customer).substring(0, 200));
-            } else {
-              console.log('🔔 Customer not found for ticket', ticket._id, 'customerId:', ticket.customerIds[0]);
-            }
-          } catch (error) {
-            console.error(`Failed to get customer for ticket ${ticket._id}:`, error);
-          }
-        } else {
-          console.log('🔔 Skipping customer name fetch for ticket', ticket._id, 'includeCompanyTickets:', includeCompanyTickets, 'hasCustomerIds:', !!ticket.customerIds);
-        }
-        
-        return {
-          _id: ticket._id,
-          name: ticket.name,
-          number: ticket.number,
-          status: ticket.status,
-          stage: stage ? { _id: stage._id, name: stage.name } : null,
-          description: ticket.description,
-          type: ticket.type,
-          requestType: ticket.requestType,
-          createdAt: ticket.createdAt,
-          priority: ticket.priority,
-          widgetAlarm: (ticket as any).widgetAlarm,
-          hasNotified: hasNotified,
-          attachments: ticket.attachments || [],
-          customerName: customerName
-        };
-      })
-    );
-
-    console.log('🔔 tickets:widgets.ticketList.find returning data:', ticketsWithStages.length, 'tickets');
-    if (ticketsWithStages.length > 0) {
-      console.log('🔔 First ticket customerName:', ticketsWithStages[0]?.customerName);
-      console.log('🔔 Sample ticket:', JSON.stringify(ticketsWithStages[0], null, 2).substring(0, 500));
-    }
-    
-    return {
-      status: "success",
-      data: ticketsWithStages
-    };
-  });
-  
-  consumeRPCQueue("tickets:findItem", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:findItem', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
-    return { data: await getCardItem(models, data), status: "success" };
+    return { data: await getCardItem(models, data), status: 'success' };
   });
 
   consumeRPCQueue(
-    "tickets:findTicketProductIds",
+    'tickets:findTicketProductIds',
     async ({ subdomain, data: { _ids } }) => {
       const models = await generateModels(subdomain);
 
       const ticketProductIds = await await models.Tickets.find({
-        "productsData.productId": { $in: _ids }
-      }).distinct("productsData.productId");
+        'productsData.productId': { $in: _ids },
+      }).distinct('productsData.productId');
 
-      return { data: ticketProductIds, status: "success" };
-    }
+      return { data: ticketProductIds, status: 'success' };
+    },
   );
 
   consumeRPCQueue(
-    "tickets:tickets.updateMany",
+    'tickets:tickets.updateMany',
     async ({ subdomain, data: { selector, modifier } }) => {
       const models = await generateModels(subdomain);
 
       return {
         data: await models.Tickets.updateMany(selector, modifier),
-        status: "success"
+        status: 'success',
       };
-    }
+    },
   );
 
   consumeRPCQueue(
-    "tickets:tickets.updateOne",
+    'tickets:tickets.updateOne',
     async ({ subdomain, data: { selector, modifier } }) => {
       const models = await generateModels(subdomain);
 
       return {
         data: await models.Tickets.updateOne(selector, modifier),
-        status: "success"
+        status: 'success',
       };
-    }
+    },
   );
 
-  consumeRPCQueue("tickets:notifiedUserIds", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:notifiedUserIds', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     return {
-      status: "success",
-      data: await notifiedUserIds(models, data)
+      status: 'success',
+      data: await notifiedUserIds(models, data),
     };
   });
 
-  consumeRPCQueue("tickets:sendNotifications", async ({ subdomain, data }) => {
+  consumeRPCQueue('tickets:sendNotifications', async ({ subdomain, data }) => {
     const models = await generateModels(subdomain);
 
     return {
-      status: "success",
-      data: await sendNotifications(models, subdomain, data)
+      status: 'success',
+      data: await sendNotifications(models, subdomain, data),
     };
   });
 
   consumeRPCQueue(
-    "tickets:getLink",
+    'tickets:getLink',
     async ({ subdomain, data: { _id, type } }) => {
       const models = await generateModels(subdomain);
 
       const item = await getCardItem(models, {
         contentTypeId: _id,
-        contentType: type
+        contentType: type,
       });
 
       if (!item) {
         return {
-          status: "error",
-          errorMessage: "Item not found"
+          status: 'error',
+          errorMessage: 'Item not found',
         };
       }
 
@@ -1475,14 +1935,14 @@ export const setupMessageConsumers = async () => {
       const board = await models.Boards.getBoard(pipeline.boardId);
 
       return {
-        status: "success",
-        data: `/${stage.type}/board?id=${board._id}&pipelineId=${pipeline._id}&itemId=${_id}`
+        status: 'success',
+        data: `/${stage.type}/board?id=${board._id}&pipelineId=${pipeline._id}&itemId=${_id}`,
       };
-    }
+    },
   );
 
   consumeRPCQueue(
-    "tickets:pipelines.findOne",
+    'tickets:pipelines.findOne',
     async ({ subdomain, data: { _id, stageId } }) => {
       let pipelineId = _id;
       const models = await generateModels(subdomain);
@@ -1495,53 +1955,53 @@ export const setupMessageConsumers = async () => {
 
       if (!pipelineId) {
         return {
-          status: "error",
-          errorMessage: "Pipeline not found"
+          status: 'error',
+          errorMessage: 'Pipeline not found',
         };
       }
 
       return {
-        status: "success",
-        data: await models.Pipelines.getPipeline(pipelineId)
+        status: 'success',
+        data: await models.Pipelines.getPipeline(pipelineId),
       };
-    }
+    },
   );
 
   consumeRPCQueue(
-    "tickets:pipelineLabels.find",
+    'tickets:pipelineLabels.find',
     async ({ subdomain, data: { query, fields } }) => {
       const models = await generateModels(subdomain);
 
       return {
-        status: "success",
-        data: await models.PipelineLabels.find(query, fields)
+        status: 'success',
+        data: await models.PipelineLabels.find(query, fields),
       };
-    }
+    },
   );
 
   consumeQueue(
-    "tickets:ticketsPipelinesChanged",
+    'tickets:ticketsPipelinesChanged',
     async ({ subdomain, data: { pipelineId, action, data } }) => {
-      graphqlPubsub.publish("ticketsPipelinesChanged", {
+      graphqlPubsub.publish('ticketsPipelinesChanged', {
         ticketsPipelinesChanged: {
           _id: pipelineId,
           proccessId: Math.random(),
           action,
-          data
-        }
+          data,
+        },
       });
 
       return {
-        status: "success"
+        status: 'success',
       };
-    }
+    },
   );
 
   consumeQueue(
-    "tickets:publishHelperItems",
+    'tickets:publishHelperItems',
     async ({ subdomain, data: { addedTypeIds, removedTypeIds, doc } }) => {
-      const targetTypes = ["ticket"];
-      const targetRelTypes = ["company", "customer"];
+      const targetTypes = ['ticket'];
+      const targetRelTypes = ['company', 'customer'];
 
       if (
         targetTypes.includes(doc.mainType) &&
@@ -1563,28 +2023,28 @@ export const setupMessageConsumers = async () => {
       }
 
       return {
-        status: "success"
+        status: 'success',
       };
-    }
+    },
   );
 
   consumeRPCQueue(
-    "tickets:getModuleRelation",
+    'tickets:getModuleRelation',
     async ({ subdomain, data: { module, target, triggerType } }) => {
       let filter;
 
-      if (module.includes("contacts")) {
+      if (module.includes('contacts')) {
         const relTypeIds = await sendCommonMessage({
           subdomain,
-          serviceName: "core",
-          action: "conformities.savedConformity",
+          serviceName: 'core',
+          action: 'conformities.savedConformity',
           data: {
-            mainType: triggerType.split(":")[1],
+            mainType: triggerType.split(':')[1],
             mainTypeId: target._id,
-            relTypes: [module.split(":")[1]]
+            relTypes: [module.split(':')[1]],
           },
           isRPC: true,
-          defaultValue: []
+          defaultValue: [],
         });
 
         if (relTypeIds.length) {
@@ -1593,79 +2053,79 @@ export const setupMessageConsumers = async () => {
       }
 
       return {
-        status: "success",
-        data: filter
+        status: 'success',
+        data: filter,
       };
-    }
+    },
   );
 };
 
 export const sendInternalNotesMessage = async (
-  args: MessageArgsOmitService
+  args: MessageArgsOmitService,
 ): Promise<any> => {
   return sendMessage({
-    serviceName: "internalnotes",
-    ...args
+    serviceName: 'internalnotes',
+    ...args,
   });
 };
 
 export const sendCoreMessage = async (
-  args: MessageArgsOmitService
+  args: MessageArgsOmitService,
 ): Promise<any> => {
   return sendMessage({
-    serviceName: "core",
-    ...args
+    serviceName: 'core',
+    ...args,
   });
 };
 
 export const sendEngagesMessage = async (
-  args: MessageArgsOmitService
+  args: MessageArgsOmitService,
 ): Promise<any> => {
   return sendMessage({
-    serviceName: "engages",
-    ...args
+    serviceName: 'engages',
+    ...args,
   });
 };
 
 export const sendInboxMessage = async (
-  args: MessageArgsOmitService
+  args: MessageArgsOmitService,
 ): Promise<any> => {
   return sendMessage({
-    serviceName: "inbox",
-    ...args
+    serviceName: 'inbox',
+    ...args,
   });
 };
 
 export const sendNotificationsMessage = async (
-  args: MessageArgsOmitService
+  args: MessageArgsOmitService,
 ): Promise<any> => {
   return sendMessage({
-    serviceName: "notifications",
-    ...args
+    serviceName: 'notifications',
+    ...args,
   });
 };
 
 export const sendLoyaltiesMessage = async (
-  args: MessageArgsOmitService
+  args: MessageArgsOmitService,
 ): Promise<any> => {
   return sendMessage({
-    serviceName: "loyalties",
-    ...args
+    serviceName: 'loyalties',
+    ...args,
   });
 };
 
 export const sendTasksMessage = async (
-  args: MessageArgsOmitService
+  args: MessageArgsOmitService,
 ): Promise<any> => {
   return sendMessage({
-    serviceName: "tasks",
-    ...args
+    serviceName: 'tasks',
+    ...args,
   });
 };
 
 export const sendCommonMessage = async (args: MessageArgs): Promise<any> => {
   return sendMessage({
-    ...args
+    ...args,
   });
 };
 
@@ -1673,11 +2133,11 @@ export const fetchSegment = (
   subdomain: string,
   segmentId: string,
   options?,
-  segmentData?: any
+  segmentData?: any,
 ) =>
   sendCoreMessage({
     subdomain,
-    action: "fetchSegment",
+    action: 'fetchSegment',
     data: { segmentId, options, segmentData },
-    isRPC: true
+    isRPC: true,
   });
