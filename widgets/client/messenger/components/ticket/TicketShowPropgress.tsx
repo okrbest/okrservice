@@ -56,7 +56,8 @@ const TicketShowProgress: React.FC<Props> = ({
     <Container
       withBottomNavBar={true}
       title={__('Ticket progress')}
-      backRoute="ticket"
+      // 진행 상황은 티켓 목록에서만 열린다(티켓 번호 조회 메뉴는 첫 화면에서 빠짐) — 뒤로 가면 목록
+      backRoute="ticket-list"
       persistentFooter={
         <TicketComposer
           comment={comment}

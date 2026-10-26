@@ -1,4 +1,45 @@
-import { buildThread, progressSteps } from '../progressHelpers';
+import { buildThread, progressSteps, progressTone } from '../progressHelpers';
+
+describe('progressTone', () => {
+  const five = [
+    { _id: 's1', name: '접수', order: 0 },
+    { _id: 's2', name: '확인 중', order: 1 },
+    { _id: 's3', name: '처리 중', order: 2 },
+    { _id: 's4', name: '검토', order: 3 },
+    { _id: 's5', name: '완료', order: 4 },
+  ];
+  const tone = (stageId: string, stages = five) =>
+    progressTone(progressSteps(stages, stageId), {
+      _id: stageId,
+      name: stages.find((s) => s._id === stageId)?.name,
+    });
+
+  it('목록 뱃지와 같은 색: 5단계는 회색·파랑·보라·주황·초록', () => {
+    expect(['s1', 's2', 's3', 's4', 's5'].map((id) => tone(id))).toEqual([
+      'gray',
+      'blue',
+      'purple',
+      'orange',
+      'green',
+    ]);
+  });
+
+  it('4단계는 보라가 빠진다', () => {
+    const four = five.filter((s) => s._id !== 's3');
+    expect(['s1', 's2', 's4', 's5'].map((id) => tone(id, four))).toEqual([
+      'gray',
+      'blue',
+      'orange',
+      'green',
+    ]);
+  });
+
+  it('단계 막대가 없으면(단계를 못 찾음) 이름으로만: 완료류는 초록, 나머지는 기본', () => {
+    expect(progressTone([], { _id: 'x', name: '완료' })).toBe('green');
+    expect(progressTone([], { _id: 'x', name: '접수' })).toBe('default');
+    expect(progressTone([], undefined)).toBe('default');
+  });
+});
 
 describe('progressSteps', () => {
   const stages = [

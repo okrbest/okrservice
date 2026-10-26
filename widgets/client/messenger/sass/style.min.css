@@ -4955,14 +4955,39 @@ select.form-control:focus,
   color: #6d6f78;
   font-variant-numeric: tabular-nums;
 }
+/* 단계 색: 목록 뱃지와 같은 색(progressHelpers.progressTone) — 단계 표시와 단계 막대에 쓴다 */
+.tp-tone--gray {
+  --tp-accent: #5f6370;
+  --tp-accent-soft: #f0f1f4;
+}
+.tp-tone--blue {
+  --tp-accent: #2f6fd6;
+  --tp-accent-soft: #e8f1fd;
+}
+.tp-tone--purple {
+  --tp-accent: #7a4fd0;
+  --tp-accent-soft: #f1ebfd;
+}
+.tp-tone--teal {
+  --tp-accent: #12806f;
+  --tp-accent-soft: #e3f5f2;
+}
+.tp-tone--orange {
+  --tp-accent: #c2620c;
+  --tp-accent-soft: #fff1e3;
+}
+.tp-tone--green {
+  --tp-accent: #1f9d55;
+  --tp-accent-soft: #e7f6ee;
+}
 .tp-status {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #eef0fd;
-  color: #4b4fc4;
+  background: var(--tp-accent-soft, #eef0fd);
+  color: var(--tp-accent, #4b4fc4);
   font-size: 12px;
   font-weight: 600;
 }
@@ -5025,7 +5050,7 @@ select.form-control:focus,
 }
 .tp-step.is-done::before,
 .tp-step.is-now::before {
-  background: #6569df;
+  background: var(--tp-accent, #6569df);
 }
 .tp-step-dot {
   position: relative;
@@ -5045,19 +5070,19 @@ select.form-control:focus,
     border-color 0.3s ease;
 }
 .tp-step.is-done .tp-step-dot {
-  background: #6569df;
-  border-color: #6569df;
+  background: var(--tp-accent, #6569df);
+  border-color: var(--tp-accent, #6569df);
 }
 .tp-step.is-now .tp-step-dot {
-  border-color: #6569df;
-  box-shadow: 0 0 0 4px #e3e5fb;
+  border-color: var(--tp-accent, #6569df);
+  box-shadow: 0 0 0 4px var(--tp-accent-soft, #e3e5fb);
 }
 .tp-step.is-now .tp-step-dot::after {
   content: '';
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #6569df;
+  background: var(--tp-accent, #6569df);
 }
 .tp-step-name {
   max-width: 100%;

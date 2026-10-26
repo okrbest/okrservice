@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 
 import { ITicketActivityLog, ITicketComment } from '../../types';
+import { StageTone, stageTone } from './listHelpers';
 
 // 위젯 "티켓 진행 상황" 화면용 순수 도우미 — 단계 막대와 대화 타임라인
 
@@ -49,6 +50,18 @@ export const progressSteps = (
           : 'todo',
   }));
 };
+
+// 진행 상황 카드의 단계 색 — 목록 뱃지(listHelpers.stageTone)와 같은 색.
+// 단계 막대는 이미 순서대로 놓여 있으므로 그 순서를 그대로 넘긴다.
+export const progressTone = (
+  steps: ProgressStep[],
+  stage?: { _id?: string; name?: string } | null,
+): StageTone =>
+  stageTone(
+    stage?._id,
+    stage?.name,
+    steps.map((step, order) => ({ _id: step._id, order })),
+  );
 
 // 고객에게 보여줄 만한 기록만(티켓 생성·단계 이동·담당자 지정)
 const SHOWN_EVENTS = ['create', 'moved', 'assignee'];

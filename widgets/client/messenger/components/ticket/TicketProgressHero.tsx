@@ -11,7 +11,7 @@ import {
   sanitizeAttachmentDownloadBasename,
 } from '../../../utils';
 import FileTypeIcon from '../common/FileTypeIcon';
-import { ProgressStep } from './progressHelpers';
+import { ProgressStep, progressTone } from './progressHelpers';
 import { useOriginalImageLinks } from './useOriginalImageLinks';
 
 const IMAGE_EXTENSIONS = ['png', 'jpeg', 'jpg', 'gif', 'webp', 'bmp', 'svg'];
@@ -109,11 +109,13 @@ const TicketProgressHero: React.FC<Props> = ({ ticket, steps, newTab }) => {
     attachments,
   } = ticket || {};
   const category = requestType || type;
+  // 단계 표시·단계 막대 색 — 목록 뱃지와 같은 색
+  const tone = progressTone(steps, stage);
 
   useOriginalImageLinks(descriptionRef, [description]);
 
   return (
-    <section className="tp-hero">
+    <section className={`tp-hero tp-tone--${tone}`}>
       <div className="tp-hero-row">
         <span className="tp-number">#{number}</span>
         {(stage?.name || status) && (
