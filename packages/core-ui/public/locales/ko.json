@@ -3222,5 +3222,7 @@
   "On cancel": "취소 누름",
   "Auto-saved": "자동 기록",
   "Before loading": "불러오기 전",
-  "Saving is taking longer than usual. Your text is kept here — please try saving again.": "저장 응답이 늦어지고 있어요. 쓰던 글은 그대로 보관돼 있으니 다시 저장해 주세요."
+  "Saving is taking longer than usual. Your text is kept here — please try saving again.": "저장 응답이 늦어지고 있어요. 쓰던 글은 그대로 보관돼 있으니 다시 저장해 주세요.",
+  "Could not upload the file. Its type may not be allowed in the upload settings.": "파일을 올리지 못했어요. 업로드 설정에서 허용하지 않는 파일 형식일 수 있어요.",
+  "Uploading the file is taking too long. Please try again.": "파일 올리기가 너무 오래 걸려요. 다시 시도해 주세요."
 }

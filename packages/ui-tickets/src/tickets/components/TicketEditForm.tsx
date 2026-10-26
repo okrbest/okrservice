@@ -17,7 +17,8 @@ import ControlLabel from '@erxes/ui/src/components/form/Label';
 import EditForm from '../../boards/components/editForm/EditForm';
 import styled from 'styled-components';
 import FormGroup from '@erxes/ui/src/components/form/Group';
-import { ISelectedOption } from '@erxes/ui/src/types';
+import { IAttachment, ISelectedOption } from '@erxes/ui/src/types';
+import { toAttachmentInputs } from '../../boards/commentAttachments';
 
 // PC용 Flex 레이아웃 컴포넌트
 const Flex = styled.div`
@@ -98,6 +99,7 @@ const WIDGET_COMMENTS_ADD_MUTATION = gql`
     $content: String!
     $userType: String!
     $customerId: String
+    $attachments: [AttachmentInput]
   ) {
     widgetsTicketCommentAdd(
       type: $type
@@ -105,6 +107,7 @@ const WIDGET_COMMENTS_ADD_MUTATION = gql`
       content: $content
       userType: $userType
       customerId: $customerId
+      attachments: $attachments
     ) {
       _id
       type
@@ -282,7 +285,10 @@ export default function TicketEditForm(props: Props) {
   const widgetComments = widgetCommentsData?.widgetsTicketComments || [];
 
   // 댓글 추가 핸들러 (ticket 타입일 때만)
-  const handleAddComment = async (content: string) => {
+  const handleAddComment = async (
+    content: string,
+    attachments: IAttachment[] = [],
+  ) => {
     if (!isTicketType) {
       return;
     }
@@ -295,6 +301,7 @@ export default function TicketEditForm(props: Props) {
           content,
           userType: 'team',
           customerId: props.currentUser?._id || '',
+          attachments: toAttachmentInputs(attachments),
         },
       });
       return result;

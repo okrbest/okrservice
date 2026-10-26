@@ -44,7 +44,13 @@ import Icon from '@erxes/ui/src/components/Icon';
 import Labels from '../label/Labels';
 import { MobileCard } from './MobileLayout';
 import Uploader from '@erxes/ui/src/components/Uploader';
+import Spinner from '@erxes/ui/src/components/Spinner';
 import { isEnabled } from '@erxes/ui/src/utils/core';
+import {
+  canSubmitComment,
+  isImageAttachment,
+  useCommentAttachments,
+} from '../../commentAttachments';
 
 // 모바일용 스타일드 컴포넌트들
 // 편집창을 열기 전에도 임시 저장된 글이 있음을 알린다(열어야만 보여서 사라진 줄 아는 일을 막음)
@@ -218,6 +224,98 @@ const CommentActionRow = styled.div`
   margin-top: 10px;
 `;
 
+// 댓글 파일 첨부: 왼쪽 첨부 버튼, 오른쪽 저장 버튼, 입력창 아래 작은 미리보기(사진은 그림, 그 밖은 이름)
+const CommentSubmitRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+`;
+
+const CommentAttachButton = styled.label`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  background: #fff;
+  color: #555;
+  font-size: 12px;
+  font-weight: normal;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #6569df;
+    color: #6569df;
+  }
+
+  input {
+    display: none;
+  }
+`;
+
+const CommentThumbs = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+`;
+
+const CommentThumb = styled.div<{ $isFile?: boolean }>`
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  overflow: hidden;
+
+  ${(props) =>
+    props.$isFile &&
+    `
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    max-width: 220px;
+    padding: 0 28px 0 10px;
+    background: #f7f8fa;
+    color: #333;
+    font-size: 12px;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  `}
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  button {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 12px;
+    line-height: 18px;
+    cursor: pointer;
+  }
+`;
+
 const MobileUserName = styled.div<{
   isMobile: boolean;
   isTeam?: boolean;
@@ -327,7 +425,7 @@ type DescProps = {
 // WidgetComments 컴포넌트 수정
 type WidgetCommentsProps = {
   widgetComments?: any[];
-  onAddComment?: (content: string) => void;
+  onAddComment?: (content: string, attachments?: IAttachment[]) => void;
   onDeleteComment?: (commentId: string) => void;
   onEditComment?: (commentId: string, content: string) => void;
   currentUser?: any; // 현재 사용자 정보
@@ -351,21 +449,31 @@ const WidgetComments = (props: WidgetCommentsProps) => {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const isMobile = useIsMobile();
+  const commentFiles = useCommentAttachments();
+  const canSubmit = canSubmitComment(content, commentFiles.state);
 
   const handleChange = (e: React.FormEvent<HTMLElement>) => {
     const target = e.target as HTMLTextAreaElement;
     setContent(target.value);
   };
 
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    commentFiles.addFiles(e.target.files);
+    // 같은 파일을 지웠다가 다시 고를 수 있게
+    e.target.value = '';
+  };
+
   const handleSubmit = async () => {
-    if (!content.trim() || !onAddComment) {
+    // 파일을 올리는 중이면 저장하지 않는다(파일이 빠진 채 남지 않게)
+    if (!canSubmit || !onAddComment || isSubmitting) {
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await onAddComment(content);
+      await onAddComment(content, commentFiles.attachments);
       setContent('');
+      commentFiles.reset();
     } catch (error: unknown) {
       console.error('Failed to submit comment:', error);
       const errorMessage =
@@ -731,30 +839,62 @@ const WidgetComments = (props: WidgetCommentsProps) => {
           onKeyPress={handleKeyPress}
           placeholder={__('Write a comment...')}
         />
-        <div style={{ marginTop: isMobile ? '12px' : '10px' }}>
-          {content.length > 0 && (
-            <div style={{ textAlign: 'right' }}>
-              <Button
-                btnStyle="success"
-                size="small"
-                icon="message"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                style={
-                  isMobile
-                    ? {
-                        padding: '8px 16px',
-                        fontSize: '14px',
-                        minHeight: '36px',
-                      }
-                    : {}
-                }
+        {(commentFiles.attachments.length > 0 || commentFiles.uploading) && (
+          <CommentThumbs>
+            {commentFiles.attachments.map((file, index) => (
+              <CommentThumb
+                key={`${file.url}-${index}`}
+                $isFile={!isImageAttachment(file)}
+                title={file.name}
               >
-                {isSubmitting ? __('Saving...') : __('Save')}
-              </Button>
-            </div>
+                {isImageAttachment(file) ? (
+                  <img src={readFile(file.url)} alt={file.name} />
+                ) : (
+                  <>
+                    <Icon icon="paperclip" />
+                    <span>{file.name}</span>
+                  </>
+                )}
+                <button
+                  type="button"
+                  aria-label={__('Delete')}
+                  title={__('Delete')}
+                  onClick={() => commentFiles.remove(index)}
+                >
+                  ×
+                </button>
+              </CommentThumb>
+            ))}
+            {commentFiles.uploading && <Spinner objective={true} size={18} />}
+          </CommentThumbs>
+        )}
+        <CommentSubmitRow style={{ marginTop: isMobile ? '12px' : '10px' }}>
+          <CommentAttachButton>
+            <Icon icon="paperclip" />
+            {__('Attach file')}
+            <input type="file" multiple={true} onChange={handleFileInput} />
+          </CommentAttachButton>
+          {(content.length > 0 || commentFiles.attachments.length > 0) && (
+            <Button
+              btnStyle="success"
+              size="small"
+              icon="message"
+              onClick={handleSubmit}
+              disabled={isSubmitting || !canSubmit}
+              style={
+                isMobile
+                  ? {
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      minHeight: '36px',
+                    }
+                  : {}
+              }
+            >
+              {isSubmitting ? __('Saving...') : __('Save')}
+            </Button>
           )}
-        </div>
+        </CommentSubmitRow>
       </CommentInputArea>
     </FormGroup>
   );
@@ -1195,7 +1335,7 @@ type Props = {
   onChangeRefresh: () => void;
   onSendEmail?: () => void;
   widgetComments?: any[];
-  onAddComment?: (content: string) => void;
+  onAddComment?: (content: string, attachments?: IAttachment[]) => void;
   onDeleteComment?: (commentId: string) => void;
   onEditComment?: (commentId: string, content: string) => void;
   currentUser?: any;
