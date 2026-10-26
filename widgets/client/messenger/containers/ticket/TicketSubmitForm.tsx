@@ -1,15 +1,15 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { CUSTOMER_EDIT, TICKET_ADD } from "../../graphql/mutations";
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { CUSTOMER_EDIT, TICKET_ADD } from '../../graphql/mutations';
+import { gql, useMutation, useQuery } from '@apollo/client';
 
-import { ICustomer } from "../../../types";
-import TicketSubmitForm from "../../components/ticket/TicketSubmitForm";
-import { connection } from "../../connection";
-import { customerDetail } from "../../graphql/queries";
-import { getTicketData } from "../../utils/util";
-import { readFile } from "../../../utils";
-import { useRouter } from "../../context/Router";
+import { ICustomer } from '../../../types';
+import TicketSubmitForm from '../../components/ticket/TicketSubmitForm';
+import { connection } from '../../connection';
+import { customerDetail } from '../../graphql/queries';
+import { getTicketData } from '../../utils/util';
+import { readFile } from '../../../utils';
+import { useRouter } from '../../context/Router';
 
 interface FileWithUrl extends File {
   url?: string;
@@ -26,16 +26,16 @@ const TicketSubmitContainer = (props: Props) => {
   const ticketData = getTicketData();
   const { customerId } = connection.data;
   const [isSubmitted, setIsSubmitted] = React.useState(false);
-  const [ticketNumber, setTicketNumber] = React.useState("");
+  const [ticketNumber, setTicketNumber] = React.useState('');
   const [formData, setFormData] = React.useState({
-    firstName: "",
-    lastName: "",
+    firstName: '',
+    lastName: '',
     phone: 0,
-    email: "",
-    ticketType: "inquiry",
-    title: "",
-    description: "",
-    visibility: "public",
+    email: '',
+    ticketType: 'inquiry',
+    title: '',
+    description: '',
+    visibility: 'public',
   });
 
   const {
@@ -55,24 +55,24 @@ const TicketSubmitContainer = (props: Props) => {
         ...prev,
         firstName,
         lastName,
-        phone: phones?.[0]?.replace(/\D/g, "") || "",
-        email: emails?.[0] || "",
+        phone: phones?.[0]?.replace(/\D/g, '') || '',
+        email: emails?.[0] || '',
       }));
     }
   }, [customer]);
 
   const [ticketAdd, { loading }] = useMutation(TICKET_ADD, {
     onCompleted(data) {
-      console.log("[디버그] ticketAdd onCompleted data:", data);
+      console.log('[디버그] ticketAdd onCompleted data:', data);
 
       const { widgetTicketCreated } = data || {};
 
-      console.log("[디버그] 티켓 생성 응답 data:", data);
-      console.log("[디버그] 발급된 ticketNumber:", widgetTicketCreated?.number);
+      console.log('[디버그] 티켓 생성 응답 data:', data);
+      console.log('[디버그] 발급된 ticketNumber:', widgetTicketCreated?.number);
 
       return (
         <>
-          {setTicketNumber(widgetTicketCreated.number || "")}
+          {setTicketNumber(widgetTicketCreated.number || '')}
           {setIsSubmitted(true)}
         </>
       );
@@ -83,22 +83,22 @@ const TicketSubmitContainer = (props: Props) => {
   });
 
   const [customerEdit] = useMutation(CUSTOMER_EDIT, {
-    fetchPolicy: "no-cache",
+    fetchPolicy: 'no-cache',
     onCompleted: async (data) => {
       const edited = data?.widgetsTicketCustomersEdit;
       const idForTicket =
-        edited?._id != null && String(edited._id) !== ""
+        edited?._id != null && String(edited._id) !== ''
           ? String(edited._id)
           : customerId;
 
       const transformedFiles = files.map((file) => ({
-        url: readFile(file.url || ""),
+        url: readFile(file.url || ''),
         name: file.name,
-        type: file.type || "application/octet-stream",
+        type: file.type || 'application/octet-stream',
         size: file.size,
       }));
 
-      console.log("[디버그] 티켓 생성 요청 직전", {
+      console.log('[디버그] 티켓 생성 요청 직전', {
         title: formData.title,
         description: formData.description,
         attachments: transformedFiles,
@@ -150,7 +150,7 @@ const TicketSubmitContainer = (props: Props) => {
   };
 
   const onButtonClick = () => {
-    setRoute("ticket-list");
+    setRoute('ticket-list');
   };
   return (
     <TicketSubmitForm
@@ -162,6 +162,7 @@ const TicketSubmitContainer = (props: Props) => {
       handleChange={handleChange}
       handleButtonClick={onButtonClick}
       handleFiles={setFiles}
+      files={files}
       customerLoading={customerId ? customerLoading : false}
     />
   );

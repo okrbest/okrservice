@@ -118,6 +118,7 @@ export const queries = ({ products, knowledgeBase, tickets, sales }) => `
   widgetsTicketComments(typeId: String!, type: String!): [TicketComment]
   widgetsTicketActivityLogs(contentType: String!, contentId: String): [ActivityLog]
   widgetsTicketList(customerId: String!, includeCompanyTickets: Boolean): [Ticket]
+  widgetsTicketStages(stageId: String!): [JSON]
   `
       : ``
   }

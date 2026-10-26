@@ -196,5 +196,19 @@
   "공개: 회사 내 동료들이 회사 티켓보기에서 볼 수 있습니다": "공개: 회사 내 동료들이 회사 티켓보기에서 볼 수 있습니다",
   "비공개: 민감한 내용일 경우 비공개로 설정하세요": "비공개: 민감한 내용일 경우 비공개로 설정하세요",
   "내 티켓 보기": "내 티켓 보기",
-  "회사 티켓보기": "회사 티켓보기"
+  "회사 티켓보기": "회사 티켓보기",
+  "MMM D": "M월 D일",
+  "submitted": "접수",
+  "Ticket submitted": "티켓이 접수됐어요",
+  "Stage changed": "단계가 바뀌었어요",
+  "Assigned to support": "담당자가 배정됐어요",
+  "No replies yet. Leave a message and support will get back to you.": "아직 답변이 없어요. 메시지를 남기면 담당자가 확인할게요.",
+  "Remove": "빼기",
+  "Uploading…": "올리는 중…",
+  "Write a message…": "메시지를 입력하세요…",
+  "Loading": "불러오는 중",
+  "Support team": "담당자",
+  "Original": "원본",
+  "Search scope": "검색 범위",
+  "Edit": "수정"
 }

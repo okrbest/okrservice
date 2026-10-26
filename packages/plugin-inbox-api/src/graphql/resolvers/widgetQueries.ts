@@ -1,17 +1,20 @@
-import * as momentTz from "moment-timezone";
+import * as momentTz from 'moment-timezone';
 
-import { IContext, IModels } from "../../connectionResolver";
-import { sendCoreMessage, sendKnowledgeBaseMessage } from "../../messageBroker";
-import { isEnabled } from "@erxes/api-utils/src/serviceDiscovery";
-import { IBrowserInfo } from "@erxes/api-utils/src/definitions/common";
-import { IIntegrationDocument } from "../../models/definitions/integrations";
-import { getOrCreateEngageMessage } from "../../widgetUtils";
-import { sendAutomationsMessage, sendTicketsMessage } from "../../../src/messageBroker";
+import { IContext, IModels } from '../../connectionResolver';
+import { sendCoreMessage, sendKnowledgeBaseMessage } from '../../messageBroker';
+import { isEnabled } from '@erxes/api-utils/src/serviceDiscovery';
+import { IBrowserInfo } from '@erxes/api-utils/src/definitions/common';
+import { IIntegrationDocument } from '../../models/definitions/integrations';
+import { getOrCreateEngageMessage } from '../../widgetUtils';
+import {
+  sendAutomationsMessage,
+  sendTicketsMessage,
+} from '../../../src/messageBroker';
 
 const isMessengerOnline = async (
   models: IModels,
   integration: IIntegrationDocument,
-  userTimezone?: string
+  userTimezone?: string,
 ) => {
   if (!integration.messengerData) {
     return false;
@@ -26,26 +29,25 @@ const isMessengerOnline = async (
       availabilityMethod,
       isOnline,
       onlineHours,
-      timezone
-    }
+      timezone,
+    },
   };
 
   return models.Integrations.isOnline(modifiedIntegration, userTimezone);
 };
 
-
 const fetchUsers = async (
   models: IModels,
   subdomain: string,
   integration: IIntegrationDocument,
-  query: any
+  query: any,
 ) => {
   const users = await sendCoreMessage({
     subdomain,
-    action: "users.find",
+    action: 'users.find',
     data: { query },
     isRPC: true,
-    defaultValue: []
+    defaultValue: [],
   });
 
   for (const user of users) {
@@ -53,7 +55,7 @@ const fetchUsers = async (
       user.isOnline = await isMessengerOnline(
         models,
         integration,
-        user.details.location
+        user.details.location,
       );
     }
   }
@@ -64,10 +66,10 @@ const fetchUsers = async (
 const getWidgetMessages = (models: IModels, conversationId: string) => {
   return models.ConversationMessages.find({
     conversationId,
-    internal: false
+    internal: false,
     // fromBot: { $exists: false }
   }).sort({
-    createdAt: 1
+    createdAt: 1,
   });
 };
 
@@ -75,9 +77,8 @@ export default {
   async widgetsTicketComments(
     _root,
     args: { typeId?: string },
-    { subdomain }: IContext
+    { subdomain }: IContext,
   ) {
-
     const { typeId } = args;
 
     const data = await sendTicketsMessage({
@@ -85,14 +86,14 @@ export default {
       action: 'widgets.comments.find',
       data: { typeId },
       isRPC: true,
-      defaultValue: null
+      defaultValue: null,
     });
-    return data
+    return data;
   },
   async widgetsTicketCustomerDetail(
     _root,
     args: { customerId?: string; type?: string },
-    { models, subdomain }: IContext
+    { models, subdomain }: IContext,
   ) {
     const { customerId } = args;
     return await sendCoreMessage({
@@ -100,66 +101,116 @@ export default {
       action: 'customers.findOne',
       data: { _id: customerId },
       isRPC: true,
-      defaultValue: null
+      defaultValue: null,
     });
   },
   async widgetsTicketActivityLogs(
     _root,
     args: { contentId?: string; contentType?: string },
-    { subdomain }: IContext
+    { subdomain }: IContext,
   ) {
     const { contentId, contentType } = args;
     return await sendCoreMessage({
       subdomain,
       action: 'activityLogs.findOne',
-      data: { contentType, contentId, },
+      data: { contentType, contentId },
       isRPC: true,
-      defaultValue: null
+      defaultValue: null,
     });
+  },
+
+  // 위젯 "티켓 진행 상황"의 단계 막대: 티켓의 현재 단계가 속한 파이프라인의 단계 이름·순서만 준다
+  async widgetsTicketStages(
+    _root,
+    { stageId }: { stageId: string },
+    { subdomain }: IContext,
+  ) {
+    if (!stageId) {
+      return [];
+    }
+
+    const stage = await sendTicketsMessage({
+      subdomain,
+      action: 'stages.findOne',
+      data: { _id: stageId },
+      isRPC: true,
+      defaultValue: null,
+    });
+
+    if (!stage || !stage.pipelineId) {
+      return [];
+    }
+
+    const stages = await sendTicketsMessage({
+      subdomain,
+      action: 'stages.find',
+      data: { pipelineId: stage.pipelineId },
+      isRPC: true,
+      defaultValue: [],
+    });
+
+    return (stages || []).map(({ _id, name, order, status }) => ({
+      _id,
+      name,
+      order,
+      status,
+    }));
   },
 
   async widgetsTicketList(
     _root,
     args: { customerId: string; includeCompanyTickets?: boolean },
-    { subdomain }: IContext
+    { subdomain }: IContext,
   ) {
     const { customerId, includeCompanyTickets } = args;
 
-    console.log('🔔 widgetsTicketList resolver called with:', { customerId, includeCompanyTickets, subdomain });
-    
+    console.log('🔔 widgetsTicketList resolver called with:', {
+      customerId,
+      includeCompanyTickets,
+      subdomain,
+    });
+
     // sendTicketsMessage는 RPC 응답에서 자동으로 data를 추출하여 반환합니다
-    console.log('🔔 Sending RPC message to tickets-api with action: widgets.ticketList.find');
+    console.log(
+      '🔔 Sending RPC message to tickets-api with action: widgets.ticketList.find',
+    );
     const tickets = await sendTicketsMessage({
       subdomain,
       action: 'widgets.ticketList.find',
-      data: { customerId, includeCompanyTickets: includeCompanyTickets || false },
+      data: {
+        customerId,
+        includeCompanyTickets: includeCompanyTickets || false,
+      },
       isRPC: true,
-      defaultValue: []
+      defaultValue: [],
     });
-    
-    console.log('🔔 widgetsTicketList resolver received response, tickets count:', tickets?.length || 0);
+
+    console.log(
+      '🔔 widgetsTicketList resolver received response, tickets count:',
+      tickets?.length || 0,
+    );
     if (tickets && tickets.length > 0) {
       console.log('🔔 First ticket customerName:', tickets[0]?.customerName);
     }
-    
+
     return tickets || [];
   },
 
   async widgetsGetMessengerIntegration(
     _root,
     args: { brandCode: string },
-    { models }: IContext
+    { models }: IContext,
   ) {
     return models.Integrations.getWidgetIntegration(
       args.brandCode,
-      "messenger"
+      'messenger',
     );
   },
 
   async widgetsConversations(
     _root,
     args: { integrationId: string; customerId?: string; visitorId?: string },
-    { models }: IContext
+    { models }: IContext,
   ) {
     const { integrationId, customerId, visitorId } = args;
 
@@ -172,43 +223,43 @@ export default {
   async widgetsConversationDetail(
     _root,
     args: { _id: string; integrationId: string },
-    { models, subdomain }: IContext
+    { models, subdomain }: IContext,
   ) {
     try {
       const { _id, integrationId } = args;
 
       const [conversation, integration] = await Promise.all([
         models.Conversations.findOne({ _id, integrationId }),
-        models.Integrations.findOne({ _id: integrationId })
+        models.Integrations.findOne({ _id: integrationId }),
       ]);
 
       if (!integration) return null;
       let getStartedCondition: { isSelected?: boolean } | false = false;
 
-      if (isEnabled("automations")) {
+      if (isEnabled('automations')) {
         const getStarted = await sendAutomationsMessage({
           subdomain,
-          action: "trigger.find",
+          action: 'trigger.find',
           data: {
             query: {
-              triggerType: "inbox:messages",
-              botId: integration._id
-            }
+              triggerType: 'inbox:messages',
+              botId: integration._id,
+            },
           },
-          isRPC: true
+          isRPC: true,
         }).catch((error) => {
           throw error;
         });
 
         getStartedCondition = (
           getStarted[0]?.triggers[0]?.config?.conditions || []
-        ).find((condition) => condition.type === "getStarted");
+        ).find((condition) => condition.type === 'getStarted');
       }
 
       const messengerData = integration.messengerData || {
         supporterIds: [],
         persistentMenus: [],
-        botGreetMessage: ""
+        botGreetMessage: '',
       };
 
       if (!conversation) {
@@ -219,7 +270,7 @@ export default {
             ? getStartedCondition.isSelected
             : false,
           messages: [],
-          isOnline: await isMessengerOnline(models, integration)
+          isOnline: await isMessengerOnline(models, integration),
         };
       }
 
@@ -227,15 +278,15 @@ export default {
         await Promise.all([
           getWidgetMessages(models, conversation._id),
           fetchUsers(models, subdomain, integration, {
-            _id: { $in: conversation.participatedUserIds }
+            _id: { $in: conversation.participatedUserIds },
           }),
           fetchUsers(models, subdomain, integration, {
-            _id: { $in: conversation.readUserIds }
+            _id: { $in: conversation.readUserIds },
           }),
           fetchUsers(models, subdomain, integration, {
-            _id: { $in: messengerData.supporterIds }
+            _id: { $in: messengerData.supporterIds },
           }),
-          isMessengerOnline(models, integration)
+          isMessengerOnline(models, integration),
         ]);
 
       return {
@@ -250,17 +301,17 @@ export default {
         operatorStatus: conversation.operatorStatus,
         participatedUsers,
         readUsers,
-        supporters
+        supporters,
       };
     } catch (error) {
-      throw new Error("Failed to fetch conversation details");
+      throw new Error('Failed to fetch conversation details');
     }
   },
 
   async widgetsMessages(
     _root,
     args: { conversationId: string },
-    { models }: IContext
+    { models }: IContext,
   ) {
     const { conversationId } = args;
 
@@ -270,19 +321,19 @@ export default {
   async widgetsUnreadCount(
     _root,
     args: { conversationId: string },
-    { models }: IContext
+    { models }: IContext,
   ) {
     const { conversationId } = args;
 
     return models.ConversationMessages.widgetsGetUnreadMessagesCount(
-      conversationId
+      conversationId,
     );
   },
 
   async widgetsTotalUnreadCount(
     _root,
     args: { integrationId: string; customerId?: string },
-    { models }: IContext
+    { models }: IContext,
   ) {
     const { integrationId, customerId } = args;
 
@@ -292,22 +343,22 @@ export default {
     // find conversations
     const convs = await models.Conversations.find({
       integrationId,
-      customerId
+      customerId,
     });
 
     // find read messages count
     return models.ConversationMessages.countDocuments(
-      models.Conversations.widgetsUnreadMessagesQuery(convs)
+      models.Conversations.widgetsUnreadMessagesQuery(convs),
     );
   },
 
   async widgetsMessengerSupporters(
     _root,
     { integrationId }: { integrationId: string },
-    { models, subdomain }: IContext
+    { models, subdomain }: IContext,
   ) {
     const integration = await models.Integrations.findOne({
-      _id: integrationId
+      _id: integrationId,
     });
 
     let timezone = momentTz.tz.guess();
@@ -315,7 +366,7 @@ export default {
     if (!integration) {
       return {
         supporters: [],
-        isOnline: false
+        isOnline: false,
       };
     }
 
@@ -327,10 +378,10 @@ export default {
 
     return {
       supporters: await fetchUsers(models, subdomain, integration, {
-        _id: { $in: messengerData.supporterIds || [] }
+        _id: { $in: messengerData.supporterIds || [] },
       }),
       isOnline: await isMessengerOnline(models, integration),
-      timezone
+      timezone,
     };
   },
 
@@ -340,14 +391,14 @@ export default {
       integrationId,
       customerId,
       visitorId,
-      browserInfo
+      browserInfo,
     }: {
       integrationId: string;
       customerId?: string;
       visitorId?: string;
       browserInfo: IBrowserInfo;
     },
-    { models, subdomain }: IContext
+    { models, subdomain }: IContext,
   ) {
     return getOrCreateEngageMessage(
       models,
@@ -355,14 +406,14 @@ export default {
       integrationId,
       browserInfo,
       visitorId,
-      customerId
+      customerId,
     );
   },
 
   async widgetsProductCategory(_root, { _id }: { _id: string }) {
     return {
-      __typename: "ProductCategory",
-      _id
+      __typename: 'ProductCategory',
+      _id,
     };
   },
 
@@ -374,27 +425,27 @@ export default {
   async widgetsKnowledgeBaseArticles(
     _root: any,
     args: { topicId: string; searchString: string },
-    { subdomain }: IContext
+    { subdomain }: IContext,
   ) {
-    const { topicId, searchString = "" } = args;
-    
+    const { topicId, searchString = '' } = args;
+
     const trimmedSearch = searchString.trim();
-    
+
     return sendKnowledgeBaseMessage({
       subdomain,
-      action: "articles.find",
+      action: 'articles.find',
       data: {
         query: {
           topicId,
           $or: [
-            { title: { $regex: `.*${trimmedSearch}.*`, $options: "i" } },
-            { summary: { $regex: `.*${trimmedSearch}.*`, $options: "i" } },
-            { content: { $regex: `.*${trimmedSearch}.*`, $options: "i" } }
+            { title: { $regex: `.*${trimmedSearch}.*`, $options: 'i' } },
+            { summary: { $regex: `.*${trimmedSearch}.*`, $options: 'i' } },
+            { content: { $regex: `.*${trimmedSearch}.*`, $options: 'i' } },
           ],
-          status: "publish"
-        }
+          status: 'publish',
+        },
       },
-      isRPC: true
+      isRPC: true,
     });
   },
 
@@ -404,37 +455,37 @@ export default {
   async widgetsKnowledgeBaseTopicDetail(
     _root,
     { _id }: { _id: string },
-    { subdomain }: IContext
+    { subdomain }: IContext,
   ) {
     const commonOptions = { subdomain, isRPC: true };
 
     const topic = await sendKnowledgeBaseMessage({
       ...commonOptions,
-      action: "topics.findOne",
+      action: 'topics.findOne',
       data: {
         query: {
-          _id
-        }
-      }
+          _id,
+        },
+      },
     });
 
     if (topic && topic.createdBy) {
       const user = await sendCoreMessage({
         ...commonOptions,
-        action: "users.findOne",
+        action: 'users.findOne',
         data: {
-          _id: topic.createdBy
+          _id: topic.createdBy,
         },
-        defaultValue: {}
+        defaultValue: {},
       });
 
       sendCoreMessage({
         subdomain,
-        action: "registerOnboardHistory",
+        action: 'registerOnboardHistory',
         data: {
-          type: "knowledgeBaseInstalled",
-          user
-        }
+          type: 'knowledgeBaseInstalled',
+          user,
+        },
       });
     }
 
@@ -444,14 +495,14 @@ export default {
   async widgetsGetDealFields(
     _root,
     args: { boardId: string; pipelineId: string },
-    { subdomain }: IContext
+    { subdomain }: IContext,
   ) {
     const { boardId, pipelineId } = args;
     const fields = await sendCoreMessage({
       subdomain,
-      action: "fields.fieldsCombinedByContentType",
+      action: 'fields.fieldsCombinedByContentType',
       data: {
-        contentType: "sales:deal",
+        contentType: 'sales:deal',
         config: { boardId, pipelineId },
       },
       isRPC: true,
@@ -459,27 +510,31 @@ export default {
     });
 
     const customFields = (fields || []).filter(
-      (f: any) =>
-        f.name && String(f.name).startsWith("customFieldsData.")
+      (f: any) => f.name && String(f.name).startsWith('customFieldsData.'),
     );
 
     return customFields.map((f: any) => {
-      const fieldId = String(f.name).replace(/^customFieldsData\./, "");
+      const fieldId = String(f.name).replace(/^customFieldsData\./, '');
       const raw = f.options || f.selectOptions || [];
       const opts = (Array.isArray(raw) ? raw : []).map((o: any) => {
-        if (typeof o === "string") {
+        if (typeof o === 'string') {
           return { value: o, label: o };
         }
         return {
-          value: o.value != null ? String(o.value) : "",
-          label: o.label != null ? String(o.label) : o.value != null ? String(o.value) : "",
+          value: o.value != null ? String(o.value) : '',
+          label:
+            o.label != null
+              ? String(o.label)
+              : o.value != null
+                ? String(o.value)
+                : '',
         };
       });
       return {
         _id: fieldId,
         name: f.name,
         label: f.label || f.name,
-        type: (f.type || "input").toLowerCase(),
+        type: (f.type || 'input').toLowerCase(),
         options: opts,
       };
     });

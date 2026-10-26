@@ -1,8 +1,8 @@
-import { MESSAGE_FIELDS, USER_DETAIL_FIELD } from "./fields";
+import { MESSAGE_FIELDS, USER_DETAIL_FIELD } from './fields';
 
-import { connection } from "../connection";
-import gql from "graphql-tag";
-import { messageFields } from "./mutations";
+import { connection } from '../connection';
+import gql from 'graphql-tag';
+import { messageFields } from './mutations';
 
 const GET_UNREAD_COUNT = gql`
   query widgetsUnreadCount($conversationId: String) {
@@ -23,7 +23,7 @@ const GET_CONVERSATION_DETAIL = (isDailycoEnabled: boolean) => gql`
           url
           status
         }`
-            : ""
+            : ''
         }
       }
 
@@ -121,9 +121,22 @@ const TICKET_ACTIVITY_LOGS = gql`
   }
 `;
 
+// 티켓 진행 상황 단계 막대 — 현재 단계가 속한 파이프라인의 단계 목록
+const TICKET_STAGES = gql`
+  query widgetsTicketStages($stageId: String!) {
+    widgetsTicketStages(stageId: $stageId)
+  }
+`;
+
 const TICKET_LIST = gql`
-  query widgetsTicketList($customerId: String!, $includeCompanyTickets: Boolean) {
-    widgetsTicketList(customerId: $customerId, includeCompanyTickets: $includeCompanyTickets) {
+  query widgetsTicketList(
+    $customerId: String!
+    $includeCompanyTickets: Boolean
+  ) {
+    widgetsTicketList(
+      customerId: $customerId
+      includeCompanyTickets: $includeCompanyTickets
+    ) {
       _id
       name
       number
@@ -179,7 +192,7 @@ const conversationDetailQuery = (isDailycoEnabled: boolean) => `
           url
           status
         }`
-            : ""
+            : ''
         }
       }
 
@@ -369,6 +382,7 @@ export {
   TICKET_COMMENTS,
   TICKET_ACTIVITY_LOGS,
   TICKET_LIST,
+  TICKET_STAGES,
   conversationDetailQuery,
   widgetExportMessengerDataQuery,
   unreadCountQuery,

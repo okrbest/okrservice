@@ -4,8 +4,9 @@ import dayjs from 'dayjs';
 import { motion } from 'framer-motion';
 
 import { IconSearch } from '../../../icons/Icons';
-import { __, openReadFileImageInNewTab } from '../../../utils';
+import { __ } from '../../../utils';
 import Container from '../common/Container';
+import { isDoneStage, isRecent, previewText } from './listHelpers';
 
 type TicketStage = {
   _id: string;
@@ -53,154 +54,93 @@ const TicketList: React.FC<Props> = ({
   searchOption = 'all',
   onSearchOptionChange,
 }) => {
-  const descriptionRefs = React.useRef<Map<string, HTMLDivElement>>(new Map());
+  const now = new Date();
 
-  // description 내 이미지 처리
-  React.useEffect(() => {
-    descriptionRefs.current.forEach((element) => {
-      if (element) {
-        const images = element.querySelectorAll('img:not([data-link-added])');
-        images.forEach((imgElement) => {
-          const img = imgElement as HTMLImageElement;
-          // 이미지 크기를 위젯에 맞게 조정
-          img.style.maxWidth = '100%';
-          img.style.height = 'auto';
-          img.style.cursor = 'pointer';
-          img.style.maxHeight = '150px';
-          img.style.objectFit = 'contain';
-          img.setAttribute('data-link-added', 'true');
+  const renderTime = (createdAt: string) =>
+    isRecent(createdAt, now)
+      ? dayjs(createdAt).fromNow()
+      : dayjs(createdAt).format(__('MMM D'));
 
-          const originalSrc = img.src || img.getAttribute('src');
-          if (originalSrc) {
-            // 이미지 아래에 링크 추가
-            const linkWrapper = document.createElement('div');
-            linkWrapper.className = 'image-view-original-link';
-            linkWrapper.style.cssText =
-              'margin-top: 4px; margin-bottom: 8px; text-align: center;';
-
-            const link = document.createElement('a');
-            link.href = '#';
-            link.textContent = __('원본 이미지 보기');
-            link.style.cssText =
-              'font-size: 11px; color: #007bff; text-decoration: none; cursor: pointer;';
-            link.addEventListener('click', (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              openReadFileImageInNewTab(originalSrc);
-            });
-
-            linkWrapper.appendChild(link);
-
-            // 이미지 다음에 링크 삽입
-            if (img.parentNode) {
-              img.parentNode.insertBefore(linkWrapper, img.nextSibling);
-            }
-          }
-        });
-      }
-    });
-  }, [tickets]);
-
-  const setDescriptionRef = (
-    ticketId: string,
-    element: HTMLDivElement | null,
-  ) => {
-    if (element) {
-      descriptionRefs.current.set(ticketId, element);
-    } else {
-      descriptionRefs.current.delete(ticketId);
-    }
-  };
-
-  const getStatusClass = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'closed':
-        return 'status-closed';
-      case 'resolved':
-        return 'status-resolved';
-      case 'in progress':
-        return 'status-in-progress';
-      default:
-        return 'status-open';
-    }
-  };
-
+  // 받은편지함처럼 한 줄씩: 제목(+새 답변), 내용 한 줄, 번호·단계, 오른쪽 시간
   const renderTicketItem = (ticket: TicketItem, index: number) => {
+    const unread = ticket.widgetAlarm === false;
+    const stageName = ticket.stage?.name || ticket.status;
+    const done = isDoneStage(ticket.stage?.name, ticket.status);
+    const preview = includeCompanyTickets
+      ? ''
+      : previewText(ticket.description);
+
     return (
-      <motion.div
+      <motion.button
+        type="button"
         key={ticket._id}
-        className="ticket-card"
+        className={classNames('tl-row', { 'is-unread': unread })}
         onClick={() => onTicketClick(ticket)}
-        initial={{ opacity: 0, y: 8 }}
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
-          duration: 0.25,
+          duration: 0.22,
           delay: Math.min(index, 8) * 0.03,
           ease: [0.22, 1, 0.36, 1],
         }}
       >
-        <div className="ticket-card-header">
-          <span className="ticket-card-number">#{ticket.number}</span>
-          {includeCompanyTickets && ticket.customerName && (
-            <span className="ticket-card-customer">{ticket.customerName}</span>
-          )}
-          <span className="ticket-card-date">
-            {dayjs(ticket.createdAt).format('YYYY-MM-DD')}
+        <span
+          className={classNames('tl-dot', { 'is-done': done })}
+          aria-hidden
+        />
+        <span className="tl-main">
+          <span className="tl-title">
+            <span className="tl-name">{ticket.name}</span>
+            {unread && <span className="tl-new">{__('새 답변')}</span>}
           </span>
-          {ticket.widgetAlarm === false && (
-            <span
-              className="ticket-unread-dot"
-              title={String(__('새 답변알림'))}
-            />
-          )}
-        </div>
-
-        <h4 className="ticket-card-title">{ticket.name}</h4>
-
-        {!includeCompanyTickets && ticket.description && (
-          <div
-            ref={(el) => setDescriptionRef(ticket._id, el)}
-            className="ticket-card-description"
-            onClick={(e) => e.stopPropagation()}
-            dangerouslySetInnerHTML={{
-              __html:
-                ticket.description.length > 100
-                  ? `${ticket.description.substring(0, 100)}...`
-                  : ticket.description,
-            }}
-          />
-        )}
-
-        <div className="ticket-card-footer">
-          <span className={`ticket-status ${getStatusClass(ticket.status)}`}>
-            {__(ticket.stage?.name || ticket.status)}
+          {preview && <span className="tl-preview">{preview}</span>}
+          <span className="tl-meta">
+            <span className="tl-number">#{ticket.number}</span>
+            {stageName && (
+              <span className={classNames('tl-stage', { 'is-done': done })}>
+                {__(stageName)}
+              </span>
+            )}
+            {includeCompanyTickets && ticket.customerName && (
+              <span className="tl-customer">{ticket.customerName}</span>
+            )}
           </span>
-          <span className="ticket-type">
-            {__(ticket.requestType || ticket.type)}
-          </span>
-        </div>
-      </motion.div>
+        </span>
+        <span className="tl-time">{renderTime(ticket.createdAt)}</span>
+      </motion.button>
     );
   };
 
-  const renderListHeader = (count: number) => (
-    <div className="ticket-list-header">
-      <h3 className="ticket-list-title">
-        {includeCompanyTickets ? __('Company Tickets') : __('My Tickets')} (
-        {count})
-      </h3>
-      {onToggleCompanyTickets && (
+  // 내 티켓 / 회사 티켓 탭(지금 보는 쪽에 개수)
+  const renderListHeader = (count: number) => {
+    if (!onToggleCompanyTickets) {
+      return null;
+    }
+
+    const tab = (company: boolean, label: string) => {
+      const active = includeCompanyTickets === company;
+
+      return (
         <button
-          className={classNames('ticket-toggle-button', {
-            active: includeCompanyTickets,
-          })}
-          onClick={onToggleCompanyTickets}
+          type="button"
+          role="tab"
+          aria-selected={active}
+          className={classNames('tl-tab', { 'is-active': active })}
+          onClick={() => !active && onToggleCompanyTickets()}
         >
-          {includeCompanyTickets ? __('내 티켓 보기') : __('회사 티켓보기')}
+          {label}
+          {active && <span className="tl-count">{count}</span>}
         </button>
-      )}
-    </div>
-  );
+      );
+    };
+
+    return (
+      <div className="tl-tabs" role="tablist">
+        {tab(false, __('My Tickets'))}
+        {tab(true, __('Company Tickets'))}
+      </div>
+    );
+  };
 
   const renderSearchBar = () => {
     if (!onSearchChange) {
@@ -208,10 +148,18 @@ const TicketList: React.FC<Props> = ({
     }
 
     return (
-      <div className="ticket-search-bar">
+      <label className="tl-search">
+        <IconSearch />
+        <input
+          type="text"
+          placeholder={String(__('Search by ticket title'))}
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
         {onSearchOptionChange && (
           <select
-            className="ticket-search-select"
+            className="tl-scope"
+            aria-label={__('Search scope')}
             value={searchOption}
             onChange={(e) =>
               onSearchOptionChange(e.target.value as SearchOption)
@@ -223,17 +171,7 @@ const TicketList: React.FC<Props> = ({
             <option value="description">{__('내용')}</option>
           </select>
         )}
-        <div className="ticket-search-input-wrapper">
-          <IconSearch />
-          <input
-            className="ticket-search-input"
-            type="text"
-            placeholder={String(__('Search by ticket title'))}
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-          />
-        </div>
-      </div>
+      </label>
     );
   };
 
@@ -304,7 +242,7 @@ const TicketList: React.FC<Props> = ({
 
     if (filteredTickets.length === 0 && searchTerm) {
       return (
-        <div className="ticket-list-container">
+        <div className="tl-screen">
           {renderListHeader(tickets.length)}
           {renderSearchBar()}
           {renderEmptyState(
@@ -316,10 +254,10 @@ const TicketList: React.FC<Props> = ({
     }
 
     return (
-      <div className="ticket-list-container">
+      <div className="tl-screen">
         {renderListHeader(filteredTickets.length)}
         {renderSearchBar()}
-        <div className="ticket-list-content">
+        <div className="tl-rows">
           {filteredTickets.map((ticket, index) =>
             renderTicketItem(ticket, index),
           )}

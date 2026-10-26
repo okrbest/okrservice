@@ -58,3 +58,491 @@
 .ticket-progress-logs .ticket-progress-log.team > span {
   margin-right: 0;
 }
+
+/* 티켓 진행 상황(새 화면) — 위 요약 카드와 단계 막대, 날짜별 대화, 아래 한 줄 입력.
+   브랜드 인디고는 현재 단계·고객 말풍선·보내기에만 쓴다. */
+.tp-screen {
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px 16px 20px;
+}
+.tp-hero {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #e8e9f0;
+  border-radius: 16px;
+  background: #f7f8fe;
+}
+.tp-hero-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.tp-number {
+  font-size: 12px;
+  color: #6d6f78;
+  font-variant-numeric: tabular-nums;
+}
+.tp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #eef0fd;
+  color: #4b4fc4;
+  font-size: 12px;
+  font-weight: 600;
+}
+.tp-status i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: tp-pulse 1.8s ease-in-out infinite;
+}
+@keyframes tp-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+.tp-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #1a1b25;
+  word-break: break-word;
+}
+.tp-meta {
+  font-size: 12px;
+  color: #6d6f78;
+}
+.tp-meta:empty {
+  display: none;
+}
+.tp-steps {
+  display: flex;
+  margin: 6px 0 2px;
+  padding: 0;
+  list-style: none;
+}
+.tp-step {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #9a9ca6;
+  text-align: center;
+}
+.tp-step::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: -50%;
+  right: 50%;
+  height: 2px;
+  background: #e2e3ec;
+}
+.tp-step:first-child::before {
+  display: none;
+}
+.tp-step.is-done::before,
+.tp-step.is-now::before {
+  background: #6569df;
+}
+.tp-step-dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #dcdde8;
+  border-radius: 50%;
+  background: #fff;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.tp-step.is-done .tp-step-dot {
+  background: #6569df;
+  border-color: #6569df;
+}
+.tp-step.is-now .tp-step-dot {
+  border-color: #6569df;
+  box-shadow: 0 0 0 4px #e3e5fb;
+}
+.tp-step.is-now .tp-step-dot::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6569df;
+}
+.tp-step-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 2px;
+}
+.tp-step.is-done .tp-step-name,
+.tp-step.is-now .tp-step-name {
+  color: #1a1b25;
+  font-weight: 600;
+}
+.tp-description {
+  padding: 10px 12px;
+  border: 1px solid #ececf2;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #1a1b25;
+  word-break: break-word;
+}
+.tp-description p {
+  margin: 0;
+}
+.tp-description img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.tp-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tp-thumb {
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: 1px solid #ececf2;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  cursor: pointer;
+}
+.tp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tp-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 10px 6px 6px;
+  border: 1px solid #ececf2;
+  border-radius: 10px;
+  background: #fff;
+  color: #1a1b25;
+  font-size: 12px;
+  text-decoration: none;
+}
+.tp-file span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tp-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tp-day {
+  align-self: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f3f4f7;
+  color: #8a8c96;
+  font-size: 11px;
+}
+.tp-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 88%;
+}
+.tp-msg.is-mine {
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+.tp-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #eef0fd;
+  color: #4b4fc4;
+  font-size: 11px;
+  font-weight: 700;
+}
+.tp-msg-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.tp-msg.is-mine .tp-msg-body {
+  align-items: flex-end;
+}
+.tp-msg-author {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4b4fc4;
+}
+.tp-bubble {
+  padding: 9px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+.tp-bubble p {
+  margin: 0;
+}
+.tp-bubble ul,
+.tp-bubble ol {
+  margin: 2px 0;
+  padding-left: 18px;
+}
+.tp-msg.is-staff .tp-bubble {
+  background: #f3f4f7;
+  color: #1a1b25;
+  border-top-left-radius: 4px;
+}
+.tp-msg.is-mine .tp-bubble {
+  background: #6569df;
+  color: #fff;
+  border-top-right-radius: 4px;
+}
+.tp-msg.is-mine .tp-bubble a {
+  color: #fff;
+}
+.tp-msg-files {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tp-time {
+  font-size: 10.5px;
+  color: #a0a2ab;
+  font-variant-numeric: tabular-nums;
+}
+.tp-event {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 9px;
+  font-size: 12px;
+  color: #6d6f78;
+}
+.tp-event-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #c9cbe9;
+  border-radius: 50%;
+  background: #fff;
+}
+.tp-event .tp-time {
+  margin-left: auto;
+}
+.tp-empty {
+  padding: 18px 12px;
+  border: 1px dashed #e2e3ec;
+  border-radius: 12px;
+  color: #8a8c96;
+  font-size: 12.5px;
+  text-align: center;
+}
+.tp-loading {
+  align-self: center;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e3e5fb;
+  border-top-color: #6569df;
+  border-radius: 50%;
+  animation: tp-spin 0.8s linear infinite;
+}
+@keyframes tp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.persistent-footer:has(.tp-composer) {
+  margin: 0;
+  border-top: 1px solid #ececf0;
+  background: #fff;
+}
+.tp-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+}
+.tp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 3px 4px 3px 9px;
+  border-radius: 8px;
+  background: #f3f4f7;
+  color: #45464f;
+  font-size: 11.5px;
+}
+.tp-chip.is-uploading {
+  padding-right: 9px;
+  color: #6569df;
+}
+.tp-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tp-chip button {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #8a8c96;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.tp-composer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.tp-icon-btn,
+.tp-send {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.tp-icon-btn {
+  background: #f3f4f7;
+  color: #6d6f78;
+}
+.tp-icon-btn:hover {
+  background: #e9eaf0;
+}
+.tp-send {
+  background: #6569df;
+  color: #fff;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.tp-send:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.tp-send:not(:disabled):active {
+  transform: scale(0.94);
+}
+.tp-input {
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  max-height: 120px;
+  padding: 8px 14px;
+  border: 1px solid #e3e4ec;
+  border-radius: 18px;
+  background: #fff;
+  color: #1a1b25;
+  font: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  resize: none;
+  outline: none;
+}
+.tp-input:focus {
+  border-color: #6569df;
+  box-shadow: 0 0 0 3px rgba(101, 105, 223, 0.12);
+}
+.tp-input::placeholder {
+  color: #a8aab3;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tp-status i,
+  .tp-loading {
+    animation: none;
+  }
+}
+/* 글 속 사진: 누르면 원본, 오른쪽 아래에 작은 "원본" 버튼 */
+.tp-zoom {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  margin: 4px 0;
+  line-height: 0;
+}
+.tp-zoom img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 10px;
+  cursor: zoom-in;
+}
+.tp-zoom-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(20, 21, 30, 0.62);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s ease;
+}
+.tp-zoom-btn:hover,
+.tp-zoom-btn:focus-visible {
+  background: rgba(20, 21, 30, 0.82);
+}
+.tp-zoom-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}

@@ -258,3 +258,42 @@ $topbar-shadow: rgba(0, 0, 0, 0.1);
     z-index: 2;
   }
 }
+
+/* 위쪽 막대를 앱 내비게이션 막대처럼 낮고 작게 — 제목 15px, 높이 약 52px, 회색 아이콘 버튼 */
+.top-nav-container {
+  padding: 0 0.5rem;
+}
+.top-nav {
+  min-height: 44px;
+  padding: 0;
+  gap: 4px;
+}
+.top-nav .title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  margin-right: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.top-nav > .icon:first-child {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  transition: background 0.12s ease;
+}
+.top-nav > .icon:first-child:hover {
+  background: #f1f2f5;
+}
+.top-nav > .icon:first-child svg {
+  width: 20px;
+  height: 20px;
+}
+/* 오른쪽 버튼이 없으면 왼쪽 버튼 폭만큼 비워 제목을 가운데에 둔다 */
+.top-nav > .icon:first-child + .title:last-child {
+  margin-right: 36px;
+}

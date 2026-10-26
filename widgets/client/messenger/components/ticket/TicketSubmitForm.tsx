@@ -1,13 +1,12 @@
-import * as React from "react";
+import * as React from 'react';
+import * as classNames from 'classnames';
 
-import Button from "../common/Button";
-import Container from "../common/Container";
-import FileUploader from "../common/FileUploader";
-import Input from "../common/Input";
-import SuccessForm from "./SuccessForm";
-import { __ } from "../../../utils";
-import { useConfig } from "../../context/Config";
-import TicketListContainer from "../../containers/ticket/TicketListContainer";
+import Button from '../common/Button';
+import Container from '../common/Container';
+import { __ } from '../../../utils';
+import { useConfig } from '../../context/Config';
+import { canSubmitTicket, contactSummary } from './submitHelpers';
+import { FileWithUrl, useAttachUpload } from './useAttachUpload';
 
 type Props = {
   loading: boolean;
@@ -19,7 +18,36 @@ type Props = {
   handleChange: (e: any) => void;
   handleButtonClick: () => void;
   handleFiles: (files: any) => void;
+  files?: FileWithUrl[];
 };
+
+// 요청 구분 7가지(저장 값은 그대로) — 한 줄 설명을 칩에 늘 보여준다
+const REQUEST_TYPES = [
+  { value: 'inquiry', label: '단순문의', hint: '궁금한 점' },
+  { value: 'error', label: '오류처리', hint: '버그·오류 신고' },
+  { value: 'improvement', label: '개선요청', hint: '기능 개선' },
+  { value: 'usage_guide', label: '사용안내', hint: '사용 방법' },
+  { value: 'config', label: '설정변경', hint: '설정 바꾸기' },
+  { value: 'data_work', label: '데이터작업', hint: '데이터 요청' },
+  { value: 'additional_development', label: '추가개발', hint: '새 기능 개발' },
+];
+
+const VISIBILITY = [
+  {
+    value: 'public',
+    label: '회사에 공개',
+    help: '회사 동료가 “회사 티켓”에서 볼 수 있어요',
+  },
+  {
+    value: 'private',
+    label: '나만 보기',
+    help: '민감한 내용이면 나만 보기로 두세요',
+  },
+];
+
+// 칩·전환 버튼도 기존 입력칸처럼 id/value로 저장한다
+const change = (handleChange: (e: any) => void, id: string, value: string) =>
+  handleChange({ target: { id, value } });
 
 const TicketSubmitForm: React.FC<Props> = ({
   handleSubmit,
@@ -31,227 +59,253 @@ const TicketSubmitForm: React.FC<Props> = ({
   handleChange,
   handleFiles,
   handleButtonClick,
+  files = [],
 }) => {
-  const submitText = __("Submit");
-  const continueText = __("Continue");
   const { email, firstName, lastName, phone } = formData;
-  const [showTooltip, setShowTooltip] = React.useState(false);
-  const [showVisibilityTooltip, setShowVisibilityTooltip] = React.useState(false);
-
   const { isAuthFieldsVisible } = useConfig();
+  const summary = contactSummary({ email, firstName, lastName, phone });
+  const [editingContact, setEditingContact] = React.useState(false);
+  const attach = useAttachUpload(files, handleFiles);
+  const descriptionRef = React.useRef<HTMLTextAreaElement>(null);
 
-  const renderForm = () => {
-    return (
-      <form id="ticket-form" onSubmit={handleSubmit}>
-        <div className="form-container">
-          {isAuthFieldsVisible && (
-            <>
-              <div className="ticket-form-item">
-                <Input
-                  id="firstName"
-                  label={String(__("Name"))}
-                  onChange={handleChange}
-                  placeholder={String(__("First name"))}
-                  value={firstName || ""}
-                  required={false}
-                />
-                <Input
-                  id="lastName"
-                  placeholder={String(__("Last name"))}
-                  onChange={handleChange}
-                  value={lastName || ""}
-                  required={false}
-                />
-              </div>
-              <div className="ticket-form-item">
-                <Input
-                  id="phone"
-                  label={String(__("Phone number"))}
-                  placeholder={String(__("Phone number"))}
-                  onChange={handleChange}
-                  type="number"
-                  value={phone}
-                  required={false}
-                />
-                <Input
-                  id="email"
-                  label={String(__("Email"))}
-                  placeholder={String(__("Email"))}
-                  type="email"
-                  required={false}
-                  value={email}
-                  onChange={handleChange}
-                />
-              </div>
-            </>
-          )}
-          <div className="ticket-form-item">
-            <div className="input-container">
-              <label htmlFor="ticketType" style={{ position: "relative" }}>
-                {__("고객요청구분")} <span className="required">*</span>
-                <span 
-                  className="ticket-request-type-tooltip" 
-                  style={{ marginLeft: "5px", cursor: "pointer", fontSize: "14px", display: "inline-block" }}
-                  onMouseEnter={() => setShowTooltip(true)}
-                  onMouseLeave={() => setShowTooltip(false)}
-                >
-                  ℹ️
-                  {showTooltip && (
-                    <span 
-                      className="ticket-request-type-tooltip-text"
-                      style={{
-                        width: '250px',
-                        backgroundColor: '#fff',
-                        color: '#666',
-                        textAlign: 'left',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        padding: '10px 12px',
-                        position: 'absolute',
-                        zIndex: 1000,
-                        top: '100%',
-                        marginTop: '5px',
-                        left: '50%',
-                        marginLeft: '-125px',
-                        fontSize: '11px',
-                        lineHeight: '1.5',
-                        whiteSpace: 'normal',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                        pointerEvents: 'none'
-                      }}
-                    >
-                      {__("단순문의: 일반적인 문의사항")}<br />
-                      {__("개선요청: 기능 개선 요청")}<br />
-                      {__("오류처리: 버그나 오류 신고")}<br />
-                      {__("설정변경: 시스템 설정 변경 요청")}<br />
-                      {__("추가개발: 새로운 기능 개발 요청")}<br />
-                      {__("사용안내: 시스템 사용 방법 안내")}<br />
-                      {__("데이터작업: 데이터 관련 작업 요청")}
-                    </span>
-                  )}
-                </span>
-              </label>
-              <select
-                id="ticketType"
-                onChange={handleChange}
-                value={formData.ticketType}
-                required
-              >
-                <option value="">{__("요청구분을 선택하세요")}</option>
-                <option value="inquiry">{__("단순문의")}</option>
-                <option value="improvement">{__("개선요청")}</option>
-                <option value="error">{__("오류처리")}</option>
-                <option value="config">{__("설정변경")}</option>
-                <option value="additional_development">{__("추가개발")}</option>
-                <option value="usage_guide">{__("사용안내")}</option>
-                <option value="data_work">{__("데이터작업")}</option>
-              </select>
-            </div>
-          </div>
-          <div className="ticket-form-item">
-            <div className="input-container">
-              <label htmlFor="visibility" style={{ position: "relative" }}>
-                {__("공개 설정")} <span className="required">*</span>
-                <span 
-                  className="ticket-visibility-tooltip" 
-                  style={{ marginLeft: "5px", cursor: "pointer", fontSize: "14px", display: "inline-block" }}
-                  onMouseEnter={() => setShowVisibilityTooltip(true)}
-                  onMouseLeave={() => setShowVisibilityTooltip(false)}
-                >
-                  ℹ️
-                  {showVisibilityTooltip && (
-                    <span 
-                      className="ticket-visibility-tooltip-text"
-                      style={{
-                        width: '280px',
-                        backgroundColor: '#fff',
-                        color: '#666',
-                        textAlign: 'left',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        padding: '10px 12px',
-                        position: 'absolute',
-                        zIndex: 1000,
-                        top: '100%',
-                        marginTop: '5px',
-                        left: '50%',
-                        marginLeft: '-140px',
-                        fontSize: '11px',
-                        lineHeight: '1.5',
-                        whiteSpace: 'normal',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                        pointerEvents: 'none'
-                      }}
-                    >
-                      {__("공개: 회사 내 동료들이 회사 티켓보기에서 볼 수 있습니다")}<br />
-                      {__("비공개: 민감한 내용일 경우 비공개로 설정하세요")}
-                    </span>
-                  )}
-                </span>
-              </label>
-              <select
-                id="visibility"
-                onChange={handleChange}
-                value={formData.visibility}
-                required
-              >
-                <option value="public">{__("공개")}</option>
-                <option value="private">{__("비공개")}</option>
-              </select>
-            </div>
-          </div>
-          <div className="input-container">
-            <label htmlFor="attachments">{__("Attachments")} </label>
-            <FileUploader handleFiles={handleFiles} />
-          </div>
-          <div className="ticket-form-item">
-            <Input
-              id="title"
-              label={String(__("Ticket title"))}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="ticket-form-item">
-            <Input
-              textArea
-              id="description"
-              label={String(__("Describe the problem"))}
-              onChange={handleChange}
-              rows={10}
-              required
-            />
-          </div>
-        </div>
-      </form>
-    );
-  };
+  // 연락처가 비어 있으면 처음부터 펼쳐서 받는다
+  const showContactFields = isAuthFieldsVisible && (editingContact || !summary);
 
-  // Trigger route change to "ticket-list" when isSubmitted becomes true
+  React.useEffect(() => {
+    const el = descriptionRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = `${Math.min(Math.max(el.scrollHeight, 96), 260)}px`;
+    }
+  }, [formData.description]);
+
+  // 접수가 끝나면 티켓 목록으로
   React.useEffect(() => {
     if (isSubmitted) {
       handleButtonClick();
     }
   }, [isSubmitted, ticketNumber, handleButtonClick]);
 
+  const visibility =
+    VISIBILITY.find((option) => option.value === formData.visibility) ||
+    VISIBILITY[0];
+
+  const renderTypes = () => (
+    <fieldset className="ts-section">
+      <legend className="ts-label">{__('어떤 요청인가요?')}</legend>
+      <div className="ts-types" role="radiogroup">
+        {REQUEST_TYPES.map((type) => {
+          const active = formData.ticketType === type.value;
+
+          return (
+            <button
+              key={type.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              className={classNames('ts-type', { 'is-active': active })}
+              onClick={() => change(handleChange, 'ticketType', type.value)}
+            >
+              <span className="ts-type-name">{__(type.label)}</span>
+              <span className="ts-type-hint">{__(type.hint)}</span>
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+
+  const renderAttach = () => (
+    <div className="ts-attach">
+      <button
+        type="button"
+        className="ts-attach-btn"
+        onClick={attach.openPicker}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M21 11.5 12.6 19.9a5.5 5.5 0 0 1-7.8-7.8l8.5-8.5a3.7 3.7 0 0 1 5.2 5.2l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {__('Attach file')}
+      </button>
+      <input
+        ref={attach.inputRef}
+        type="file"
+        multiple={true}
+        hidden={true}
+        accept={attach.accept}
+        onChange={attach.onPick}
+      />
+      {files.map((file) => (
+        <span key={file.name} className="tp-chip">
+          <span className="tp-chip-name">{file.name}</span>
+          <button
+            type="button"
+            aria-label={__('Remove')}
+            onClick={() => attach.removeFile(file.name)}
+          >
+            ×
+          </button>
+        </span>
+      ))}
+      {attach.uploading > 0 && (
+        <span className="tp-chip is-uploading">{__('Uploading…')}</span>
+      )}
+    </div>
+  );
+
+  const renderVisibility = () => (
+    <fieldset className="ts-section">
+      <legend className="ts-label">{__('공개 설정')}</legend>
+      <div className="tl-tabs" role="radiogroup">
+        {VISIBILITY.map((option) => {
+          const active = visibility.value === option.value;
+
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              className={classNames('tl-tab', { 'is-active': active })}
+              onClick={() => change(handleChange, 'visibility', option.value)}
+            >
+              {__(option.label)}
+            </button>
+          );
+        })}
+      </div>
+      <p className="ts-help">{__(visibility.help)}</p>
+    </fieldset>
+  );
+
+  const renderContact = () => {
+    if (!isAuthFieldsVisible) {
+      return null;
+    }
+
+    if (!showContactFields) {
+      return (
+        <div className="ts-contact">
+          <span className="ts-contact-text">
+            {__('Contact')} <b>{summary}</b>
+          </span>
+          <button type="button" onClick={() => setEditingContact(true)}>
+            {__('Edit')}
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <fieldset className="ts-section">
+        <legend className="ts-label">{__('Contact')}</legend>
+        <div className="ts-grid">
+          <input
+            id="firstName"
+            className="ts-input"
+            placeholder={String(__('First name'))}
+            value={firstName || ''}
+            onChange={handleChange}
+          />
+          <input
+            id="lastName"
+            className="ts-input"
+            placeholder={String(__('Last name'))}
+            value={lastName || ''}
+            onChange={handleChange}
+          />
+          <input
+            id="email"
+            className="ts-input"
+            type="email"
+            placeholder={String(__('Email'))}
+            value={email || ''}
+            onChange={handleChange}
+          />
+          <input
+            id="phone"
+            className="ts-input"
+            type="tel"
+            inputMode="numeric"
+            placeholder={String(__('Phone number'))}
+            value={phone || ''}
+            onChange={handleChange}
+          />
+        </div>
+      </fieldset>
+    );
+  };
+
+  const renderForm = () => (
+    <form id="ticket-form" className="ts-form" onSubmit={handleSubmit}>
+      {renderTypes()}
+      <div className="ts-section">
+        <label className="ts-label" htmlFor="title">
+          {__('Ticket title')}
+        </label>
+        <input
+          id="title"
+          className="ts-input"
+          value={formData.title}
+          onChange={handleChange}
+          placeholder={String(__('한 줄로 요약해 주세요'))}
+          required={true}
+        />
+      </div>
+      <div className="ts-section">
+        <label className="ts-label" htmlFor="description">
+          {__('Describe the problem')}
+          <small>{__('언제·어디서·무엇이')}</small>
+        </label>
+        <textarea
+          ref={descriptionRef}
+          id="description"
+          className="ts-input ts-textarea"
+          value={formData.description}
+          onChange={handleChange}
+          placeholder={String(__('어떤 상황인지 적어주세요'))}
+          required={true}
+        />
+        {renderAttach()}
+      </div>
+      {renderVisibility()}
+      {renderContact()}
+    </form>
+  );
+
+  const ready = canSubmitTicket(formData) && attach.uploading === 0;
+
   return (
     <Container
       withBottomNavBar={true}
-      title={__("Submit a ticket")}
+      title={__('Submit a ticket')}
       backRoute="ticket"
       persistentFooter={
         !isSubmitted ? (
-          <Button form="ticket-form" type="submit" full>
-            {loading ? (
-              <div className="loader" />
-            ) : (
-              <span className="font-semibold">{submitText}</span>
-            )}
-          </Button>
+          <div className="ts-footer">
+            <Button
+              form="ticket-form"
+              type="submit"
+              full
+              disabled={!ready || loading}
+            >
+              {loading ? (
+                <div className="loader" />
+              ) : (
+                <span className="font-semibold">{__('문의 접수하기')}</span>
+              )}
+            </Button>
+          </div>
         ) : null
       }
     >
-      <div className="ticket-container">
+      <div className="ts-screen">
         {loading || customerLoading ? <div className="loader" /> : renderForm()}
       </div>
     </Container>

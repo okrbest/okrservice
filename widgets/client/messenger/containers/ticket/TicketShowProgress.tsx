@@ -1,13 +1,17 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { TICKET_ACTIVITY_LOGS, TICKET_COMMENTS } from "../../graphql/queries";
-import { useMutation, useQuery } from "@apollo/client";
+import {
+  TICKET_ACTIVITY_LOGS,
+  TICKET_COMMENTS,
+  TICKET_STAGES,
+} from '../../graphql/queries';
+import { useMutation, useQuery } from '@apollo/client';
 
-import { ITicketComment } from "../../types";
-import { TICKET_COMMENTS_ADD } from "../../graphql/mutations";
-import TicketShowProgress from "../../components/ticket/TicketShowPropgress";
-import { connection } from "../../connection";
-import { useTicket } from "../../context/Ticket";
+import { ITicketComment } from '../../types';
+import { TICKET_COMMENTS_ADD } from '../../graphql/mutations';
+import TicketShowProgress from '../../components/ticket/TicketShowPropgress';
+import { connection } from '../../connection';
+import { useTicket } from '../../context/Ticket';
 
 interface FileWithUrl extends File {
   url?: string;
@@ -17,10 +21,16 @@ type Props = {
   loading: boolean;
 };
 
+// 기록 조회 결과는 widgetsTicketActivityLogs에 온다(예전 activityLogs 키는 늘 비어 있었음)
+const activityLogsFrom = (data: any) => {
+  const logs = data && (data.widgetsTicketActivityLogs || data.activityLogs);
+  return Array.isArray(logs) ? logs : [];
+};
+
 const TicketShowProgressContainer = (props: Props) => {
   const { ticketData } = useTicket();
   const { customerId } = connection.data;
-  const [comment, setComment] = React.useState("");
+  const [comment, setComment] = React.useState('');
   const [files, setFiles] = React.useState<FileWithUrl[]>([]);
 
   const {
@@ -31,15 +41,15 @@ const TicketShowProgressContainer = (props: Props) => {
   } = useQuery(TICKET_COMMENTS, {
     variables: {
       typeId: ticketData._id,
-      type: "ticket",
+      type: 'ticket',
     },
-    fetchPolicy: "cache-and-network", // 캐시 활용으로 성능 개선
+    fetchPolicy: 'cache-and-network', // 캐시 활용으로 성능 개선
     skip: !ticketData._id, // ticketData가 없으면 쿼리 실행 안 함
   });
 
   const [commentsAdd, { loading }] = useMutation(TICKET_COMMENTS_ADD, {
     onCompleted() {
-      setComment("");
+      setComment('');
       setFiles([]);
       commentQueryRefetch();
     },
@@ -54,11 +64,19 @@ const TicketShowProgressContainer = (props: Props) => {
     error: activityError,
   } = useQuery(TICKET_ACTIVITY_LOGS, {
     variables: {
-      contentType: "tickets:ticket",
+      contentType: 'tickets:ticket',
       contentId: ticketData._id,
     },
-    fetchPolicy: "cache-and-network", // 캐시 활용으로 성능 개선
+    fetchPolicy: 'cache-and-network', // 캐시 활용으로 성능 개선
     skip: !ticketData._id, // ticketData가 없으면 쿼리 실행 안 함
+  });
+
+  // 단계 막대용 단계 목록(파이프라인 단계는 자주 안 바뀌어 캐시 우선)
+  const stageId = ticketData.stage && ticketData.stage._id;
+  const { data: stagesData } = useQuery(TICKET_STAGES, {
+    variables: { stageId },
+    fetchPolicy: 'cache-first',
+    skip: !stageId,
   });
 
   const onComment = () => {
@@ -66,19 +84,19 @@ const TicketShowProgressContainer = (props: Props) => {
       files.length > 0
         ? files.map((file) => ({
             // url에는 저장 키만 전달 (전체 URL이면 파이프라인에서 키가 이름처럼 노출될 수 있음)
-            url: file.url || "",
-            name: file.name || "",
-            type: file.type || "file",
+            url: file.url || '',
+            name: file.name || '',
+            type: file.type || 'file',
           }))
         : undefined;
 
     return commentsAdd({
       variables: {
-        type: "ticket",
+        type: 'ticket',
         typeId: ticketData._id,
         customerId: customerId,
         content: comment,
-        userType: "client",
+        userType: 'client',
         attachments,
       },
     });
@@ -93,7 +111,7 @@ const TicketShowProgressContainer = (props: Props) => {
 
   return (
     <TicketShowProgress
-      activityLogs={activityData?.activityLogs || []}
+      activityLogs={activityLogsFrom(activityData)}
       activityLoading={activityLoading}
       setComment={setComment}
       comment={comment}
@@ -101,6 +119,7 @@ const TicketShowProgressContainer = (props: Props) => {
       onComment={onComment}
       files={files}
       handleFiles={setFiles}
+      stages={stagesData?.widgetsTicketStages || []}
     />
   );
 };
