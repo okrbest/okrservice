@@ -39,3 +39,52 @@ export const isRecent = (
 
   return diff >= 0 && diff < RECENT_DAYS * DAY_MS;
 };
+
+export type StageTone =
+  | 'gray'
+  | 'blue'
+  | 'purple'
+  | 'teal'
+  | 'orange'
+  | 'green'
+  | 'default';
+
+type ToneStage = { _id: string; order?: number; status?: string };
+
+// 가운데 단계에 차례로 쓰는 색(첫 단계 회색, 마지막 직전 주황, 마지막 초록 사이)
+const MIDDLE_TONES: StageTone[] = ['blue', 'purple', 'teal'];
+
+// 목록 뱃지 색: 파이프라인에서 몇 번째 단계인지로 정한다(단계 이름은 회사마다 달라 이름으로 정하지 않음).
+// 첫 단계 회색, 마지막 단계 초록, 단계가 4개 이상이면 마지막 직전 주황, 그 사이는 파랑·보라·청록 순.
+// 5단계: 회색·파랑·보라·주황·초록 / 4단계: 회색·파랑·주황·초록
+export const stageTone = (
+  stageId: string | undefined,
+  stageName: string | undefined,
+  stages: ToneStage[] | undefined,
+): StageTone => {
+  const visible = (stages || [])
+    .filter((stage) => stage.status !== 'archived')
+    .slice()
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const index = visible.findIndex((stage) => stage._id === stageId);
+
+  if (index === -1) {
+    return isDoneStage(stageName) ? 'green' : 'default';
+  }
+
+  const last = visible.length - 1;
+
+  if (index === last) {
+    return 'green';
+  }
+
+  if (index === 0) {
+    return 'gray';
+  }
+
+  if (last >= 3 && index === last - 1) {
+    return 'orange';
+  }
+
+  return MIDDLE_TONES[(index - 1) % MIDDLE_TONES.length];
+};

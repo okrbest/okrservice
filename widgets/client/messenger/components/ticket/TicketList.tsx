@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { IconSearch } from '../../../icons/Icons';
 import { __ } from '../../../utils';
 import Container from '../common/Container';
-import { isDoneStage, isRecent, previewText } from './listHelpers';
+import { StageTone, isDoneStage, isRecent, previewText } from './listHelpers';
 
 type TicketStage = {
   _id: string;
@@ -32,6 +32,8 @@ type SearchOption = 'all' | 'title' | 'number' | 'description';
 
 type Props = {
   tickets: TicketItem[];
+  // 단계 id → 뱃지 색(파이프라인에서 몇 번째 단계인지로 정함)
+  stageTones?: Record<string, StageTone>;
   loading: boolean;
   onTicketClick: (ticket: TicketItem) => void;
   onRefresh?: () => void;
@@ -45,6 +47,7 @@ type Props = {
 
 const TicketList: React.FC<Props> = ({
   tickets,
+  stageTones,
   loading,
   onTicketClick,
   includeCompanyTickets = false,
@@ -65,7 +68,11 @@ const TicketList: React.FC<Props> = ({
   const renderTicketItem = (ticket: TicketItem, index: number) => {
     const unread = ticket.widgetAlarm === false;
     const stageName = ticket.stage?.name || ticket.status;
-    const done = isDoneStage(ticket.stage?.name, ticket.status);
+    const tone =
+      (ticket.stage?._id && stageTones?.[ticket.stage._id]) || undefined;
+    // 마지막 단계(초록 뱃지)면 왼쪽 점도 끝난 티켓 색으로 맞춘다
+    const done =
+      tone === 'green' || isDoneStage(ticket.stage?.name, ticket.status);
     const preview = includeCompanyTickets
       ? ''
       : previewText(ticket.description);
@@ -97,7 +104,12 @@ const TicketList: React.FC<Props> = ({
           <span className="tl-meta">
             <span className="tl-number">#{ticket.number}</span>
             {stageName && (
-              <span className={classNames('tl-stage', { 'is-done': done })}>
+              <span
+                className={classNames(
+                  'tl-stage',
+                  `tl-stage--${tone || (done ? 'green' : 'default')}`,
+                )}
+              >
                 {__(stageName)}
               </span>
             )}

@@ -380,6 +380,31 @@
   background: #e7f6ee;
   color: #1f9d55;
 }
+/* 단계 뱃지 색: 파이프라인에서 몇 번째 단계인지(listHelpers.stageTone) */
+.tl-stage--gray {
+  background: #f0f1f4;
+  color: #5f6370;
+}
+.tl-stage--blue {
+  background: #e8f1fd;
+  color: #2f6fd6;
+}
+.tl-stage--purple {
+  background: #f1ebfd;
+  color: #7a4fd0;
+}
+.tl-stage--teal {
+  background: #e3f5f2;
+  color: #12806f;
+}
+.tl-stage--orange {
+  background: #fff1e3;
+  color: #c2620c;
+}
+.tl-stage--green {
+  background: #e7f6ee;
+  color: #1f9d55;
+}
 .tl-customer {
   color: #6d6f78;
 }
