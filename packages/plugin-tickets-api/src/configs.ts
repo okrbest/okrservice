@@ -1,46 +1,47 @@
-import * as serverTiming from "server-timing";
+import * as serverTiming from 'server-timing';
 
-import typeDefs from "./graphql/typeDefs";
-import resolvers from "./graphql/resolvers";
+import typeDefs from './graphql/typeDefs';
+import resolvers from './graphql/resolvers';
 
-import { setupMessageConsumers } from "./messageBroker";
-import * as permissions from "./permissions";
-import { routeErrorHandling } from "@erxes/api-utils/src/requests";
-import { buildFile } from "./exporterByUrl";
-import segments from "./segments";
-import forms from "./forms";
-import logs from "./logUtils";
-import { generateModels } from "./connectionResolver";
-import imports from "./imports";
-import internalNotes from "./internalNotes";
-import automations from "./automations";
-import search from "./search";
-import { getSubdomain } from "@erxes/api-utils/src/core";
-import webhooks from "./webhooks";
-import documents from "./documents";
-import tags from "./tags";
-import exporter from "./exporter";
-import cronjobs from "./cronjobs/common";
-import dashboards from "./dashboards";
-import reports from "./reports/reports";
-import app from "@erxes/api-utils/src/app";
+import { setupMessageConsumers } from './messageBroker';
+import * as permissions from './permissions';
+import { routeErrorHandling } from '@erxes/api-utils/src/requests';
+import { buildFile } from './exporterByUrl';
+import segments from './segments';
+import forms from './forms';
+import logs from './logUtils';
+import { generateModels } from './connectionResolver';
+import imports from './imports';
+import internalNotes from './internalNotes';
+import automations from './automations';
+import search from './search';
+import { getSubdomain } from '@erxes/api-utils/src/core';
+import webhooks from './webhooks';
+import documents from './documents';
+import tags from './tags';
+import exporter from './exporter';
+import cronjobs from './cronjobs/common';
+import { startAutoCustomerEmailScheduler } from './autoCustomerEmail';
+import dashboards from './dashboards';
+import reports from './reports/reports';
+import app from '@erxes/api-utils/src/app';
 
-import { NOTIFICATION_MODULES } from "./constants";
+import { NOTIFICATION_MODULES } from './constants';
 
 export default {
-  name: "tickets",
+  name: 'tickets',
   permissions,
   graphql: async () => {
     return {
       typeDefs: await typeDefs(),
-      resolvers
+      resolvers,
     };
   },
   hasSubscriptions: true,
-  subscriptionPluginPath: require("path").resolve(
+  subscriptionPluginPath: require('path').resolve(
     __dirname,
-    "graphql",
-    "subscriptionPlugin.js"
+    'graphql',
+    'subscriptionPlugin.js',
   ),
 
   meta: {
@@ -59,7 +60,7 @@ export default {
     permissions,
     documents,
     dashboards,
-    notificationModules: NOTIFICATION_MODULES
+    notificationModules: NOTIFICATION_MODULES,
   },
 
   apolloServerContext: async (context, req, res) => {
@@ -71,7 +72,7 @@ export default {
     context.serverTiming = {
       startTime: res.startTime,
       endTime: res.endTime,
-      setMetric: res.setMetric
+      setMetric: res.setMetric,
     };
 
     return context;
@@ -79,7 +80,7 @@ export default {
   middlewares: [(serverTiming as any)()],
   onServerInit: async () => {
     app.get(
-      "/file-export",
+      '/file-export',
       routeErrorHandling(async (req: any, res) => {
         const { query } = req;
 
@@ -91,10 +92,13 @@ export default {
         res.attachment(`${result.name}.xlsx`);
 
         return res.send(result.response);
-      })
+      }),
     );
 
-    console.log("Debug ....");
+    console.log('Debug ....');
+
+    // 직원 댓글 뒤 10분 동안 Send Email을 안 누르면 고객 알림 메일 자동 발송(1분마다 확인)
+    startAutoCustomerEmailScheduler();
   },
-  setupMessageConsumers
+  setupMessageConsumers,
 };

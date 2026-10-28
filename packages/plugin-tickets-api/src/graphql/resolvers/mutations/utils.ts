@@ -1,4 +1,4 @@
-import resolvers from "..";
+import resolvers from '..';
 import {
   destroyBoardItemRelations,
   getCollection,
@@ -6,23 +6,23 @@ import {
   getCustomerIds,
   getItem,
   getNewOrder,
-} from "../../../models/utils";
+} from '../../../models/utils';
 import {
   IItemCommonFields,
   IItemDragCommonFields,
   IStageDocument,
-} from "../../../models/definitions/boards";
-import { BOARD_STATUSES } from "../../../models/definitions/constants";
-import { ITicket, ITicketDocument } from "../../../models/definitions/tickets";
+} from '../../../models/definitions/boards';
+import { BOARD_STATUSES } from '../../../models/definitions/constants';
+import { ITicket, ITicketDocument } from '../../../models/definitions/tickets';
 
-import graphqlPubsub from "@erxes/api-utils/src/graphqlPubsub";
+import graphqlPubsub from '@erxes/api-utils/src/graphqlPubsub';
 import {
   putActivityLog,
   putCreateLog,
   putDeleteLog,
   putUpdateLog,
-} from "../../../logUtils";
-import { checkUserIds } from "@erxes/api-utils/src";
+} from '../../../logUtils';
+import { checkUserIds } from '@erxes/api-utils/src';
 import {
   copyChecklists,
   copyPipelineLabels,
@@ -30,27 +30,27 @@ import {
   IBoardNotificationParams,
   prepareBoardItemDoc,
   sendNotifications,
-} from "../../utils";
-import { IUserDocument } from "@erxes/api-utils/src/types";
-import { generateModels, IModels } from "../../../connectionResolver";
+} from '../../utils';
+import { IUserDocument } from '@erxes/api-utils/src/types';
+import { generateModels, IModels } from '../../../connectionResolver';
 import {
   sendCoreMessage,
   sendNotificationsMessage,
-} from "../../../messageBroker";
-import { TICKET_AUTOMATION_TRIGGER_SOURCE } from "../../../constants";
+} from '../../../messageBroker';
+import { TICKET_AUTOMATION_TRIGGER_SOURCE } from '../../../constants';
 
 export const itemResolver = async (
   models: IModels,
   subdomain: string,
   user: any,
   type: string,
-  item: IItemCommonFields
+  item: IItemCommonFields,
 ) => {
-  let resolverType = "";
+  let resolverType = '';
 
   switch (type) {
-    case "ticket":
-      resolverType = "Ticket";
+    case 'ticket':
+      resolverType = 'Ticket';
       break;
   }
 
@@ -63,7 +63,7 @@ export const itemResolver = async (
         item,
         {},
         { models, subdomain, user },
-        { isSubscription: true }
+        { isSubscription: true },
       );
     } catch (unused) {
       continue;
@@ -83,7 +83,7 @@ export const itemsAdd = async (
   type: string,
   createModel: any,
   user?: IUserDocument,
-  docModifier?: any
+  docModifier?: any,
 ) => {
   const { collection } = getCollection(models, type);
 
@@ -98,11 +98,11 @@ export const itemsAdd = async (
         // Customer의 Company 관계 조회
         const customerCompanyIds = await sendCoreMessage({
           subdomain,
-          action: "conformities.savedConformity",
+          action: 'conformities.savedConformity',
           data: {
-            mainType: "customer",
+            mainType: 'customer',
             mainTypeId: customerId,
-            relTypes: ["company"],
+            relTypes: ['company'],
           },
           isRPC: true,
           defaultValue: [],
@@ -113,7 +113,7 @@ export const itemsAdd = async (
       } catch (error) {
         console.error(
           `Failed to get companies for customer ${customerId}:`,
-          error
+          error,
         );
       }
     }
@@ -122,7 +122,7 @@ export const itemsAdd = async (
     if (companyIds.size > 0) {
       doc.companyIds = Array.from(companyIds);
       console.log(
-        `[Auto-set] Added ${doc.companyIds.length} companies for ticket from ${doc.customerIds.length} customers`
+        `[Auto-set] Added ${doc.companyIds.length} companies for ticket from ${doc.customerIds.length} customers`,
       );
     }
   }
@@ -131,7 +131,7 @@ export const itemsAdd = async (
     ? docModifier(doc)
     : {
         ...doc,
-        name: doc.name || "Untitled",
+        name: doc.name || 'Untitled',
       };
   const extendedDoc = {
     ...modifiedDoc,
@@ -148,7 +148,7 @@ export const itemsAdd = async (
     // clean custom field values
     extendedDoc.customFieldsData = await sendCoreMessage({
       subdomain,
-      action: "fields.prepareCustomFieldsData",
+      action: 'fields.prepareCustomFieldsData',
       data: extendedDoc.customFieldsData,
       isRPC: true,
       defaultValue: [],
@@ -170,9 +170,10 @@ export const itemsAdd = async (
 
     // assignedUserIds가 있을 때만 invitedUsers로 전달
     // 이렇게 하면 실제 담당자에게만 "담당자로 지정되었습니다" 알림이 전송됨
-    const invitedUsers = item.assignedUserIds && item.assignedUserIds.length > 0 
-      ? item.assignedUserIds.filter(id => id !== user._id)
-      : undefined;
+    const invitedUsers =
+      item.assignedUserIds && item.assignedUserIds.length > 0
+        ? item.assignedUserIds.filter((id) => id !== user._id)
+        : undefined;
 
     sendNotifications(models, subdomain, {
       item,
@@ -192,7 +193,7 @@ export const itemsAdd = async (
         newData: extendedDoc,
         object: item,
       },
-      user
+      user,
     );
   }
 
@@ -200,7 +201,7 @@ export const itemsAdd = async (
     ticketsPipelinesChanged: {
       _id: stage.pipelineId,
       proccessId: doc.proccessId,
-      action: "itemAdd",
+      action: 'itemAdd',
       data: {
         item,
         aboveItemId: doc.aboveItemId,
@@ -228,14 +229,14 @@ export const changeItemStatus = async (
     status: string;
     proccessId: string;
     stage: IStageDocument;
-  }
+  },
 ) => {
-  if (status === "archived") {
+  if (status === 'archived') {
     graphqlPubsub.publish(`ticketsPipelinesChanged:${stage.pipelineId}`, {
       ticketsPipelinesChanged: {
         _id: stage.pipelineId,
         proccessId,
-        action: "itemRemove",
+        action: 'itemRemove',
         data: {
           item,
           oldStageId: item.stageId,
@@ -257,7 +258,7 @@ export const changeItemStatus = async (
     .sort({ order: -1 })
     .limit(1);
 
-  const aboveItemId = aboveItems[0]?._id || "";
+  const aboveItemId = aboveItems[0]?._id || '';
 
   // maybe, recovered order includes to oldOrders
   await collection.updateOne(
@@ -270,14 +271,14 @@ export const changeItemStatus = async (
         stageId: item.stageId,
         aboveItemId,
       }),
-    }
+    },
   );
 
   graphqlPubsub.publish(`ticketsPipelinesChanged:${stage.pipelineId}`, {
     ticketsPipelinesChanged: {
       _id: stage.pipelineId,
       proccessId,
-      action: "itemAdd",
+      action: 'itemAdd',
       data: {
         item: {
           ...item._doc,
@@ -299,7 +300,7 @@ export const itemsEdit = async (
   doc: any,
   proccessId: string,
   user: IUserDocument,
-  modelUpate
+  modelUpate,
 ) => {
   const extendedDoc = {
     ...doc,
@@ -310,10 +311,10 @@ export const itemsEdit = async (
   // description 변경 시 manualEmailRequest는 변경하지 않음 (Send Email 버튼을 눌렀을 때만 변경)
   // extendedDoc에서 manualEmailRequest를 제거하여 기존 값 유지 (단, Send Email 버튼 클릭 시에는 제외)
   if (
-    type === "ticket" &&
+    type === 'ticket' &&
     doc.description &&
     doc.description !== oldItem?.description &&
-    doc.manualEmailRequest !== true  // Send Email 버튼 클릭이 아닌 경우에만 제거
+    doc.manualEmailRequest !== true // Send Email 버튼 클릭이 아닌 경우에만 제거
   ) {
     // description 변경 시 manualEmailRequest를 제거하여 기존 값 유지
     if (extendedDoc.manualEmailRequest !== undefined) {
@@ -330,14 +331,14 @@ export const itemsEdit = async (
     canEditMemberIds.length > 0 &&
     !canEditMemberIds.includes(user._id)
   ) {
-    throw new Error("Permission denied");
+    throw new Error('Permission denied');
   }
 
   if (extendedDoc.customFieldsData) {
     // clean custom field values
     extendedDoc.customFieldsData = await sendCoreMessage({
       subdomain,
-      action: "fields.prepareCustomFieldsData",
+      action: 'fields.prepareCustomFieldsData',
       data: extendedDoc.customFieldsData,
       isRPC: true,
     });
@@ -347,9 +348,9 @@ export const itemsEdit = async (
 
   // 티켓의 description이 수정된 경우 widgetAlarm을 false로, emailSent도 false로 설정 (버튼 활성화)
   let shouldSkipAutomationTrigger = false; // putUpdateLog에서 자동화 트리거 스킵 플래그
-  
+
   if (
-    type === "ticket" &&
+    type === 'ticket' &&
     doc.description &&
     doc.description !== oldItem.description
   ) {
@@ -366,8 +367,11 @@ export const itemsEdit = async (
     updateFields.assignAlarm = true;
 
     await models.Tickets.updateOne({ _id }, { $set: updateFields });
-    console.log('📝 Description 변경됨 - assignAlarm true 설정 및 자동화 트리거', updateFields);
-    
+    console.log(
+      '📝 Description 변경됨 - assignAlarm true 설정 및 자동화 트리거',
+      updateFields,
+    );
+
     // updatedItem 객체에도 즉시 반영 (GraphQL 응답에 포함되도록)
     updatedItem.emailSent = false;
     if (wasWidgetAlarmTrue) {
@@ -376,41 +380,49 @@ export const itemsEdit = async (
     updatedItem.assignAlarm = true;
 
     // assignAlarm이 true로 설정되었으므로 자동화 트리거 전송
-    const ticketForAutomation = updatedItem.toObject ? updatedItem.toObject() : { ...updatedItem };
-    ticketForAutomation.assignAlarm = true;  // 자동화 트리거를 위해 true로 명시적 설정
+    const ticketForAutomation = updatedItem.toObject
+      ? updatedItem.toObject()
+      : { ...updatedItem };
+    ticketForAutomation.assignAlarm = true; // 자동화 트리거를 위해 true로 명시적 설정
     ticketForAutomation.assignAlarmTriggerSource =
       TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_DESCRIPTION;
 
-    const { sendMessage } = await import("@erxes/api-utils/src/core");
+    const { sendMessage } = await import('@erxes/api-utils/src/core');
     try {
       await sendMessage({
         subdomain,
-        serviceName: "automations",
-        action: "trigger",
+        serviceName: 'automations',
+        action: 'trigger',
         data: {
-          type: "tickets:ticket",
-          targets: [ticketForAutomation],  // assignAlarm: true인 데이터 전달
+          type: 'tickets:ticket',
+          targets: [ticketForAutomation], // assignAlarm: true인 데이터 전달
           triggerSource:
-            TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_DESCRIPTION
-        }
+            TICKET_AUTOMATION_TRIGGER_SOURCE.ASSIGN_ALARM_DESCRIPTION,
+        },
       });
       console.log('✅ assignAlarmDescription 자동화 트리거 전송 완료');
-      
+
       // description 변경으로 인한 자동화 트리거를 이미 보냈으므로
       // putUpdateLog에서는 자동화 트리거를 스킵하도록 플래그 설정
       shouldSkipAutomationTrigger = true;
-      
+
       // 자동화 트리거 전송 후 10초 뒤에 assignAlarm을 false로 리셋
       // 이렇게 해야 description이 다시 변경되면 자동화가 재등록(재실행)될 수 있음
       setTimeout(async () => {
         try {
           await models.Tickets.updateOne(
             { _id },
-            { $set: { assignAlarm: false } }
+            { $set: { assignAlarm: false } },
           );
-          console.log('✅ Assign alarm set to false after 10 seconds for ticket:', _id);
+          console.log(
+            '✅ Assign alarm set to false after 10 seconds for ticket:',
+            _id,
+          );
         } catch (error) {
-          console.error(`❌ Failed to reset assignAlarm for ticket ${_id}:`, error);
+          console.error(
+            `❌ Failed to reset assignAlarm for ticket ${_id}:`,
+            error,
+          );
         }
       }, 10000); // 10초 대기
     } catch (error) {
@@ -423,53 +435,69 @@ export const itemsEdit = async (
   console.log('🔍 manualEmailRequest 체크:', {
     newValue: doc.manualEmailRequest,
     oldValue: (oldItem as any).manualEmailRequest,
-    shouldTrigger: doc.manualEmailRequest === true && !(oldItem as any).manualEmailRequest
+    shouldTrigger:
+      doc.manualEmailRequest === true && !(oldItem as any).manualEmailRequest,
   });
-  
+
   if (doc.manualEmailRequest === true && !(oldItem as any).manualEmailRequest) {
     console.log('🚀 manualEmailRequest 트리거 발동!');
-    
+
     // 자동화 트리거에 전달할 데이터 준비 (manualEmailRequest: true 상태 유지)
     // oldItem을 사용하여 manualEmailRequest: true 상태의 데이터를 전달
-    const ticketForAutomation = oldItem.toObject ? oldItem.toObject() : { ...oldItem };
-    ticketForAutomation.manualEmailRequest = true;  // 자동화 트리거를 위해 true로 명시적 설정
-    ticketForAutomation.emailSent = false;  // 아직 발송 전 상태
-    
+    const ticketForAutomation = oldItem.toObject
+      ? oldItem.toObject()
+      : { ...oldItem };
+    ticketForAutomation.manualEmailRequest = true; // 자동화 트리거를 위해 true로 명시적 설정
+    ticketForAutomation.emailSent = false; // 아직 발송 전 상태
+
     console.log('🎯 [manualEmailRequest] Ticket data for automation:', {
       _id: ticketForAutomation._id,
       name: ticketForAutomation.name,
       description: ticketForAutomation.description?.substring(0, 100),
       stageId: ticketForAutomation.stageId,
       status: ticketForAutomation.status,
-      manualEmailRequest: ticketForAutomation.manualEmailRequest,  // true
-      emailSent: ticketForAutomation.emailSent,  // false
-      hasAllFields: !!(ticketForAutomation.name && ticketForAutomation.description)
+      manualEmailRequest: ticketForAutomation.manualEmailRequest, // true
+      emailSent: ticketForAutomation.emailSent, // false
+      hasAllFields: !!(
+        ticketForAutomation.name && ticketForAutomation.description
+      ),
     });
+
+    // 직접 보내므로 예약된 자동 발송은 트리거 전에 먼저 취소(스케줄러와 겹쳐 두 통 가지 않게)
+    await models.Tickets.updateOne({ _id }, { $unset: { autoEmailDueAt: '' } });
 
     // 자동화 트리거를 먼저 보냄 (manualEmailRequest: true 상태로)
     // 이렇게 하면 세그먼트 조건이 정상적으로 매칭됨
-    const { sendMessage } = await import("@erxes/api-utils/src/core");
+    const { sendMessage } = await import('@erxes/api-utils/src/core');
     try {
       await sendMessage({
         subdomain,
-        serviceName: "automations",
-        action: "trigger",
+        serviceName: 'automations',
+        action: 'trigger',
         data: {
-          type: "tickets:ticket",
-          targets: [ticketForAutomation],  // manualEmailRequest: true인 데이터 전달
-          triggerSource: "manualEmailRequest"
-        }
+          type: 'tickets:ticket',
+          targets: [ticketForAutomation], // manualEmailRequest: true인 데이터 전달
+          triggerSource: 'manualEmailRequest',
+        },
       });
       console.log('✅ manualEmailRequest 자동화 트리거 전송 완료');
     } catch (error) {
-      console.error('❌ Failed to send manual email automation trigger:', error);
+      console.error(
+        '❌ Failed to send manual email automation trigger:',
+        error,
+      );
       // 에러 발생 시에도 DB 업데이트는 진행 (버튼 비활성화)
     }
-    
+
     // 자동화 트리거 전송 후 DB 업데이트 (버튼 비활성화)
-    await models.Tickets.updateOne({ _id }, { $set: { manualEmailRequest: false, emailSent: true } });
-    console.log('🔄 manualEmailRequest를 false로, emailSent를 true로 설정 완료 (Send Email 버튼 비활성화)');
-    
+    await models.Tickets.updateOne(
+      { _id },
+      { $set: { manualEmailRequest: false, emailSent: true } },
+    );
+    console.log(
+      '🔄 manualEmailRequest를 false로, emailSent를 true로 설정 완료 (Send Email 버튼 비활성화)',
+    );
+
     // updatedItem 객체에도 반영하여 GraphQL 응답에 포함
     updatedItem.manualEmailRequest = false;
     updatedItem.emailSent = true;
@@ -488,14 +516,14 @@ export const itemsEdit = async (
   };
 
   if (doc.status && oldItem.status && oldItem.status !== doc.status) {
-    const activityAction = doc.status === "active" ? "activated" : "archived";
+    const activityAction = doc.status === 'active' ? 'activated' : 'archived';
 
     putActivityLog(subdomain, {
-      action: "createArchiveLog",
+      action: 'createArchiveLog',
       data: {
         item: updatedItem,
         contentType: type,
-        action: "archive",
+        action: 'archive',
         userId: user._id,
         createdBy: user._id,
         contentId: updatedItem._id,
@@ -516,19 +544,19 @@ export const itemsEdit = async (
   if (doc.assignedUserIds) {
     const { addedUserIds, removedUserIds } = checkUserIds(
       oldItem.assignedUserIds,
-      doc.assignedUserIds
+      doc.assignedUserIds,
     );
 
     const activityContent = { addedUserIds, removedUserIds };
 
     putActivityLog(subdomain, {
-      action: "createAssigneLog",
+      action: 'createAssigneLog',
       data: {
         contentId: _id,
         userId: user._id,
         contentType: type,
         content: activityContent,
-        action: "assignee",
+        action: 'assignee',
         createdBy: user._id,
       },
     });
@@ -541,8 +569,8 @@ export const itemsEdit = async (
 
   if (!notificationDoc.invitedUsers && !notificationDoc.removedUsers) {
     sendCoreMessage({
-      subdomain: "os",
-      action: "sendMobileNotification",
+      subdomain: 'os',
+      action: 'sendMobileNotification',
       data: {
         title: notificationDoc?.item?.name,
         body: `${
@@ -572,7 +600,7 @@ export const itemsEdit = async (
       updatedDocument: updatedItem,
     },
     user,
-    { skipAutomationTrigger: shouldSkipAutomationTrigger }
+    { skipAutomationTrigger: shouldSkipAutomationTrigger },
   );
 
   const updatedStage = await models.Stages.getStage(updatedItem.stageId);
@@ -590,7 +618,7 @@ export const itemsEdit = async (
       ticketsPipelinesChanged: {
         _id: stage.pipelineId,
         proccessId,
-        action: "itemRemove",
+        action: 'itemRemove',
         data: {
           item: oldItem,
           oldStageId: stage._id,
@@ -601,13 +629,13 @@ export const itemsEdit = async (
       ticketsPipelinesChanged: {
         _id: updatedStage.pipelineId,
         proccessId,
-        action: "itemAdd",
+        action: 'itemAdd',
         data: {
           item: {
             ...updatedItem._doc,
             ...(await itemResolver(models, subdomain, user, type, updatedItem)),
           },
-          aboveItemId: "",
+          aboveItemId: '',
           destinationStageId: updatedStage._id,
         },
       },
@@ -617,7 +645,7 @@ export const itemsEdit = async (
       ticketsPipelinesChanged: {
         _id: stage.pipelineId,
         proccessId,
-        action: "itemUpdate",
+        action: 'itemUpdate',
         data: {
           item: {
             ...updatedItem._doc,
@@ -639,7 +667,7 @@ export const itemsEdit = async (
     user._id,
     oldItem,
     type,
-    updatedItem.stageId
+    updatedItem.stageId,
   );
 
   await sendNotifications(models, subdomain, {
@@ -660,7 +688,7 @@ const itemMover = async (
   userId: string,
   item: ITicketDocument,
   contentType: string,
-  destinationStageId: string
+  destinationStageId: string,
 ) => {
   const oldStageId = item.stageId;
 
@@ -690,14 +718,14 @@ const itemMover = async (
     };
 
     await putActivityLog(subdomain, {
-      action: "createBoardItemMovementLog",
+      action: 'createBoardItemMovementLog',
       data: {
         item,
         contentType,
         userId,
         activityLogContent,
         link,
-        action: "moved",
+        action: 'moved',
         contentId: item._id,
         createdBy: userId,
         content: activityLogContent,
@@ -706,7 +734,7 @@ const itemMover = async (
 
     sendNotificationsMessage({
       subdomain,
-      action: "batchUpdate",
+      action: 'batchUpdate',
       data: {
         selector: { contentType, contentTypeId: item._id },
         modifier: { $set: { link } },
@@ -719,14 +747,14 @@ const itemMover = async (
 
 export const checkMovePermission = (
   stage: IStageDocument,
-  user: IUserDocument
+  user: IUserDocument,
 ) => {
   if (
     stage.canMoveMemberIds &&
     stage.canMoveMemberIds.length > 0 &&
     !stage.canMoveMemberIds.includes(user._id)
   ) {
-    throw new Error("Permission denied");
+    throw new Error('Permission denied');
   }
 };
 
@@ -736,7 +764,7 @@ export const itemsChange = async (
   doc: IItemDragCommonFields,
   type: string,
   user: IUserDocument,
-  modelUpdate: any
+  modelUpdate: any,
 ) => {
   const { collection } = getCollection(models, type);
 
@@ -775,7 +803,7 @@ export const itemsChange = async (
     user._id,
     item,
     type,
-    destinationStageId
+    destinationStageId,
   );
 
   await sendNotifications(models, subdomain, {
@@ -789,8 +817,8 @@ export const itemsChange = async (
 
   if (item?.assignedUserIds && item?.assignedUserIds?.length > 0) {
     sendCoreMessage({
-      subdomain: "os",
-      action: "sendMobileNotification",
+      subdomain: 'os',
+      action: 'sendMobileNotification',
       data: {
         title: `${item.name}`,
         body: `${user?.details?.fullName || user?.details?.shortName} ${action + content}`,
@@ -812,7 +840,7 @@ export const itemsChange = async (
       newData: extendedDoc,
       updatedDocument: updatedItem,
     },
-    user
+    user,
   );
 
   // order notification
@@ -826,7 +854,7 @@ export const itemsChange = async (
     ticketsPipelinesChanged: {
       _id: stage.pipelineId,
       proccessId,
-      action: "orderUpdated",
+      action: 'orderUpdated',
       data: {
         item: {
           ...item._doc,
@@ -848,7 +876,7 @@ export const itemsRemove = async (
   subdomain: string,
   _id: string,
   type: string,
-  user: IUserDocument
+  user: IUserDocument,
 ) => {
   const item = await getItem(models, type, { _id });
 
@@ -863,8 +891,8 @@ export const itemsRemove = async (
 
   if (item?.assignedUserIds && item?.assignedUserIds?.length > 0) {
     sendCoreMessage({
-      subdomain: "os",
-      action: "sendMobileNotification",
+      subdomain: 'os',
+      action: 'sendMobileNotification',
       data: {
         title: `${item.name}`,
         body: `${user?.details?.fullName || user?.details?.shortName} deleted the ${type}`,
@@ -880,7 +908,7 @@ export const itemsRemove = async (
   await destroyBoardItemRelations(models, subdomain, item._id, type);
 
   const removed = await getCollection(models, type).collection.findOneAndDelete(
-    { _id: item._id }
+    { _id: item._id },
   );
 
   await putDeleteLog(models, subdomain, { type, object: item }, user);
@@ -896,7 +924,7 @@ export const itemsCopy = async (
   type: string,
   user: IUserDocument,
   extraDocParam: string[],
-  modelCreate: any
+  modelCreate: any,
 ) => {
   const { collection } = getCollection(models, type);
   const item = await collection.findOne({ _id }).lean();
@@ -904,6 +932,8 @@ export const itemsCopy = async (
   const doc = await prepareBoardItemDoc(item, collection, user._id);
 
   delete doc.sourceConversationIds;
+  // 복사본에는 직원 댓글이 없으므로 고객 알림 메일 자동 발송 예약을 물려받지 않는다
+  delete (doc as any).autoEmailDueAt;
 
   for (const param of extraDocParam) {
     doc[param] = item[param];
@@ -935,7 +965,7 @@ export const itemsCopy = async (
     ticketsPipelinesChanged: {
       _id: stage.pipelineId,
       proccessId,
-      action: "itemAdd",
+      action: 'itemAdd',
       data: {
         item: {
           ...clone._doc,
@@ -958,7 +988,7 @@ export const itemsArchive = async (
   stageId: string,
   type: string,
   proccessId: string,
-  user: IUserDocument
+  user: IUserDocument,
 ) => {
   const { collection } = getCollection(models, type);
 
@@ -971,7 +1001,7 @@ export const itemsArchive = async (
 
   await collection.updateMany(
     { stageId },
-    { $set: { status: BOARD_STATUSES.ARCHIVED } }
+    { $set: { status: BOARD_STATUSES.ARCHIVED } },
   );
 
   // order notification
@@ -979,15 +1009,15 @@ export const itemsArchive = async (
 
   for (const item of items) {
     await putActivityLog(subdomain, {
-      action: "createArchiveLog",
+      action: 'createArchiveLog',
       data: {
         item,
         contentType: type,
-        action: "archive",
+        action: 'archive',
         userId: user._id,
         createdBy: user._id,
         contentId: item._id,
-        content: "archived",
+        content: 'archived',
       },
     });
 
@@ -995,7 +1025,7 @@ export const itemsArchive = async (
       ticketsPipelinesChanged: {
         _id: stage.pipelineId,
         proccessId,
-        action: "itemsRemove",
+        action: 'itemsRemove',
         data: {
           item,
           destinationStageId: stage._id,
@@ -1004,18 +1034,18 @@ export const itemsArchive = async (
     });
   }
 
-  return "ok";
+  return 'ok';
 };
 
 export const publishHelperItemsConformities = async (
   item: ITicketDocument,
-  stage: IStageDocument
+  stage: IStageDocument,
 ) => {
   graphqlPubsub.publish(`ticketsPipelinesChanged:${stage.pipelineId}`, {
     ticketsPipelinesChanged: {
       _id: stage.pipelineId,
       proccessId: Math.random().toString(),
-      action: "itemOfConformitiesUpdate",
+      action: 'itemOfConformitiesUpdate',
       data: {
         item: {
           ...item,
@@ -1028,7 +1058,7 @@ export const publishHelperItemsConformities = async (
 export const publishHelper = async (
   subdomain: string,
   type: string,
-  itemId: string
+  itemId: string,
 ) => {
   const models = await generateModels(subdomain);
 

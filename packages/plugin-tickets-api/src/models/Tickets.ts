@@ -159,6 +159,8 @@ export const loadTicketClass = (models: IModels, subdomain: string) => {
   ticketSchema.index({ status: 1, stageId: 1, createdAt: -1, _id: -1 });
   // archivedItems 아이템 목록: modifiedAt 정렬 최적화
   ticketSchema.index({ status: 1, stageId: 1, modifiedAt: -1 });
+  // 자동 고객 알림 메일: 1분마다 예정이 지난 예약만 찾는다(예약 있는 티켓만 색인)
+  ticketSchema.index({ autoEmailDueAt: 1 }, { sparse: true });
 
   return ticketSchema;
 };

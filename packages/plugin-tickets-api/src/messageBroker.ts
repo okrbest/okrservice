@@ -1,3 +1,4 @@
+import { computeAutoEmailDueAt } from './autoCustomerEmail';
 import type {
   MessageArgs,
   MessageArgsOmitService,
@@ -589,9 +590,16 @@ export const setupMessageConsumers = async () => {
           userType,
         );
 
+        // 10분 안에 Send Email을 누르지 않으면 고객 알림 메일 자동 발송(마지막 댓글 기준으로 덮어씀)
         await models.Tickets.updateOne(
           { _id: typeId },
-          { $set: { widgetAlarm: false, emailSent: false } },
+          {
+            $set: {
+              widgetAlarm: false,
+              emailSent: false,
+              autoEmailDueAt: computeAutoEmailDueAt(new Date()),
+            },
+          },
         );
 
         console.log(
