@@ -33,5 +33,5 @@ erxes 기반 모노레포. 상세 원칙은 `.specify/memory/constitution.md` (�
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-`specs/002-faq-home-redesign/plan.md`
+`specs/003-staff-comment-auto-email/plan.md`
 <!-- SPECKIT END -->
