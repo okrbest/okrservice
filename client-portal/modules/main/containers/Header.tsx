@@ -12,6 +12,7 @@ type Props = {
   headingSpacing?: boolean;
   headerBottomComponent?: React.ReactNode;
   notificationsCount: number;
+  lightHeader?: boolean;
 };
 
 function HeaderContainer(props: Props) {

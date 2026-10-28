@@ -1,14 +1,18 @@
-import { Config, IKbCategory, IKbParentCategory } from '../../types';
+import { IKbParentCategory } from '../../types';
 import { SidebarNav } from './styles';
+import { flattenCategories, stripCategoryNumber } from '../utils/faqDisplay';
 
 import Link from 'next/link';
 import React from 'react';
 
 type Props = {
   parentCategories: IKbParentCategory[];
-  category: IKbCategory;
-  articleId?: string;
-  config: Config;
+  activeCategoryId?: string;
+  // "전체"를 선택 상태로 보여 줄지(전체 질문 화면)
+  allActive?: boolean;
+  // 분류별 질문 수(상위 분류는 하위 포함)와 전체 수 — useFaqArticles 기준
+  counts: Record<string, number>;
+  total: number;
 };
 
 export const ERXES_TO_MATERIAL: Record<string, string> = {
@@ -73,38 +77,54 @@ function toMaterialIcon(erxesIcon: string): string {
   return ERXES_TO_MATERIAL[erxesIcon] || 'folder';
 }
 
-function SideBar({ parentCategories, category }: Props) {
+function NavItem({ href, icon, label, count, active, child = false }) {
+  return (
+    <Link href={href}>
+      <a
+        className={`nav-item${active ? ' active' : ''}${child ? ' nav-item-child' : ''}`}
+        aria-current={active ? 'page' : undefined}
+      >
+        <span className="material-icons" aria-hidden="true">
+          {icon}
+        </span>
+        <span className="nav-item-label" title={label}>
+          {label}
+        </span>
+        <span className="nav-item-count">{count}</span>
+      </a>
+    </Link>
+  );
+}
+
+function SideBar({
+  parentCategories,
+  activeCategoryId,
+  allActive,
+  counts,
+  total,
+}: Props) {
   if (!parentCategories || parentCategories.length === 0) return null;
 
-  const renderItem = (cat: any, isChild = false) => {
-    const isActive = cat._id === category._id;
-    return (
-      <Link key={cat._id} href={`/knowledge-base/category?id=${cat._id}`}>
-        <a className={`nav-item${isActive ? ' active' : ''}${isChild ? ' nav-item-child' : ''}`}>
-          <span className="material-icons">{toMaterialIcon(cat.icon)}</span>
-          <span className="nav-item-label">{cat.title}</span>
-          {cat.numOfArticles > 0 && (
-            <span className="nav-item-count">{cat.numOfArticles}</span>
-          )}
-        </a>
-      </Link>
-    );
-  };
-
   return (
-    <SidebarNav>
-      <p className="nav-label">카테고리</p>
-      <Link href="/knowledge-base?view=all">
-        <a className="nav-item">
-          <span className="material-icons">apps</span>
-          <span>전체보기</span>
-        </a>
-      </Link>
-      {parentCategories.map((cat) => (
-        <React.Fragment key={cat._id}>
-          {renderItem(cat)}
-          {cat.childrens?.map((child) => renderItem(child, true))}
-        </React.Fragment>
+    <SidebarNav aria-label="분류">
+      <p className="nav-label">분류</p>
+      <NavItem
+        href="/knowledge-base?view=all"
+        icon="apps"
+        label="전체"
+        count={total}
+        active={allActive}
+      />
+      {flattenCategories(parentCategories).map(({ category, isChild }) => (
+        <NavItem
+          key={category._id}
+          href={`/knowledge-base/category?id=${category._id}`}
+          icon={toMaterialIcon(category.icon)}
+          label={stripCategoryNumber(category.title)}
+          count={counts[category._id] || 0}
+          active={category._id === activeCategoryId}
+          child={isChild}
+        />
       ))}
     </SidebarNav>
   );

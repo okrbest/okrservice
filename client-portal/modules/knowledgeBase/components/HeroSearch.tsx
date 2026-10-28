@@ -1,125 +1,103 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { gql, useQuery } from '@apollo/client';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { articlesQuery } from '../graphql/queries';
 import {
-  HeroSearchWrapper,
-  AutocompleteList,
-  AutocompleteItem,
-} from './styles';
+  FAQ_SUGGESTED_KEYWORDS,
+  articleHref,
+  splitTitleTag,
+} from '../utils/faqDisplay';
+import { AutocompleteList, AutocompleteItem } from './styles';
+import { FaqChips, FaqHeroWrapper, FaqSearchBox } from './faqStyles';
+import useSearchBox from './search/useSearchBox';
 
 interface Props {
   topicId: string;
   initialValue?: string;
+  // hero: 첫 화면 큰 영역(제목·추천 검색어), compact: 목록 화면 위 검색창만
+  variant?: 'hero' | 'compact';
 }
 
-export default function HeroSearch({ topicId, initialValue = '' }: Props) {
-  const router = useRouter();
-  const [value, setValue] = useState(initialValue);
-  const [autocompleteQuery, setAutocompleteQuery] = useState('');
-  const [open, setOpen] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
-  const blurTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-        inputRef.current?.focus();
-      }
-    };
-    document.addEventListener('keydown', handleGlobalKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleGlobalKeyDown);
-      clearTimeout(debounceRef.current);
-      clearTimeout(blurTimerRef.current);
-    };
-  }, []);
-
-  const { data } = useQuery(gql(articlesQuery), {
-    variables: { searchValue: autocompleteQuery, topicId, isPrivate: true },
-    skip: autocompleteQuery.length < 2,
-  });
-
-  const suggestions = (data?.clientPortalKnowledgeBaseArticles || []).slice(0, 6);
-
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value;
-    setValue(v);
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setAutocompleteQuery(v);
-      setOpen(v.length >= 2);
-    }, 400);
-  };
-
-  const onSearch = () => {
-    if (!value.trim()) return;
-    setOpen(false);
-    router.push({
-      pathname: router.pathname || '/knowledge-base',
-      query: { searchValue: value.trim() },
-    });
-  };
+function SearchField({ topicId, initialValue = '', variant }: Props) {
+  const box = useSearchBox(topicId, initialValue);
 
   const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') onSearch();
-    if (e.key === 'Escape') onClear();
-  };
-
-  const onClear = () => {
-    setValue('');
-    setAutocompleteQuery('');
-    setOpen(false);
-    router.push({ pathname: '/knowledge-base' });
-    inputRef.current?.focus();
+    if (e.key === 'Enter') box.onSearch();
+    if (e.key === 'Escape') box.onClear();
   };
 
   return (
-    <HeroSearchWrapper>
-      <h2>자주 묻는 질문을 검색하세요.</h2>
-      <div className="search-box">
-        <div className="input-wrapper">
-          <input
-            ref={inputRef}
-            value={value}
-            onChange={onChange}
-            onKeyDown={onKeyDown}
-            placeholder="검색어를 입력하세요 (예:인사발령)"
-            onFocus={() => value.length >= 2 && suggestions.length > 0 && setOpen(true)}
-            onBlur={() => {
-              clearTimeout(blurTimerRef.current);
-              blurTimerRef.current = setTimeout(() => setOpen(false), 150);
-            }}
-          />
-          {value && (
-            <button type="button" className="clear-btn" onClick={onClear} aria-label="검색어 지우기">
-              ✕
-            </button>
-          )}
-        </div>
-        <button type="button" onClick={onSearch}>
+    <FaqSearchBox compact={variant === 'compact'}>
+      <div className="faq-search-field">
+        <span className="material-icons faq-search-icon" aria-hidden="true">
+          search
+        </span>
+        <input
+          ref={box.inputRef}
+          value={box.value}
+          onChange={(e) => box.onChange(e.target.value)}
+          onKeyDown={onKeyDown}
+          onFocus={box.onFocus}
+          onBlur={box.onBlur}
+          placeholder="궁금한 내용을 입력하세요 (예: 연차, 급여명세서)"
+          aria-label="질문 검색"
+        />
+        {box.value && (
+          <button
+            type="button"
+            className="faq-search-clear"
+            onClick={box.onClear}
+            aria-label="검색어 지우기"
+          >
+            <span className="material-icons" aria-hidden="true">
+              close
+            </span>
+          </button>
+        )}
+        <button
+          type="button"
+          className="faq-search-submit"
+          onClick={box.onSearch}
+        >
           검색
         </button>
-        {open && suggestions.length > 0 && (
-          <AutocompleteList>
-            {suggestions.map((a) => (
-              <AutocompleteItem
-                key={a._id}
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                <Link
-                  href={`/knowledge-base/article?id=${a._id}&catId=${a.categoryId}`}
-                >
-                  <a>{a.title}</a>
-                </Link>
-              </AutocompleteItem>
-            ))}
-          </AutocompleteList>
-        )}
       </div>
-    </HeroSearchWrapper>
+      {box.open && box.suggestions.length > 0 && (
+        <AutocompleteList>
+          {box.suggestions.map((a) => (
+            <AutocompleteItem
+              key={a._id}
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <Link href={articleHref(a)}>
+                <a>{splitTitleTag(a.title).text}</a>
+              </Link>
+            </AutocompleteItem>
+          ))}
+        </AutocompleteList>
+      )}
+    </FaqSearchBox>
+  );
+}
+
+export default function HeroSearch(props: Props) {
+  if (props.variant === 'compact') {
+    return <SearchField {...props} />;
+  }
+
+  return (
+    <FaqHeroWrapper>
+      <h1>무엇을 도와드릴까요?</h1>
+      <p>궁금한 내용을 검색하거나 주제를 골라 보세요</p>
+      <SearchField {...props} variant="hero" />
+      <FaqChips>
+        {FAQ_SUGGESTED_KEYWORDS.map((keyword) => (
+          <Link
+            key={keyword}
+            href={`/knowledge-base?searchValue=${encodeURIComponent(keyword)}`}
+          >
+            <a>{keyword}</a>
+          </Link>
+        ))}
+      </FaqChips>
+    </FaqHeroWrapper>
   );
 }

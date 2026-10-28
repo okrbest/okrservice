@@ -45,6 +45,7 @@ type Props = {
   headingSpacing?: boolean;
   headerBottomComponent?: React.ReactNode;
   notificationsCount: number;
+  lightHeader?: boolean;
 };
 
 function Header({
@@ -56,11 +57,16 @@ function Header({
   headingSpacing,
   headerBottomComponent,
   notificationsCount,
+  lightHeader,
 }: Props) {
   const [showlogin, setLogin] = useState(false);
   const [showregister, setRegister] = useState(false);
   const [showResetPassword, setResetPassword] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+
+  // 관리자가 위쪽 바 HTML을 따로 넣은 포털은 그 HTML을 쓰므로 흰 바탕을 적용하지 않는다
+  const hasCustomHtml = Boolean(headerHtml?.replace(/<[^>]*>/g, '').trim());
+  const light = lightHeader && !hasCustomHtml;
 
   const onClick = (url: string) => {
     if (!currentUser && url.includes('tickets')) {
@@ -113,7 +119,7 @@ function Header({
   const renderHeaderExternalLinks = () => {
     const links = config.externalLinks || {};
     const entries = Object.entries(links).filter(([, url]) =>
-      Boolean(url && String(url).trim())
+      Boolean(url && String(url).trim()),
     );
 
     if (entries.length === 0) {
@@ -123,7 +129,7 @@ function Header({
     const linkColor = getConfigColor(config, 'headingColor');
 
     return (
-      <HeaderNavLinks color={linkColor}>
+      <HeaderNavLinks color={linkColor} light={light}>
         {entries.map(([label, url]) => {
           const href = String(url);
 
@@ -238,7 +244,7 @@ function Header({
             >
               <div>
                 <Icon icon="settings" />
-              {__('Settings')}
+                {__('Settings')}
               </div>
             </Dropdown.Item>
             <Dropdown.Divider />
@@ -266,7 +272,7 @@ function Header({
     }
 
     return (
-      <HamburgerMenuWrapper>
+      <HamburgerMenuWrapper light={light}>
         <Dropdown>
           <Dropdown.Toggle as={DropdownToggle} id="dropdown-custom-components1">
             <Icon icon="subject" />
@@ -306,7 +312,7 @@ function Header({
   };
 
   const renderTopHeader = () => {
-    if (headerHtml?.replace(/<[^>]*>/g, '').trim())
+    if (hasCustomHtml)
       return <div dangerouslySetInnerHTML={{ __html: headerHtml }} />;
 
     return (
@@ -318,17 +324,23 @@ function Header({
                 src={
                   config.logo
                     ? readFile(config.logo)
-                    : '/static/logos/erxes-logo-white.svg'
+                    : light
+                      ? '/static/logos/erxes-logo.svg'
+                      : '/static/logos/erxes-logo-white.svg'
                 }
               />
             </Link>
-            <HeaderTitle color={getConfigColor(config, 'headingColor')}>
+            <HeaderTitle
+              color={getConfigColor(config, 'headingColor')}
+              light={light}
+            >
               {config.name}
             </HeaderTitle>
           </HeaderLogo>
 
           <HeaderRight>
             <SupportMenus
+              light={light}
               color={getConfigColor(config, 'headingColor')}
               baseColor={getConfigColor(config, 'baseColor')}
             >
@@ -350,6 +362,7 @@ function Header({
       background={getConfigColor(config, 'headerColor')}
       color={getConfigColor(config, 'headingColor')}
       headingSpacing={headingSpacing}
+      light={light}
     >
       {renderTopHeader()}
       {(config.description || headerBottomComponent) && (

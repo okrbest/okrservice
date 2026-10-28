@@ -1,37 +1,42 @@
-import { gql, useQuery } from '@apollo/client';
-
-import ArticleList from '../components/ArticleList';
-import { Config, IUser } from '../../types';
 import React from 'react';
-import { articlesQuery } from '../graphql/queries';
+import ArticleList from '../components/ArticleList';
+import FaqBrowse from '../components/browse/FaqBrowse';
+import HeroSearch from '../components/HeroSearch';
+import KbRightPanel from '../components/KbRightPanel';
+import { Config, Topic } from '../../types';
+import useFaqArticles from './useFaqArticles';
 
 type Props = {
+  topic: Topic;
   config: Config;
-  searchValue?: any;
-  categoryId?: string;
-  topicId?: string;
-  currentUser: IUser;
+  searchValue: string;
 };
 
-function ArticleListContainer(props: Props) {
-  const { loading, data = {} as any } = useQuery(gql(articlesQuery), {
-    variables: {
-      searchValue: props.searchValue || '',
-      categoryIds: props.categoryId && [props.categoryId],
-      topicId: props.topicId || '',
-      isPrivate: true,
-    },
-  });
+// 검색 결과 화면(시안 C): 왼쪽 분류 · 가운데 결과 · 오른쪽 많이 본 질문
+function ArticleListContainer({ topic, config, searchValue }: Props) {
+  const { articles, loading, error, seed } = useFaqArticles(topic, searchValue);
 
-  const articles = data.clientPortalKnowledgeBaseArticles || [];
-
-  const updatedProps = {
-    ...props,
-    loading,
-    articles,
-  };
-
-  return <ArticleList {...updatedProps} />;
+  return (
+    <FaqBrowse
+      topic={topic}
+      loading={loading}
+      error={error}
+      topSlot={
+        <HeroSearch
+          topicId={topic._id}
+          initialValue={searchValue}
+          variant="compact"
+        />
+      }
+      rightPanel={<KbRightPanel topic={topic} seed={seed} />}
+    >
+      <ArticleList
+        articles={articles}
+        config={config}
+        searchValue={searchValue}
+      />
+    </FaqBrowse>
+  );
 }
 
 export default ArticleListContainer;

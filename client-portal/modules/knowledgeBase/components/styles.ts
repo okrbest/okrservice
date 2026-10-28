@@ -1,13 +1,13 @@
-import { colors, dimensions, typography } from "../../styles";
-import { darken, rgba } from "../../styles/ecolor";
-import styled, { css } from "styled-components";
+import { colors, dimensions, typography } from '../../styles';
+import { darken, rgba } from '../../styles/ecolor';
+import styled, { css } from 'styled-components';
 
-import styledTS from "styled-components-ts";
+import styledTS from 'styled-components-ts';
 
-const silverGrey = "#6c718b";
+const silverGrey = '#6c718b';
 
 const Header = styledTS<{ color?: string; backgroundImage?: string }>(
-  styled.div
+  styled.div,
 )`
   padding: 30px;
   color: ${colors.colorWhite};
@@ -226,7 +226,6 @@ const SidebarItem = styledTS<{ active?: boolean }>(styled.div)`
       }
     `}
 
-
   ${SidebarIcon} {
     flex: 0 0 18%;
     max-width: 18%;
@@ -244,25 +243,25 @@ const SidebarItem = styledTS<{ active?: boolean }>(styled.div)`
 const ArticleWrapper = styled.div`
   padding: 50px 80px;
   border: 0;
-  padding: 1.5rem;
+  padding: 28px 32px;
   background: ${colors.colorWhite};
-  box-shadow: 0px 0 15px -10px rgba(0, 0, 0, 0.25);
-  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  border-radius: 16px;
   transition: 0.4s;
   width: 100%;
   height: 100%;
   overflow-x: auto;
 
   > h4 {
-    color: #036;
+    color: #191f28;
     font-size: 24px;
-    font-weight: 400;
+    font-weight: 700;
   }
 
   .content {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.8;
-    color: #62667a;
+    color: #4e5968;
 
     p > img {
       max-width: 100%;
@@ -279,7 +278,7 @@ const ArticleWrapper = styled.div`
     }
 
     a {
-      color: #6569df;
+      color: #1b64da;
       text-decoration: underline;
     }
 
@@ -327,7 +326,8 @@ const ArticleWrapper = styled.div`
         background: transparent;
         color: #374151;
         font-size: 13px;
-        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo,
+          monospace;
         padding: 0;
       }
     }
@@ -338,7 +338,8 @@ const ArticleWrapper = styled.div`
       font-size: 13px;
       padding: 2px 6px;
       border-radius: 4px;
-      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo,
+        monospace;
     }
 
     blockquote {
@@ -415,8 +416,8 @@ const CategoryListWrapper = styledTS<{
         height: 44px;
         flex-shrink: 0;
         border-radius: ${dimensions.unitSpacing}px;
-        border: 1px solid ${props => rgba(props.baseColor ? props.baseColor : colors.colorSecondary, 0.08)};
-        background: ${props => rgba(props.baseColor ? props.baseColor : colors.colorSecondary, 0.08)};
+        border: 1px solid ${(props) => rgba(props.baseColor ? props.baseColor : colors.colorSecondary, 0.08)};
+        background: ${(props) => rgba(props.baseColor ? props.baseColor : colors.colorSecondary, 0.08)};
 
         i {
           font-size: 18px;
@@ -484,7 +485,11 @@ const CategoryListWrapper = styledTS<{
       &:hover > * {
         .tab-content h5 {
           color: ${(props) =>
-            props.linkHoverColor ? props.linkHoverColor : props.baseColor ? darken(props.baseColor, .7) :"#6569df"} !important;
+            props.linkHoverColor
+              ? props.linkHoverColor
+              : props.baseColor
+                ? darken(props.baseColor, 0.7)
+                : '#6569df'} !important;
         }
       }
     }
@@ -534,8 +539,8 @@ const SidebarList = styledTS<{ baseColor?: string }>(styled.div)`
         height: 30px;
         flex-shrink: 0;
         border-radius: ${dimensions.unitSpacing}px;
-        border: 1px solid ${props => rgba(props.baseColor ? props.baseColor : colors.colorSecondary, 0.08)};
-        background: ${props => rgba(props.baseColor ? props.baseColor : colors.colorSecondary, 0.08)};
+        border: 1px solid ${(props) => rgba(props.baseColor ? props.baseColor : colors.colorSecondary, 0.08)};
+        background: ${(props) => rgba(props.baseColor ? props.baseColor : colors.colorSecondary, 0.08)};
 
         i {
           font-size: 13px;
@@ -581,11 +586,11 @@ const SubCategories = styledTS<{ baseColor?: string }>(styled.div)`
     margin: 0;
 
     &.active {
-      color: ${props => props.baseColor ? props.baseColor : colors.colorSecondary};
-      // background: ${props => rgba(props.baseColor ? props.baseColor : colors.colorSecondary, 0.1)};
+      color: ${(props) => (props.baseColor ? props.baseColor : colors.colorSecondary)};
+      // background: ${(props) => rgba(props.baseColor ? props.baseColor : colors.colorSecondary, 0.1)};
 
       h6, span {
-        color: ${props => props.baseColor ? props.baseColor : colors.textPrimary};
+        color: ${(props) => (props.baseColor ? props.baseColor : colors.textPrimary)};
       }
     }
 
@@ -618,15 +623,15 @@ const SubMenu = styled.ul`
 
 const SidebarNav = styled.nav`
   background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
+  border: 0;
+  border-radius: 16px;
+  padding: 14px 10px;
 
   .nav-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #9ca3af;
-    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7684;
+    padding: 0 10px;
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -636,11 +641,11 @@ const SidebarNav = styled.nav`
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 12px;
+    padding: 9px 10px;
     font-size: 14px;
     font-weight: 500;
-    border-radius: 8px;
-    color: #374151;
+    border-radius: 10px;
+    color: #4e5968;
     cursor: pointer;
     text-decoration: none;
     transition: background 0.15s;
@@ -649,7 +654,7 @@ const SidebarNav = styled.nav`
     i,
     .material-icons {
       font-size: 18px;
-      color: #9ca3af;
+      color: #6b7684;
       flex-shrink: 0;
       width: 20px;
       text-align: center;
@@ -664,33 +669,34 @@ const SidebarNav = styled.nav`
     }
 
     .nav-item-count {
-      font-size: 11px;
-      font-weight: 600;
-      color: #9ca3af;
-      background: #f3f4f6;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6b7684;
+      background: transparent;
       border-radius: 10px;
       padding: 1px 7px;
       flex-shrink: 0;
     }
 
     &:hover {
-      background: #f3f4f6;
-      color: #374151;
+      background: #f2f4f6;
+      color: #191f28;
       text-decoration: none;
     }
 
     &.active {
-      color: #2563eb;
-      background: #eff6ff;
+      color: #1b64da;
+      background: #e8f3ff;
+      font-weight: 700;
 
       i,
       .material-icons {
-        color: #3b82f6;
+        color: #1b64da;
       }
 
       .nav-item-count {
-        background: #dbeafe;
-        color: #3b82f6;
+        background: transparent;
+        color: #1b64da;
       }
     }
 
@@ -719,7 +725,8 @@ const Feedback = styled.div`
       }
 
       &.active img {
-        box-shadow: 0 3px 8px rgba(101, 105, 223, 0.5),
+        box-shadow:
+          0 3px 8px rgba(101, 105, 223, 0.5),
           0 3px 8px rgba(0, 0, 0, 0.15);
       }
 
@@ -729,7 +736,9 @@ const Feedback = styled.div`
         padding: 3px;
         background: #fff;
         border-radius: 50%;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08), 0 3px 8px rgba(0, 0, 0, 0.15);
+        box-shadow:
+          0 3px 8px rgba(0, 0, 0, 0.08),
+          0 3px 8px rgba(0, 0, 0, 0.15);
         transition: all 0.3s ease;
       }
     }
@@ -755,7 +764,7 @@ const PageAnchor = styled.div`
     height: 100%;
 
     &::before {
-      content: "";
+      content: '';
       height: 100%;
       border-left: 2px solid #d6d6d6;
       position: absolute;
@@ -774,7 +783,7 @@ const PageAnchor = styled.div`
       }
 
       &::before {
-        content: "";
+        content: '';
         position: absolute;
         left: -20px;
         height: 100%;
@@ -847,111 +856,10 @@ const Modal = styled.div`
     max-width: 80%;
     max-height: 80vh;
     box-shadow: 0 2px 10px -3px rgba(0, 0, 0, 0.5);
-    transition: max-width 0.1s ease, max-height 0.1s ease;
+    transition:
+      max-width 0.1s ease,
+      max-height 0.1s ease;
     animation: zoom 0.8s ease-in-out;
-  }
-`;
-
-export const HeroSearchWrapper = styled.div`
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  padding: 48px 16px;
-  text-align: center;
-  width: 100vw;
-  position: relative;
-  left: 50%;
-  margin-left: -50vw;
-  margin-top: -32px;
-  margin-bottom: 32px;
-
-  h2 {
-    color: #fff;
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 16px;
-  }
-
-  .search-box {
-    position: relative;
-    max-width: 768px;
-    margin: 0 auto;
-    display: flex;
-
-    .input-wrapper {
-      flex: 1;
-      position: relative;
-      display: flex;
-      align-items: center;
-
-      input {
-        width: 100%;
-        padding: 14px 40px 14px 20px;
-        border: none;
-        border-radius: 12px 0 0 12px;
-        font-size: 16px;
-        outline: none;
-        color: #1e293b;
-
-        &::placeholder {
-          color: #94a3b8;
-        }
-      }
-
-      .clear-btn {
-        position: absolute;
-        right: 10px;
-        background: none;
-        border: none;
-        color: #94a3b8;
-        font-size: 14px;
-        cursor: pointer;
-        padding: 4px;
-        line-height: 1;
-        border-radius: 50%;
-
-        &:hover {
-          color: #475569;
-          background: #f1f5f9;
-        }
-      }
-    }
-
-    button:not(.clear-btn) {
-      padding: 0 24px;
-      background: #3b82f6;
-      color: #fff;
-      border: none;
-      border-radius: 0 12px 12px 0;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-
-      &:hover {
-        background: #2563eb;
-      }
-    }
-  }
-
-  @media (max-width: 480px) {
-    padding: 32px 16px;
-    margin-top: -16px;
-
-    h2 {
-      font-size: 18px;
-      margin-bottom: 12px;
-    }
-
-    .search-box {
-      .input-wrapper input {
-        padding: 12px 36px 12px 14px;
-        font-size: 15px;
-      }
-
-      button:not(.clear-btn) {
-        padding: 0 16px;
-        font-size: 13px;
-      }
-    }
   }
 `;
 
@@ -984,67 +892,6 @@ export const AutocompleteItem = styled.li`
     background: #f1f5f9;
     color: #2563eb;
   }
-`;
-
-export const ArticleListItemWrapper = styled.div`
-  padding: 20px 0;
-  border-bottom: 1px solid #f1f5f9;
-  cursor: pointer;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  h3 {
-    font-size: 20px;
-    font-weight: 400;
-    color: #2563eb;
-    margin-bottom: 6px;
-    line-height: 1.5;
-    transition: color 0.15s;
-
-    mark {
-      background: #fef08a;
-      color: inherit;
-      padding: 0 1px;
-      border-radius: 2px;
-    }
-  }
-
-  p {
-    font-size: 14px;
-    color: #6b7280;
-    line-height: 1.625;
-    margin: 0;
-    font-weight: 300;
-
-    mark {
-      background: #fef08a;
-      color: inherit;
-      padding: 0 1px;
-      border-radius: 2px;
-    }
-  }
-
-  &:hover h3 {
-    text-decoration: underline;
-  }
-`;
-
-export const CategoryBadge = styled.span`
-  display: inline-block;
-  margin-bottom: 6px;
-  padding: 2px 8px;
-  background: #f0f4ff;
-  border: 1px solid #c7d2fe;
-  border-radius: 4px;
-  font-size: 11px;
-  color: #4f46e5;
-  font-weight: 500;
-`;
-
-export const ArticleListWrapper = styled.div`
-  width: 100%;
 `;
 
 export const ResultBar = styled.div`
@@ -1090,18 +937,18 @@ export const RightPanelWrapper = styled.div`
 `;
 
 export const RightPanelSection = styled.div`
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
+  background: #fff;
+  border: 0;
+  border-radius: 16px;
+  padding: 18px;
 
   h6 {
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #6b7280;
-    margin-bottom: 12px;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #191f28;
+    margin-bottom: 10px;
   }
 
   ul {
@@ -1110,21 +957,28 @@ export const RightPanelSection = styled.div`
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 2px;
   }
 
   li a {
     font-size: 13px;
-    color: #4b5563;
+    color: #4e5968;
     text-decoration: none;
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    transition: color 0.15s;
+    padding: 6px 0;
+
+    i {
+      margin-right: 8px;
+      font-style: normal;
+      font-weight: 800;
+      color: #3182f6;
+    }
 
     &:hover {
-      color: #2563eb;
+      color: #1b64da;
     }
   }
 `;
@@ -1152,7 +1006,9 @@ export const HomeCategoryCard = styled.div`
   display: flex;
   gap: 16px;
   align-items: center;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
   cursor: pointer;
 
   &:hover {
@@ -1216,15 +1072,15 @@ export const HomeCategoryCard = styled.div`
 export const ArticleFeedback = styled.div`
   margin-top: 24px;
   padding: 20px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  background: #f6f7f9;
+  border: 0;
+  border-radius: 14px;
   text-align: center;
 
   p {
     font-size: 14px;
     font-weight: 500;
-    color: #374151;
+    color: #191f28;
     margin: 0 0 12px;
   }
 
@@ -1253,7 +1109,7 @@ export const ArticleFeedback = styled.div`
       padding: 8px 18px;
       font-size: 13px;
       font-weight: 500;
-      border-radius: 8px;
+      border-radius: 999px;
       border: 1px solid;
       cursor: pointer;
       transition: all 0.15s;
@@ -1264,108 +1120,24 @@ export const ArticleFeedback = styled.div`
     }
 
     .btn-yes {
-      background: #f0fdf4;
-      border-color: #bbf7d0;
-      color: #16a34a;
+      background: #e8f3ff;
+      border-color: transparent;
+      color: #1b64da;
 
       &:hover {
-        background: #dcfce7;
+        background: #d6e8ff;
       }
     }
 
     .btn-no {
-      background: #fff7ed;
-      border-color: #fed7aa;
-      color: #ea580c;
+      background: #fff;
+      border-color: #e5e8eb;
+      color: #4e5968;
 
       &:hover {
-        background: #ffedd5;
+        background: #f2f4f6;
       }
     }
-  }
-`;
-
-export const EmptyState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 56px 24px;
-  text-align: center;
-  color: #6b7280;
-
-  > .material-icons {
-    font-size: 48px;
-    color: #d1d5db;
-    margin-bottom: 16px;
-  }
-
-  h4 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #374151;
-    margin: 0 0 8px;
-  }
-
-  p {
-    font-size: 14px;
-    color: #6b7280;
-    margin: 0 0 20px;
-  }
-
-  .contact-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: #2563eb;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 8px;
-    padding: 10px 16px;
-
-    .material-icons {
-      font-size: 16px;
-    }
-  }
-`;
-
-const skeletonAnimation = css`
-  @keyframes skeleton-pulse {
-    0% { background-position: -200px 0; }
-    100% { background-position: calc(200px + 100%) 0; }
-  }
-`;
-
-export const SkeletonLine = styled.div<{ width?: string; height?: string }>`
-  ${skeletonAnimation}
-  height: ${props => props.height || '14px'};
-  width: ${props => props.width || '100%'};
-  border-radius: 4px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200px 100%;
-  animation: skeleton-pulse 1.4s ease infinite;
-`;
-
-export const SkeletonItem = styled.div`
-  padding: 20px 0;
-  border-bottom: 1px solid #f1f5f9;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-export const KbPageContainer = styled.div`
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 16px 32px;
-
-  @media (max-width: 768px) {
-    padding: 0 12px 24px;
   }
 `;
 
@@ -1382,7 +1154,9 @@ export const TocWrapper = styled.div`
     padding: 2px 0;
     border-left: 2px solid transparent;
     padding-left: 8px;
-    transition: color 0.15s, border-color 0.15s;
+    transition:
+      color 0.15s,
+      border-color 0.15s;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1398,96 +1172,6 @@ export const TocWrapper = styled.div`
       font-size: 11px;
       color: #6b7280;
     }
-  }
-`;
-
-export const MobileCategoryNav = styled.div`
-  display: none;
-
-  @media (max-width: 768px) {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 0 0 12px;
-    margin-bottom: 12px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-`;
-
-export const MobileCategoryTab = styled.a<{ active?: boolean }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: ${props => props.active ? '600' : '400'};
-  white-space: nowrap;
-  text-decoration: none;
-  flex-shrink: 0;
-  background: ${props => props.active ? '#dbeafe' : '#fff'};
-  color: ${props => props.active ? '#1d4ed8' : '#6b7280'};
-  border: 1px solid ${props => props.active ? '#93c5fd' : '#e5e7eb'};
-  transition: all 0.15s;
-
-  &:hover {
-    text-decoration: none;
-    background: ${props => props.active ? '#bfdbfe' : '#f3f4f6'};
-    color: ${props => props.active ? '#1e40af' : '#374151'};
-    border-color: ${props => props.active ? '#60a5fa' : '#d1d5db'};
-  }
-`;
-
-export const KbThreeCol = styled.div`
-  display: flex;
-  gap: 32px;
-  align-items: flex-start;
-  margin-top: 16px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0;
-  }
-`;
-
-export const KbLeftCol = styled.div`
-  width: 256px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 96px;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-export const KbCenterCol = styled.div`
-  flex: 1;
-  min-width: 0;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 32px;
-
-  @media (max-width: 768px) {
-    padding: 16px;
-    border-radius: 8px;
-  }
-`;
-
-export const KbRightCol = styled.div`
-  width: 192px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 96px;
-
-  @media (max-width: 1280px) {
-    display: none;
   }
 `;
 

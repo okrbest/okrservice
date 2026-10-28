@@ -1,22 +1,10 @@
 import React, { useState } from 'react';
 import { Config, IKbArticle } from '../../types';
-import ArticleListItem from './ArticleListItem';
-import { ArticleListWrapper, ResultBar, SortButton, EmptyState, SkeletonItem, SkeletonLine } from './styles';
-import SingleArticle from './SingleArticle';
-
-function ArticleListSkeleton() {
-  return (
-    <ArticleListWrapper>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <SkeletonItem key={i}>
-          <SkeletonLine width="70%" height="18px" />
-          <SkeletonLine width="100%" height="13px" />
-          <SkeletonLine width="85%" height="13px" />
-        </SkeletonItem>
-      ))}
-    </ArticleListWrapper>
-  );
-}
+import { pickManualLink } from '../utils/faqDisplay';
+import FaqQuestionRow from './browse/FaqQuestionRow';
+import { FaqGroup } from './browse/browseStyles';
+import { FaqEmpty } from './faqStyles';
+import { ResultBar, SortButton } from './styles';
 
 type SortType = 'relevance' | 'latest';
 
@@ -24,57 +12,58 @@ type Props = {
   articles: IKbArticle[];
   config: Config;
   searchValue?: string;
-  loading?: boolean;
 };
 
-function ArticleList({ articles, config, searchValue, loading }: Props) {
+function NoResult({
+  searchValue,
+  config,
+}: {
+  searchValue?: string;
+  config: Config;
+}) {
+  const manual = pickManualLink(config.externalLinks);
+
+  return (
+    <FaqEmpty>
+      <span className="material-icons">search_off</span>
+      <h4>‘{searchValue}’에 대한 검색 결과가 없어요.</h4>
+      <p>다른 말로 검색하거나 매뉴얼을 확인해 보세요.</p>
+      {manual && (
+        <a href={manual.url} target="_blank" rel="noopener noreferrer">
+          매뉴얼 보러 가기 →
+        </a>
+      )}
+      {config.ticketToggle && (
+        <p>서비스데스크에서 티켓을 발급받아 문의할 수도 있어요.</p>
+      )}
+    </FaqEmpty>
+  );
+}
+
+const byLatest = (a: IKbArticle, b: IKbArticle) =>
+  new Date(b.modifiedDate || b.createdDate).getTime() -
+  new Date(a.modifiedDate || a.createdDate).getTime();
+
+// 검색 결과 목록(시안 C 가운데 칸)
+function ArticleList({ articles, config, searchValue }: Props) {
   const [sort, setSort] = useState<SortType>('relevance');
 
-  if (loading) {
-    return <ArticleListSkeleton />;
-  }
-
   if (!articles || articles.length === 0) {
-    if (searchValue) {
-      return (
-        <EmptyState>
-          <span className="material-icons">search_off</span>
-          <h4>"{searchValue}"에 대한 결과가 없습니다.</h4>
-          <p>다른 검색어로 시도하거나, 아래 방법으로 문의해 주세요.</p>
-          <div className="contact-hint">
-            <span className="material-icons">confirmation_number</span>
-            서비스데스크에서 티켓 발급받기
-          </div>
-        </EmptyState>
-      );
-    }
     return (
-      <EmptyState>
-        <span className="material-icons">article</span>
-        <h4>아직 등록된 문서가 없습니다.</h4>
-      </EmptyState>
+      <FaqGroup>
+        <NoResult searchValue={searchValue} config={config} />
+      </FaqGroup>
     );
   }
 
-  // 단일 아티클이고 검색이 아닐 때는 기존 SingleArticle 렌더링 유지
-  if (articles.length === 1 && !searchValue) {
-    return <SingleArticle article={articles[0]} config={config} />;
-  }
-
-  const sorted = [...articles].sort((a, b) => {
-    if (sort === 'latest') {
-      const dateA = new Date(a.modifiedDate || a.createdDate).getTime();
-      const dateB = new Date(b.modifiedDate || b.createdDate).getTime();
-      return dateB - dateA;
-    }
-    return 0; // relevance: 서버 순서 유지
-  });
+  // relevance: 서버 순서 유지
+  const sorted = sort === 'latest' ? [...articles].sort(byLatest) : articles;
 
   return (
-    <ArticleListWrapper>
+    <FaqGroup>
       <ResultBar>
         <span>
-          총 <strong>{articles.length}</strong>건
+          ‘{searchValue}’ 검색 결과 <strong>{articles.length}</strong>개
         </span>
         <div className="sort-group">
           <SortButton
@@ -91,15 +80,14 @@ function ArticleList({ articles, config, searchValue, loading }: Props) {
           </SortButton>
         </div>
       </ResultBar>
-
       {sorted.map((article) => (
-        <ArticleListItem
+        <FaqQuestionRow
           key={article._id}
           article={article}
           searchValue={searchValue}
         />
       ))}
-    </ArticleListWrapper>
+    </FaqGroup>
   );
 }
 

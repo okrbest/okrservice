@@ -1,17 +1,19 @@
-import "erxes-icon/css/erxes.min.css";
+import 'erxes-icon/css/erxes.min.css';
 
-import AppProvider, { AppConsumer } from "../../appContext";
+import AppProvider, { AppConsumer } from '../../appContext';
 
-import DumbLayout from "../components/Layout";
-import Head from "next/head";
-import React from "react";
-import { Store } from "../../types";
-import { readFile } from "../../common/utils";
+import DumbLayout from '../components/Layout';
+import Head from 'next/head';
+import React from 'react';
+import { Store } from '../../types';
+import { readFile } from '../../common/utils';
 
 type Props = {
   children: (values: any) => JSX.Element;
   headerBottomComponent?: React.ReactNode;
   headingSpacing?: boolean;
+  // FAQ 화면에서만 흰 위쪽 바로 그린다
+  lightHeader?: boolean;
 };
 
 const Layout = (props: Props) => {
@@ -27,7 +29,7 @@ const Layout = (props: Props) => {
                 {config.icon && (
                   <link
                     rel="shortcut icon"
-                    href={readFile(config.icon || "/static/favicon.png")}
+                    href={readFile(config.icon || '/static/favicon.png')}
                     type="image/x-icon"
                   />
                 )}

@@ -1,10 +1,11 @@
-import { gql, useQuery } from "@apollo/client";
-import React from "react";
-import ArticleDetail from "../components/ArticleDetail";
-import { articleDetailQuery, categoryDetailQuery } from "../graphql/queries";
-import { AppConsumer } from "../../appContext";
-import { Store } from "../../types";
-import { trackRecentArticle } from "../utils/recentArticles";
+import { gql, useQuery } from '@apollo/client';
+import React from 'react';
+import ArticleDetail from '../components/ArticleDetail';
+import { articleDetailAndIncViewCountQuery } from '../graphql/queries';
+import { AppConsumer } from '../../appContext';
+import { Store } from '../../types';
+import { trackRecentArticle } from '../utils/recentArticles';
+import { firstQueryValue } from '../utils/faqDisplay';
 
 type Props = {
   queryParams: any;
@@ -14,24 +15,18 @@ function ArticleDetailContainer({
   queryParams: { id, catId },
   ...props
 }: Props) {
-  const { loading, data = {} as any } =
-    id || ({} as any)
-      ? useQuery(gql(articleDetailQuery), {
-          variables: { _id: id || "" },
-          skip: !id,
-        })
-      : { loading: true };
+  // 본문을 받으면서 조회수를 1 올린다(같은 화면 세션에서 다시 열면 캐시 사용)
+  const { loading, data = {} as any } = useQuery(
+    gql(articleDetailAndIncViewCountQuery),
+    {
+      variables: { _id: firstQueryValue(id) },
+      skip: !firstQueryValue(id),
+      fetchPolicy: 'cache-first',
+    },
+  );
 
-  const { data: catData = {} as any } =
-    catId ||
-    (({} as any) &&
-      useQuery(gql(categoryDetailQuery), {
-        variables: { _id: catId || "" },
-        skip: !catId,
-      }));
-
-  const article = (data && data.knowledgeBaseArticleDetail) || {};
-  const category = (catData && catData.knowledgeBaseCategoryDetail) || {};
+  const article =
+    (data && data.knowledgeBaseArticleDetailAndIncViewCount) || {};
 
   React.useEffect(() => {
     if (article?._id && article?.title) {
@@ -43,18 +38,18 @@ function ArticleDetailContainer({
     }
   }, [article?._id]);
 
-  const updatedProps = {
-    ...props,
-    loading,
-    article,
-    category,
-  };
-
   return (
     <AppConsumer>
       {({ topic, config }: Store) => {
         return (
-          <ArticleDetail {...updatedProps} topic={topic} config={config} />
+          <ArticleDetail
+            {...props}
+            loading={loading}
+            article={article}
+            categoryId={article.categoryId || firstQueryValue(catId)}
+            topic={topic}
+            config={config}
+          />
         );
       }}
     </AppConsumer>

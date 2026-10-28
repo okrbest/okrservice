@@ -1,15 +1,14 @@
 import React, { useMemo } from 'react';
-import { Config, IKbArticle, IKbCategory, Topic } from '../../types';
-import SectionHeader from '../../common/SectionHeader';
-import SideBar from './SideBar';
-import SingleArticle from './SingleArticle';
+import { Config, IKbArticle, Topic } from '../../types';
+import { findCategoryPath } from '../utils/faqCategories';
+import FaqBrowse from './browse/FaqBrowse';
+import { CategoryCrumb } from './CategoryDetail';
 import KbRightPanel, { TocItem } from './KbRightPanel';
-import { KbPageContainer, KbThreeCol, KbLeftCol, KbCenterCol, KbRightCol, MobileCategoryNav, MobileCategoryTab } from './styles';
-import Link from 'next/link';
+import SingleArticle from './SingleArticle';
 
 type Props = {
   article: IKbArticle;
-  category: IKbCategory;
+  categoryId?: string;
   topic: Topic;
   config: Config;
   loading: boolean;
@@ -29,53 +28,31 @@ function extractToc(html: string): TocItem[] {
   return items;
 }
 
-function ArticleDetail({ loading, article, category, topic, config }: Props) {
+// 본문 화면: 구성(왼쪽 분류 · 가운데 본문 · 오른쪽 목차/많이 본 질문)은 그대로, 틀만 새 화면과 맞춤
+function ArticleDetail({ loading, article, categoryId, topic, config }: Props) {
   const toc = useMemo(
     () => (article?.content ? extractToc(article.content) : []),
-    [article?.content]
+    [article?.content],
   );
 
   return (
-    <KbPageContainer>
-      <SectionHeader
-        categories={topic.parentCategories}
-        selectedCat={category}
-      />
-      <MobileCategoryNav>
-        <Link href="/knowledge-base?view=all">
-          <MobileCategoryTab as="a">전체</MobileCategoryTab>
-        </Link>
-        {topic.parentCategories?.map((cat) => (
-          <Link key={cat._id} href={`/knowledge-base/category?id=${cat._id}`}>
-            <MobileCategoryTab as="a" active={cat._id === category._id}>
-              {cat.title}
-            </MobileCategoryTab>
-          </Link>
-        ))}
-      </MobileCategoryNav>
-      <KbThreeCol>
-        <KbLeftCol>
-          <SideBar
-            parentCategories={topic.parentCategories}
-            category={category}
-            articleId={article._id}
-            config={config}
-          />
-        </KbLeftCol>
-
-        <KbCenterCol>
-          <SingleArticle article={article} loading={loading} config={config} />
-        </KbCenterCol>
-
-        <KbRightCol>
-          <KbRightPanel
-            topicId={topic._id}
-            categoryId={category._id}
-            toc={toc}
-          />
-        </KbRightCol>
-      </KbThreeCol>
-    </KbPageContainer>
+    <FaqBrowse
+      topic={topic}
+      activeCategoryId={categoryId}
+      topSlot={
+        <CategoryCrumb path={findCategoryPath(topic, categoryId || '')} />
+      }
+      rightPanel={
+        <KbRightPanel
+          topic={topic}
+          categoryId={categoryId}
+          toc={toc}
+          excludeId={article?._id}
+        />
+      }
+    >
+      <SingleArticle article={article} loading={loading} config={config} />
+    </FaqBrowse>
   );
 }
 

@@ -1,9 +1,9 @@
-import { Config, IUser } from "../../types";
-import { Container, MainContent } from "../../styles/main";
+import { Config, IUser } from '../../types';
+import { Container, MainContent } from '../../styles/main';
 
-import Header from "../containers/Header";
-import React from "react";
-import { getConfigColor } from "../../common/utils";
+import Header from '../containers/Header';
+import React from 'react';
+import { getConfigColor } from '../../common/utils';
 
 type Props = {
   topic: any;
@@ -13,6 +13,7 @@ type Props = {
   headerBottomComponent?: React.ReactNode;
   headingSpacing?: boolean;
   notificationsCount: number;
+  lightHeader?: boolean;
 };
 
 function Layout({
@@ -23,6 +24,7 @@ function Layout({
   headingSpacing,
   headerBottomComponent,
   notificationsCount,
+  lightHeader,
 }: Props) {
   return (
     <>
@@ -33,11 +35,13 @@ function Layout({
         headerHtml={config.headerHtml}
         headerBottomComponent={headerBottomComponent}
         notificationsCount={notificationsCount || 0}
+        lightHeader={lightHeader}
       />
 
       <MainContent
-        baseColor={getConfigColor(config, "baseColor")}
-        bodyColor={getConfigColor(config, "bodyColor")}
+        baseColor={getConfigColor(config, 'baseColor')}
+        bodyColor={getConfigColor(config, 'bodyColor')}
+        clipX={lightHeader}
       >
         <Container large={true}>
           {children({ config, topic, currentUser })}
