@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { motion } from 'framer-motion';
+import { BookOpen, ExternalLink, HelpCircle } from 'lucide-react';
 
 import {
   IconCheckTicket,
@@ -13,6 +14,9 @@ import { __ } from '../../../utils';
 import { connection } from '../../connection';
 import { getColor, hexToRGBA } from '../../utils/util';
 import { useTicket } from '../../context/Ticket';
+import { TICKET_HELP_LINKS } from './helpLinks';
+
+const HELP_LINK_ICONS = { faq: HelpCircle, manual: BookOpen };
 
 type Props = {
   loading: boolean;
@@ -87,6 +91,45 @@ const Ticket: React.FC<Props> = ({
             <IconFeaturedChevronRight />
           </motion.div>
         ))}
+        {/* 바깥 사이트 바로가기: 일반 링크라 새 탭으로 열린다(팝업 차단에 걸리지 않음) */}
+        {TICKET_HELP_LINKS.map((link, index) => {
+          const LinkIcon = HELP_LINK_ICONS[link.key];
+
+          return (
+            <motion.a
+              key={link.key}
+              className="ticket-menu-item"
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.25,
+                delay: (items.length + index) * 0.05,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              <div
+                className="ticket-menu-icon"
+                style={{ backgroundColor: hexToRGBA(color, 0.12) }}
+              >
+                <LinkIcon size={22} strokeWidth={1.8} />
+              </div>
+              <div className="ticket-menu-text">
+                <span className="ticket-menu-title">{__(link.title)}</span>
+                <span className="ticket-menu-description">
+                  {__(link.description)}
+                </span>
+              </div>
+              <ExternalLink
+                className="ticket-menu-external"
+                size={16}
+                aria-label={__('Opens in a new tab')}
+              />
+            </motion.a>
+          );
+        })}
       </div>
     );
   };

@@ -5676,6 +5676,21 @@ select.form-control:focus,
   font-size: 12px;
 }
 
+/* 바깥 사이트 바로가기(FAQ·매뉴얼): 링크라 밑줄·글자색을 지우고, 선 아이콘(lucide)은 칠하지 않는다 */
+a.ticket-menu-item {
+  color: inherit;
+  text-decoration: none;
+}
+.ticket-menu-item svg.lucide {
+  color: #673fbd;
+}
+.ticket-menu-item svg.lucide * {
+  fill: none;
+}
+.ticket-menu-item svg.ticket-menu-external {
+  color: #9a9ca6;
+  flex-shrink: 0;
+}
 .ticket-menu-badge {
   background-color: #ea475d;
   border-radius: 10px;
