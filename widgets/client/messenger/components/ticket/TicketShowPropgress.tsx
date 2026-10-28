@@ -2,12 +2,15 @@ import * as React from 'react';
 
 import { ITicketActivityLog, ITicketComment } from '../../types';
 import { __ } from '../../../utils';
+import { getLocalStorageItem, setLocalStorageItem } from '../../../common';
 
 import Container from '../common/Container';
 import { useTicket } from '../../context/Ticket';
 import TicketProgressHero, { NewTabControl } from './TicketProgressHero';
 import TicketThread from './TicketThread';
 import TicketComposer from './TicketComposer';
+import TicketGuide from './TicketGuide';
+import { TICKET_GUIDE_SEEN_KEY, isTicketGuideSeen } from './ticketGuideRules';
 import { WidgetStage, buildThread, progressSteps } from './progressHelpers';
 
 interface FileWithUrl extends File {
@@ -41,6 +44,15 @@ const TicketShowProgress: React.FC<Props> = ({
   newTab,
 }) => {
   const { ticketData = {} } = useTicket();
+  // 처음 온 고객에게만 크게 보는 방법을 알려 준다("확인"을 누르면 다시 안 뜸)
+  const [showGuide, setShowGuide] = React.useState(
+    () => !isTicketGuideSeen(getLocalStorageItem(TICKET_GUIDE_SEEN_KEY)),
+  );
+
+  const closeGuide = () => {
+    setLocalStorageItem(TICKET_GUIDE_SEEN_KEY, 'true');
+    setShowGuide(false);
+  };
 
   const steps = React.useMemo(
     () => progressSteps(stages, ticketData.stage?._id),
@@ -69,6 +81,9 @@ const TicketShowProgress: React.FC<Props> = ({
       }
     >
       <div className="tp-screen">
+        {showGuide && (
+          <TicketGuide canOpenNewTab={Boolean(newTab)} onClose={closeGuide} />
+        )}
         <TicketProgressHero ticket={ticketData} steps={steps} newTab={newTab} />
         <TicketThread thread={thread} loading={activityLoading} />
       </div>
