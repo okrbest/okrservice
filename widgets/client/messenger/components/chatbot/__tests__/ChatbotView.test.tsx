@@ -93,6 +93,100 @@ describe('ChatbotView - 새 채팅 버튼', () => {
   });
 });
 
+describe('ChatbotView - 위쪽 막대 매뉴얼 아이콘', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    connection.data = {};
+  });
+
+  it('채팅 이력 옆의 매뉴얼 아이콘은 사용 설명서를 새 탭으로 연다', () => {
+    render(<ChatbotView />);
+
+    const manual = screen.getByRole('link', { name: '매뉴얼' });
+    expect(manual).toHaveAttribute('href', 'https://docs.5240.cloud/userhelp');
+    expect(manual).toHaveAttribute('target', '_blank');
+    expect(manual).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    // 채팅 이력 버튼 다음 자리
+    const history = screen.getByRole('button', { name: '채팅 이력' });
+    expect(
+      history.compareDocumentPosition(manual) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+});
+
+describe('ChatbotView - 위쪽 막대 아이콘 이름', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    connection.data = {};
+  });
+
+  const icon = (name: string) =>
+    name === '매뉴얼'
+      ? screen.getByRole('link', { name })
+      : screen.getByRole('button', { name });
+
+  it('아이콘에 마우스를 올리면 이름이 바로 뜨고, 떼면 사라진다(대화가 없어 꺼진 새 채팅도)', () => {
+    render(<ChatbotView />);
+
+    ['새 채팅', '채팅 이력', '매뉴얼'].forEach((name) => {
+      fireEvent.mouseEnter(icon(name));
+      expect(screen.getByRole('tooltip')).toHaveTextContent(name);
+      fireEvent.mouseLeave(icon(name));
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    });
+  });
+
+  it('키보드로 아이콘에 가도 이름이 뜬다', () => {
+    render(<ChatbotView />);
+
+    fireEvent.focus(icon('채팅 이력'));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('채팅 이력');
+    fireEvent.blur(icon('채팅 이력'));
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  });
+});
+
+describe('ChatbotView - 첫 화면', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    connection.data = {};
+    (streamChat as jest.Mock).mockReset();
+  });
+
+  it('인사말로 할 수 있는 일을 알려 주고, 주제별 질문 버튼 6개를 보여준다', () => {
+    render(<ChatbotView />);
+
+    expect(screen.getByText(/HR 도우미/)).toBeInTheDocument();
+    expect(screen.getByText(/신청 방법/)).toBeInTheDocument();
+    const starters = screen.getByRole('group', {
+      name: '이런 걸 물어볼 수 있어요',
+    });
+    expect(within(starters).getAllByRole('button')).toHaveLength(6);
+  });
+
+  it('질문 버튼을 누르면 그 질문을 바로 보내고, 대화가 시작되면 버튼은 사라진다', async () => {
+    (streamChat as jest.Mock).mockImplementation(async function* () {
+      yield { textResponse: '8일 남았어요.', close: true, error: false };
+    });
+    render(<ChatbotView />);
+
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: '남은 연차가 며칠인가요?' }),
+      );
+    });
+
+    expect((streamChat as jest.Mock).mock.calls[0][0]).toBe(
+      '남은 연차가 며칠인가요?',
+    );
+    expect(screen.getByText('8일 남았어요.')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('group', { name: '이런 걸 물어볼 수 있어요' }),
+    ).not.toBeInTheDocument();
+  });
+});
+
 describe('ChatbotView - 답변 아래 HR 메뉴 바로가기', () => {
   beforeEach(() => {
     localStorage.clear();

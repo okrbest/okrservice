@@ -21,6 +21,9 @@ import AnswerMenuPanel from './AnswerMenuPanel';
 import MarkdownTable from './MarkdownTable';
 import CopyAnswerButton from './CopyAnswerButton';
 import ChatbotSuggestions from './ChatbotSuggestions';
+import ChatbotStarters from './ChatbotStarters';
+import ChatbotHeaderTip from './ChatbotHeaderTip';
+import { MANUAL_URL } from '../ticket/helpLinks';
 import { dispatchViz, VizBlockRenderer } from './vizRenderers';
 import { chatbotTheme } from './chatbotTheme';
 import { safeHref } from './linkSafety';
@@ -659,7 +662,7 @@ const ChatbotView: React.FC = () => {
   const primaryColor = getColor() || '#6366f1';
   const [hoveredBtn, setHoveredBtn] = React.useState<string | null>(null);
   const [hoveredHeaderBtn, setHoveredHeaderBtn] = React.useState<
-    'new' | 'history' | null
+    'new' | 'history' | 'manual' | null
   >(null);
   const chatBottomRef = React.useRef<HTMLDivElement>(null);
 
@@ -754,8 +757,9 @@ const ChatbotView: React.FC = () => {
     setRoute('chatbot-iframe');
   };
 
-  const handleSend = async () => {
-    const text = inputValue.trim();
+  // 입력창의 글, 또는 첫 화면 질문 버튼의 질문을 보낸다
+  const sendQuestion = async (question: string) => {
+    const text = question.trim();
     if (!text || isStreaming) return;
 
     const now = Date.now();
@@ -852,6 +856,8 @@ const ChatbotView: React.FC = () => {
     }
   };
 
+  const handleSend = () => sendQuestion(inputValue);
+
   // 추천 팝업이 떠 있을 때의 ↑↓·Enter·Esc — 처리했으면 true
   const handleSuggestionKey = (
     e: React.KeyboardEvent<HTMLTextAreaElement>,
@@ -905,64 +911,102 @@ const ChatbotView: React.FC = () => {
       showBackButton={false}
       title={
         <div style={HEADER_ACTION_ROW_STYLE}>
-          <button
-            type="button"
-            onClick={handleNewChat}
-            disabled={aiMessages.length === 0}
-            aria-label="새 채팅"
-            title="새 채팅"
-            onMouseEnter={() => setHoveredHeaderBtn('new')}
-            onMouseLeave={() =>
-              setHoveredHeaderBtn((cur) => (cur === 'new' ? null : cur))
-            }
-            style={{
-              ...headerIconButtonStyle(
-                hoveredHeaderBtn === 'new',
-                aiMessages.length === 0,
-              ),
-              opacity: aiMessages.length === 0 ? 0.4 : 1,
-            }}
-          >
-            <svg
-              width="17"
-              height="17"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <ChatbotHeaderTip label="새 채팅">
+            <button
+              type="button"
+              onClick={handleNewChat}
+              disabled={aiMessages.length === 0}
+              aria-label="새 채팅"
+              onMouseEnter={() => setHoveredHeaderBtn('new')}
+              onMouseLeave={() =>
+                setHoveredHeaderBtn((cur) => (cur === 'new' ? null : cur))
+              }
+              style={{
+                ...headerIconButtonStyle(
+                  hoveredHeaderBtn === 'new',
+                  aiMessages.length === 0,
+                ),
+                opacity: aiMessages.length === 0 ? 0.4 : 1,
+                // 꺼진 버튼은 마우스 이벤트를 받지 않아, 감싼 칸이 받아 이름을 띄우게 한다
+                pointerEvents: aiMessages.length === 0 ? 'none' : undefined,
+              }}
             >
-              <path d="M12 20h9"></path>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => setRoute('chatbot-history')}
-            aria-label="채팅 이력"
-            title="채팅 이력"
-            onMouseEnter={() => setHoveredHeaderBtn('history')}
-            onMouseLeave={() =>
-              setHoveredHeaderBtn((cur) => (cur === 'history' ? null : cur))
-            }
-            style={headerIconButtonStyle(hoveredHeaderBtn === 'history', false)}
-          >
-            <svg
-              width="17"
-              height="17"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+              </svg>
+            </button>
+          </ChatbotHeaderTip>
+          <ChatbotHeaderTip label="채팅 이력">
+            <button
+              type="button"
+              onClick={() => setRoute('chatbot-history')}
+              aria-label="채팅 이력"
+              onMouseEnter={() => setHoveredHeaderBtn('history')}
+              onMouseLeave={() =>
+                setHoveredHeaderBtn((cur) => (cur === 'history' ? null : cur))
+              }
+              style={headerIconButtonStyle(
+                hoveredHeaderBtn === 'history',
+                false,
+              )}
             >
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-              <path d="M3 3v5h5"></path>
-              <path d="M12 7v5l4 2"></path>
-            </svg>
-          </button>
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+                <path d="M12 7v5l4 2"></path>
+              </svg>
+            </button>
+          </ChatbotHeaderTip>
+          {/* 5240 사용 설명서 — 일반 링크라 새 탭으로 바로 열린다(팝업 차단 영향 없음) */}
+          <ChatbotHeaderTip label="매뉴얼">
+            <a
+              href={MANUAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="매뉴얼"
+              onMouseEnter={() => setHoveredHeaderBtn('manual')}
+              onMouseLeave={() =>
+                setHoveredHeaderBtn((cur) => (cur === 'manual' ? null : cur))
+              }
+              style={{
+                ...headerIconButtonStyle(hoveredHeaderBtn === 'manual', false),
+                textDecoration: 'none',
+              }}
+            >
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 7v14"></path>
+                <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path>
+              </svg>
+            </a>
+          </ChatbotHeaderTip>
         </div>
       }
     >
@@ -995,12 +1039,22 @@ const ChatbotView: React.FC = () => {
           >
             <div style={MESSAGE_COLUMN_STYLE}>
               <div style={BUBBLE_STYLE}>
-                안녕하세요! 👋
-                <br />
-                HR 관련 질문을 AI에게 물어보세요.
+                안녕하세요! <strong>HR 도우미</strong>예요.
+                <br />내 <strong>근무시간·연차·급여</strong> 같은 정보를 바로
+                찾아 드리고, 휴가·출퇴근 변경 같은 <strong>신청 방법</strong>도
+                알려 드려요.
               </div>
             </div>
           </div>
+
+          {/* 첫 화면: 무엇을 물어볼지 모를 때 주제별 질문 버튼(대화가 시작되면 사라짐) */}
+          {aiMessages.length === 0 && (
+            <ChatbotStarters
+              primaryColor={primaryColor}
+              disabled={isStreaming}
+              onSelect={sendQuestion}
+            />
+          )}
 
           {/* 시간순 통합 메시지 (예약 / RPA / 추천단어) */}
           {timelineItems.map((item) => {
