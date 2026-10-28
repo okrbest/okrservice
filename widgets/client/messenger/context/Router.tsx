@@ -1,28 +1,66 @@
-import * as React from "react";
-import { createContext, useContext, useState, useEffect } from "react";
-import { getLocalStorageItem } from "../../common";
-import { connection } from "../connection";
-import { IFaqArticle, IFaqCategory } from "../types";
-import { useConfig } from "./Config";
-import { getDealData } from "../utils/util";
+import * as React from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { getLocalStorageItem } from '../../common';
+import { connection } from '../connection';
+import { IFaqArticle, IFaqCategory } from '../types';
+import { useConfig } from './Config';
+import {
+  getCallData,
+  getDealData,
+  getShowChatbot,
+  getShowTicket,
+  getTicketData,
+} from '../utils/util';
+import { TabFlags, resolveRoute, startRoute } from '../utils/tabs';
 
 const RouterContext = createContext<any>(null);
 
+// 아래 탭이 보이는 조건(BottomNavBar와 같음). hasTickets는 티켓 탭을 켜지 않은 사이트에서 고객 티켓이 있을 때만 쓴다
+export const getTabFlags = (hasTickets = false): TabFlags => {
+  if (!connection.data) {
+    return {
+      showChatbot: false,
+      showCall: false,
+      showTicket: false,
+      showDeal: false,
+    };
+  }
+
+  const dealData = getDealData();
+
+  return {
+    showChatbot: getShowChatbot(),
+    showCall: !!getCallData().isReceiveWebCall,
+    showTicket:
+      !!getTicketData().ticketStageId && (getShowTicket() || hasTickets),
+    showDeal: dealData?.dealToggle === true && !!dealData?.dealStageId,
+  };
+};
+
 export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
-  const [activeRoute, setActiveRoute] = useState("home");
+  // 첫 화면: 남은 탭 중 첫 번째(홈 탭 없음). 연결 정보가 아직 없으면 아래 effect에서 정한다
+  const [activeRoute, setRawActiveRoute] = useState(() =>
+    connection.data ? startRoute(getTabFlags()) : 'home',
+  );
+  // "홈으로" 가던 곳(뒤로 가기 기본값·통화 종료 등)은 홈 탭이 없으면 첫 화면으로
+  const setActiveRoute = (route: string) =>
+    setRawActiveRoute(resolveRoute(route, getTabFlags()));
   const [isSmallContainer, setIsSmallContainer] = useState(false);
   const [activeFaqArticle, setActiveFaqArticle] = useState<IFaqArticle | null>(
-    null
+    null,
   );
   const [activeFaqCategory, setActiveFaqCategory] =
     useState<IFaqCategory | null>(null);
-  const [currentWebsiteApp, setCurrentWebsiteApp] = useState("");
+  const [currentWebsiteApp, setCurrentWebsiteApp] = useState('');
   // Deal mode: always expanded, no zoom button
   const isDealMode =
     getDealData()?.dealToggle === true && !!getDealData()?.dealStageId;
   const [isZoomed, setIsZoomed] = useState(isDealMode);
   const [initialRouteSet, setInitialRouteSet] = useState(false);
-  const [chatbotMenu, setChatbotMenu] = useState<{ title: string; url: string } | null>(null);
+  const [chatbotMenu, setChatbotMenu] = useState<{
+    title: string;
+    url: string;
+  } | null>(null);
 
   const { setIsInputDisabled, setSelectedSkill, isLoggedIn } = useConfig();
 
@@ -33,12 +71,12 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   // Deal mode: show the form (문의&데모신청) directly instead of the button screen
   useEffect(() => {
     if (!initialRouteSet && connection.data && integrationId) {
-      const dealData = getDealData();
-      const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
+      // 딜 모드는 문의 작성, 그 밖에는 아직 다른 화면이 정해지지 않았을 때 남은 탭 중 첫 번째
+      const flags = getTabFlags();
 
-      if (showDeal) {
-        setActiveRoute("deal-submit");
-      }
+      setRawActiveRoute((current) =>
+        flags.showDeal || current === 'home' ? startRoute(flags) : current,
+      );
       setInitialRouteSet(true);
     }
   }, [integrationId, initialRouteSet]);
@@ -52,7 +90,7 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (activeRoute === "accquireInformation") {
+    if (activeRoute === 'accquireInformation') {
       setIsSmallContainer(true);
     } else {
       setIsSmallContainer(false);
@@ -62,29 +100,25 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   const handleAuthentication = (requireAuth: boolean) => {
     if (!isLoggedIn() && requireAuth) {
       // setActiveRoute('acquireInformation');
-      const dealData = getDealData();
-      const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
-      setActiveRoute(showDeal ? "deal-submit" : "home");
+      setActiveRoute(startRoute(getTabFlags()));
     }
   };
 
   const handleChatVisibility = (requireAuth: boolean, showChat: boolean) => {
-    if ((!requireAuth && !getLocalStorageItem("hasNotified")) || !showChat) {
-      const dealData = getDealData();
-      const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
-      setActiveRoute(showDeal ? "deal-submit" : "home");
+    if ((!requireAuth && !getLocalStorageItem('hasNotified')) || !showChat) {
+      setActiveRoute(startRoute(getTabFlags()));
     }
   };
 
   const setRoute = (routePath: string) => {
     if (routePath) {
       if (shouldAcquireInformation(routePath)) {
-        setActiveRoute("acquireInformation");
-        setSelectedSkill("");
+        setActiveRoute('acquireInformation');
+        setSelectedSkill('');
         return;
       }
 
-      if (routePath === "chatbot") {
+      if (routePath === 'chatbot') {
         setChatbotMenu(null);
       }
 
@@ -94,7 +128,7 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
 
   const shouldAcquireInformation = (routePath: string) => {
     return (
-      activeRoute === "conversationDetail" &&
+      activeRoute === 'conversationDetail' &&
       !isLoggedIn() &&
       connection.data.messengerData.requireAuth
     );
@@ -105,12 +139,12 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
     const { options = [] } = skillData;
 
     setActiveRoute(routePath);
-    setSelectedSkill("");
+    setSelectedSkill('');
     setIsInputDisabled(options.length > 0);
   };
 
   const goToFaqArticle = (article: IFaqArticle) => {
-    setRoute("faqArticle");
+    setRoute('faqArticle');
     setActiveFaqArticle(article);
   };
 
@@ -118,16 +152,16 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
     if (category) {
       setActiveFaqCategory(category);
     }
-    setRoute(activeFaqCategory || category ? "faqCategory" : "home");
+    setRoute(activeFaqCategory || category ? 'faqCategory' : 'home');
   };
 
   const goToHome = () => {
-    setActiveRoute("home");
+    setActiveRoute('home');
   };
 
   const goToWebsiteApp = (id: string) => {
     setCurrentWebsiteApp(id);
-    setRoute("websiteApp");
+    setRoute('websiteApp');
   };
 
   return (

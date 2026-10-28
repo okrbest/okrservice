@@ -1,11 +1,10 @@
 import * as React from 'react';
-import { Bot, Handshake, Home, HelpCircle, Phone, Ticket } from 'lucide-react';
+import { Bot, Handshake, Home, Phone, Ticket } from 'lucide-react';
 
 import {
   IconChatbot,
   IconHome,
   IconPhone,
-  IconQuestionMark,
   IconTicket,
   IconDeal,
 } from './Icons';
@@ -19,7 +18,8 @@ import {
 } from '../../utils/util';
 
 import Item from './Item';
-import { useRouter } from '../../context/Router';
+import { getTabFlags, useRouter } from '../../context/Router';
+import { visibleTabs } from '../../utils/tabs';
 import { useTicket } from '../../context/Ticket';
 
 const items = [
@@ -39,13 +39,6 @@ const items = [
   { label: 'Call', icon: IconPhone, outlineIcon: Phone, route: 'call' },
   { label: 'Ticket', icon: IconTicket, outlineIcon: Ticket, route: 'ticket' },
   { label: 'Deal', icon: IconDeal, outlineIcon: Handshake, route: 'deal' },
-  {
-    label: 'Help',
-    icon: IconQuestionMark,
-    outlineIcon: HelpCircle,
-    route: 'faqCategories',
-    additionalRoutes: ['faqCategory', 'faqArticle'],
-  },
 ];
 
 function BottomNavBar() {
@@ -74,11 +67,17 @@ function BottomNavBar() {
   };
 
   const showDeal = dealData?.dealToggle === true && !!dealData?.dealStageId;
+  // 홈 탭은 켜진 탭이 하나도 없을 때만(빈 탭 줄 방지). 도움말 탭은 두지 않는다
+  const showHome = visibleTabs(getTabFlags(hasTickets)).includes('home');
 
   return (
     <ul className="nav-container nav-list">
       {items.map((item) => {
         const { route } = item;
+
+        if (route === 'home' && !showHome) {
+          return null;
+        }
 
         if (route === 'call' && callData && !callData.isReceiveWebCall) {
           return null;
