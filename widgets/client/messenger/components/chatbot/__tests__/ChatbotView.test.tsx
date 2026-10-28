@@ -103,7 +103,7 @@ describe('ChatbotView - 위쪽 막대 매뉴얼 아이콘', () => {
     render(<ChatbotView />);
 
     const manual = screen.getByRole('link', { name: '매뉴얼' });
-    expect(manual).toHaveAttribute('href', 'https://docs.5240.cloud/userhelp');
+    expect(manual).toHaveAttribute('href', 'https://guide.5240.cloud/user');
     expect(manual).toHaveAttribute('target', '_blank');
     expect(manual).toHaveAttribute('rel', expect.stringContaining('noopener'));
     // 채팅 이력 버튼 다음 자리
