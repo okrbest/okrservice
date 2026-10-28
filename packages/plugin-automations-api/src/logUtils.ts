@@ -67,6 +67,23 @@ const sendSuccess = (data) => ({
   status: 'success',
 });
 
+// 예전 기록은 동작 시각이 서버가 켜진 시각으로 저장돼 있다. 동작은 실행 시작보다 앞설 수 없으므로
+// 그런 값은 실행 시작 시각으로 보여 준다.
+const getActionLogTime = (actionCreatedAt, executionCreatedAt) => {
+  if (!actionCreatedAt) {
+    return executionCreatedAt;
+  }
+
+  if (
+    executionCreatedAt &&
+    new Date(actionCreatedAt).getTime() < new Date(executionCreatedAt).getTime()
+  ) {
+    return executionCreatedAt;
+  }
+
+  return actionCreatedAt;
+};
+
 const getResultDoc = (action, result, target) => {
   if (action === 'sendEmail') {
     const { responses } = result || {};
@@ -110,6 +127,7 @@ export default {
         triggerConfig,
         actions,
         target,
+        createdAt,
       } of excutions) {
         for (const action of actions || []) {
           if (action?.actionType === itemAction) {
@@ -123,7 +141,7 @@ export default {
                 actionConfig: action.actionConfig,
                 result: getResultDoc(itemAction, action.result, target),
               },
-              createdAt: action.createdAt,
+              createdAt: getActionLogTime(action.createdAt, createdAt),
             };
 
             excutionLogs.push(excutionLog);

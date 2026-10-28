@@ -42,7 +42,8 @@ export const EXECUTION_STATUS = {
 };
 
 const execActionSchema = new Schema({
-  createdAt: { type: Date, default: Date.now(), required: true },
+  // Date.now()로 쓰면 서버가 켜질 때 한 번만 계산돼 모든 동작이 같은 시각으로 남는다
+  createdAt: { type: Date, default: Date.now, required: true },
   actionId: { type: String },
   actionType: { type: String },
   actionConfig: { type: Object },
