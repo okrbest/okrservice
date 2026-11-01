@@ -2,7 +2,8 @@ import * as React from 'react';
 
 import { ITicketActivityLog, ITicketComment } from '../../types';
 import { __ } from '../../../utils';
-import { getLocalStorageItem, setLocalStorageItem } from '../../../common';
+// 안내를 처음 1회만 띄울 때 되살린다(아래 showGuide 주석 참고)
+// import { getLocalStorageItem, setLocalStorageItem } from '../../../common';
 
 import Container from '../common/Container';
 import { useTicket } from '../../context/Ticket';
@@ -10,7 +11,7 @@ import TicketProgressHero, { NewTabControl } from './TicketProgressHero';
 import TicketThread from './TicketThread';
 import TicketComposer from './TicketComposer';
 import TicketGuide from './TicketGuide';
-import { TICKET_GUIDE_SEEN_KEY, isTicketGuideSeen } from './ticketGuideRules';
+// import { TICKET_GUIDE_SEEN_KEY, isTicketGuideSeen } from './ticketGuideRules';
 import { WidgetStage, buildThread, progressSteps } from './progressHelpers';
 
 interface FileWithUrl extends File {
@@ -44,13 +45,16 @@ const TicketShowProgress: React.FC<Props> = ({
   newTab,
 }) => {
   const { ticketData = {} } = useTicket();
-  // 처음 온 고객에게만 크게 보는 방법을 알려 준다("확인"을 누르면 다시 안 뜸)
-  const [showGuide, setShowGuide] = React.useState(
-    () => !isTicketGuideSeen(getLocalStorageItem(TICKET_GUIDE_SEEN_KEY)),
-  );
+  // 지금은 진행 상황을 열 때마다 크게 보는 방법을 알려 준다("확인"은 이번 화면에서만 닫음).
+  // 처음 온 고객에게만 띄우려면 아래 주석과 위 import 주석을 되살리고 useState(true) 줄을 지운다
+  // ("확인"을 누르면 위젯 저장소에 남겨 다시 안 뜸).
+  // const [showGuide, setShowGuide] = React.useState(
+  //   () => !isTicketGuideSeen(getLocalStorageItem(TICKET_GUIDE_SEEN_KEY)),
+  // );
+  const [showGuide, setShowGuide] = React.useState(true);
 
   const closeGuide = () => {
-    setLocalStorageItem(TICKET_GUIDE_SEEN_KEY, 'true');
+    // setLocalStorageItem(TICKET_GUIDE_SEEN_KEY, 'true');
     setShowGuide(false);
   };
 
