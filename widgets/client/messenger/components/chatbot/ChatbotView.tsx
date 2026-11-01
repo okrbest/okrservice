@@ -23,7 +23,7 @@ import CopyAnswerButton from './CopyAnswerButton';
 import ChatbotSuggestions from './ChatbotSuggestions';
 import ChatbotStarters from './ChatbotStarters';
 import ChatbotHeaderTip from './ChatbotHeaderTip';
-import { MANUAL_URL } from '../ticket/helpLinks';
+import { CHATBOT_MANUAL_URL } from '../ticket/helpLinks';
 import { dispatchViz, VizBlockRenderer } from './vizRenderers';
 import { chatbotTheme } from './chatbotTheme';
 import { safeHref } from './linkSafety';
@@ -979,7 +979,7 @@ const ChatbotView: React.FC = () => {
           {/* 5240 사용 설명서 — 일반 링크라 새 탭으로 바로 열린다(팝업 차단 영향 없음) */}
           <ChatbotHeaderTip label="매뉴얼">
             <a
-              href={MANUAL_URL}
+              href={CHATBOT_MANUAL_URL}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="매뉴얼"

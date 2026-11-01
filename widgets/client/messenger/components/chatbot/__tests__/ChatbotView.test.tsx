@@ -99,7 +99,7 @@ describe('ChatbotView - 위쪽 막대 매뉴얼 아이콘', () => {
     connection.data = {};
   });
 
-  it('채팅 이력 옆의 매뉴얼 아이콘은 사용 설명서를 새 탭으로 연다', () => {
+  it('채팅 이력 옆의 매뉴얼 아이콘은 사용 설명서(사용자 안내 쪽)를 새 탭으로 연다', () => {
     render(<ChatbotView />);
 
     const manual = screen.getByRole('link', { name: '매뉴얼' });
