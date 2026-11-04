@@ -18,7 +18,14 @@ import {
   buildPipeline,
   getIntegrationsKinds,
   getStageIds,
+  returnDateRange,
 } from "../utils";
+import {
+  getMonthRangeOf,
+  getPeriodReferenceDate,
+  getPeriodTimezone,
+  getYearRangeOf,
+} from "../periodScope";
 import { sendCoreMessage } from "../../messageBroker";
 
 const DIMENSION_OPTIONS = [
@@ -392,13 +399,23 @@ export const ticketCharts = [
         models
       );
 
-      // 날짜 필터 제거 - 항상 전체 기간 적용
+      // 날짜 필터 제거 - 추세라 상단 기간(기본 이번 달) 하나로 자르지 않는다
       const { dateRangeType: filterDateRangeType = "createdAt" } = filter;
       delete (matchFilter as any)[filterDateRangeType];
       // closeDate도 제거 (dueDateRange 필터가 있을 수 있음)
       delete (matchFilter as any).closeDate;
 
       const dateFormat = frequencyType || "%m";
+
+      // 월별(%m)은 연도 없이 묶으므로 여러 해의 같은 달이 합쳐진다 → 상단 기간의 연도 1~12월만 센다
+      const periodRange =
+        dateFormat === "%m"
+          ? getYearRangeOf(
+              getPeriodReferenceDate(
+                returnDateRange(filter.dateRange, filter.startDate, filter.endDate)
+              )
+            )
+          : {};
 
       let projectStage: any = [
         {
@@ -503,7 +520,7 @@ export const ticketCharts = [
       const pipeline: any[] = [
         {
           $match: {
-            [dateRangeType]: { $ne: null },
+            [dateRangeType]: { $ne: null, ...periodRange },
             ...matchFilter,
           },
         },
@@ -513,6 +530,8 @@ export const ticketCharts = [
               $dateToString: {
                 format: dateFormat,
                 date: `$${dateRangeType}`,
+                // 연도 범위를 자른 시간대로 묶어야 1월 1일 새벽 티켓이 12월로 가지 않는다
+                ...(dateFormat === "%m" ? { timezone: getPeriodTimezone() } : {}),
               },
             },
             createdAt: { $first: `$${dateRangeType}` },
@@ -1965,15 +1984,18 @@ export const ticketCharts = [
         models
       );
 
-      // 날짜 필터 제거 - 이번 달만 적용
+      // 날짜 필터 제거 - 상단 기간 그대로가 아니라 그 기간의 한 달만 적용
       delete (matchFilter as any).createdAt;
       delete (matchFilter as any).closeDate;
       delete (matchFilter as any).modifiedAt;
+      delete (matchFilter as any)[dateRangeType];
 
-      // 이번 달의 시작일과 종료일 계산
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      // 상단 기간이 속한 달(전체·올해처럼 끝이 오늘 뒤면 이번 달)의 시작일과 종료일
+      const { $gte: startOfMonth, $lte: endOfMonth } = getMonthRangeOf(
+        getPeriodReferenceDate(
+          returnDateRange(filter.dateRange, filter.startDate, filter.endDate)
+        )
+      );
 
       const pipeline: any[] = [
         {
@@ -2056,8 +2078,9 @@ export const ticketCharts = [
         (acc, { user, month, year, count }) => {
           if (user) {
             const userName = user.details.fullName || user.email;
-            // 이번 달만 표시되므로 사용자 이름만 레이블로 사용
-            acc[userName] = count;
+            // 한 달만 표시되므로 사용자 이름만 레이블로 사용.
+            // 달 경계 시각 차이로 한 사람이 두 묶음으로 올 수 있어 덮어쓰지 않고 더한다
+            acc[userName] = (acc[userName] || 0) + count;
           }
           return acc;
         },
