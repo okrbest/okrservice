@@ -1694,11 +1694,7 @@ export const ticketCharts = [
         models
       );
 
-      // 날짜 필터 제거 - 항상 전체 기간 적용
-      delete (matchFilter as any).createdAt;
-      delete (matchFilter as any).closeDate;
-      delete (matchFilter as any).modifiedAt;
-
+      // 상단 조회기간을 그대로 따른다(전체를 고르면 전체 기간). 이 차트는 자체 날짜 설정이 없어 작성일 기준.
       const pipeline: any[] = [
         {
           $match: {

@@ -229,3 +229,37 @@ describe('월별 티켓 수 — 상단 조회기간의 연도로 센다', () => 
     expect(match.createdAt).toEqual({ $ne: null });
   });
 });
+
+describe('전체 담당자별 티켓 수(All Time) — 상단 조회기간을 그대로 따른다', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW);
+  });
+  afterEach(() => jest.useRealTimers());
+
+  it('지난 달을 고르면 지난 달(10월) 티켓만 센다', async () => {
+    const match = await runChart('TicketClosedTotalsByRepAllTime', {
+      dateRange: 'lastMonth',
+    });
+    expect(match.createdAt).toEqual(monthRange(2026, 9));
+  });
+
+  it('직접 지정한 기간이면 그 기간의 티켓만 센다', async () => {
+    const match = await runChart('TicketClosedTotalsByRepAllTime', {
+      dateRange: 'customDate',
+      startDate: '2025-12-10',
+      endDate: '2025-12-20',
+    });
+    expect(match.createdAt).toEqual({
+      $gte: new Date(2025, 11, 10),
+      $lte: new Date(2025, 11, 20, 23, 59, 59, 999),
+    });
+  });
+
+  it('전체를 고르면 지금처럼 전체 기간을 센다', async () => {
+    const match = await runChart('TicketClosedTotalsByRepAllTime', {
+      dateRange: 'all',
+    });
+    expect(match.createdAt).toBeUndefined();
+  });
+});
