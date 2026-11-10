@@ -183,6 +183,8 @@ app.post('/ai-chat/stream', async (req, res) => {
   const message = typeof req.body?.message === 'string' ? req.body.message : '';
   const sessionId =
     typeof req.body?.sessionId === 'string' ? req.body.sessionId : '';
+  const companyName =
+    typeof req.body?.companyName === 'string' ? req.body.companyName : '';
 
   if (!message.trim() || !sessionId) {
     res.status(400).json({ error: 'message and sessionId are required' });
@@ -224,7 +226,11 @@ app.post('/ai-chat/stream', async (req, res) => {
         'Content-Type': 'application/json',
         ...(TEAMPLGPT_WIDGET_ORIGIN ? { Origin: TEAMPLGPT_WIDGET_ORIGIN } : {}),
       },
-      body: JSON.stringify({ message, sessionId }),
+      body: JSON.stringify({
+        message,
+        sessionId,
+        ...(companyName ? { companyName } : {}),
+      }),
       signal: controller.signal,
     });
 
@@ -375,6 +381,124 @@ app.post('/ai-chat/tool-result', async (req, res) => {
     );
     res.status(502).json({ error: 'AI chat upstream error' });
   }
+});
+
+/**
+ * 회사 사규 문서 — TeamplGPT embed 회사 문서 API 프록시 (teamplgpt specs/021).
+ * 업로드 multipart는 파싱하지 않고 스트림 그대로 넘긴다(위젯 서버 디스크·메모리 미사용).
+ * 로그에 회사 이름·파일 내용을 남기지 않는다.
+ */
+const COMPANY_DOC_UPLOAD_LIMIT = 51 * 1024 * 1024; // 파일 50MB + multipart 여유
+const COMPANY_DOC_UPLOAD_TIMEOUT_MS = 2 * 60 * 1000;
+
+function companyDocsUpstream(subPath: string, query: string): string | null {
+  const {
+    TEAMPLGPT_BASE_URL = 'https://demo.teamplgpt.com',
+    TEAMPLGPT_EMBED_ID = '',
+  } = process.env;
+  if (!TEAMPLGPT_EMBED_ID) return null;
+  return `${TEAMPLGPT_BASE_URL.replace(/\/$/, '')}/api/embed/${TEAMPLGPT_EMBED_ID}/company-documents${subPath}${query}`;
+}
+
+function companyDocsHeaders(extra: Record<string, string> = {}) {
+  const { TEAMPLGPT_WIDGET_ORIGIN = '' } = process.env;
+  return {
+    ...extra,
+    ...(TEAMPLGPT_WIDGET_ORIGIN ? { Origin: TEAMPLGPT_WIDGET_ORIGIN } : {}),
+  };
+}
+
+function companyNameQuery(req: express.Request): string {
+  const name =
+    typeof req.query.companyName === 'string' ? req.query.companyName : '';
+  return `?companyName=${encodeURIComponent(name)}`;
+}
+
+async function relayCompanyDocs(
+  res: express.Response,
+  label: string,
+  doFetch: () => Promise<Response>,
+) {
+  try {
+    const upstream = await doFetch();
+    const text = await upstream.text();
+    if (!upstream.ok) {
+      console.warn(
+        `[ai-chat/company-documents] ${label} upstream=${upstream.status}`,
+      );
+    }
+    res.status(upstream.status);
+    res.setHeader(
+      'Content-Type',
+      upstream.headers.get('content-type') || 'application/json',
+    );
+    res.send(text);
+  } catch (e: any) {
+    console.error(
+      `[ai-chat/company-documents] ${label} upstream-fail ${e?.name}: ${e?.message}`,
+    );
+    if (!res.headersSent)
+      res.status(502).json({ error: 'AI chat upstream error' });
+  }
+}
+
+app.get('/ai-chat/company-documents', async (req, res) => {
+  const url = companyDocsUpstream('', companyNameQuery(req));
+  if (!url) {
+    res.status(503).json({ error: 'AI chat is not configured' });
+    return;
+  }
+  await relayCompanyDocs(res, 'list', () =>
+    fetch(url, { headers: companyDocsHeaders() }),
+  );
+});
+
+app.post('/ai-chat/company-documents', async (req, res) => {
+  const url = companyDocsUpstream('', '');
+  if (!url) {
+    res.status(503).json({ error: 'AI chat is not configured' });
+    return;
+  }
+  const contentType = req.headers['content-type'] || '';
+  const contentLength = Number(req.headers['content-length'] || 0);
+  if (!contentType.startsWith('multipart/form-data')) {
+    res.status(400).json({ error: 'FILE_REQUIRED' });
+    return;
+  }
+  if (!contentLength || contentLength > COMPANY_DOC_UPLOAD_LIMIT) {
+    res.status(413).json({ error: 'FILE_TOO_LARGE' });
+    return;
+  }
+  await relayCompanyDocs(res, 'upload', () =>
+    fetch(url, {
+      method: 'POST',
+      headers: companyDocsHeaders({
+        'Content-Type': contentType,
+        'Content-Length': String(contentLength),
+      }),
+      body: req as any,
+      // Node fetch: 요청 본문 스트림 전송에 필요
+      duplex: 'half',
+      // 본문을 아주 느리게 흘리는 요청이 두 서버 연결을 붙잡지 않게
+      signal: AbortSignal.timeout(COMPANY_DOC_UPLOAD_TIMEOUT_MS),
+    } as any),
+  );
+});
+
+app.delete('/ai-chat/company-documents/:id', async (req, res) => {
+  const id = Number.parseInt(req.params.id, 10);
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(404).json({ error: 'NOT_FOUND' });
+    return;
+  }
+  const url = companyDocsUpstream(`/${id}`, companyNameQuery(req));
+  if (!url) {
+    res.status(503).json({ error: 'AI chat is not configured' });
+    return;
+  }
+  await relayCompanyDocs(res, `delete id=${id}`, () =>
+    fetch(url, { method: 'DELETE', headers: companyDocsHeaders() }),
+  );
 });
 
 app.get('/test', (req, res) => {

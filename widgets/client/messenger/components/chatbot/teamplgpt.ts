@@ -1,9 +1,10 @@
-import { getEnv } from "../../../utils";
+import { getEnv } from '../../../utils';
 import {
   CLIENT_TOOL_EVENT_TYPE,
   ClientToolSpec,
   handleClientToolRequest,
-} from "./clientTools";
+} from './clientTools';
+import { getCompanyName } from './companyDocs';
 
 export interface ChatChunk {
   type?: string;
@@ -25,15 +26,20 @@ export interface StreamChatOptions {
 export async function* streamChat(
   message: string,
   sessionId: string,
-  options: StreamChatOptions = {}
+  options: StreamChatOptions = {},
 ): AsyncGenerator<ChatChunk> {
   const { ROOT_URL } = getEnv();
-  const baseUrl = (ROOT_URL || "").replace(/\/$/, "");
+  const baseUrl = (ROOT_URL || '').replace(/\/$/, '');
+  const companyName = getCompanyName();
 
   const response = await fetch(`${baseUrl}/ai-chat/stream`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, sessionId }),
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message,
+      sessionId,
+      ...(companyName ? { companyName } : {}),
+    }),
     signal: options.signal,
   });
 
@@ -42,24 +48,24 @@ export async function* streamChat(
   }
 
   const reader = response.body?.getReader();
-  if (!reader) throw new Error("No response body");
+  if (!reader) throw new Error('No response body');
 
   const decoder = new TextDecoder();
-  let buffer = "";
+  let buffer = '';
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
 
     buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
 
     for (const line of lines) {
       const trimmed = line.trim();
-      if (!trimmed.startsWith("data:")) continue;
+      if (!trimmed.startsWith('data:')) continue;
       const jsonStr = trimmed.slice(5).trim();
-      if (!jsonStr || jsonStr === "[DONE]") continue;
+      if (!jsonStr || jsonStr === '[DONE]') continue;
       try {
         const chunk = JSON.parse(jsonStr) as ChatChunk;
         if (chunk.type === CLIENT_TOOL_EVENT_TYPE) {
