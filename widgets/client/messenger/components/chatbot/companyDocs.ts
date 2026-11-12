@@ -68,20 +68,21 @@ export function getCompanyName(): string {
   return typeof name === 'string' ? name.trim() : '';
 }
 
-const DOCS_INTRO_SEEN_KEY = 'chatbot-company-docs-intro-seen';
+// 티켓 탭 "우리 회사 문서" 메뉴의 새 기능 표시 — 한 번 열면 다시 안 띄운다
+const DOCS_MENU_SEEN_KEY = 'ticket-company-docs-menu-seen';
 
 // localStorage 차단(시크릿 모드·서드파티 쿠키 차단) 시 매번 뜨는 대신 안 띄운다
-export function hasSeenCompanyDocsIntro(): boolean {
+export function hasSeenCompanyDocsMenu(): boolean {
   try {
-    return localStorage.getItem(DOCS_INTRO_SEEN_KEY) === '1';
+    return localStorage.getItem(DOCS_MENU_SEEN_KEY) === '1';
   } catch {
     return true;
   }
 }
 
-export function markCompanyDocsIntroSeen(): void {
+export function markCompanyDocsMenuSeen(): void {
   try {
-    localStorage.setItem(DOCS_INTRO_SEEN_KEY, '1');
+    localStorage.setItem(DOCS_MENU_SEEN_KEY, '1');
   } catch {
     // 저장 실패 시 다음 방문에 다시 보일 뿐
   }
@@ -143,6 +144,33 @@ export async function uploadCompanyDoc(
   if (!response.ok) throw await errorFrom(response);
   const body = await response.json();
   return body.document;
+}
+
+export interface CompanyDocContent {
+  document: CompanyDoc;
+  // 챗봇이 이 문서에서 읽는 글(서식 없음)
+  content: string;
+}
+
+export async function getCompanyDocContent(
+  companyName: string,
+  id: number,
+  signal?: AbortSignal,
+): Promise<CompanyDocContent> {
+  const response = await fetch(
+    `${baseUrl()}/${id}/content?companyName=${encodeURIComponent(companyName)}`,
+    { signal },
+  );
+  if (!response.ok) throw await errorFrom(response);
+  return response.json();
+}
+
+// 목록·본문 화면 공용 날짜 표기
+export function formatCompanyDocDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export async function deleteCompanyDoc(

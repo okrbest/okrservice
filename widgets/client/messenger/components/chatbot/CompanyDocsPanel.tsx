@@ -6,9 +6,12 @@ import {
   COMPANY_DOC_EXTENSIONS,
   checkCompanyDocFile,
   deleteCompanyDoc,
+  formatCompanyDocDate,
   listCompanyDocs,
   uploadCompanyDoc,
 } from './companyDocs';
+import CompanyDocProgress from './CompanyDocProgress';
+import CompanyDocViewer from './CompanyDocViewer';
 
 const T = chatbotTheme;
 
@@ -64,13 +67,6 @@ function uploadErrorMessage(code: string): string {
   return __('Upload failed. Please try again.');
 }
 
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
 const CompanyDocsPanel: React.FC<Props> = ({
   companyName,
   uploaderName,
@@ -80,6 +76,8 @@ const CompanyDocsPanel: React.FC<Props> = ({
   const [loaded, setLoaded] = React.useState(false);
   const [uploading, setUploading] = React.useState(0);
   const [rejected, setRejected] = React.useState<RejectedFile[]>([]);
+  // 본문 보기 중인 문서 — null이면 목록
+  const [viewing, setViewing] = React.useState<CompanyDoc | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const refresh = React.useCallback(async () => {
@@ -188,161 +186,193 @@ const CompanyDocsPanel: React.FC<Props> = ({
           ×
         </button>
       </div>
-      <ul
-        data-testid="company-docs-guide"
-        style={{
-          margin: '0 16px 10px',
-          paddingLeft: '16px',
-          fontSize: '12px',
-          color: T.color.mutedForeground,
-          lineHeight: 1.5,
-        }}
-      >
-        {GUIDE_LINES.map((line) => (
-          <li key={line} style={{ marginBottom: '2px' }}>
-            {__(line)}
-          </li>
-        ))}
-      </ul>
-      <div style={{ padding: '0 16px 10px' }}>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept={COMPANY_DOC_EXTENSIONS.join(',')}
-          data-testid="company-docs-input"
-          style={{ display: 'none' }}
-          onChange={(e) => handleFiles(e.target.files)}
+      {viewing ? (
+        <CompanyDocViewer
+          companyName={companyName}
+          doc={viewing}
+          onBack={() => setViewing(null)}
+          onMissing={refresh}
         />
-        <button
-          type="button"
-          disabled={uploading > 0}
-          onClick={() => fileInputRef.current?.click()}
-          style={{
-            width: '100%',
-            padding: '9px 0',
-            border: 'none',
-            borderRadius: T.radius.md,
-            background:
-              uploading > 0
-                ? '#c4cfe6'
-                : `linear-gradient(135deg, ${T.color.accent}, ${T.color.accent2})`,
-            color: T.color.accentForeground,
-            fontSize: '13px',
-            fontWeight: 600,
-            cursor: uploading > 0 ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {__('Upload files')}
-        </button>
-        {rejected.map((r) => (
-          <div
-            key={r.name}
+      ) : (
+        <>
+          <ul
+            data-testid="company-docs-guide"
             style={{
-              marginTop: '6px',
-              fontSize: '12px',
-              color: T.color.destructive,
-            }}
-          >
-            {r.name}: {r.reason}
-          </div>
-        ))}
-      </div>
-      <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          padding: '0 16px 16px',
-        }}
-      >
-        {loaded && docs.length === 0 && (
-          <div
-            style={{
-              padding: '24px 8px',
-              textAlign: 'center',
+              margin: '0 16px 10px',
+              paddingLeft: '16px',
               fontSize: '12px',
               color: T.color.mutedForeground,
-              lineHeight: 1.6,
+              lineHeight: 1.5,
             }}
           >
-            {__(
-              "No documents yet. Use Upload files above to add your company's rules.",
-            )}
-          </div>
-        )}
-        {docs.map((doc) => (
-          <div
-            key={doc.id}
-            data-testid="company-doc-row"
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '8px',
-              padding: '10px 12px',
-              marginBottom: '8px',
-              background: T.color.card,
-              border: `1px solid ${T.color.border}`,
-              borderRadius: T.radius.md,
-            }}
-          >
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontSize: '13px',
-                  color: T.color.foreground,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-                title={doc.filename}
-              >
-                {doc.filename}
-              </div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  color: T.color.mutedForeground,
-                  marginTop: '2px',
-                }}
-              >
-                {doc.uploaderName || __('Unknown')} ·{' '}
-                {formatDate(doc.createdAt)} ·{' '}
-                <span style={{ color: STATUS_COLOR[doc.status] }}>
-                  {__(STATUS_LABEL[doc.status])}
-                </span>
-              </div>
-              {doc.status === 'failed' && doc.error && (
-                <div
-                  style={{
-                    fontSize: '11px',
-                    color: T.color.destructive,
-                    marginTop: '2px',
-                  }}
-                >
-                  {processingErrorMessage(doc.error)}
-                </div>
-              )}
-            </div>
+            {GUIDE_LINES.map((line) => (
+              <li key={line} style={{ marginBottom: '2px' }}>
+                {__(line)}
+              </li>
+            ))}
+          </ul>
+          <div style={{ padding: '0 16px 10px' }}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={COMPANY_DOC_EXTENSIONS.join(',')}
+              data-testid="company-docs-input"
+              style={{ display: 'none' }}
+              onChange={(e) => handleFiles(e.target.files)}
+            />
             <button
               type="button"
-              onClick={() => handleDelete(doc)}
+              disabled={uploading > 0}
+              onClick={() => fileInputRef.current?.click()}
               style={{
-                flexShrink: 0,
-                border: `1px solid ${T.color.border}`,
-                background: T.color.background,
-                borderRadius: T.radius.sm,
-                padding: '3px 8px',
-                fontSize: '11px',
-                color: T.color.destructive,
-                cursor: 'pointer',
+                width: '100%',
+                padding: '9px 0',
+                border: 'none',
+                borderRadius: T.radius.md,
+                background:
+                  uploading > 0
+                    ? '#c4cfe6'
+                    : `linear-gradient(135deg, ${T.color.accent}, ${T.color.accent2})`,
+                color: T.color.accentForeground,
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: uploading > 0 ? 'not-allowed' : 'pointer',
               }}
             >
-              {__('Delete')}
+              {__('Upload files')}
             </button>
+            {rejected.map((r) => (
+              <div
+                key={r.name}
+                style={{
+                  marginTop: '6px',
+                  fontSize: '12px',
+                  color: T.color.destructive,
+                }}
+              >
+                {r.name}: {r.reason}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+          <div
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflowY: 'auto',
+              padding: '0 16px 16px',
+            }}
+          >
+            {loaded && docs.length === 0 && (
+              <div
+                style={{
+                  padding: '24px 8px',
+                  textAlign: 'center',
+                  fontSize: '12px',
+                  color: T.color.mutedForeground,
+                  lineHeight: 1.6,
+                }}
+              >
+                {__(
+                  "No documents yet. Use Upload files above to add your company's rules.",
+                )}
+              </div>
+            )}
+            {docs.map((doc) => (
+              <div
+                key={doc.id}
+                data-testid="company-doc-row"
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px',
+                  padding: '10px 12px',
+                  marginBottom: '8px',
+                  background: T.color.card,
+                  border: `1px solid ${T.color.border}`,
+                  borderRadius: T.radius.md,
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: '13px',
+                      color: T.color.foreground,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                    title={doc.filename}
+                  >
+                    {doc.filename}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      color: T.color.mutedForeground,
+                      marginTop: '2px',
+                    }}
+                  >
+                    {doc.uploaderName || __('Unknown')} ·{' '}
+                    {formatCompanyDocDate(doc.createdAt)} ·{' '}
+                    <span style={{ color: STATUS_COLOR[doc.status] }}>
+                      {__(STATUS_LABEL[doc.status])}
+                    </span>
+                  </div>
+                  {doc.status === 'failed' && doc.error && (
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        color: T.color.destructive,
+                        marginTop: '2px',
+                      }}
+                    >
+                      {processingErrorMessage(doc.error)}
+                    </div>
+                  )}
+                  {doc.status === 'processing' && (
+                    <CompanyDocProgress createdAt={doc.createdAt} />
+                  )}
+                </div>
+                {doc.status === 'ready' && (
+                  <button
+                    type="button"
+                    onClick={() => setViewing(doc)}
+                    style={{
+                      flexShrink: 0,
+                      border: `1px solid ${T.color.border}`,
+                      background: T.color.background,
+                      borderRadius: T.radius.sm,
+                      padding: '3px 8px',
+                      fontSize: '11px',
+                      color: T.color.accent,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {__('View')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleDelete(doc)}
+                  style={{
+                    flexShrink: 0,
+                    border: `1px solid ${T.color.border}`,
+                    background: T.color.background,
+                    borderRadius: T.radius.sm,
+                    padding: '3px 8px',
+                    fontSize: '11px',
+                    color: T.color.destructive,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {__('Delete')}
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

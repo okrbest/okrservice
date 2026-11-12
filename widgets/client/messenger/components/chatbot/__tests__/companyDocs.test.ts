@@ -3,6 +3,7 @@ import {
   checkCompanyDocFile,
   COMPANY_DOC_MAX_BYTES,
   deleteCompanyDoc,
+  getCompanyDocContent,
   getCompanyName,
   getUploaderName,
   listCompanyDocs,
@@ -108,5 +109,35 @@ describe('API', () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toMatch(/\/ai-chat\/company-documents\/7\?companyName=/);
     expect(init).toEqual({ method: 'DELETE' });
+  });
+});
+
+describe('getCompanyDocContent (본문 보기)', () => {
+  it('문서 ID 경로 + 회사 이름 쿼리로 본문을 받고 signal을 넘긴다', async () => {
+    const body = {
+      document: { id: 12, filename: '취업규칙.pdf', status: 'ready' },
+      content: '제1조(목적)',
+    };
+    fetchMock.mockResolvedValue(jsonResponse(200, body));
+    const controller = new AbortController();
+    const result = await getCompanyDocContent(
+      '오이사공',
+      12,
+      controller.signal,
+    );
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe(
+      'https://widgets.example.com/ai-chat/company-documents/12/content?companyName=%EC%98%A4%EC%9D%B4%EC%82%AC%EA%B3%B5',
+    );
+    expect(init).toEqual({ signal: controller.signal });
+    expect(result).toEqual(body);
+  });
+
+  it('실패 응답의 error 코드를 던진다', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(404, { error: 'NOT_FOUND' }));
+    await expect(getCompanyDocContent('오이사공', 12)).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+    });
   });
 });

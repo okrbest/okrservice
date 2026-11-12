@@ -501,6 +501,31 @@ app.delete('/ai-chat/company-documents/:id', async (req, res) => {
   );
 });
 
+const COMPANY_DOC_CONTENT_TIMEOUT_MS = 30 * 1000;
+
+// 본문 보기(specs/005-company-doc-view): 챗봇이 읽는 글을 그대로 중계
+app.get('/ai-chat/company-documents/:id/content', async (req, res) => {
+  // 사규 전문 — 중간 캐시·브라우저 캐시에 남기지 않는다
+  res.setHeader('Cache-Control', 'no-store');
+  // "7abc"처럼 숫자로 시작하는 값도 거른다 (parseInt는 7로 읽음)
+  if (!/^[1-9]\d*$/.test(req.params.id)) {
+    res.status(404).json({ error: 'NOT_FOUND' });
+    return;
+  }
+  const id = Number(req.params.id);
+  const url = companyDocsUpstream(`/${id}/content`, companyNameQuery(req));
+  if (!url) {
+    res.status(503).json({ error: 'AI chat is not configured' });
+    return;
+  }
+  await relayCompanyDocs(res, `content id=${id}`, () =>
+    fetch(url, {
+      headers: companyDocsHeaders(),
+      signal: AbortSignal.timeout(COMPANY_DOC_CONTENT_TIMEOUT_MS),
+    }),
+  );
+});
+
 app.get('/test', (req, res) => {
   const { form_id, brand_id, topic_id, integration_id, type } = req.query;
   const env = getEnv(req);

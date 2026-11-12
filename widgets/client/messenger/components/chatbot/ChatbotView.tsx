@@ -27,17 +27,8 @@ import { CHATBOT_MANUAL_URL } from '../ticket/helpLinks';
 import { dispatchViz, VizBlockRenderer } from './vizRenderers';
 import { chatbotTheme } from './chatbotTheme';
 import { safeHref } from './linkSafety';
-import CompanyDocsPanel from './CompanyDocsPanel';
-import {
-  getCompanyName,
-  getUploaderName,
-  hasSeenCompanyDocsIntro,
-  markCompanyDocsIntroSeen,
-} from './companyDocs';
-import { __ } from '../../../utils';
 
 const T = chatbotTheme;
-const DOCS_INTRO_WIDTH = 240;
 import {
   AiMessage,
   getActiveSessionId,
@@ -671,39 +662,8 @@ const ChatbotView: React.FC = () => {
   const primaryColor = getColor() || '#6366f1';
   const [hoveredBtn, setHoveredBtn] = React.useState<string | null>(null);
   const [hoveredHeaderBtn, setHoveredHeaderBtn] = React.useState<
-    'new' | 'history' | 'manual' | 'docs' | null
+    'new' | 'history' | 'manual' | null
   >(null);
-  // 회사 사규 문서 패널 — 고객사가 companyData.name을 넘긴 경우에만(teamplgpt specs/021)
-  const companyName = getCompanyName();
-  const [docsOpen, setDocsOpen] = React.useState(false);
-  const [docsIntroOpen, setDocsIntroOpen] = React.useState(
-    () => !!companyName && !hasSeenCompanyDocsIntro(),
-  );
-  const dismissDocsIntro = () => {
-    setDocsIntroOpen(false);
-    markCompanyDocsIntroSeen();
-  };
-  const docsButtonRef = React.useRef<HTMLButtonElement>(null);
-  const bodyRef = React.useRef<HTMLDivElement>(null);
-  // 말풍선 꼬리가 헤더의 문서 아이콘을 가리키도록 아이콘 위치를 잰다
-  const [introPos, setIntroPos] = React.useState({ left: 8, arrow: 14 });
-  React.useLayoutEffect(() => {
-    if (!docsIntroOpen) return;
-    const measure = () => {
-      const btn = docsButtonRef.current?.getBoundingClientRect();
-      const body = bodyRef.current?.getBoundingClientRect();
-      if (!btn || !body) return;
-      const center = btn.left + btn.width / 2 - body.left;
-      const left = Math.max(
-        8,
-        Math.min(center - 40, body.width - DOCS_INTRO_WIDTH - 8),
-      );
-      setIntroPos({ left, arrow: center - left - 6 });
-    };
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [docsIntroOpen]);
   const chatBottomRef = React.useRef<HTMLDivElement>(null);
 
   const scheduledMessages = useChatbotMessages();
@@ -1047,52 +1007,11 @@ const ChatbotView: React.FC = () => {
               </svg>
             </a>
           </ChatbotHeaderTip>
-          {companyName && (
-            <ChatbotHeaderTip label={__('Company documents')}>
-              <button
-                ref={docsButtonRef}
-                type="button"
-                onClick={() => {
-                  if (docsIntroOpen) dismissDocsIntro();
-                  setDocsOpen((open) => !open);
-                }}
-                aria-label={__('Company documents')}
-                aria-pressed={docsOpen}
-                onMouseEnter={() => setHoveredHeaderBtn('docs')}
-                onMouseLeave={() =>
-                  setHoveredHeaderBtn((cur) => (cur === 'docs' ? null : cur))
-                }
-                style={headerIconButtonStyle(
-                  hoveredHeaderBtn === 'docs' || docsOpen,
-                  false,
-                )}
-              >
-                <svg
-                  width="17"
-                  height="17"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path>
-                  <path d="M14 2v4a2 2 0 0 0 2 2h4"></path>
-                  <path d="M10 9H8"></path>
-                  <path d="M16 13H8"></path>
-                  <path d="M16 17H8"></path>
-                </svg>
-              </button>
-            </ChatbotHeaderTip>
-          )}
         </div>
       }
     >
       <div
-        ref={bodyRef}
         style={{
-          position: 'relative',
           display: 'flex',
           flexDirection: 'column',
           flex: 1,
@@ -1102,73 +1021,6 @@ const ChatbotView: React.FC = () => {
           background: T.color.threadBackground,
         }}
       >
-        {docsOpen && companyName && (
-          <CompanyDocsPanel
-            companyName={companyName}
-            uploaderName={getUploaderName()}
-            onClose={() => setDocsOpen(false)}
-          />
-        )}
-        {docsIntroOpen && !docsOpen && (
-          <div
-            data-testid="company-docs-intro"
-            role="status"
-            style={{
-              position: 'absolute',
-              top: '8px',
-              left: `${introPos.left}px`,
-              zIndex: 6,
-              width: `${DOCS_INTRO_WIDTH}px`,
-              boxSizing: 'border-box',
-              padding: '12px 14px',
-              borderRadius: T.radius.md,
-              background: `linear-gradient(135deg, ${T.color.accent}, ${T.color.accent2})`,
-              color: T.color.accentForeground,
-              boxShadow: '0 6px 20px rgba(99, 102, 241, 0.3)',
-              fontFamily: T.font.sans,
-              fontSize: '12px',
-              lineHeight: 1.5,
-              wordBreak: 'keep-all',
-            }}
-          >
-            <span
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                top: '-6px',
-                left: `${introPos.arrow}px`,
-                width: '12px',
-                height: '12px',
-                background: T.color.accent,
-                transform: 'rotate(45deg)',
-              }}
-            />
-            <strong style={{ display: 'block', marginBottom: '4px' }}>
-              {__('New: Company documents')}
-            </strong>
-            {__(
-              "Upload your company's rules, such as work rules and policies, and the chatbot will answer based on them. Tap the document icon above to get started.",
-            )}
-            <div style={{ textAlign: 'right', marginTop: '8px' }}>
-              <button
-                type="button"
-                onClick={dismissDocsIntro}
-                style={{
-                  border: 'none',
-                  borderRadius: T.radius.sm,
-                  padding: '4px 10px',
-                  background: '#fff',
-                  color: T.color.accent,
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                {__('Got it')}
-              </button>
-            </div>
-          </div>
-        )}
         {/* ── 채팅 영역: 인사 + 시간대 메시지 (스크롤) ── */}
         <div
           style={{

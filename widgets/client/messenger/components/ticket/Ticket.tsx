@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, ExternalLink, HelpCircle } from 'lucide-react';
+import { BookOpen, ExternalLink, FileText, HelpCircle } from 'lucide-react';
 
 import {
   IconCheckTicket,
@@ -15,6 +15,13 @@ import { connection } from '../../connection';
 import { getColor, hexToRGBA } from '../../utils/util';
 import { useTicket } from '../../context/Ticket';
 import { TICKET_HELP_LINKS } from './helpLinks';
+import CompanyDocsPanel from '../chatbot/CompanyDocsPanel';
+import {
+  getCompanyName,
+  getUploaderName,
+  hasSeenCompanyDocsMenu,
+  markCompanyDocsMenuSeen,
+} from '../chatbot/companyDocs';
 
 const HELP_LINK_ICONS = { faq: HelpCircle, manual: BookOpen };
 
@@ -32,6 +39,19 @@ const Ticket: React.FC<Props> = ({
 }) => {
   const continueText = __('Continue');
   const { unreadTicketCount } = useTicket();
+  // 회사 사규 문서 — 고객사가 companyData.name을 넘긴 경우에만(teamplgpt specs/021)
+  const companyName = getCompanyName();
+  const [docsOpen, setDocsOpen] = React.useState(false);
+  const [docsIsNew, setDocsIsNew] = React.useState(
+    () => !!companyName && !hasSeenCompanyDocsMenu(),
+  );
+  const openCompanyDocs = () => {
+    setDocsOpen(true);
+    if (docsIsNew) {
+      setDocsIsNew(false);
+      markCompanyDocsMenuSeen();
+    }
+  };
 
   const renderSubmitForm = () => {
     const submitTicketRoute = connection.data.customerId
@@ -130,8 +150,78 @@ const Ticket: React.FC<Props> = ({
             </motion.a>
           );
         })}
+        {companyName && (
+          <motion.div
+            className="ticket-menu-item"
+            onClick={openCompanyDocs}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.25,
+              delay: (items.length + TICKET_HELP_LINKS.length) * 0.05,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            <div
+              className="ticket-menu-icon"
+              style={{ backgroundColor: hexToRGBA(color, 0.12) }}
+            >
+              <FileText size={22} strokeWidth={1.8} />
+            </div>
+            <div className="ticket-menu-text">
+              <span className="ticket-menu-title">
+                {__('Company documents')}
+                {docsIsNew && (
+                  <span
+                    style={{
+                      marginLeft: '6px',
+                      padding: '1px 6px',
+                      borderRadius: '999px',
+                      background: color,
+                      color: '#fff',
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      verticalAlign: 'middle',
+                    }}
+                  >
+                    {__('New')}
+                  </span>
+                )}
+              </span>
+              <span className="ticket-menu-description">
+                {__("Upload your company's rules for the chatbot")}
+              </span>
+            </div>
+            <IconFeaturedChevronRight />
+          </motion.div>
+        )}
       </div>
     );
+  };
+
+  const renderCompanyDocs = () => (
+    // 패널은 부모를 꽉 채우는 absolute 레이아웃 — ticket-container(가운데 정렬 flex)를
+    // 가로·세로로 채우는 기준 상자를 둔다
+    <div
+      style={{
+        position: 'relative',
+        alignSelf: 'stretch',
+        flex: 1,
+        minHeight: 0,
+      }}
+    >
+      <CompanyDocsPanel
+        companyName={companyName}
+        uploaderName={getUploaderName()}
+        onClose={() => setDocsOpen(false)}
+      />
+    </div>
+  );
+
+  const renderContent = () => {
+    if (loading) return <div className="loader" />;
+    if (docsOpen && companyName) return renderCompanyDocs();
+    return renderSubmitForm();
   };
 
   return (
@@ -146,9 +236,7 @@ const Ticket: React.FC<Props> = ({
         </div>
       }
     >
-      <div className="ticket-container">
-        {loading ? <div className="loader" /> : renderSubmitForm()}
-      </div>
+      <div className="ticket-container">{renderContent()}</div>
     </Container>
   );
 };

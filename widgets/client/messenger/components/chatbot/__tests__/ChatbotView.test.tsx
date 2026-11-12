@@ -323,75 +323,23 @@ describe('ChatbotView - 답변 복사', () => {
   });
 });
 
-describe('ChatbotView - 회사 문서 버튼', () => {
+// 회사 문서 올리기·관리는 티켓 탭으로 옮겼다(Ticket.test.tsx)
+describe('ChatbotView - 회사 문서 기능은 챗봇에 없다', () => {
   beforeEach(() => {
     localStorage.clear();
     connection.data = {};
-    connection.setting = {};
+    connection.setting = { companyData: { name: '오이사공' } };
   });
 
   afterEach(() => {
     connection.setting = {};
   });
 
-  it('companyData.name이 없으면 회사 문서 버튼이 없다', () => {
+  it('companyData.name이 있어도 위쪽 막대에 회사 문서 버튼과 안내 말풍선이 없다', () => {
     render(<ChatbotView />);
     expect(
       screen.queryByRole('button', { name: 'Company documents' }),
     ).not.toBeInTheDocument();
-  });
-
-  it('companyData.name이 있으면 버튼으로 문서 패널을 연다', () => {
-    connection.setting = { companyData: { name: '오이사공' } };
-    (global as any).fetch = jest.fn(() => new Promise(() => {}));
-    render(<ChatbotView />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Company documents' }));
-
-    expect(
-      screen.getByRole('dialog', { name: 'Company documents' }),
-    ).toBeInTheDocument();
-  });
-});
-
-describe('ChatbotView - 회사 문서 기능 안내 말풍선', () => {
-  beforeEach(() => {
-    localStorage.clear();
-    connection.data = {};
-    connection.setting = { companyData: { name: '오이사공' } };
-  });
-
-  afterEach(() => {
-    connection.setting = {};
-  });
-
-  it('처음 열면 안내를 보여주고, 확인을 누르면 다시 뜨지 않는다', () => {
-    const { unmount } = render(<ChatbotView />);
-    expect(screen.getByTestId('company-docs-intro')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Got it' }));
-    expect(screen.queryByTestId('company-docs-intro')).not.toBeInTheDocument();
-
-    unmount();
-    render(<ChatbotView />);
-    expect(screen.queryByTestId('company-docs-intro')).not.toBeInTheDocument();
-  });
-
-  it('문서 아이콘을 누르면 안내가 사라지고 다시 뜨지 않는다', () => {
-    (global as any).fetch = jest.fn(() => new Promise(() => {}));
-    const { unmount } = render(<ChatbotView />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Company documents' }));
-    expect(screen.queryByTestId('company-docs-intro')).not.toBeInTheDocument();
-
-    unmount();
-    render(<ChatbotView />);
-    expect(screen.queryByTestId('company-docs-intro')).not.toBeInTheDocument();
-  });
-
-  it('companyData.name이 없으면 안내도 없다', () => {
-    connection.setting = {};
-    render(<ChatbotView />);
     expect(screen.queryByTestId('company-docs-intro')).not.toBeInTheDocument();
   });
 });

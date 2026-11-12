@@ -10,7 +10,9 @@ import {
 import CompanyDocsPanel, { COMPANY_DOCS_POLL_MS } from '../CompanyDocsPanel';
 import {
   CompanyDoc,
+  CompanyDocsError,
   deleteCompanyDoc,
+  getCompanyDocContent,
   listCompanyDocs,
   uploadCompanyDoc,
 } from '../companyDocs';
@@ -22,12 +24,14 @@ jest.mock('../companyDocs', () => {
     listCompanyDocs: jest.fn(),
     uploadCompanyDoc: jest.fn(),
     deleteCompanyDoc: jest.fn(),
+    getCompanyDocContent: jest.fn(),
   };
 });
 
 const listMock = listCompanyDocs as jest.Mock;
 const uploadMock = uploadCompanyDoc as jest.Mock;
 const deleteMock = deleteCompanyDoc as jest.Mock;
+const contentMock = getCompanyDocContent as jest.Mock;
 
 function doc(partial: Partial<CompanyDoc>): CompanyDoc {
   return {
@@ -56,6 +60,7 @@ beforeEach(() => {
   listMock.mockReset();
   uploadMock.mockReset();
   deleteMock.mockReset();
+  contentMock.mockReset();
 });
 
 describe('CompanyDocsPanel', () => {
@@ -198,5 +203,91 @@ describe('CompanyDocsPanel', () => {
     expect(deleteMock).not.toHaveBeenCalled();
     expect(screen.getByTestId('company-doc-row')).toBeInTheDocument();
     confirmSpy.mockRestore();
+  });
+});
+
+describe('CompanyDocsPanel - 본문 보기', () => {
+  it('사용 가능 문서에만 보기 버튼이 있고, 처리 중·실패 문서엔 삭제만 있다', async () => {
+    listMock.mockResolvedValue([
+      doc({ id: 1 }),
+      doc({ id: 2, status: 'processing' }),
+      doc({ id: 3, status: 'failed', error: 'DRM' }),
+    ]);
+    renderPanel();
+    const rows = await screen.findAllByTestId('company-doc-row');
+    expect(rows[0]).toContainElement(
+      screen.getAllByRole('button', { name: 'View' })[0],
+    );
+    expect(screen.getAllByRole('button', { name: 'View' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Delete' })).toHaveLength(3);
+  });
+
+  it('보기를 누르면 같은 패널에 본문이 열리고, 목록으로 돌아오면 목록 그대로다', async () => {
+    listMock.mockResolvedValue([
+      doc({ id: 1 }),
+      doc({ id: 2, filename: '경비규정.hwp' }),
+    ]);
+    contentMock.mockResolvedValue({
+      document: doc({ id: 2 }),
+      content: '제1조(목적)',
+    });
+    renderPanel();
+    await screen.findAllByTestId('company-doc-row');
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'View' })[1]);
+
+    expect(await screen.findByTestId('company-doc-content')).toHaveTextContent(
+      '제1조(목적)',
+    );
+    expect(contentMock).toHaveBeenCalledWith(
+      '오이사공',
+      2,
+      expect.any(AbortSignal),
+    );
+    expect(
+      screen.getByRole('dialog', { name: 'Company documents' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('company-doc-row')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Upload files' }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Back to list/ }));
+
+    const rows = await screen.findAllByTestId('company-doc-row');
+    expect(rows).toHaveLength(2);
+    expect(rows[1]).toHaveTextContent('경비규정.hwp');
+  });
+
+  it('이미 삭제된 문서였으면 목록을 새로 읽는다', async () => {
+    listMock.mockResolvedValueOnce([doc({ id: 1 })]).mockResolvedValueOnce([]);
+    contentMock.mockRejectedValue(new CompanyDocsError('NOT_FOUND'));
+    renderPanel();
+    await screen.findByTestId('company-doc-row');
+
+    fireEvent.click(screen.getByRole('button', { name: 'View' }));
+
+    expect(
+      await screen.findByText('This document has already been deleted'),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(listMock).toHaveBeenCalledTimes(2));
+
+    fireEvent.click(screen.getByRole('button', { name: /Back to list/ }));
+    expect(await screen.findByText(/No documents yet/)).toBeInTheDocument();
+  });
+});
+
+describe('CompanyDocsPanel - 처리 중 진행 막대', () => {
+  it('처리 중 문서에만 진행 막대가 있다', async () => {
+    listMock.mockResolvedValue([
+      doc({ id: 1, status: 'processing' }),
+      doc({ id: 2 }),
+      doc({ id: 3, status: 'failed', error: 'DRM' }),
+    ]);
+    renderPanel();
+    const rows = await screen.findAllByTestId('company-doc-row');
+    expect(rows[0].querySelector('[role="progressbar"]')).not.toBeNull();
+    expect(rows[1].querySelector('[role="progressbar"]')).toBeNull();
+    expect(rows[2].querySelector('[role="progressbar"]')).toBeNull();
   });
 });
