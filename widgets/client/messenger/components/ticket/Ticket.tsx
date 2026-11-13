@@ -20,6 +20,7 @@ import {
   getCompanyName,
   getUploaderName,
   hasSeenCompanyDocsMenu,
+  isCompanyDocsAllowed,
   markCompanyDocsMenuSeen,
 } from '../chatbot/companyDocs';
 
@@ -39,8 +40,10 @@ const Ticket: React.FC<Props> = ({
 }) => {
   const continueText = __('Continue');
   const { unreadTicketCount } = useTicket();
-  // 회사 사규 문서 — 고객사가 companyData.name을 넘긴 경우에만(teamplgpt specs/021)
-  const companyName = getCompanyName();
+  // 회사 사규 문서 — 허용된 회사가 companyData.name을 넘긴 경우에만(teamplgpt specs/021)
+  const companyName = isCompanyDocsAllowed(getCompanyName())
+    ? getCompanyName()
+    : '';
   const [docsOpen, setDocsOpen] = React.useState(false);
   const [docsIsNew, setDocsIsNew] = React.useState(
     () => !!companyName && !hasSeenCompanyDocsMenu(),

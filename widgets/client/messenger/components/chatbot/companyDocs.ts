@@ -68,6 +68,13 @@ export function getCompanyName(): string {
   return typeof name === 'string' ? name.trim() : '';
 }
 
+// 회사 문서 메뉴를 먼저 열어 둘 회사 — 시범 운영 중
+const COMPANY_DOCS_ALLOWED_COMPANIES = ['오이사공'];
+
+export function isCompanyDocsAllowed(companyName: string): boolean {
+  return COMPANY_DOCS_ALLOWED_COMPANIES.includes(companyName);
+}
+
 // 티켓 탭 "우리 회사 문서" 메뉴의 새 기능 표시 — 한 번 열면 다시 안 띄운다
 const DOCS_MENU_SEEN_KEY = 'ticket-company-docs-menu-seen';
 

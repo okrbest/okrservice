@@ -45,6 +45,12 @@ describe('Ticket - 우리 회사 문서 메뉴', () => {
     expect(screen.queryByText('Company documents')).not.toBeInTheDocument();
   });
 
+  it('허용된 회사(오이사공)가 아니면 회사 문서 메뉴가 없다', () => {
+    connection.setting = { companyData: { name: '다른회사' } };
+    render(<Ticket {...props} />);
+    expect(screen.queryByText('Company documents')).not.toBeInTheDocument();
+  });
+
   it('companyData.name이 있으면 매뉴얼 바로 아래에 회사 문서 메뉴가 있다', () => {
     connection.setting = { companyData: { name: '오이사공' } };
     render(<Ticket {...props} />);

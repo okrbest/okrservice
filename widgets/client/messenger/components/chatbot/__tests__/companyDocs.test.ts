@@ -6,6 +6,7 @@ import {
   getCompanyDocContent,
   getCompanyName,
   getUploaderName,
+  isCompanyDocsAllowed,
   listCompanyDocs,
   uploadCompanyDoc,
 } from '../companyDocs';
@@ -59,6 +60,12 @@ describe('getCompanyName / getUploaderName', () => {
     expect(getCompanyName()).toBe('');
     connection.setting = { companyData: { name: '   ' } };
     expect(getCompanyName()).toBe('');
+  });
+
+  it('회사 문서 메뉴는 허용된 회사(오이사공)에만', () => {
+    expect(isCompanyDocsAllowed('오이사공')).toBe(true);
+    expect(isCompanyDocsAllowed('다른회사')).toBe(false);
+    expect(isCompanyDocsAllowed('')).toBe(false);
   });
 
   it('올린 사람은 이름 → 이메일 순', () => {
