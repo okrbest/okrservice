@@ -44,6 +44,13 @@ export const types = ({
     comments: [TicketComment]
     activityLogs: [ActivityLog]
     allowedFileTypes: [String]
+  }
+
+  # 위젯 고객의 접수 후 티켓 수정. ticket은 수정 화면에 채울 항목만 담은 JSON(제목·구분·설명·첨부·공개 설정), canEdit일 때만
+  type WidgetTicketEditState {
+    canEdit: Boolean!
+    canEditContent: Boolean!
+    ticket: JSON
   }`
       : ``
   }
@@ -135,6 +142,7 @@ export const queries = ({ products, knowledgeBase, tickets, sales }) => `
   widgetsTicketList(customerId: String!, includeCompanyTickets: Boolean): [Ticket]
   widgetsTicketStages(stageId: String!): [JSON]
   widgetsTicketView(token: String!): WidgetTicketView
+  widgetsTicketEditState(customerId: String!, ticketId: String!): WidgetTicketEditState
   `
       : ``
   }
@@ -248,6 +256,14 @@ export const mutations = ({ tickets, sales }) => `
     content: String!
     attachments: [AttachmentInput]
   ): TicketComment
+  widgetsTicketEdit(
+    customerId: String!
+    ticketId: String!
+    type: String
+    description: String
+    attachments: [AttachmentInput]
+    visibility: String
+  ): WidgetTicketEditState
   widgetTicketCreated(
     name: String!
     description: String

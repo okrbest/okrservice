@@ -1,22 +1,23 @@
 import {
   ActivityIcon,
-  ActivityRow
-} from "@erxes/ui-log/src/activityLogs/styles";
+  ActivityRow,
+} from '@erxes/ui-log/src/activityLogs/styles';
 import {
   formatText,
-  getIconAndColor
-} from "@erxes/ui-log/src/activityLogs/utils";
+  getIconAndColor,
+} from '@erxes/ui-log/src/activityLogs/utils';
 
-import ArchiveLog from "./components/ArchiveLog";
-import AssigneeLog from "./containers/AssigneeLog";
-import ConvertLog from "./containers/ConvertLog";
-import CreatedLog from "./components/CreatedLog";
-import DeletedLog from "./components/DeleteLog";
-import Icon from "@erxes/ui/src/components/Icon";
-import MovementLog from "./containers/MovementLog";
-import React from "react";
-import Task from "./containers/Task";
-import Tip from "@erxes/ui/src/components/Tip";
+import ArchiveLog from './components/ArchiveLog';
+import AssigneeLog from './containers/AssigneeLog';
+import ConvertLog from './containers/ConvertLog';
+import CreatedLog from './components/CreatedLog';
+import CustomerEditLog from './components/CustomerEditLog';
+import DeletedLog from './components/DeleteLog';
+import Icon from '@erxes/ui/src/components/Icon';
+import MovementLog from './containers/MovementLog';
+import React from 'react';
+import Task from './containers/Task';
+import Tip from '@erxes/ui/src/components/Tip';
 
 type Props = {
   contentType: string;
@@ -26,7 +27,10 @@ type Props = {
 
 class ActivityItem extends React.Component<Props> {
   renderDetail(contentType: string, children: React.ReactNode) {
-    const type = (contentType && contentType.includes(":")) ? contentType.split(":")[1] : contentType;
+    const type =
+      contentType && contentType.includes(':')
+        ? contentType.split(':')[1]
+        : contentType;
 
     const iconAndColor = getIconAndColor(type || contentType) || {};
 
@@ -45,52 +49,58 @@ class ActivityItem extends React.Component<Props> {
   render() {
     const { activity } = this.props;
 
-    if (!activity || typeof activity !== "object") {
+    if (!activity || typeof activity !== 'object') {
       return null;
     }
 
     const { contentType, action, _id } = activity;
-    if (!contentType || typeof contentType !== "string") {
+    if (!contentType || typeof contentType !== 'string') {
       return null;
     }
 
-    const type = contentType.split(":")[1];
+    const type = contentType.split(':')[1];
 
     switch ((action && action) || type) {
-      case "taskDetail":
-        return this.renderDetail("task", <Task taskId={_id} />);
+      case 'taskDetail':
+        return this.renderDetail('task', <Task taskId={_id} />);
 
-      case "create":
+      case 'create':
         return this.renderDetail(
           activity.contentType,
-          <CreatedLog activity={activity} />
+          <CreatedLog activity={activity} />,
         );
 
-      case "assignee":
+      case 'assignee':
         return this.renderDetail(
-          "assignee",
-          <AssigneeLog activity={activity} />
+          'assignee',
+          <AssigneeLog activity={activity} />,
         );
 
-      case "archive":
-        return this.renderDetail("archive", <ArchiveLog activity={activity} />);
+      case 'archive':
+        return this.renderDetail('archive', <ArchiveLog activity={activity} />);
 
-      case "moved":
-        return this.renderDetail(
-          activity.contentType,
-          <MovementLog activity={activity} />
-        );
-
-      case "convert":
+      case 'moved':
         return this.renderDetail(
           activity.contentType,
-          <ConvertLog activity={activity} />
+          <MovementLog activity={activity} />,
         );
 
-      case "delete":
+      case 'convert':
         return this.renderDetail(
           activity.contentType,
-          <DeletedLog activity={activity} />
+          <ConvertLog activity={activity} />,
+        );
+
+      case 'customerEdit':
+        return this.renderDetail(
+          activity.contentType,
+          <CustomerEditLog activity={activity} />,
+        );
+
+      case 'delete':
+        return this.renderDetail(
+          activity.contentType,
+          <DeletedLog activity={activity} />,
         );
 
       default:

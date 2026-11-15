@@ -253,5 +253,13 @@
   "Documents are used for answers once their status shows Ready, usually within a few minutes. Deleted documents stop being used from the next question.": "상태가 '사용 가능'으로 바뀌면(보통 몇 분 이내) 답변에 사용됩니다. 삭제하면 다음 질문부터 사용되지 않습니다.",
   "Please do not upload documents containing personal information such as resident registration numbers or pay details.": "주민등록번호·급여 내역 같은 개인정보가 담긴 문서는 올리지 마세요.",
   "No documents yet. Use Upload files above to add your company's rules.": "아직 올린 문서가 없습니다. 위의 '파일 올리기'로 회사 규정 파일을 올려 주세요.",
-  "Only people at your company can see the list of uploaded documents, and anyone at your company can delete a document uploaded by mistake.": "올린 문서 목록은 우리 회사 직원에게만 보이고, 잘못 올린 문서는 직원 누구나 삭제할 수 있습니다."
+  "Only people at your company can see the list of uploaded documents, and anyone at your company can delete a document uploaded by mistake.": "올린 문서 목록은 우리 회사 직원에게만 보이고, 잘못 올린 문서는 직원 누구나 삭제할 수 있습니다.",
+  "티켓 수정": "티켓 수정",
+  "저장하기": "저장하기",
+  "제목은 바꿀 수 없어요": "제목은 바꿀 수 없어요",
+  "처리가 시작되어 공개 설정만 바꿀 수 있어요.": "처리가 시작되어 공개 설정만 바꿀 수 있어요.",
+  "이미 처리가 시작되어 공개 설정만 바꿀 수 있어요.": "이미 처리가 시작되어 공개 설정만 바꿀 수 있어요.",
+  "이 티켓은 수정할 수 없어요.": "이 티켓은 수정할 수 없어요.",
+  "입력한 내용을 확인해 주세요.": "입력한 내용을 확인해 주세요.",
+  "저장하지 못했어요. 잠시 후 다시 시도해 주세요.": "저장하지 못했어요. 잠시 후 다시 시도해 주세요."
 }

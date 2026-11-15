@@ -31,6 +31,11 @@ import {
   getTicketViewDetail,
   useTicketViewLink,
 } from './ticketViewRpc';
+import {
+  getWidgetTicketEditState,
+  saveWidgetTicketEdit,
+} from './widgetTicketEdit';
+import { putActivityLog } from './logUtils';
 
 export const setupMessageConsumers = async () => {
   consumeRPCQueue('tickets:tickets.create', async ({ subdomain, data }) => {
@@ -767,6 +772,46 @@ export const setupMessageConsumers = async () => {
       return {
         status: 'success',
         data: await useTicketViewLink(models, data),
+      };
+    },
+  );
+
+  // 위젯 고객의 접수 후 티켓 수정: 수정 가능 여부 조회 / 저장(규칙은 widgetTicketEdit.ts)
+  consumeRPCQueue(
+    'tickets:widgets.ticketEdit.state',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+
+      return {
+        status: 'success',
+        data: await getWidgetTicketEditState(
+          models,
+          subdomain,
+          { sendCore: sendCoreMessage },
+          data,
+        ),
+      };
+    },
+  );
+
+  consumeRPCQueue(
+    'tickets:widgets.ticketEdit.save',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+
+      return {
+        status: 'success',
+        data: await saveWidgetTicketEdit(
+          models,
+          subdomain,
+          {
+            sendCore: sendCoreMessage,
+            publish: (trigger, payload) =>
+              graphqlPubsub.publish(trigger, payload),
+            putActivityLog,
+          },
+          data,
+        ),
       };
     },
   );

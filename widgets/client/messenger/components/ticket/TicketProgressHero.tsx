@@ -30,6 +30,8 @@ type Props = {
   ticket: any;
   steps: ProgressStep[];
   newTab?: NewTabControl;
+  // 위젯에서만, 접수자 본인일 때만 넘긴다(새 탭 화면은 넘기지 않아 버튼이 안 보인다)
+  edit?: { onClick: () => void };
 };
 
 const StepBar = ({ steps }: { steps: ProgressStep[] }) => (
@@ -109,7 +111,12 @@ const AttachmentItem = ({ attachment }: { attachment: IAttachment }) => {
 };
 
 // 위: 번호·현재 단계·제목·접수일, 단계 막대, 내용과 첨부
-const TicketProgressHero: React.FC<Props> = ({ ticket, steps, newTab }) => {
+const TicketProgressHero: React.FC<Props> = ({
+  ticket,
+  steps,
+  newTab,
+  edit,
+}) => {
   const descriptionRef = React.useRef<HTMLDivElement>(null);
   const {
     number,
@@ -137,6 +144,11 @@ const TicketProgressHero: React.FC<Props> = ({ ticket, steps, newTab }) => {
             <i aria-hidden />
             {__(stage?.name || status)}
           </span>
+        )}
+        {edit && (
+          <button type="button" className="tp-edit" onClick={edit.onClick}>
+            {__('Edit')}
+          </button>
         )}
         {newTab &&
           (newTab.url ? (

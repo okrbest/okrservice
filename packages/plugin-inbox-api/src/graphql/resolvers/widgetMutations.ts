@@ -26,6 +26,7 @@ import {
   hashTicketViewToken,
   validateTicketViewComment,
 } from '../../ticketViewWidget';
+import { validateWidgetTicketEdit } from '../../widgetTicketEdit';
 
 import { AUTO_BOT_MESSAGES } from '../../models/definitions/constants';
 import EditorAttributeUtil from '@erxes/api-utils/src/editorAttributeUtils';
@@ -648,6 +649,40 @@ const widgetMutations = {
       subdomain,
       action: 'widgets.ticketViewLink.create',
       data: { customerId, ticketId },
+      isRPC: true,
+    });
+  },
+
+  // 위젯 고객의 접수 후 티켓 수정. 제목은 받지 않는다. 형식만 여기서 보고,
+  // 본인·단계·보관 판단과 저장은 tickets-api가 한다(TICKET_EDIT_* 오류를 그대로 넘김)
+  async widgetsTicketEdit(
+    _root,
+    args: {
+      customerId: string;
+      ticketId: string;
+      type?: string;
+      description?: string;
+      attachments?: IAttachment[];
+      visibility?: string;
+    },
+    { subdomain }: IContext,
+  ) {
+    validateWidgetTicketEdit(args);
+
+    const { customerId, ticketId, type, description, attachments, visibility } =
+      args;
+
+    return sendTicketsMessage({
+      subdomain,
+      action: 'widgets.ticketEdit.save',
+      data: {
+        customerId,
+        ticketId,
+        type: type ?? undefined,
+        description: description ?? undefined,
+        attachments: attachments ?? undefined,
+        visibility: visibility ?? undefined,
+      },
       isRPC: true,
     });
   },

@@ -19,6 +19,10 @@ type Props = {
   handleButtonClick: () => void;
   handleFiles: (files: any) => void;
   files?: FileWithUrl[];
+  // 접수한 티켓 고치기: 제목은 보기만, 연락처는 숨김. contentLocked면 공개 설정만 고친다
+  mode?: 'submit' | 'edit';
+  contentLocked?: boolean;
+  notice?: { text: string; error?: boolean };
 };
 
 // 요청 구분 7가지(저장 값은 그대로) — 한 줄 설명을 칩에 늘 보여준다
@@ -60,7 +64,11 @@ const TicketSubmitForm: React.FC<Props> = ({
   handleFiles,
   handleButtonClick,
   files = [],
+  mode = 'submit',
+  contentLocked = false,
+  notice,
 }) => {
+  const isEdit = mode === 'edit';
   const { email, firstName, lastName, phone } = formData;
   const { isAuthFieldsVisible } = useConfig();
   const summary = contactSummary({ email, firstName, lastName, phone });
@@ -104,6 +112,7 @@ const TicketSubmitForm: React.FC<Props> = ({
               role="radio"
               aria-checked={active}
               className={classNames('ts-type', { 'is-active': active })}
+              disabled={contentLocked}
               onClick={() => change(handleChange, 'ticketType', type.value)}
             >
               <span className="ts-type-name">{__(type.label)}</span>
@@ -117,6 +126,29 @@ const TicketSubmitForm: React.FC<Props> = ({
 
   const renderAttach = () => (
     <div className="ts-attach">
+      {!contentLocked && renderAttachPicker()}
+      {files.map((file) => (
+        <span key={file.name} className="tp-chip">
+          <span className="tp-chip-name">{file.name}</span>
+          {!contentLocked && (
+            <button
+              type="button"
+              aria-label={__('Remove')}
+              onClick={() => attach.removeFile(file.name)}
+            >
+              ×
+            </button>
+          )}
+        </span>
+      ))}
+      {attach.uploading > 0 && (
+        <span className="tp-chip is-uploading">{__('Uploading…')}</span>
+      )}
+    </div>
+  );
+
+  const renderAttachPicker = () => (
+    <>
       <button
         type="button"
         className="ts-attach-btn"
@@ -141,22 +173,7 @@ const TicketSubmitForm: React.FC<Props> = ({
         accept={attach.accept}
         onChange={attach.onPick}
       />
-      {files.map((file) => (
-        <span key={file.name} className="tp-chip">
-          <span className="tp-chip-name">{file.name}</span>
-          <button
-            type="button"
-            aria-label={__('Remove')}
-            onClick={() => attach.removeFile(file.name)}
-          >
-            ×
-          </button>
-        </span>
-      ))}
-      {attach.uploading > 0 && (
-        <span className="tp-chip is-uploading">{__('Uploading…')}</span>
-      )}
-    </div>
+    </>
   );
 
   const renderVisibility = () => (
@@ -185,7 +202,7 @@ const TicketSubmitForm: React.FC<Props> = ({
   );
 
   const renderContact = () => {
-    if (!isAuthFieldsVisible) {
+    if (!isAuthFieldsVisible || isEdit) {
       return null;
     }
 
@@ -244,10 +261,19 @@ const TicketSubmitForm: React.FC<Props> = ({
 
   const renderForm = () => (
     <form id="ticket-form" className="ts-form" onSubmit={handleSubmit}>
+      {notice && (
+        <p
+          className={classNames('ts-notice', { 'is-error': notice.error })}
+          role="status"
+        >
+          {__(notice.text)}
+        </p>
+      )}
       {renderTypes()}
       <div className="ts-section">
         <label className="ts-label" htmlFor="title">
           {__('Ticket title')}
+          {isEdit && <small>{__('제목은 바꿀 수 없어요')}</small>}
         </label>
         <input
           id="title"
@@ -256,6 +282,8 @@ const TicketSubmitForm: React.FC<Props> = ({
           onChange={handleChange}
           placeholder={String(__('한 줄로 요약해 주세요'))}
           required={true}
+          readOnly={isEdit}
+          aria-readonly={isEdit}
         />
       </div>
       <div className="ts-section">
@@ -271,6 +299,8 @@ const TicketSubmitForm: React.FC<Props> = ({
           onChange={handleChange}
           placeholder={String(__('어떤 상황인지 적어주세요'))}
           required={true}
+          readOnly={contentLocked}
+          aria-readonly={contentLocked}
         />
         {renderAttach()}
       </div>
@@ -279,13 +309,15 @@ const TicketSubmitForm: React.FC<Props> = ({
     </form>
   );
 
-  const ready = canSubmitTicket(formData) && attach.uploading === 0;
+  // 잠긴 수정은 공개 설정만 보내므로 내용 검사를 하지 않는다
+  const ready =
+    (contentLocked || canSubmitTicket(formData)) && attach.uploading === 0;
 
   return (
     <Container
       withBottomNavBar={true}
-      title={__('Submit a ticket')}
-      backRoute="ticket"
+      title={isEdit ? __('티켓 수정') : __('Submit a ticket')}
+      backRoute={isEdit ? 'ticket-progress' : 'ticket'}
       persistentFooter={
         !isSubmitted ? (
           <div className="ts-footer">
@@ -298,7 +330,9 @@ const TicketSubmitForm: React.FC<Props> = ({
               {loading ? (
                 <div className="loader" />
               ) : (
-                <span className="font-semibold">{__('문의 접수하기')}</span>
+                <span className="font-semibold">
+                  {isEdit ? __('저장하기') : __('문의 접수하기')}
+                </span>
               )}
             </Button>
           </div>

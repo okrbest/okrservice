@@ -192,5 +192,14 @@
   "Documents are used for answers once their status shows Ready, usually within a few minutes. Deleted documents stop being used from the next question.": "Documents are used for answers once their status shows Ready, usually within a few minutes. Deleted documents stop being used from the next question.",
   "Please do not upload documents containing personal information such as resident registration numbers or pay details.": "Please do not upload documents containing personal information such as resident registration numbers or pay details.",
   "No documents yet. Use Upload files above to add your company's rules.": "No documents yet. Use Upload files above to add your company's rules.",
-  "Only people at your company can see the list of uploaded documents, and anyone at your company can delete a document uploaded by mistake.": "Only people at your company can see the list of uploaded documents, and anyone at your company can delete a document uploaded by mistake."
+  "Only people at your company can see the list of uploaded documents, and anyone at your company can delete a document uploaded by mistake.": "Only people at your company can see the list of uploaded documents, and anyone at your company can delete a document uploaded by mistake.",
+  "Edit": "Edit",
+  "티켓 수정": "Edit ticket",
+  "저장하기": "Save",
+  "제목은 바꿀 수 없어요": "The title can't be changed",
+  "처리가 시작되어 공개 설정만 바꿀 수 있어요.": "Work has started, so you can only change the visibility.",
+  "이미 처리가 시작되어 공개 설정만 바꿀 수 있어요.": "Work has already started, so you can only change the visibility.",
+  "이 티켓은 수정할 수 없어요.": "This ticket can't be edited.",
+  "입력한 내용을 확인해 주세요.": "Please check what you entered.",
+  "저장하지 못했어요. 잠시 후 다시 시도해 주세요.": "Couldn't save. Please try again in a moment."
 }

@@ -283,6 +283,31 @@ const TICKET_COMMENTS_ADD = gql`
   }
 `;
 
+// 접수한 티켓 수정 — 제목은 보낼 수 없고, 바뀐 항목만 보낸다
+const TICKET_EDIT = gql`
+  mutation widgetsTicketEdit(
+    $customerId: String!
+    $ticketId: String!
+    $type: String
+    $description: String
+    $attachments: [AttachmentInput]
+    $visibility: String
+  ) {
+    widgetsTicketEdit(
+      customerId: $customerId
+      ticketId: $ticketId
+      type: $type
+      description: $description
+      attachments: $attachments
+      visibility: $visibility
+    ) {
+      canEdit
+      canEditContent
+      ticket
+    }
+  }
+`;
+
 // 티켓 "새 탭에서 보기" 링크 열쇠 발급 — 그 티켓에만 통하고 마지막 사용 후 하루 동안 유효
 const TICKET_VIEW_LINK_CREATE = gql`
   mutation widgetsTicketViewLinkCreate(
@@ -414,6 +439,7 @@ export {
   CUSTOMER_EDIT,
   TICKET_COMMENTS_ADD,
   TICKET_VIEW_LINK_CREATE,
+  TICKET_EDIT,
   TICKET_CHECK_PROGRESS,
   TICKET_CHECK_PROGRESS_FORGET,
   connect,

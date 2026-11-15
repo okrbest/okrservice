@@ -3,6 +3,7 @@ import * as React from 'react';
 import {
   TICKET_ACTIVITY_LOGS,
   TICKET_COMMENTS,
+  TICKET_EDIT_STATE,
   TICKET_STAGES,
 } from '../../graphql/queries';
 import { useMutation, useQuery } from '@apollo/client';
@@ -15,6 +16,7 @@ import { useTicketViewLink } from './useTicketViewLink';
 import TicketShowProgress from '../../components/ticket/TicketShowPropgress';
 import { connection } from '../../connection';
 import { useTicket } from '../../context/Ticket';
+import { useRouter } from '../../context/Router';
 
 interface FileWithUrl extends File {
   url?: string;
@@ -82,6 +84,17 @@ const TicketShowProgressContainer = (props: Props) => {
     skip: !stageId,
   });
 
+  // "수정" 버튼은 서버가 접수자 본인·보관 아님을 확인한 티켓에만(저장 때 다시 확인)
+  const { setRoute } = useRouter();
+  const { data: editData } = useQuery(TICKET_EDIT_STATE, {
+    variables: { customerId, ticketId: ticketData._id },
+    fetchPolicy: 'cache-and-network',
+    skip: !ticketData._id || !customerId,
+  });
+  const edit = editData?.widgetsTicketEditState?.canEdit
+    ? { onClick: () => setRoute('ticket-edit') }
+    : undefined;
+
   // "새 탭에서 보기" 링크를 화면을 열 때 미리 받아 둔다(누르면 바로 열림)
   const viewLink = useTicketViewLink(ticketData._id, customerId);
   // 방문자이거나 이 고객이 볼 수 없는 티켓(번호로 조회한 남의 티켓 등)이면 버튼을 그리지 않는다
@@ -137,6 +150,7 @@ const TicketShowProgressContainer = (props: Props) => {
       handleFiles={setFiles}
       stages={stagesData?.widgetsTicketStages || []}
       newTab={newTab}
+      edit={edit}
     />
   );
 };

@@ -281,3 +281,38 @@ a.ticket-menu-item {
   opacity: 0.45;
   cursor: default;
 }
+
+/* 티켓 수정 — 제목·잠긴 항목은 보기만, 안내 한 줄 */
+.ts-input[readonly] {
+  color: #6d6f78;
+  cursor: default;
+}
+.ts-input[readonly]:focus {
+  border-color: transparent;
+  background: #f4f5f8;
+  box-shadow: none;
+}
+.ts-type:disabled {
+  cursor: default;
+}
+.ts-type:disabled:not(.is-active) {
+  opacity: 0.5;
+}
+.ts-type:disabled:hover {
+  border-color: #e6e7ee;
+}
+.ts-type.is-active:disabled:hover {
+  border-color: #6569df;
+}
+.ts-notice {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #f7f8fe;
+  color: #4b4fc4;
+  font-size: 12.5px;
+}
+.ts-notice.is-error {
+  background: #fdf1f1;
+  color: #c0392b;
+}

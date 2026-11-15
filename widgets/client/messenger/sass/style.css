@@ -7261,3 +7261,52 @@ a.ticket-menu-item {
 .tv-page .tp-msg.is-mine .tp-msg-files {
   align-items: flex-end;
 }
+
+/* --- 위젯 티켓 접수 후 수정 --- */
+.tp-edit {
+  flex: none;
+  padding: 3px 10px;
+  border: 1px solid #dfe1f6;
+  border-radius: 999px;
+  background: #fff;
+  color: #4b4fc4;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tp-edit:hover {
+  background: #f1f2fd;
+}
+.ts-input[readonly] {
+  color: #6d6f78;
+  cursor: default;
+}
+.ts-input[readonly]:focus {
+  border-color: transparent;
+  background: #f4f5f8;
+  box-shadow: none;
+}
+.ts-type:disabled {
+  cursor: default;
+}
+.ts-type:disabled:not(.is-active) {
+  opacity: 0.5;
+}
+.ts-type:disabled:hover {
+  border-color: #e6e7ee;
+}
+.ts-type.is-active:disabled:hover {
+  border-color: #6569df;
+}
+.ts-notice {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #f7f8fe;
+  color: #4b4fc4;
+  font-size: 12.5px;
+}
+.ts-notice.is-error {
+  background: #fdf1f1;
+  color: #c0392b;
+}

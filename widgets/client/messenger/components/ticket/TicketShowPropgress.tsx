@@ -29,6 +29,7 @@ type Props = {
   handleFiles?: (files: FileWithUrl[]) => void;
   stages?: WidgetStage[];
   newTab?: NewTabControl;
+  edit?: { onClick: () => void };
 };
 
 // 고객이 보는 티켓 진행 상황: 위 요약 카드(단계 막대), 가운데 대화, 아래 한 줄 입력
@@ -43,6 +44,7 @@ const TicketShowProgress: React.FC<Props> = ({
   handleFiles,
   stages,
   newTab,
+  edit,
 }) => {
   const { ticketData = {} } = useTicket();
   // 지금은 진행 상황을 열 때마다 크게 보는 방법을 알려 준다("확인"은 이번 화면에서만 닫음).
@@ -88,7 +90,12 @@ const TicketShowProgress: React.FC<Props> = ({
         {showGuide && (
           <TicketGuide canOpenNewTab={Boolean(newTab)} onClose={closeGuide} />
         )}
-        <TicketProgressHero ticket={ticketData} steps={steps} newTab={newTab} />
+        <TicketProgressHero
+          ticket={ticketData}
+          steps={steps}
+          newTab={newTab}
+          edit={edit}
+        />
         <TicketThread thread={thread} loading={activityLoading} />
       </div>
     </Container>

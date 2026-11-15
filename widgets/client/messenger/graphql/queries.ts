@@ -128,6 +128,17 @@ const TICKET_STAGES = gql`
   }
 `;
 
+// 진행 상황의 "수정" 버튼과 수정 화면 값 — 본인·보관 아님이면 canEdit, 첫 단계면 canEditContent
+const TICKET_EDIT_STATE = gql`
+  query widgetsTicketEditState($customerId: String!, $ticketId: String!) {
+    widgetsTicketEditState(customerId: $customerId, ticketId: $ticketId) {
+      canEdit
+      canEditContent
+      ticket
+    }
+  }
+`;
+
 const TICKET_LIST = gql`
   query widgetsTicketList(
     $customerId: String!
@@ -383,6 +394,7 @@ export {
   TICKET_ACTIVITY_LOGS,
   TICKET_LIST,
   TICKET_STAGES,
+  TICKET_EDIT_STATE,
   conversationDetailQuery,
   widgetExportMessengerDataQuery,
   unreadCountQuery,

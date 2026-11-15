@@ -33,6 +33,22 @@
   text-decoration: none;
 }
 
+// 접수자 본인에게만 보이는 "수정" — 새 탭 버튼과 같은 모양
+.tp-edit {
+  flex: none;
+  padding: 3px 10px;
+  border: 1px solid #dfe1f6;
+  border-radius: 999px;
+  background: #fff;
+  color: #4b4fc4;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tp-edit:hover {
+  background: #f1f2fd;
+}
+
 // 새 탭 페이지: 가운데 한 열(최대 1200px) — 위젯 폭에 맞출 필요가 없어 넓게
 .tv-page {
   min-height: 100vh;

@@ -162,6 +162,22 @@ export default {
     }));
   },
 
+  // 위젯 진행 상황의 "수정" 버튼: 접수자 본인·보관 아님이면 canEdit, 첫 단계면 canEditContent.
+  // 판단에 실패하면 버튼만 숨긴다(저장 때 tickets-api가 다시 판단)
+  async widgetsTicketEditState(
+    _root,
+    { customerId, ticketId }: { customerId: string; ticketId: string },
+    { subdomain }: IContext,
+  ) {
+    return sendTicketsMessage({
+      subdomain,
+      action: 'widgets.ticketEdit.state',
+      data: { customerId, ticketId },
+      isRPC: true,
+      defaultValue: { canEdit: false, canEditContent: false, ticket: null },
+    });
+  },
+
   // 위젯 티켓 "새 탭에서 보기": 열쇠 확인(쓰는 중이면 만료 연장) → 티켓·단계·댓글·처리 기록·첨부 허용 형식.
   // 열쇠가 없거나 만료면 TICKET_VIEW_LINK_EXPIRED, 티켓이 없거나 보관됐으면 TICKET_VIEW_NOT_FOUND를 그대로 던진다.
   async widgetsTicketView(
