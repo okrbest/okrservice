@@ -1039,10 +1039,9 @@ const ChatbotView: React.FC = () => {
           >
             <div style={MESSAGE_COLUMN_STYLE}>
               <div style={BUBBLE_STYLE}>
-                안녕하세요! <strong>HR 도우미</strong>예요.
-                <br />내 <strong>근무시간·연차·급여</strong> 같은 정보를 바로
-                찾아 드리고, 휴가·출퇴근 변경 같은 <strong>신청 방법</strong>도
-                알려 드려요.
+                안녕하세요! HR 도우미 <strong>시범서비스</strong> 기간입니다.
+                <br />내 근무시간·연차·급여 같은 정보를 바로 찾아 드리고,
+                휴가·출퇴근 변경 같은 신청 방법도 알려 드려요.
               </div>
             </div>
           </div>
