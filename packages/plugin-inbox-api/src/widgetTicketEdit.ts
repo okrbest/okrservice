@@ -16,6 +16,7 @@ const REQUEST_TYPES = [
   'config',
   'data_work',
   'additional_development',
+  'widget',
 ];
 
 const VISIBILITIES = ['public', 'private'];

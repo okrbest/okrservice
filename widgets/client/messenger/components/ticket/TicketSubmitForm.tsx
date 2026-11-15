@@ -6,6 +6,7 @@ import Container from '../common/Container';
 import { __ } from '../../../utils';
 import { useConfig } from '../../context/Config';
 import { canSubmitTicket, contactSummary } from './submitHelpers';
+import { selectableRequestTypes } from './requestTypes';
 import { FileWithUrl, useAttachUpload } from './useAttachUpload';
 
 type Props = {
@@ -22,19 +23,10 @@ type Props = {
   // 접수한 티켓 고치기: 제목은 보기만, 연락처는 숨김. contentLocked면 공개 설정만 고친다
   mode?: 'submit' | 'edit';
   contentLocked?: boolean;
+  // 고치기 전 요청 구분 — 위젯 ↔ 다른 유형 전환을 막는 데 쓴다
+  originalType?: string;
   notice?: { text: string; error?: boolean };
 };
-
-// 요청 구분 7가지(저장 값은 그대로) — 한 줄 설명을 칩에 늘 보여준다
-const REQUEST_TYPES = [
-  { value: 'inquiry', label: '단순문의', hint: '궁금한 점' },
-  { value: 'error', label: '오류처리', hint: '버그·오류 신고' },
-  { value: 'improvement', label: '개선요청', hint: '기능 개선' },
-  { value: 'usage_guide', label: '사용안내', hint: '사용 방법' },
-  { value: 'config', label: '설정변경', hint: '설정 바꾸기' },
-  { value: 'data_work', label: '데이터작업', hint: '데이터 요청' },
-  { value: 'additional_development', label: '추가개발', hint: '새 기능 개발' },
-];
 
 const VISIBILITY = [
   {
@@ -66,6 +58,7 @@ const TicketSubmitForm: React.FC<Props> = ({
   files = [],
   mode = 'submit',
   contentLocked = false,
+  originalType,
   notice,
 }) => {
   const isEdit = mode === 'edit';
@@ -102,7 +95,7 @@ const TicketSubmitForm: React.FC<Props> = ({
     <fieldset className="ts-section">
       <legend className="ts-label">{__('어떤 요청인가요?')}</legend>
       <div className="ts-types" role="radiogroup">
-        {REQUEST_TYPES.map((type) => {
+        {selectableRequestTypes(isEdit, originalType).map((type) => {
           const active = formData.ticketType === type.value;
 
           return (

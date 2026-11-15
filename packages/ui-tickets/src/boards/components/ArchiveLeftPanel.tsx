@@ -136,6 +136,7 @@ const REQUEST_TYPE_OPTIONS = [
   { value: 'additional_development', label: '추가개발' },
   { value: 'usage_guide', label: '사용안내' },
   { value: 'data_work', label: '데이터작업' },
+  { value: 'widget', label: '위젯' },
 ];
 
 const FUNCTION_CATEGORY_OPTIONS = [

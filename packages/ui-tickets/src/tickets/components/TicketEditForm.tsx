@@ -432,6 +432,7 @@ export default function TicketEditForm(props: Props) {
       { label: '추가개발', value: 'additional_development' },
       { label: '사용안내', value: 'usage_guide' },
       { label: '데이터작업', value: 'data_work' },
+      { label: '위젯', value: 'widget' },
     ];
 
     const requestTypeValueRenderer = (

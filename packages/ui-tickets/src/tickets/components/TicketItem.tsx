@@ -1,24 +1,24 @@
-import { colors } from "@erxes/ui/src/styles";
-import React, { useRef, useCallback } from "react";
-import { gql } from "@apollo/client";
-import client from "@erxes/ui/src/apolloClient";
-import { __ } from "coreui/utils";
-import Assignees from "../../boards/components/Assignees";
-import Details from "../../boards/components/Details";
-import DueDateLabel from "../../boards/components/DueDateLabel";
-import Labels from "../../boards/components/label/Labels";
-import ItemFooter from "../../boards/components/portable/ItemFooter";
-import EditForm from "../../boards/containers/editForm/EditForm";
-import { ItemContainer } from "../../boards/styles/common";
-import { PriceContainer, Right } from "../../boards/styles/item";
-import { Content } from "../../boards/styles/stage";
-import { IOptions } from "../../boards/types";
-import { renderPriority } from "../../boards/utils";
-import { ITicket } from "../types";
-import ItemArchivedStatus from "../../boards/components/portable/ItemArchivedStatus";
-import { useNavigate, useLocation } from "react-router-dom";
-import * as routerUtils from "@erxes/ui/src/utils/router";
-import Icon from "@erxes/ui/src/components/Icon";
+import { colors } from '@erxes/ui/src/styles';
+import React, { useRef, useCallback } from 'react';
+import { gql } from '@apollo/client';
+import client from '@erxes/ui/src/apolloClient';
+import { __ } from 'coreui/utils';
+import Assignees from '../../boards/components/Assignees';
+import Details from '../../boards/components/Details';
+import DueDateLabel from '../../boards/components/DueDateLabel';
+import Labels from '../../boards/components/label/Labels';
+import ItemFooter from '../../boards/components/portable/ItemFooter';
+import EditForm from '../../boards/containers/editForm/EditForm';
+import { ItemContainer } from '../../boards/styles/common';
+import { PriceContainer, Right } from '../../boards/styles/item';
+import { Content } from '../../boards/styles/stage';
+import { IOptions } from '../../boards/types';
+import { renderPriority } from '../../boards/utils';
+import { ITicket } from '../types';
+import ItemArchivedStatus from '../../boards/components/portable/ItemArchivedStatus';
+import { useNavigate, useLocation } from 'react-router-dom';
+import * as routerUtils from '@erxes/ui/src/utils/router';
+import Icon from '@erxes/ui/src/components/Icon';
 
 type Props = {
   stageId?: string;
@@ -47,7 +47,7 @@ const TicketItem: React.FC<Props> = (props) => {
         .query({
           query: gql(props.options!.queries.detailQuery),
           variables: { _id: item._id, includeRelations: false },
-          fetchPolicy: "network-only"
+          fetchPolicy: 'network-only',
         })
         .catch(() => {});
     }, 150);
@@ -59,19 +59,20 @@ const TicketItem: React.FC<Props> = (props) => {
       prefetchTimer.current = null;
     }
   }, []);
-  
+
   const getRequestTypeColor = (requestType: string) => {
     const colorMap: { [key: string]: { bg: string; text: string } } = {
-      'inquiry': { bg: '#fff8e1', text: '#f57f17' },
-      'usage': { bg: '#fff8e1', text: '#f57f17' },
-      'improvement': { bg: '#c8e6c9', text: '#2e7d32' },
-      'request': { bg: '#c8e6c9', text: '#2e7d32' }, 
-      'error': { bg: '#ffcdd2', text: '#c62828' },
-      'complaint': { bg: '#ffcdd2', text: '#c62828' },
-      'config': { bg: '#b3e5fc', text: '#0277bd' },
-      'additional_development': { bg: '#e1bee7', text: '#6a1b9a' },
-      'usage_guide': { bg: '#e8f5e9', text: '#388e3c' },
-      'data_work': { bg: '#fff3e0', text: '#e65100' }
+      inquiry: { bg: '#fff8e1', text: '#f57f17' },
+      usage: { bg: '#fff8e1', text: '#f57f17' },
+      improvement: { bg: '#c8e6c9', text: '#2e7d32' },
+      request: { bg: '#c8e6c9', text: '#2e7d32' },
+      error: { bg: '#ffcdd2', text: '#c62828' },
+      complaint: { bg: '#ffcdd2', text: '#c62828' },
+      config: { bg: '#b3e5fc', text: '#0277bd' },
+      additional_development: { bg: '#e1bee7', text: '#6a1b9a' },
+      usage_guide: { bg: '#e8f5e9', text: '#388e3c' },
+      data_work: { bg: '#fff3e0', text: '#e65100' },
+      widget: { bg: '#e0f2f1', text: '#00695c' },
     };
 
     return colorMap[requestType] || { bg: '#f5f5f5', text: '#616161' };
@@ -79,13 +80,14 @@ const TicketItem: React.FC<Props> = (props) => {
 
   const getRequestTypeLabel = (requestType: string) => {
     const labelMap: { [key: string]: string } = {
-      'inquiry': '단순문의',
-      'improvement': '개선요청',
-      'error': '오류처리',
-      'config': '설정변경',
-      'additional_development': '추가개발',
-      'usage_guide': '사용안내',
-      'data_work': '데이터작업'
+      inquiry: '단순문의',
+      improvement: '개선요청',
+      error: '오류처리',
+      config: '설정변경',
+      additional_development: '추가개발',
+      usage_guide: '사용안내',
+      data_work: '데이터작업',
+      widget: '위젯',
     };
 
     return labelMap[requestType] || requestType;
@@ -94,10 +96,10 @@ const TicketItem: React.FC<Props> = (props) => {
   const getPriorityColor = (priority: string) => {
     // 우선순위: 레벨에 따라 색상 (Critical=빨강, High=주황, Medium=파랑, Low=회색)
     const colorMap: { [key: string]: { bg: string; text: string } } = {
-      'Critical': { bg: '#ffebee', text: '#c62828' },
-      'High': { bg: '#fff3e0', text: '#e65100' },
-      'Medium': { bg: '#e3f2fd', text: '#1976d2' },
-      'Low': { bg: '#f5f5f5', text: '#616161' }
+      Critical: { bg: '#ffebee', text: '#c62828' },
+      High: { bg: '#fff3e0', text: '#e65100' },
+      Medium: { bg: '#e3f2fd', text: '#1976d2' },
+      Low: { bg: '#f5f5f5', text: '#616161' },
     };
 
     return colorMap[priority] || { bg: '#f5f5f5', text: '#616161' };
@@ -121,10 +123,10 @@ const TicketItem: React.FC<Props> = (props) => {
   const getQualityImpactColor = (qualityImpact: string) => {
     // 중요도: 레벨에 따라 색상 (critical=빨강, major=주황, minor=파랑, visual=회색)
     const colorMap: { [key: string]: { bg: string; text: string } } = {
-      'critical': { bg: '#ffebee', text: '#c62828' },
-      'major': { bg: '#fff3e0', text: '#e65100' },
-      'minor': { bg: '#e3f2fd', text: '#1976d2' },
-      'visual': { bg: '#f5f5f5', text: '#616161' }
+      critical: { bg: '#ffebee', text: '#c62828' },
+      major: { bg: '#fff3e0', text: '#e65100' },
+      minor: { bg: '#e3f2fd', text: '#1976d2' },
+      visual: { bg: '#f5f5f5', text: '#616161' },
     };
 
     return colorMap[qualityImpact] || { bg: '#f5f5f5', text: '#616161' };
@@ -207,7 +209,7 @@ const TicketItem: React.FC<Props> = (props) => {
       routerUtils.setParams(navigate, location, {
         id: boardId,
         pipelineId: pipelineId,
-        itemId: item._id
+        itemId: item._id,
       });
     } else if (onClick) {
       // 기존 onClick 동작
@@ -249,92 +251,115 @@ const TicketItem: React.FC<Props> = (props) => {
       functionCategory,
     } = item;
 
-    const requestTypeColors = requestType ? getRequestTypeColor(requestType) : { bg: '#f5f5f5', text: '#616161' };
+    const requestTypeColors = requestType
+      ? getRequestTypeColor(requestType)
+      : { bg: '#f5f5f5', text: '#616161' };
 
-    const priorityColors = item.priority ? getPriorityColor(item.priority) : null;
-    const qualityImpactColors = qualityImpact ? getQualityImpactColor(qualityImpact) : null;
-    const functionCategoryColors = functionCategory ? getFunctionCategoryColor(functionCategory) : null;
+    const priorityColors = item.priority
+      ? getPriorityColor(item.priority)
+      : null;
+    const qualityImpactColors = qualityImpact
+      ? getQualityImpactColor(qualityImpact)
+      : null;
+    const functionCategoryColors = functionCategory
+      ? getFunctionCategoryColor(functionCategory)
+      : null;
 
     return (
       <>
         <h5>{item.name}</h5>
 
-        <div style={{ marginBottom: '8px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            marginBottom: '8px',
+            display: 'flex',
+            gap: '6px',
+            flexWrap: 'wrap',
+          }}
+        >
           {item.priority && priorityColors && (
-            <span style={{ 
-              fontSize: '11px', 
-              color: priorityColors.text, 
-              backgroundColor: priorityColors.bg, 
-              border: `1px solid ${priorityColors.text}20`,
-              padding: '3px 8px 3px 6px', 
-              borderRadius: '12px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              fontWeight: '600',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-              letterSpacing: '0.3px'
-            }}>
+            <span
+              style={{
+                fontSize: '11px',
+                color: priorityColors.text,
+                backgroundColor: priorityColors.bg,
+                border: `1px solid ${priorityColors.text}20`,
+                padding: '3px 8px 3px 6px',
+                borderRadius: '12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontWeight: '600',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                letterSpacing: '0.3px',
+              }}
+            >
               <Icon icon="sort-amount-up" size={12} />
               {__(item.priority)}
             </span>
           )}
 
           {qualityImpact && qualityImpactColors && (
-            <span style={{ 
-              fontSize: '11px', 
-              color: qualityImpactColors.text, 
-              backgroundColor: qualityImpactColors.bg, 
-              border: `1px solid ${qualityImpactColors.text}20`,
-              padding: '3px 8px 3px 6px', 
-              borderRadius: '12px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              fontWeight: '600',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-              letterSpacing: '0.3px'
-            }}>
+            <span
+              style={{
+                fontSize: '11px',
+                color: qualityImpactColors.text,
+                backgroundColor: qualityImpactColors.bg,
+                border: `1px solid ${qualityImpactColors.text}20`,
+                padding: '3px 8px 3px 6px',
+                borderRadius: '12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontWeight: '600',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                letterSpacing: '0.3px',
+              }}
+            >
               <Icon icon="exclamation-triangle" size={12} />
               {getQualityImpactLabel(qualityImpact)}
             </span>
           )}
 
           {functionCategory && functionCategoryColors && (
-            <span style={{ 
-              fontSize: '11px', 
-              color: functionCategoryColors.text, 
-              backgroundColor: functionCategoryColors.bg, 
-              border: `1px solid ${functionCategoryColors.text}20`,
-              padding: '3px 8px 3px 6px', 
-              borderRadius: '12px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              fontWeight: '600',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-              letterSpacing: '0.3px'
-            }}>
+            <span
+              style={{
+                fontSize: '11px',
+                color: functionCategoryColors.text,
+                backgroundColor: functionCategoryColors.bg,
+                border: `1px solid ${functionCategoryColors.text}20`,
+                padding: '3px 8px 3px 6px',
+                borderRadius: '12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontWeight: '600',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                letterSpacing: '0.3px',
+              }}
+            >
               <Icon icon="grid-alt" size={12} />
               {getFunctionCategoryLabel(functionCategory)}
             </span>
           )}
 
           {requestType && (
-            <span style={{ 
-              fontSize: '11px', 
-              color: requestTypeColors.text, 
-              backgroundColor: requestTypeColors.bg, 
-              border: `1px solid ${requestTypeColors.text}20`,
-              padding: '3px 8px 3px 6px', 
-              borderRadius: '12px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              fontWeight: '600',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-              letterSpacing: '0.3px'
-            }}>
+            <span
+              style={{
+                fontSize: '11px',
+                color: requestTypeColors.text,
+                backgroundColor: requestTypeColors.bg,
+                border: `1px solid ${requestTypeColors.text}20`,
+                padding: '3px 8px 3px 6px',
+                borderRadius: '12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontWeight: '600',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                letterSpacing: '0.3px',
+              }}
+            >
               <Icon icon="tag-alt" size={12} />
               {getRequestTypeLabel(requestType)}
             </span>
@@ -375,7 +400,7 @@ const TicketItem: React.FC<Props> = (props) => {
           onMouseLeave={handleMouseLeave}
         >
           <ItemArchivedStatus
-            status={item.status || "active"}
+            status={item.status || 'active'}
             skipContainer={false}
           />
           <Content>{renderContent()}</Content>

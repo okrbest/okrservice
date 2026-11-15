@@ -3,6 +3,7 @@
 // 직원 편집 경로(itemsEdit)는 쓰지 않는다 — 고객 알림 메일 예약·자동화가 고객 본인 수정에 돌면 안 된다.
 import { IModels } from './connectionResolver';
 import { BOARD_STATUSES } from './models/definitions/constants';
+import { isWidgetTypeSwitch } from './widgetTicketRouting';
 
 export const TICKET_EDIT_NOT_ALLOWED = 'TICKET_EDIT_NOT_ALLOWED';
 export const TICKET_EDIT_STAGE_LOCKED = 'TICKET_EDIT_STAGE_LOCKED';
@@ -302,6 +303,11 @@ export const saveWidgetTicketEdit = async (
   const changedFields = computeChangedFields(ticket as any, next);
 
   decideEdit(context, changedFields);
+
+  // 위젯 유형은 다른 보드에 있다 — 유형만 바뀌고 보드가 그대로면 엉뚱한 사람에게 간다(specs/006)
+  if (changedFields.includes('type') && isWidgetTypeSwitch(ticket.type, type)) {
+    throw new Error(TICKET_EDIT_INVALID_INPUT);
+  }
 
   if (changedFields.includes('attachments')) {
     validateEditAttachments(ticket.attachments as any, attachments || []);

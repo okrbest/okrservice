@@ -144,6 +144,7 @@ const TicketEditContainer = (_props: Props) => {
     <TicketSubmitForm
       mode="edit"
       contentLocked={!canEditContent}
+      originalType={initial?.ticketType}
       notice={notice}
       isSubmitted={false}
       loading={saving}

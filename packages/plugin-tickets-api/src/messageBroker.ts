@@ -35,6 +35,7 @@ import {
   getWidgetTicketEditState,
   saveWidgetTicketEdit,
 } from './widgetTicketEdit';
+import { resolveWidgetTicketStageId } from './widgetTicketRouting';
 import { putActivityLog } from './logUtils';
 
 export const setupMessageConsumers = async () => {
@@ -456,6 +457,11 @@ export const setupMessageConsumers = async () => {
       // Widget에서 선택한 ticketType을 requestType 필드에도 저장
       const modifiedDoc = {
         ...doc,
+        stageId: await resolveWidgetTicketStageId(
+          models,
+          doc,
+          process.env.WIDGET_TICKET_STAGE_ID,
+        ),
         requestType: doc.type,
         description: description,
       };

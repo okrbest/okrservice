@@ -169,6 +169,7 @@ const REQUEST_TYPE_MAP: Record<string, { label: string } & ColorDef> = {
   additional_development: { label: '추가개발', bg: '#e1bee7', text: '#6a1b9a' },
   usage_guide: { label: '사용안내', bg: '#e8f5e9', text: '#388e3c' },
   data_work: { label: '데이터작업', bg: '#fff3e0', text: '#e65100' },
+  widget: { label: '위젯', bg: '#e0f2f1', text: '#00695c' },
 };
 
 const FUNCTION_CATEGORY_MAP: Record<string, { label: string } & ColorDef> = {

@@ -21,9 +21,13 @@ describe('validateWidgetTicketEdit', () => {
     ).toThrow(TICKET_EDIT_INVALID_INPUT);
   });
 
-  it('요청 구분은 접수 화면의 7가지만', () => {
+  it('요청 구분은 접수 화면의 8가지만', () => {
     expect(() =>
       validateWidgetTicketEdit({ ...ok, type: 'usage_guide' }),
+    ).not.toThrow();
+    // 위젯 유형 티켓도 유형은 그대로 두고 본문을 고칠 수 있어야 한다(전환 금지는 tickets-api)
+    expect(() =>
+      validateWidgetTicketEdit({ ...ok, type: 'widget' }),
     ).not.toThrow();
     expect(() => validateWidgetTicketEdit({ ...ok, type: 'hack' })).toThrow(
       TICKET_EDIT_INVALID_INPUT,

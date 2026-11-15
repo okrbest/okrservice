@@ -28,6 +28,7 @@ const REQUEST_TYPE_LABELS: Record<string, string> = {
   additional_development: '추가개발',
   usage_guide: '사용안내',
   data_work: '데이터작업',
+  widget: '위젯',
 };
 
 const FUNCTION_CATEGORY_LABELS: Record<string, string> = {
