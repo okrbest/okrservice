@@ -1,36 +1,36 @@
-import * as compose from "lodash.flowright";
+import * as compose from 'lodash.flowright';
 
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import {
   IItemMap,
   IOptions,
   IPipeline,
   IStageMap,
-  StagesQueryResponse
-} from "../types";
-import { PipelineConsumer, PipelineProvider } from "./PipelineContext";
-import React, { Component } from "react";
+  StagesQueryResponse,
+} from '../types';
+import { PipelineConsumer, PipelineProvider } from './PipelineContext';
+import React, { Component } from 'react';
 
-import EmptyState from "@erxes/ui/src/components/EmptyState";
-import Spinner from "@erxes/ui/src/components/Spinner";
-import Stage from "./Stage";
-import BulkSelectBar from "../components/BulkSelectBar";
-import { Alert, confirm, withProps } from "@erxes/ui/src/utils";
-import { gql, useMutation } from "@apollo/client";
-import { graphql } from "@apollo/client/react/hoc";
-import { queries } from "../graphql";
-import { mutations as ticketMutations } from "../../tickets/graphql";
-import styled from "styled-components";
-import { useLocation, useNavigate } from "react-router-dom";
+import EmptyState from '@erxes/ui/src/components/EmptyState';
+import Spinner from '@erxes/ui/src/components/Spinner';
+import Stage from './Stage';
+import BulkSelectBar from '../components/BulkSelectBar';
+import { Alert, confirm, withProps } from '@erxes/ui/src/utils';
+import { gql, useMutation } from '@apollo/client';
+import { graphql } from '@apollo/client/react/hoc';
+import { queries } from '../graphql';
+import { mutations as ticketMutations } from '../../tickets/graphql';
+import styled from 'styled-components';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Container = styled.div<{ $isMobile: boolean }>`
   height: 100%;
-  display: ${props => props.$isMobile ? 'flex' : 'inline-flex'};
-  flex-direction: ${props => props.$isMobile ? 'column' : 'row'};
-  overflow-y: ${props => props.$isMobile ? 'auto' : 'hidden'};
-  overflow-x: ${props => props.$isMobile ? 'hidden' : 'auto'};
-  width: ${props => props.$isMobile ? 'calc(100vw - 50px)' : 'auto'};
-  max-width: ${props => props.$isMobile ? 'calc(100vw - 50px)' : 'none'};
+  display: ${(props) => (props.$isMobile ? 'flex' : 'inline-flex')};
+  flex-direction: ${(props) => (props.$isMobile ? 'column' : 'row')};
+  overflow-y: ${(props) => (props.$isMobile ? 'auto' : 'hidden')};
+  overflow-x: ${(props) => (props.$isMobile ? 'hidden' : 'auto')};
+  width: ${(props) => (props.$isMobile ? 'calc(100vw - 50px)' : 'auto')};
+  max-width: ${(props) => (props.$isMobile ? 'calc(100vw - 50px)' : 'none')};
   box-sizing: border-box;
 `;
 
@@ -51,7 +51,15 @@ const BulkSelectBarConnected: React.FC<BulkBarProps> = ({ pipelineId }) => {
 
   return (
     <PipelineConsumer>
-      {({ isSelectMode, selectedIds, clearSelection, itemMap, refetchStage, bulkDateThreshold, setBulkDateThreshold }) => {
+      {({
+        isSelectMode,
+        selectedIds,
+        clearSelection,
+        itemMap,
+        refetchStage,
+        bulkDateThreshold,
+        setBulkDateThreshold,
+      }) => {
         if (!isSelectMode) return null;
 
         const handleArchive = () => {
@@ -69,21 +77,25 @@ const BulkSelectBarConnected: React.FC<BulkBarProps> = ({ pipelineId }) => {
 
                 const selectedSet = new Set(selectedIds);
                 const affectedStageIds = Object.entries(itemMap)
-                  .filter(([, items]) => items.some(i => selectedSet.has(i._id)))
+                  .filter(([, items]) =>
+                    items.some((i) => selectedSet.has(i._id)),
+                  )
                   .map(([stageId]) => stageId);
 
                 clearSelection();
-                affectedStageIds.forEach(stageId => refetchStage(stageId));
+                affectedStageIds.forEach((stageId) => refetchStage(stageId));
               } catch (e: any) {
                 Alert.error(e.message);
               }
-            }
+            },
           );
         };
 
         const handleDateThresholdChange = (value: string) => {
           if (selectedIds.length > 0) {
-            Alert.info(`날짜 조건 변경으로 ${selectedIds.length}개 선택이 초기화되었습니다.`);
+            Alert.info(
+              `날짜 조건 변경으로 ${selectedIds.length}개 선택이 초기화되었습니다.`,
+            );
           }
           setBulkDateThreshold(value);
         };
@@ -104,7 +116,7 @@ const BulkSelectBarConnected: React.FC<BulkBarProps> = ({ pipelineId }) => {
 
 class WithStages extends Component<WithStagesQueryProps> {
   state = {
-    isMobile: false
+    isMobile: false,
   };
 
   componentDidMount() {
@@ -156,7 +168,7 @@ class WithStages extends Component<WithStagesQueryProps> {
       queryParams,
       stagesQuery,
       navigate,
-      location
+      location,
     } = this.props;
 
     const { isMobile } = this.state;
@@ -184,76 +196,78 @@ class WithStages extends Component<WithStagesQueryProps> {
         location={location}
       >
         <>
-        <BulkSelectBarConnected pipelineId={pipeline._id} />
-        <PipelineConsumer>
-          {({
-            stageLoadMap,
-            itemMap,
-            onDragEnd,
-            onDragStart,
-            stageIds,
-            scheduleStage,
-            refetchStage,
-            onLoadStage,
-            onLoadPreviousStage,
-            onAddItem,
-            onRemoveItem,
-            maxItemsPerStage,
-            stageSkipOffset,
-            selectAllInStage,
-            bulkDateThreshold,
-          }) => (
-            <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
-              <Droppable
-                droppableId="pipeline"
-                type="STAGE"
-                direction={isMobile ? "vertical" : "horizontal"}
-                ignoreContainerClipping={true}
-              >
-                {provided => (
-                  <Container
-                    $isMobile={isMobile}
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                  >
-                    {stageIds.map((stageId, index) => {
-                      const stage = stageMap && stageMap[stageId];
+          <BulkSelectBarConnected pipelineId={pipeline._id} />
+          <PipelineConsumer>
+            {({
+              stageLoadMap,
+              itemMap,
+              onDragEnd,
+              onDragStart,
+              stageIds,
+              scheduleStage,
+              refetchStage,
+              onLoadStage,
+              onSlideStage,
+              getStageBufferInfo,
+              onAddItem,
+              onRemoveItem,
+              maxItemsPerStage,
+              stageSkipOffset,
+              selectAllInStage,
+              bulkDateThreshold,
+            }) => (
+              <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
+                <Droppable
+                  droppableId="pipeline"
+                  type="STAGE"
+                  direction={isMobile ? 'vertical' : 'horizontal'}
+                  ignoreContainerClipping={true}
+                >
+                  {(provided) => (
+                    <Container
+                      $isMobile={isMobile}
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {stageIds.map((stageId, index) => {
+                        const stage = stageMap && stageMap[stageId];
 
-                      if (!stage) {
-                        return null;
-                      }
+                        if (!stage) {
+                          return null;
+                        }
 
-                      return (
-                        <Stage
-                          options={options}
-                          key={stageId}
-                          index={index}
-                          length={stagesCount}
-                          stage={stage}
-                          items={itemMap[stageId]}
-                          queryParams={queryParams}
-                          loadingState={stageLoadMap[stageId]}
-                          refetchStages={stagesQuery.refetch}
-                          scheduleStage={scheduleStage}
-                          refetchStage={refetchStage}
-                          onLoad={onLoadStage}
-                          onLoadPrevious={onLoadPreviousStage}
-                          onAddItem={onAddItem}
-                          onRemoveItem={onRemoveItem}
-                          maxItemsPerStage={maxItemsPerStage}
-                          stageSkipOffset={stageSkipOffset?.[stageId] ?? 0}
-                          selectAllInStage={selectAllInStage}
-                          bulkDateThreshold={bulkDateThreshold}
-                        />
-                      );
-                    })}
-                    {provided.placeholder}
-                  </Container>
-                )}
-              </Droppable>
-            </DragDropContext>
-          )}
-        </PipelineConsumer>
+                        return (
+                          <Stage
+                            options={options}
+                            key={stageId}
+                            index={index}
+                            length={stagesCount}
+                            stage={stage}
+                            items={itemMap[stageId]}
+                            queryParams={queryParams}
+                            loadingState={stageLoadMap[stageId]}
+                            refetchStages={stagesQuery.refetch}
+                            scheduleStage={scheduleStage}
+                            refetchStage={refetchStage}
+                            onLoad={onLoadStage}
+                            onSlideStage={onSlideStage}
+                            getStageBufferInfo={getStageBufferInfo}
+                            onAddItem={onAddItem}
+                            onRemoveItem={onRemoveItem}
+                            maxItemsPerStage={maxItemsPerStage}
+                            stageSkipOffset={stageSkipOffset?.[stageId] ?? 0}
+                            selectAllInStage={selectAllInStage}
+                            bulkDateThreshold={bulkDateThreshold}
+                          />
+                        );
+                      })}
+                      {provided.placeholder}
+                    </Container>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            )}
+          </PipelineConsumer>
         </>
       </PipelineProvider>
     );
@@ -299,12 +313,12 @@ type WithQueryProps = Props & { abortController };
 const WithQuery = withProps<WithQueryProps>(
   compose(
     graphql<WithQueryProps, StagesQueryResponse>(gql(queries.stages), {
-      name: "stagesQuery",
+      name: 'stagesQuery',
       options: ({
         pipeline,
         queryParams,
         options: { getExtraParams },
-        abortController
+        abortController,
       }) => ({
         variables: {
           pipelineId: pipeline._id,
@@ -322,14 +336,14 @@ const WithQuery = withProps<WithQueryProps>(
           segment: queryParams.segment,
           segmentData: queryParams.segmentData,
           source: queryParams.source,
-          requestType: queryParams.requestType
+          requestType: queryParams.requestType,
         },
         context: {
-          fetchOptions: { signal: abortController && abortController.signal }
-        }
-      })
-    })
-  )(WithStagesQuery)
+          fetchOptions: { signal: abortController && abortController.signal },
+        },
+      }),
+    }),
+  )(WithStagesQuery),
 );
 
 class WithData extends React.Component<Props> {
@@ -348,7 +362,7 @@ class WithData extends React.Component<Props> {
   render() {
     const updatedProps = {
       ...this.props,
-      abortController: this.abortController
+      abortController: this.abortController,
     };
 
     return <WithQuery {...updatedProps} />;

@@ -7,6 +7,7 @@ import { Alert, confirm, withProps } from '@erxes/ui/src/utils';
 import React from 'react';
 import { graphql } from '@apollo/client/react/hoc';
 import Stage from '../components/stage/Stage';
+import { SlideDirection } from './PipelineContext';
 import { mutations } from '../graphql';
 import {
   IFilterParams,
@@ -16,7 +17,7 @@ import {
   ItemsQueryResponse,
   RemoveStageMutation,
   SaveItemMutation,
-  StagesSortItemsMutationResponse
+  StagesSortItemsMutationResponse,
 } from '../types';
 
 type StageProps = {
@@ -29,15 +30,24 @@ type StageProps = {
   options: IOptions;
   refetchStages: ({ pipelineId }: { pipelineId?: string }) => Promise<any>;
   onLoad: (stageId: string, items: IItem[]) => void;
-  /** 이전 구간 보기 (슬라이딩 윈도우) */
-  onLoadPrevious?: (stageId: string, items: IItem[], skipUsed: number) => void;
+  /** 스크롤 창 이동 (PipelineContext 보관 목록 기준) */
+  onSlideStage: (
+    stageId: string,
+    direction: SlideDirection,
+    fetched?: IItem[],
+  ) => boolean;
+  getStageBufferInfo: (stageId: string) => {
+    loadedCount: number;
+    hasBelow: boolean;
+    start: number;
+  };
   scheduleStage: (stageId: string) => void;
   refetchStage: (stageId: string) => void;
   onAddItem: (stageId: string, item: IItem, aboveItemId?: string) => void;
   onRemoveItem: (itemId: string, stageId: string) => void;
   /** 스테이지당 최대 아이템 수(슬라이딩 윈도우 시 더보기 허용) */
   maxItemsPerStage?: number;
-  /** 슬라이딩 윈도우: 앞쪽으로 건너뛴 개수. loadMore 시 skip = stageSkipOffset + items.length */
+  /** 창 앞에 있는 카드 수 (보관 목록에서의 창 시작 위치) */
   stageSkipOffset?: number;
   selectAllInStage?: (ids: string[]) => void;
   bulkDateThreshold?: string;
@@ -54,7 +64,6 @@ const LOAD_MORE_LIMIT = 20;
 
 class StageContainer extends React.PureComponent<FinalStageProps> {
   private loadMoreInProgress = false;
-  private loadPreviousInProgress = false;
 
   componentDidUpdate(prevProps: FinalStageProps) {
     const { stage, loadingState, onLoad, itemsQuery, options } = this.props;
@@ -74,17 +83,38 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
     scheduleStage(stage._id);
   }
 
+  /** 사용자 스크롤·버튼: 아래로 이동 */
   loadMore = () => {
-    const { onLoad, stage, items, queryParams, options, stageSkipOffset } = this.props;
+    this.moveDown('down');
+  };
+
+  /** 티켓 수정 등 이벤트 경로 전용: 창이 덜 찼을 때만 뒤를 채우고 창을 밀지 않는다 */
+  fillMore = () => {
+    const { items, maxItemsPerStage } = this.props;
+
+    if (items.length < (maxItemsPerStage || LOAD_MORE_LIMIT)) {
+      this.moveDown('fill');
+    }
+  };
+
+  /** 보관분이 있으면 그것으로, 없을 때만 서버에서 LOAD_MORE_LIMIT개 */
+  moveDown = (direction: 'down' | 'fill') => {
+    const { onSlideStage, getStageBufferInfo, stage, queryParams, options } =
+      this.props;
 
     if (this.loadMoreInProgress) return;
 
-    const totalLoaded = (stageSkipOffset ?? 0) + items.length;
-    if (totalLoaded >= stage.itemsTotalCount) {
+    const { loadedCount, hasBelow, start } = getStageBufferInfo(stage._id);
+
+    if (hasBelow) {
+      onSlideStage(stage._id, direction);
       return;
     }
 
-    const skip = (stageSkipOffset ?? 0) + items.length;
+    if (loadedCount >= stage.itemsTotalCount) {
+      return;
+    }
+
     this.loadMoreInProgress = true;
 
     client
@@ -93,24 +123,29 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
         variables: {
           stageId: stage._id,
           pipelineId: stage.pipelineId,
-          skip,
+          skip: loadedCount,
           limit: LOAD_MORE_LIMIT,
-          ...getFilterParams(queryParams, options.getExtraParams)
+          ...getFilterParams(queryParams, options.getExtraParams),
         },
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
       })
       .then(({ data }: any) => {
         const newItems = data[options.queriesName.itemsQuery] || [];
-        if (newItems.length === 0) {
-          this.loadMoreInProgress = false;
+        const current = getStageBufferInfo(stage._id);
+
+        // 요청 중 단계가 다시 불러와졌으면 버린다 (붙이면 중간 카드가 빠진다)
+        if (newItems.length === 0 || current.loadedCount !== loadedCount) {
           return;
         }
-        onLoad(stage._id, [
-          ...items,
-          ...newItems
-        ]);
+
+        // 요청 중 사용자가 위로 이동했으면 붙이기만 하고 창은 그대로 둔다
+        onSlideStage(
+          stage._id,
+          current.start === start ? direction : 'stay',
+          newItems,
+        );
       })
-      .catch(e => {
+      .catch((e) => {
         console.log(e.message);
       })
       .finally(() => {
@@ -119,7 +154,14 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
   };
 
   selectAllItems = async () => {
-    const { stage, queryParams, options, selectAllInStage, items, bulkDateThreshold } = this.props;
+    const {
+      stage,
+      queryParams,
+      options,
+      selectAllInStage,
+      items,
+      bulkDateThreshold,
+    } = this.props;
     if (!selectAllInStage) return;
 
     const applyDateFilter = (list: IItem[]): IItem[] => {
@@ -128,7 +170,7 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
       if (isNaN(days)) return list;
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - days);
-      return list.filter(i => new Date(i.createdAt) <= cutoff);
+      return list.filter((i) => new Date(i.createdAt) <= cutoff);
     };
 
     const total = stage.itemsTotalCount || 0;
@@ -158,39 +200,11 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
     }
   };
 
+  /** 위로 이동: 보관분에서만 꺼내므로 서버 요청 없음 */
   loadPrevious = () => {
-    const { onLoadPrevious, stage, queryParams, options, stageSkipOffset } = this.props;
+    const { onSlideStage, stage } = this.props;
 
-    if (!onLoadPrevious || this.loadPreviousInProgress) return;
-    const offset = stageSkipOffset ?? 0;
-    if (offset <= 0) return;
-
-    const skip = Math.max(0, offset - LOAD_MORE_LIMIT);
-    this.loadPreviousInProgress = true;
-
-    client
-      .query({
-        query: gql(options.queries.itemsQuery),
-        variables: {
-          stageId: stage._id,
-          pipelineId: stage.pipelineId,
-          skip,
-          limit: LOAD_MORE_LIMIT,
-          ...getFilterParams(queryParams, options.getExtraParams)
-        },
-        fetchPolicy: 'network-only'
-      })
-      .then(({ data }: any) => {
-        const prevItems = data[options.queriesName.itemsQuery] || [];
-        if (prevItems.length === 0) return;
-        onLoadPrevious(stage._id, prevItems, skip);
-      })
-      .catch(e => {
-        console.log(e.message);
-      })
-      .finally(() => {
-        this.loadPreviousInProgress = false;
-      });
+    onSlideStage(stage._id, 'up');
   };
 
   removeStage = (id: string) => {
@@ -207,7 +221,7 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
           refetchStages({ pipelineId: stage.pipelineId });
         });
       })
-      .catch(e => {
+      .catch((e) => {
         Alert.error(e.message);
       });
   };
@@ -228,9 +242,9 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
           refetchQueries: [
             {
               query: gql(queries.stageDetail),
-              variables: { _id: stageId, proccessId }
-            }
-          ]
+              variables: { _id: stageId, proccessId },
+            },
+          ],
         })
         .then(() => {
           Alert.success('Archive Items has been archived.');
@@ -256,8 +270,8 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
           stageId,
           type: options.type,
           proccessId,
-          sortType: type
-        }
+          sortType: type,
+        },
       })
         .then(() => {
           this.props.refetchStage(stageId);
@@ -278,8 +292,8 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
           variables: {
             _id: stage._id,
             type: options.type,
-            status: 'archived'
-          }
+            status: 'archived',
+          },
         })
         .then(() => {
           Alert.success('Archive List has been archived.');
@@ -304,7 +318,6 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
       onRemoveItem,
       loadingState,
       stageSkipOffset,
-      onLoadPrevious
     } = this.props;
 
     const loadingItems = () => {
@@ -315,8 +328,8 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
       return false;
     };
 
-    const hasMore = (stageSkipOffset ?? 0) + items.length < stage.itemsTotalCount;
-    const showLoadPrevious = (stageSkipOffset ?? 0) > 0 && !!onLoadPrevious;
+    const hasMore =
+      (stageSkipOffset ?? 0) + items.length < stage.itemsTotalCount;
 
     return (
       <Stage
@@ -332,7 +345,8 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
         loadingItems={loadingItems}
         loadMore={this.loadMore}
         loadPrevious={this.loadPrevious}
-        showLoadPrevious={showLoadPrevious}
+        windowStart={stageSkipOffset ?? 0}
+        fillMore={this.fillMore}
         onAddItem={onAddItem}
         onRemoveItem={onRemoveItem}
         hasMore={hasMore}
@@ -344,7 +358,7 @@ class StageContainer extends React.PureComponent<FinalStageProps> {
 
 const getFilterParams = (
   queryParams: IFilterParams,
-  getExtraParams: (queryParams) => any
+  getExtraParams: (queryParams) => any,
 ) => {
   if (!queryParams) {
     return {};
@@ -367,7 +381,7 @@ const getFilterParams = (
     endDate: queryParams.endDate,
     source: queryParams.source,
     requestType: queryParams.requestType,
-    ...getExtraParams(queryParams)
+    ...getExtraParams(queryParams),
   };
 };
 
@@ -383,23 +397,23 @@ const withQuery = ({ options }) => {
           variables: {
             stageId: stage._id,
             pipelineId: stage.pipelineId,
-            ...getFilterParams(queryParams, options.getExtraParams)
+            ...getFilterParams(queryParams, options.getExtraParams),
           },
           context: {
-            fetchOptions: { signal: abortController && abortController.signal }
+            fetchOptions: { signal: abortController && abortController.signal },
           },
           fetchPolicy:
             loadingState === 'readyToLoad' ? 'network-only' : 'cache-only',
-          notifyOnNetworkStatusChange: loadingState === 'readyToLoad'
-        })
+          notifyOnNetworkStatusChange: loadingState === 'readyToLoad',
+        }),
       }),
       graphql<WithQueryProps>(gql(mutations.stagesRemove), {
-        name: 'removeStageMutation'
+        name: 'removeStageMutation',
       }),
       graphql<WithQueryProps>(gql(mutations.stagesSortItems), {
-        name: 'stagesSortItemsMutation'
-      })
-    )(StageContainer)
+        name: 'stagesSortItemsMutation',
+      }),
+    )(StageContainer),
   );
 };
 
@@ -423,7 +437,7 @@ class WithData extends React.Component<StageProps> {
 
     const updatedProps = {
       ...this.props,
-      abortController: this.abortController
+      abortController: this.abortController,
     };
 
     return <Component {...updatedProps} />;

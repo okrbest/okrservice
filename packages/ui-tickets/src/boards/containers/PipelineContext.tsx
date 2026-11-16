@@ -1,6 +1,6 @@
-import * as compose from "lodash.flowright";
+import * as compose from 'lodash.flowright';
 
-import { Alert, router as routerUtils, withProps } from "@erxes/ui/src/utils";
+import { Alert, router as routerUtils, withProps } from '@erxes/ui/src/utils';
 import {
   IDragResult,
   IDragStart,
@@ -10,26 +10,40 @@ import {
   INonFilterParams,
   IOptions,
   IPipeline,
-  PipelineDetailQueryResponse
-} from "../types";
+  PipelineDetailQueryResponse,
+} from '../types';
 import {
   invalidateCache,
   isRefresh,
   reorder,
   reorderItemMap,
-  updateItemInfo
-} from "../utils";
-import { mutations, queries, subscriptions } from "../graphql";
-import { queries as queriesLogs } from "@erxes/ui-log/src/activityLogs/graphql";
+  updateItemInfo,
+} from '../utils';
+import { mutations, queries, subscriptions } from '../graphql';
+import {
+  StageBuffer,
+  WINDOW_SIZE,
+  appendItems,
+  createBuffer,
+  fillWindow,
+  getWindow,
+  hasBelow,
+  removeOutsideWindow,
+  replaceOutsideWindow,
+  slideDown,
+  slideUp,
+  syncWindow,
+} from '../utils/stageWindow';
+import { queries as queriesLogs } from '@erxes/ui-log/src/activityLogs/graphql';
 
-import InvisibleItemInUrl from "./InvisibleItemInUrl";
-import React from "react";
-import { UserDetailQueryResponse } from "@erxes/ui/src/auth/types";
-import client from "@erxes/ui/src/apolloClient";
-import { gql } from "@apollo/client";
-import { graphql } from "@apollo/client/react/hoc";
-import { requestIdleCallback } from "request-idle-callback";
-import { setTimeout } from "timers";
+import InvisibleItemInUrl from './InvisibleItemInUrl';
+import React from 'react';
+import { UserDetailQueryResponse } from '@erxes/ui/src/auth/types';
+import client from '@erxes/ui/src/apolloClient';
+import { gql } from '@apollo/client';
+import { graphql } from '@apollo/client/react/hoc';
+import { requestIdleCallback } from 'request-idle-callback';
+import { setTimeout } from 'timers';
 
 type WrapperProps = {
   pipeline: IPipeline;
@@ -41,7 +55,7 @@ type WrapperProps = {
   queryParams: IFilterParams & INonFilterParams;
   queryParamsChanged: (
     queryParams: IFilterParams,
-    nextQueryParams: IFilterParams
+    nextQueryParams: IFilterParams,
   ) => boolean;
 };
 
@@ -51,7 +65,7 @@ type Props = WrapperProps & {
 };
 
 type StageLoadMap = {
-  [key: string]: "readyToLoad" | "loaded";
+  [key: string]: 'readyToLoad' | 'loaded';
 };
 
 type State = {
@@ -74,8 +88,18 @@ interface IStore {
   stageLoadMap: StageLoadMap;
   stageIds: string[];
   onLoadStage: (stageId: string, items: IItem[]) => void;
-  /** 이전 구간 보기: 해당 스테이지를 skipUsed 기준 20개로 교체 */
-  onLoadPreviousStage: (stageId: string, items: IItem[], skipUsed: number) => void;
+  /** 스크롤 창 이동. fetched가 있으면 보관 목록에 붙인 뒤 이동. 이동했으면 true */
+  onSlideStage: (
+    stageId: string,
+    direction: SlideDirection,
+    fetched?: IItem[],
+  ) => boolean;
+  /** 아래로 이동 시 서버 요청이 필요한지, 요청 중 창이 바뀌었는지 판단용 */
+  getStageBufferInfo: (stageId: string) => {
+    loadedCount: number;
+    hasBelow: boolean;
+    start: number;
+  };
   scheduleStage: (stageId: string) => void;
   refetchStage: (stageId: string) => void;
   onDragEnd: (result: IDragResult) => void;
@@ -99,6 +123,19 @@ interface IStore {
   setBulkDateThreshold: (v: string) => void;
 }
 
+/** down/up: 사용자 스크롤, fill: 덜 찬 창 채우기, stay: 보관 목록에 붙이기만 */
+export type SlideDirection = 'down' | 'up' | 'fill' | 'stay';
+
+const SLIDE: Record<
+  SlideDirection,
+  (buffer: StageBuffer<IItem>) => StageBuffer<IItem>
+> = {
+  down: slideDown,
+  up: slideUp,
+  fill: fillWindow,
+  stay: (buffer) => buffer,
+};
+
 const PipelineContext = React.createContext({} as IStore);
 
 export const PipelineConsumer = PipelineContext.Consumer;
@@ -116,14 +153,19 @@ const ITEM_UPDATE_THROTTLE_MS = 600;
 /** 모달이 열려 있을 때는 보드 itemMap 갱신을 더 완화 → 상세에서 description 입력 시 버벅임 완화 */
 const ITEM_UPDATE_THROTTLE_WHEN_MODAL_MS = 10000;
 /** 스테이지당 메모리 상한: 담당 티켓 많을 때 itemMap/리렌더 비용 완화 */
-const MAX_ITEMS_PER_STAGE = 20;
+const MAX_ITEMS_PER_STAGE = WINDOW_SIZE;
 
 class PipelineProviderInner extends React.Component<Props, State> {
   static tickets: Ticket[] = [];
   static currentTicket: Ticket | null;
 
   private pendingStageRefetchIds = new Set<string>();
-  private pendingStageRefetchTimeout: ReturnType<typeof setTimeout> | null = null;
+  /** 단계별로 서버에서 받은 카드 전체 (화면에는 창 구간만). state 밖이라 리렌더 없음 */
+  private stageBuffers = new Map<string, StageBuffer<IItem>>();
+  /** 창을 옮겼지만 아직 state(itemMap)에 반영되지 않은 단계 */
+  private pendingWindowStages = new Set<string>();
+  private pendingStageRefetchTimeout: ReturnType<typeof setTimeout> | null =
+    null;
   private pendingItemUpdatesRef = new Map<string, IItem>();
   private itemUpdateFlushTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -139,11 +181,11 @@ class PipelineProviderInner extends React.Component<Props, State> {
       itemMap: initialItemMap || {},
       stageLoadMap: {},
       stageIds,
-      isShowLabel: false || localStorage.getItem(pipeline._id) === "true",
+      isShowLabel: false || localStorage.getItem(pipeline._id) === 'true',
       stageSkipOffset: {},
       isSelectMode: false,
       selectedIds: [] as string[],
-      bulkDateThreshold: ''
+      bulkDateThreshold: '',
     };
 
     PipelineProviderInner.tickets = [];
@@ -156,9 +198,9 @@ class PipelineProviderInner extends React.Component<Props, State> {
         prev,
         {
           subscriptionData: {
-            data: { ticketsPipelinesChanged }
-          }
-        }
+            data: { ticketsPipelinesChanged },
+          },
+        },
       ) => {
         if (!ticketsPipelinesChanged || !ticketsPipelinesChanged.data) {
           return;
@@ -167,11 +209,15 @@ class PipelineProviderInner extends React.Component<Props, State> {
         const {
           data: { item, aboveItemId, destinationStageId, oldStageId },
           action,
-          proccessId
+          proccessId,
         } = ticketsPipelinesChanged;
 
-        if (proccessId !== localStorage.getItem("proccessId")) {
-          if (action === "orderUpdated") {
+        if (proccessId !== localStorage.getItem('proccessId')) {
+          if (action === 'orderUpdated') {
+            if (destinationStageId !== oldStageId) {
+              this.removeBufferedItem(oldStageId, item._id);
+            }
+
             let destIndex = aboveItemId
               ? this.findItemIndex(destinationStageId, aboveItemId)
               : 0;
@@ -191,85 +237,91 @@ class PipelineProviderInner extends React.Component<Props, State> {
               {
                 destination: {
                   droppableId: destinationStageId,
-                  index: destIndex
+                  index: destIndex,
                 },
                 draggableId: item._id,
                 combine: null,
-                mode: "FLUID",
-                reason: "DROP",
+                mode: 'FLUID',
+                reason: 'DROP',
                 source: {
                   item,
                   droppableId: oldStageId,
-                  index: srcIndex
+                  index: srcIndex,
                 },
-                type: "DEFAULT"
+                type: 'DEFAULT',
               },
-              false
+              false,
             );
           }
 
-          if (action === "itemAdd") {
+          if (action === 'itemAdd') {
             this.onAddItem(destinationStageId, item, aboveItemId);
           }
 
-          if (action === "itemRemove") {
+          if (action === 'itemRemove') {
             this.pendingItemUpdatesRef.delete(item._id);
+            this.removeBufferedItem(oldStageId, item._id);
             this.onRemoveItem(item._id, oldStageId);
           }
 
-          if (action === "itemsRemove") {
+          if (action === 'itemsRemove') {
             const { itemMap } = this.state;
+
+            this.setBuffer(destinationStageId, createBuffer<IItem>([]));
 
             this.setState({
               itemMap: {
                 ...itemMap,
-                [destinationStageId]: []
-              }
+                [destinationStageId]: [],
+              },
             });
           }
 
-          if (action === "itemUpdate") {
+          if (action === 'itemUpdate') {
             const { itemMap } = this.state;
             const stageItems = itemMap[item.stageId] || [];
             const isInCurrentMap = stageItems.some(
-              (i: IItem) => i._id === item._id
+              (i: IItem) => i._id === item._id,
             );
-            if (!isInCurrentMap) return;
+            if (!isInCurrentMap) {
+              this.updateBufferedItem(item);
+              return;
+            }
             this.pendingItemUpdatesRef.set(item._id, item);
             if (this.itemUpdateFlushTimeout === null) {
               const throttleMs =
-                typeof document !== "undefined" &&
-                document.querySelectorAll(".modal").length >= 1
+                typeof document !== 'undefined' &&
+                document.querySelectorAll('.modal').length >= 1
                   ? ITEM_UPDATE_THROTTLE_WHEN_MODAL_MS
                   : ITEM_UPDATE_THROTTLE_MS;
               this.itemUpdateFlushTimeout = setTimeout(
                 () => this.flushPendingItemUpdates(),
-                throttleMs
+                throttleMs,
               );
             }
           }
 
-          if (action === "itemOfConformitiesUpdate" && item._id) {
+          if (action === 'itemOfConformitiesUpdate' && item._id) {
             setTimeout(() => {
               client
                 .query({
                   query: gql(this.props.options.queries.detailQuery),
-                  fetchPolicy: "network-only",
+                  fetchPolicy: 'network-only',
                   variables: {
-                    _id: item._id
-                  }
+                    _id: item._id,
+                  },
                 })
                 .then(({ data }) => {
                   const refetchedItem =
                     data[this.props.options.queriesName.detailQuery];
                   this.setState({
-                    itemMap: updateItemInfo(this.state, refetchedItem)
+                    itemMap: updateItemInfo(this.state, refetchedItem),
                   });
                 });
             }, 5000);
           }
 
-          if (action === "reOrdered") {
+          if (action === 'reOrdered') {
             this.refetchStage(destinationStageId);
           } else {
             // refetch stages info (쓰로틀: 이벤트가 잦을 때 stageDetail 연속 호출 방지)
@@ -288,23 +340,58 @@ class PipelineProviderInner extends React.Component<Props, State> {
               changedStageIds.push(oldStageId);
             }
 
-            changedStageIds.forEach(id => this.pendingStageRefetchIds.add(id));
+            changedStageIds.forEach((id) =>
+              this.pendingStageRefetchIds.add(id),
+            );
             this.scheduleThrottledStageRefetch();
           }
         }
-      }
+      },
     });
   }
+
+  /** 화면 밖에 보관된 카드에 실시간 수정 반영 — 다른 단계로 옮겨졌으면 원래 단계 보관분에서 뺀다 */
+  updateBufferedItem = (item: IItem) => {
+    this.stageBuffers.forEach((buffer, stageId) => {
+      this.setBuffer(
+        stageId,
+        stageId === item.stageId
+          ? replaceOutsideWindow(buffer, item)
+          : removeOutsideWindow(buffer, item._id),
+      );
+    });
+  };
+
+  removeBufferedItem = (stageId: string, itemId: string) => {
+    const buffer = this.stageBuffers.get(stageId);
+
+    if (buffer) {
+      this.setBuffer(stageId, removeOutsideWindow(buffer, itemId));
+    }
+  };
+
+  /** 창 앞 카드가 빠져 시작 위치가 바뀌면 화면의 창 위치(stageSkipOffset)도 맞춘다 */
+  setBuffer = (stageId: string, buffer: StageBuffer<IItem>) => {
+    const prev = this.stageBuffers.get(stageId);
+
+    this.stageBuffers.set(stageId, buffer);
+
+    if (prev && prev.start !== buffer.start) {
+      this.setState((state) => ({
+        stageSkipOffset: { ...state.stageSkipOffset, [stageId]: buffer.start },
+      }));
+    }
+  };
 
   flushPendingStageRefetch = () => {
     this.pendingStageRefetchTimeout = null;
     const ids = Array.from(this.pendingStageRefetchIds);
     this.pendingStageRefetchIds.clear();
-    ids.forEach(id => {
+    ids.forEach((id) => {
       client.query({
         query: gql(queries.stageDetail),
-        fetchPolicy: "network-only",
-        variables: { _id: id }
+        fetchPolicy: 'network-only',
+        variables: { _id: id },
       });
     });
   };
@@ -341,7 +428,10 @@ class PipelineProviderInner extends React.Component<Props, State> {
       clearTimeout(this.itemUpdateFlushTimeout);
       this.itemUpdateFlushTimeout = null;
     }
-    document.removeEventListener('erxes:toggleSelectMode', this.handleToggleSelectModeEvent);
+    document.removeEventListener(
+      'erxes:toggleSelectMode',
+      this.handleToggleSelectModeEvent,
+    );
   }
 
   handleToggleSelectModeEvent = () => {
@@ -353,16 +443,16 @@ class PipelineProviderInner extends React.Component<Props, State> {
       client
         .query({
           query: gql(this.props.options.queries.detailQuery),
-          fetchPolicy: "network-only",
+          fetchPolicy: 'network-only',
           variables: {
-            _id: itemId
-          }
+            _id: itemId,
+          },
         })
         .then(({ data }) => {
           const refetchedItem =
             data[this.props.options.queriesName.detailQuery];
           this.setState({
-            itemMap: updateItemInfo(this.state, refetchedItem)
+            itemMap: updateItemInfo(this.state, refetchedItem),
           });
         });
     }, 1000);
@@ -391,7 +481,10 @@ class PipelineProviderInner extends React.Component<Props, State> {
   };
 
   componentDidMount() {
-    document.addEventListener('erxes:toggleSelectMode', this.handleToggleSelectModeEvent);
+    document.addEventListener(
+      'erxes:toggleSelectMode',
+      this.handleToggleSelectModeEvent,
+    );
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
@@ -409,16 +502,18 @@ class PipelineProviderInner extends React.Component<Props, State> {
     }
 
     if (prevState.isSelectMode !== this.state.isSelectMode) {
-      document.dispatchEvent(new CustomEvent('erxes:selectModeChanged', {
-        detail: { isSelectMode: this.state.isSelectMode },
-      }));
+      document.dispatchEvent(
+        new CustomEvent('erxes:selectModeChanged', {
+          detail: { isSelectMode: this.state.isSelectMode },
+        }),
+      );
     }
   }
 
-  onDragStart = _start => {
+  onDragStart = (_start) => {
     const { isDragEnabled } = this.state;
     if (!isDragEnabled) {
-      throw new Error("Not ready to move...");
+      throw new Error('Not ready to move...');
     }
   };
 
@@ -440,11 +535,11 @@ class PipelineProviderInner extends React.Component<Props, State> {
     }
 
     // reordering stage
-    if (result.type === "STAGE") {
+    if (result.type === 'STAGE') {
       const stageIds = reorder(
         this.state.stageIds,
         source.index,
-        destination.index
+        destination.index,
       );
 
       this.setState({ stageIds });
@@ -458,11 +553,11 @@ class PipelineProviderInner extends React.Component<Props, State> {
     const { itemMap, target, aboveItem } = reorderItemMap({
       itemMap: this.state.itemMap,
       source,
-      destination
+      destination,
     });
 
     this.setState({
-      itemMap
+      itemMap,
     });
 
     invalidateCache();
@@ -471,9 +566,9 @@ class PipelineProviderInner extends React.Component<Props, State> {
     if (saveToDb) {
       this.itemChange({
         itemId: target._id,
-        aboveItemId: aboveItem ? aboveItem._id : "",
+        aboveItemId: aboveItem ? aboveItem._id : '',
         destinationStageId: destination.droppableId,
-        sourceStageId: source.droppableId
+        sourceStageId: source.droppableId,
       });
     }
   };
@@ -492,7 +587,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
       segment: queryParams.segment,
       startDate: queryParams.startDate,
       endDate: queryParams.endDate,
-      assignedToMe: queryParams.assignedToMe
+      assignedToMe: queryParams.assignedToMe,
     };
   };
 
@@ -501,8 +596,8 @@ class PipelineProviderInner extends React.Component<Props, State> {
       query: gql(queries.stageDetail),
       variables: {
         _id: stageId,
-        ...this.refetchQueryVariables()
-      }
+        ...this.refetchQueryVariables(),
+      },
     };
   };
 
@@ -511,8 +606,8 @@ class PipelineProviderInner extends React.Component<Props, State> {
       query: gql(queriesLogs.activityLogs),
       variables: {
         contentId: itemId,
-        contentType: "tickets:ticket"
-      }
+        contentType: 'tickets:ticket',
+      },
     };
   };
 
@@ -521,8 +616,8 @@ class PipelineProviderInner extends React.Component<Props, State> {
       query: gql(queries.stages),
       variables: {
         pipelineId,
-        ...this.refetchQueryVariables()
-      }
+        ...this.refetchQueryVariables(),
+      },
     };
   };
 
@@ -537,7 +632,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
     const { options } = this.props;
     const refetchQueries = [
       this.refetchQueryBuild(destinationStageId),
-      this.refetchQueryLogs(itemId)
+      this.refetchQueryLogs(itemId),
     ];
 
     if (sourceStageId) {
@@ -545,7 +640,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
     }
 
     const proccessId = Math.random().toString();
-    localStorage.setItem("proccessId", proccessId);
+    localStorage.setItem('proccessId', proccessId);
 
     client
       .mutate({
@@ -555,9 +650,9 @@ class PipelineProviderInner extends React.Component<Props, State> {
           aboveItemId,
           destinationStageId,
           sourceStageId,
-          proccessId
+          proccessId,
         },
-        refetchQueries
+        refetchQueries,
       })
       .catch((e: Error) => {
         Alert.error(e.message);
@@ -574,10 +669,10 @@ class PipelineProviderInner extends React.Component<Props, State> {
         variables: {
           orders: stageIds.map((stageId, index) => ({
             _id: stageId,
-            order: index
-          }))
+            order: index,
+          })),
         },
-        refetchQueries: [this.refetchStagesQueryBuild(pipeline._id)]
+        refetchQueries: [this.refetchStagesQueryBuild(pipeline._id)],
       })
       .catch((e: Error) => {
         Alert.error(e.message);
@@ -591,55 +686,95 @@ class PipelineProviderInner extends React.Component<Props, State> {
    * - Mark stage's loading state as loaded
    */
   onLoadStage = (stageId: string, items: IItem[]) => {
-    const { itemMap, stageLoadMap, itemIds, stageSkipOffset } = this.state;
-    const task = PipelineProviderInner.tickets.find(t => t.stageId === stageId);
+    const task = PipelineProviderInner.tickets.find(
+      (t) => t.stageId === stageId,
+    );
 
     if (task) {
       task.isComplete = true;
     }
 
-    const isOverCap = items.length > MAX_ITEMS_PER_STAGE;
-    const cappedItems = isOverCap
-      ? items.slice(-MAX_ITEMS_PER_STAGE)
-      : items;
-    // 슬라이딩 시: 이미 건너뛴 개수(stageSkipOffset) + 이번에 앞에서 버린 개수 = 다음 skip
-    const newSkipOffset = isOverCap
-      ? (stageSkipOffset[stageId] || 0) + (items.length - MAX_ITEMS_PER_STAGE)
-      : 0;
-    const prevStageIds = (itemMap[stageId] || []).map(i => i._id);
-    const newIds = cappedItems.map(item => item._id);
-    const newItemIds = Array.from(
-      new Set([...itemIds.filter(id => !prevStageIds.includes(id)), ...newIds])
-    );
+    const buffer = createBuffer(items);
 
-    this.setState({
-      itemIds: newItemIds,
-      itemMap: { ...itemMap, [stageId]: cappedItems },
-      stageLoadMap: { ...stageLoadMap, [stageId]: "loaded" },
-      stageSkipOffset: { ...stageSkipOffset, [stageId]: newSkipOffset }
+    this.stageBuffers.set(stageId, buffer);
+    this.applyStageWindow(stageId, buffer, {
+      ...this.state.stageLoadMap,
+      [stageId]: 'loaded',
     });
   };
 
-  /** 이전 구간 보기: items로 해당 스테이지 교체, stageSkipOffset = skipUsed */
-  onLoadPreviousStage = (stageId: string, items: IItem[], skipUsed: number) => {
+  /** 화면 카드(드래그·추가·삭제 반영)를 보관 목록에 맞춘 버퍼 */
+  getSyncedBuffer = (stageId: string) => {
+    const buffer = this.stageBuffers.get(stageId) || createBuffer<IItem>([]);
+
+    // 반영 전이면 itemMap이 이전 창이라 맞추면 카드가 빠진다 — 버퍼가 이미 최신
+    if (this.pendingWindowStages.has(stageId)) {
+      return buffer;
+    }
+
+    return syncWindow(buffer, this.state.itemMap[stageId] || []);
+  };
+
+  getStageBufferInfo = (stageId: string) => {
+    const buffer = this.getSyncedBuffer(stageId);
+
+    return {
+      loadedCount: buffer.loaded.length,
+      hasBelow: hasBelow(buffer),
+      start: buffer.start,
+    };
+  };
+
+  onSlideStage = (
+    stageId: string,
+    direction: SlideDirection,
+    fetched: IItem[] = [],
+  ) => {
+    const current = appendItems(this.getSyncedBuffer(stageId), fetched);
+    const next = SLIDE[direction](current);
+
+    this.stageBuffers.set(stageId, next);
+
+    if (next === current) {
+      return false;
+    }
+
+    this.applyStageWindow(stageId, next);
+    return true;
+  };
+
+  applyStageWindow = (
+    stageId: string,
+    buffer: StageBuffer<IItem>,
+    stageLoadMap: StageLoadMap = this.state.stageLoadMap,
+  ) => {
     const { itemMap, itemIds, stageSkipOffset } = this.state;
-    const prevStageIds = (itemMap[stageId] || []).map(i => i._id);
-    const newIds = items.map(item => item._id);
+    const windowItems = getWindow(buffer);
+    const prevStageIds = new Set((itemMap[stageId] || []).map((i) => i._id));
     const newItemIds = Array.from(
-      new Set([...itemIds.filter(id => !prevStageIds.includes(id)), ...newIds])
+      new Set([
+        ...itemIds.filter((id) => !prevStageIds.has(id)),
+        ...windowItems.map((item) => item._id),
+      ]),
     );
-    this.setState({
-      itemIds: newItemIds,
-      itemMap: { ...itemMap, [stageId]: items },
-      stageSkipOffset: { ...stageSkipOffset, [stageId]: skipUsed }
-    });
+
+    this.pendingWindowStages.add(stageId);
+    this.setState(
+      {
+        itemIds: newItemIds,
+        itemMap: { ...itemMap, [stageId]: windowItems },
+        stageLoadMap,
+        stageSkipOffset: { ...stageSkipOffset, [stageId]: buffer.start },
+      },
+      () => this.pendingWindowStages.delete(stageId),
+    );
   };
 
   refetchStage = (stageId: string) => {
     const { stageLoadMap } = this.state;
 
     this.setState({
-      stageLoadMap: { ...stageLoadMap, [stageId]: "readyToLoad" }
+      stageLoadMap: { ...stageLoadMap, [stageId]: 'readyToLoad' },
     });
   };
 
@@ -654,14 +789,14 @@ class PipelineProviderInner extends React.Component<Props, State> {
         const { stageLoadMap } = this.state;
         const states = Object.values(stageLoadMap);
 
-        if (!states.includes("readyToLoad")) {
+        if (!states.includes('readyToLoad')) {
           this.setState({
-            stageLoadMap: { ...stageLoadMap, [id]: "readyToLoad" }
+            stageLoadMap: { ...stageLoadMap, [id]: 'readyToLoad' },
           });
         }
       },
       stageId,
-      isComplete: false
+      isComplete: false,
     });
 
     if (!currentTicket) {
@@ -677,7 +812,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
     timeRemaining: () => number;
   }) => {
     const inCompleteTicket = PipelineProviderInner.tickets.find(
-      (task: Ticket) => !task.isComplete
+      (task: Ticket) => !task.isComplete,
     );
 
     while (
@@ -692,7 +827,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
 
     if (inCompleteTicket) {
       PipelineProviderInner.currentTicket = requestIdleCallback(
-        this.runTicketQueue
+        this.runTicketQueue,
       );
     }
 
@@ -710,7 +845,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
     if (!aboveItemId) {
       this.setState({
         itemMap: { ...itemMap, [stageId]: [item, ...items] },
-        itemIds: [...itemIds, item._id]
+        itemIds: [...itemIds, item._id],
       });
 
       isRefresh(queryParams, routerUtils, navigate, location);
@@ -721,15 +856,15 @@ class PipelineProviderInner extends React.Component<Props, State> {
     const aboveIndex = this.findItemIndex(stageId, aboveItemId);
 
     if (aboveIndex !== undefined) {
-      const newArray = items.map(item => Object.assign({}, item));
+      const newArray = items.map((item) => Object.assign({}, item));
       newArray.splice(aboveIndex + 1, 0, { ...item });
 
       this.setState({
         itemMap: {
           ...itemMap,
-          [stageId]: [...newArray]
+          [stageId]: [...newArray],
         },
-        itemIds: [...itemIds, item._id]
+        itemIds: [...itemIds, item._id],
       });
     }
 
@@ -739,10 +874,12 @@ class PipelineProviderInner extends React.Component<Props, State> {
   onRemoveItem = (itemId: string, stageId: string) => {
     const { itemMap } = this.state;
 
-    const items = (itemMap[stageId] || []).filter(item => item._id !== itemId);
+    const items = (itemMap[stageId] || []).filter(
+      (item) => item._id !== itemId,
+    );
 
     this.setState({
-      itemMap: { ...itemMap, [stageId]: items }
+      itemMap: { ...itemMap, [stageId]: items },
     });
   };
 
@@ -755,7 +892,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
       return this.onRemoveItem(item._id, prevStageId);
     }
 
-    if (item.status === "archived") {
+    if (item.status === 'archived') {
       return this.onRemoveItem(item._id, item.stageId);
     }
 
@@ -763,7 +900,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
     if (prevStageId && stageId !== prevStageId) {
       // remove from old stage
       const prevStageItems = (itemMap[prevStageId] || []).filter(
-        (d: IItem) => d._id !== item._id
+        (d: IItem) => d._id !== item._id,
       );
 
       // add to new stage's front
@@ -773,24 +910,24 @@ class PipelineProviderInner extends React.Component<Props, State> {
       const newItemMap = {
         ...itemMap,
         [stageId]: items,
-        [prevStageId]: prevStageItems
+        [prevStageId]: prevStageItems,
       };
 
       this.setState({ itemMap: newItemMap }, () => {
         this.itemChange({
           itemId: item._id,
           destinationStageId: stageId,
-          sourceStageId: prevStageId
+          sourceStageId: prevStageId,
         });
       });
     } else {
       const items = [...itemMap[stageId]];
-      const index = items.findIndex(d => d._id === item._id);
+      const index = items.findIndex((d) => d._id === item._id);
 
       items[index] = item;
 
       this.setState({
-        itemMap: { ...itemMap, [stageId]: items }
+        itemMap: { ...itemMap, [stageId]: items },
       });
     }
   };
@@ -816,12 +953,12 @@ class PipelineProviderInner extends React.Component<Props, State> {
   selectAllInStage = (stageItemIds: string[]) => {
     this.setState((prev) => {
       const allSelected = stageItemIds.every((id) =>
-        prev.selectedIds.includes(id)
+        prev.selectedIds.includes(id),
       );
       if (allSelected) {
         return {
           selectedIds: prev.selectedIds.filter(
-            (id) => !stageItemIds.includes(id)
+            (id) => !stageItemIds.includes(id),
           ),
         };
       }
@@ -831,7 +968,11 @@ class PipelineProviderInner extends React.Component<Props, State> {
   };
 
   clearSelection = () => {
-    this.setState({ selectedIds: [], isSelectMode: false, bulkDateThreshold: '' });
+    this.setState({
+      selectedIds: [],
+      isSelectMode: false,
+      bulkDateThreshold: '',
+    });
   };
 
   setBulkDateThreshold = (v: string) => {
@@ -840,7 +981,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
 
   toggleLabels = () => {
     if (!this.state.isShowLabel) {
-      localStorage.setItem(this.props.pipeline._id, "true");
+      localStorage.setItem(this.props.pipeline._id, 'true');
     } else {
       localStorage.removeItem(this.props.pipeline._id);
     }
@@ -867,7 +1008,8 @@ class PipelineProviderInner extends React.Component<Props, State> {
   };
 
   render() {
-    const { itemMap, stageLoadMap, stageIds, isShowLabel, stageSkipOffset } = this.state;
+    const { itemMap, stageLoadMap, stageIds, isShowLabel, stageSkipOffset } =
+      this.state;
 
     return (
       <>
@@ -877,7 +1019,8 @@ class PipelineProviderInner extends React.Component<Props, State> {
             onDragEnd: this.onDragEnd,
             onDragStart: this.onDragStart,
             onLoadStage: this.onLoadStage,
-            onLoadPreviousStage: this.onLoadPreviousStage,
+            onSlideStage: this.onSlideStage,
+            getStageBufferInfo: this.getStageBufferInfo,
             scheduleStage: this.scheduleStage,
             refetchStage: this.refetchStage,
             onAddItem: this.onAddItem,
@@ -898,7 +1041,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
             toggleItemSelect: this.toggleItemSelect,
             selectAllInStage: this.selectAllInStage,
             clearSelection: this.clearSelection,
-            setBulkDateThreshold: this.setBulkDateThreshold
+            setBulkDateThreshold: this.setBulkDateThreshold,
           }}
         >
           {this.props.children}
@@ -912,10 +1055,10 @@ class PipelineProviderInner extends React.Component<Props, State> {
 export const PipelineProvider = withProps<WrapperProps>(
   compose(
     graphql<Props, PipelineDetailQueryResponse>(gql(queries.pipelineDetail), {
-      name: "pipelineDetailQuery",
+      name: 'pipelineDetailQuery',
       options: ({ pipeline }) => ({
-        variables: { _id: pipeline._id }
-      })
-    })
-  )(PipelineProviderInner)
+        variables: { _id: pipeline._id },
+      }),
+    }),
+  )(PipelineProviderInner),
 );
