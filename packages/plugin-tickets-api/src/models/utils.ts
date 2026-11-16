@@ -10,9 +10,13 @@ import {
   sendCommonMessage,
   sendCoreMessage,
   sendInboxMessage,
-  sendInternalNotesMessage
+  sendInternalNotesMessage,
 } from '../messageBroker';
 import { getServices } from '@erxes/api-utils/src/serviceDiscovery';
+import {
+  createWithUniqueNumber,
+  isNumberAhead,
+} from './createWithUniqueNumber';
 
 interface ISetOrderParam {
   collection: any;
@@ -49,7 +53,7 @@ export const bulkUpdateOrders = async ({
         status: { $ne: BOARD_STATUSES.ARCHIVED },
         ...additionFilter,
       },
-      { _id: 1, order: 1 }
+      { _id: 1, order: 1 },
     )
     .sort(sort);
 
@@ -132,7 +136,7 @@ export const watchItem = async (
   collection: any,
   _id: string,
   isAdd: boolean,
-  userId: string
+  userId: string,
 ) => {
   const item = await collection.findOne({ _id });
 
@@ -153,7 +157,7 @@ export const watchItem = async (
 
 export const fillSearchTextItem = (
   doc: IItemCommonFields,
-  item?: IItemCommonFields
+  item?: IItemCommonFields,
 ) => {
   const document = item || { name: '', description: '' };
   Object.assign(document, doc);
@@ -198,7 +202,7 @@ export const getItem = async (models: IModels, type: string, doc: any) => {
 export const getCompanyIds = async (
   subdomain: string,
   mainType: string,
-  mainTypeId: string
+  mainTypeId: string,
 ): Promise<string[]> => {
   const conformities = await sendCoreMessage({
     subdomain,
@@ -212,13 +216,13 @@ export const getCompanyIds = async (
     defaultValue: [],
   });
 
-  return conformities.map(c => c.relTypeId);
+  return conformities.map((c) => c.relTypeId);
 };
 
 export const getCustomerIds = async (
   subdomain: string,
   mainType: string,
-  mainTypeId: string
+  mainTypeId: string,
 ): Promise<string[]> => {
   const conformities = await sendCoreMessage({
     subdomain,
@@ -232,13 +236,13 @@ export const getCustomerIds = async (
     defaultValue: [],
   });
 
-  return conformities.map(c => c.relTypeId);
+  return conformities.map((c) => c.relTypeId);
 };
 
 export const getInternalNoteIds = async (
   subdomain: string,
   contentType: string,
-  contentTypeId: string
+  contentTypeId: string,
 ): Promise<string[]> => {
   const internalNotes = await sendInternalNotesMessage({
     subdomain,
@@ -259,7 +263,7 @@ export const destroyBoardItemRelations = async (
   models: IModels,
   subdomain: string,
   contentTypeId: string,
-  contentType: string
+  contentType: string,
 ) => {
   await putActivityLog(subdomain, {
     action: 'removeActivityLog',
@@ -291,7 +295,7 @@ export const destroyBoardItemRelations = async (
 export const getBoardItemLink = async (
   models: IModels,
   stageId: string,
-  itemId: string
+  itemId: string,
 ) => {
   const stage = await models.Stages.getStage(stageId);
   const pipeline = await models.Pipelines.getPipeline(stage.pipelineId);
@@ -324,7 +328,7 @@ export const boardNumberGenerator = async (
   config: string,
   size: string,
   skip: boolean,
-  type?: string
+  type?: string,
 ) => {
   const replacedConfig = await configReplacer(config);
   const re = replacedConfig + '[0-9]+$';
@@ -358,7 +362,7 @@ export const boardNumberGenerator = async (
 
 export const generateBoardNumber = async (
   models: IModels,
-  doc: IItemCommonFields
+  doc: IItemCommonFields,
 ) => {
   const stage = await models.Stages.getStage(doc.stageId);
   const pipeline = await models.Pipelines.getPipeline(stage.pipelineId);
@@ -371,7 +375,7 @@ export const generateBoardNumber = async (
       numberConfig,
       numberSize,
       false,
-      pipeline.type
+      pipeline.type,
     );
 
     doc.number = number;
@@ -380,45 +384,78 @@ export const generateBoardNumber = async (
   return { updatedDoc: doc, pipeline };
 };
 
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// 같은 번호 설정을 쓰는 파이프라인의 마지막 번호를 앞으로만 옮긴다 —
+// 늦게 끝난 요청이 더 작은 번호로 되돌리면 다음 티켓들이 이미 쓰인 번호와 계속 겹친다
+const advanceLastNum = async (models: IModels, pipeline, number: string) => {
+  const pipelines = await models.Pipelines.find(
+    { numberConfig: pipeline.numberConfig, type: pipeline.type },
+    { _id: 1, lastNum: 1 },
+  ).lean();
+
+  await Promise.all(
+    pipelines
+      .filter((p) => isNumberAhead(number, p.lastNum))
+      .map((p) =>
+        // 읽은 뒤 다른 요청이 먼저 바꿨으면 덮어쓰지 않는다
+        models.Pipelines.updateOne(
+          { _id: p._id, lastNum: p.lastNum ?? null },
+          { $set: { lastNum: number } },
+        ),
+      ),
+  );
+};
+
 export const createBoardItem = async (
   models: IModels,
   subdomain: string,
   doc: IItemCommonFields,
-  type: string
+  type: string,
 ) => {
   const { collection } = await getCollection(models, type);
 
-  const response = await generateBoardNumber(models, doc);
+  let pipeline;
+  let updatedDoc;
 
-  const { pipeline, updatedDoc } = response;
+  const item = await createWithUniqueNumber<any>({
+    generate: async () => {
+      ({ pipeline, updatedDoc } = await generateBoardNumber(models, doc));
+    },
+    create: () =>
+      collection.create({
+        ...updatedDoc,
+        createdAt: new Date(),
+        modifiedAt: new Date(),
+        stageChangedDate: new Date(),
+        searchText: fillSearchTextItem(doc),
+      }),
+    onDuplicate: async () => {
+      if (!doc.number || !pipeline?.numberSize) {
+        return;
+      }
 
-  let item;
+      // 마지막 번호가 몇 칸 밀려 있어도 한 번에 따라잡도록, 실제로 쓰인 가장 큰 번호까지 앞당긴다
+      const prefix = doc.number.replace(/\d+$/, '');
+      const highest = await collection
+        .findOne(
+          { number: new RegExp(`^${escapeRegExp(prefix)}\\d+$`) },
+          { number: 1 },
+        )
+        .sort({ number: -1 });
+      const usedNumber =
+        highest?.number && isNumberAhead(highest.number, doc.number)
+          ? highest.number
+          : doc.number;
 
-  try {
-    item = await collection.create({
-      ...updatedDoc,
-      createdAt: new Date(),
-      modifiedAt: new Date(),
-      stageChangedDate: new Date(),
-      searchText: fillSearchTextItem(doc),
-    });
-  } catch (e) {
-    if (e.message.includes(`E11000 duplicate key error`)) {
-      await createBoardItem(models, subdomain, doc, type);
-    } else {
-      throw new Error(e.message);
-    }
-  }
+      await advanceLastNum(models, pipeline, usedNumber);
+    },
+  });
 
   // update numberConfig of the same configed pipelines
   if (doc.number) {
-    await models.Pipelines.updateMany(
-      {
-        numberConfig: pipeline.numberConfig,
-        type: pipeline.type,
-      },
-      { $set: { lastNum: doc.number } }
-    );
+    await advanceLastNum(models, pipeline, doc.number);
   }
 
   let action = 'create';
@@ -496,17 +533,9 @@ const checkBookingConvert = async (subdomain: string, productId: string) => {
 export const conversationConvertToCard = async (
   models: IModels,
   subdomain: string,
-  args
+  args,
 ) => {
-  const {
-    _id,
-    type,
-    itemId,
-    itemName,
-    stageId,
-    conversation,
-    user,
-  } = args;
+  const { _id, type, itemId, itemName, stageId, conversation, user } = args;
 
   const { collection, create, update } = getCollection(models, type);
 
@@ -549,7 +578,7 @@ export const conversationConvertToCard = async (
 
     const relTypeIds: string[] = [];
 
-    sourceConversationIds.forEach(async conversationId => {
+    sourceConversationIds.forEach(async (conversationId) => {
       const con = await sendInboxMessage({
         subdomain,
         action: 'getConversation',
@@ -596,7 +625,7 @@ export const conversationConvertToCard = async (
 export const updateName = async (
   subdomain: string,
   type: string,
-  itemId: string
+  itemId: string,
 ) => {
   const validTypes = ['deal', 'ticket', 'purchase', 'task'];
 
@@ -617,7 +646,7 @@ export const updateName = async (
     if (pipeline?.nameConfig) {
       const originalTitle = item.name || '';
       let replacedName = pipeline.nameConfig;
-      
+
       const regex = /\{(\b\w+\.\b\w+)}/g;
       const matches = pipeline?.nameConfig?.match(regex) || [];
 
@@ -671,31 +700,31 @@ export const updateName = async (
                 case 'firstName':
                   replacedName = replacedName?.replace(
                     match,
-                    customers[0]?.firstName || ''
+                    customers[0]?.firstName || '',
                   );
                   break;
                 case 'lastName':
                   replacedName = replacedName?.replace(
                     match,
-                    customers[0]?.lastName || ''
+                    customers[0]?.lastName || '',
                   );
                   break;
                 case 'email':
                   replacedName = replacedName?.replace(
                     match,
-                    customers[0]?.primaryEmail || ''
+                    customers[0]?.primaryEmail || '',
                   );
                   break;
                 case 'phone':
                   replacedName = replacedName?.replace(
                     match,
-                    customers[0]?.primaryPhone || ''
+                    customers[0]?.primaryPhone || '',
                   );
                   break;
                 case 'count':
                   replacedName = replacedName?.replace(
                     match,
-                    customers.length || 0
+                    customers.length || 0,
                   );
                   break;
                 default:
@@ -707,16 +736,16 @@ export const updateName = async (
               if (pattern[1] === 'name') {
                 replacedName = replacedName?.replace(
                   match,
-                  companies[0]?.primaryName || ''
+                  companies[0]?.primaryName || '',
                 );
               } else if (pattern[1] === 'count') {
                 replacedName = replacedName?.replace(
                   match,
-                  companies?.length || 0
+                  companies?.length || 0,
                 );
               }
             }
-            
+
             if (serviceName === 'ticket' || serviceName === 'item') {
               switch (pattern[1]) {
                 case 'title':
@@ -728,7 +757,7 @@ export const updateName = async (
                   break;
               }
             }
-            
+
             if (enabledServices.includes(serviceName)) {
               try {
                 const result = await sendCommonMessage({
@@ -753,17 +782,23 @@ export const updateName = async (
         }
       }
 
-      if (originalTitle && 
-          !pipeline.nameConfig.includes('{ticket.title}') && 
-          !pipeline.nameConfig.includes('{item.')) {
-        
-        const separator = replacedName && !replacedName.endsWith('-') && !replacedName.endsWith(' ') ? '-' : '';
+      if (
+        originalTitle &&
+        !pipeline.nameConfig.includes('{ticket.title}') &&
+        !pipeline.nameConfig.includes('{item.')
+      ) {
+        const separator =
+          replacedName &&
+          !replacedName.endsWith('-') &&
+          !replacedName.endsWith(' ')
+            ? '-'
+            : '';
         replacedName = replacedName + separator + originalTitle;
       }
 
       await collection.updateOne(
         { _id: item._id },
-        { $set: { name: replacedName } }
+        { $set: { name: replacedName } },
       );
     }
   }
