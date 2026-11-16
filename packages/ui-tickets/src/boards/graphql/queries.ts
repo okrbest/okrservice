@@ -1,4 +1,4 @@
-import { queries as teamQueries } from "@erxes/ui/src/team/graphql";
+import { queries as teamQueries } from '@erxes/ui/src/team/graphql';
 
 const detailFields = teamQueries.detailFields;
 
@@ -198,8 +198,6 @@ const stageCommon = `
   _id
   name
   order
-  unUsedAmount
-  amount
   itemsTotalCount
   pipelineId
   code
@@ -444,5 +442,5 @@ export default {
   boardContentTypeDetail,
   boardLogs,
   documents,
-  tickets
+  tickets,
 };
