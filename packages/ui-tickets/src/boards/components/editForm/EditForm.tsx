@@ -20,6 +20,14 @@ import styled from 'styled-components';
 import * as Sentry from '@sentry/react';
 import { parseDescriptionDraft } from '@erxes/ui/src/utils/descriptionDraft';
 import { recordDescriptionHistory } from '../../descriptionHistoryStore';
+import { isEditorEscapeToClose } from '../../editorEscape';
+import {
+  describeElement,
+  findCoveredCloseButton,
+} from '../../closeButtonDiagnostics';
+
+// X를 누르고 이만큼 지나도 창이 남아 있으면 "안 닫힘"으로 기록한다(닫힘 애니메이션 200ms)
+const CLOSE_STUCK_CHECK_MS = 1000;
 
 const Relative = styled.div`
   position: relative;
@@ -110,6 +118,11 @@ function EditForm(props: Props) {
   const [prevStageId, setPrevStageId] = useState<string>('');
   const descriptionDirtyRef = useRef<(() => boolean) | null>(null);
   const intentionalCloseRef = useRef(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const hideModalRef = useRef<() => void>(() => undefined);
+  const desktopCloseRef = useRef<HTMLDivElement>(null);
+  const mobileCloseRef = useRef<HTMLButtonElement>(null);
+  const stuckCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const itemIdRef = useRef(item._id);
   itemIdRef.current = item._id;
 
@@ -117,6 +130,10 @@ function EditForm(props: Props) {
     // 증상 3(작성 중 창이 갑자기 닫히고 보드로 이동) 진단용 -
     // X버튼/ESC/오버레이 클릭 등 명시적으로 닫은 경우가 아닌데 언마운트되면 breadcrumb를 남김
     return () => {
+      if (stuckCloseTimerRef.current) {
+        clearTimeout(stuckCloseTimerRef.current);
+      }
+
       if (!intentionalCloseRef.current) {
         Sentry.addBreadcrumb({
           category: 'modal',
@@ -248,6 +265,94 @@ function EditForm(props: Props) {
     performClose();
   };
 
+  hideModalRef.current = onHideModal;
+
+  // 설명 편집기에 커서가 있으면 Dialog가 ESC를 무시한다 — 편집기보다 먼저 받아 닫기로 넘긴다
+  useEffect(() => {
+    if (!props.isPopupVisible) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isEditorEscapeToClose(event, panelRef.current)) {
+        hideModalRef.current();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown, true);
+
+    return () => window.removeEventListener('keydown', onKeyDown, true);
+  }, [props.isPopupVisible]);
+
+  // "X를 눌러도 반응 없음" 진단용 — X 자리를 눌렀는데 다른 요소가 클릭을 받으면 기록
+  useEffect(() => {
+    if (!props.isPopupVisible) {
+      return;
+    }
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+
+      // 확인 창(미저장 안내 등)이 떠 있을 때의 클릭은 제외
+      if (target?.closest?.('.modal')) {
+        return;
+      }
+
+      const covered = findCoveredCloseButton(
+        [desktopCloseRef.current, mobileCloseRef.current],
+        event.clientX,
+        event.clientY,
+        target,
+      );
+
+      if (covered) {
+        Sentry.captureMessage('티켓 창 X가 다른 요소에 가려져 눌리지 않음', {
+          level: 'warning',
+          tags: { ticket_close: 'covered' },
+          extra: {
+            itemId: itemIdRef.current,
+            coveredBy: describeElement(target),
+            viewportWidth: window.innerWidth,
+          },
+        });
+      }
+    };
+
+    document.addEventListener('pointerdown', onPointerDown, true);
+
+    return () =>
+      document.removeEventListener('pointerdown', onPointerDown, true);
+  }, [props.isPopupVisible]);
+
+  // X를 눌렀는데 창도 그대로고 미저장 확인 창도 안 떴으면 기록(확인 창이 떠 있으면 정상)
+  const onCloseButtonClick = () => {
+    const isDescriptionDirty = descriptionDirtyRef.current?.() ?? false;
+
+    onHideModal();
+
+    if (stuckCloseTimerRef.current) {
+      clearTimeout(stuckCloseTimerRef.current);
+    }
+
+    stuckCloseTimerRef.current = setTimeout(() => {
+      stuckCloseTimerRef.current = null;
+
+      const isConfirmShown = !!document.querySelector('.modal.show');
+
+      if (panelRef.current?.isConnected && !isConfirmShown) {
+        Sentry.captureMessage('티켓 창 X를 눌렀는데 닫히지 않음', {
+          level: 'warning',
+          tags: { ticket_close: 'stuck' },
+          extra: {
+            itemId: itemIdRef.current,
+            descriptionDirty: isDescriptionDirty,
+            viewportWidth: window.innerWidth,
+          },
+        });
+      }
+    }, CLOSE_STUCK_CHECK_MS);
+  };
+
   const renderArchiveStatus = () => {
     if (item.status === 'archived') {
       return (
@@ -265,7 +370,7 @@ function EditForm(props: Props) {
     if (props.hideHeader) {
       return (
         <DesktopCloseButton>
-          <CloseModal onClick={onHideModal}>
+          <CloseModal ref={desktopCloseRef} onClick={onCloseButtonClick}>
             <Icon icon="times" />
           </CloseModal>
         </DesktopCloseButton>
@@ -288,8 +393,9 @@ function EditForm(props: Props) {
     return (
       <MobileCloseBar>
         <MobileCloseButton
+          ref={mobileCloseRef}
           type="button"
-          onClick={onHideModal}
+          onClick={onCloseButtonClick}
           aria-label={__('Close')}
         >
           <Icon icon="times" />
@@ -316,7 +422,7 @@ function EditForm(props: Props) {
         </Transition.Child>
         <DialogWrapper>
           <DialogContent>
-            <Dialog.Panel className={` dialog-size-xl`}>
+            <Dialog.Panel ref={panelRef} className={` dialog-size-xl`}>
               {renderArchiveStatus()}
 
               <Transition.Child>
