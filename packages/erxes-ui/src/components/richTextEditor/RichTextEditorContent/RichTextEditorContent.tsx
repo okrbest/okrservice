@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { EditorContent, BubbleMenu, isTextSelection } from '@tiptap/react';
-import CodeMirror from '@uiw/react-codemirror';
+import CodeMirror, { EditorView } from '@uiw/react-codemirror';
 import { html } from '@codemirror/lang-html';
 import { useRichTextEditorContext } from '../RichTextEditor.context';
 import { ProseMirrorWrapper } from '../styles';
@@ -22,6 +22,11 @@ const SOURCE_EXTENSIONS = [
   html({ matchClosingTags: true, selfClosingTags: true }).extension,
 ];
 const SOURCE_STYLE = { outline: 'none' };
+
+// @codemirror/view 6.28은 편집기를 닫아도 Chrome EditContext 연결을 끊지 않아,
+// 편집기와 그 위의 화면(티켓 상세 창 전체)이 메모리에 남는다(6.31에서 수정됨).
+// EditContext 대신 기존 입력 방식(Firefox·Safari와 같은 방식)을 쓰게 한다.
+(EditorView as unknown as { EDIT_CONTEXT: boolean }).EDIT_CONTEXT = false;
 
 export const RichTextEditorContent = (props: IRichTextEditorContentProps) => {
   const { editor, isSourceEnabled, codeMirrorRef, onChange } =
