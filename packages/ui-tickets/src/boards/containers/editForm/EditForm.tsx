@@ -19,6 +19,7 @@ import {
   SaveMutation,
 } from '../../types';
 import { invalidateCache } from '../../utils';
+import { isDetailPrefetchFresh } from '../../detailPrefetch';
 import { PipelineConsumer } from '../PipelineContext';
 import withCurrentUser from '@erxes/ui/src/auth/containers/withCurrentUser';
 import DescriptionConflictModal, {
@@ -68,8 +69,6 @@ type ContainerState = {
 };
 
 class EditFormContainer extends React.Component<FinalProps> {
-  private relationsRefetchedForItemId: string | null = null;
-
   state: ContainerState = {
     descriptionConflictPending: null,
     descriptionReloadKey: 0,
@@ -134,46 +133,6 @@ class EditFormContainer extends React.Component<FinalProps> {
 
     this.setState({ descriptionConflictPending: null });
   };
-
-  componentDidUpdate(prevProps: FinalProps) {
-    const { detailQuery, itemId, options } = this.props;
-    if (
-      options?.type !== 'ticket' ||
-      detailQuery.loading ||
-      !detailQuery[options.queriesName.detailQuery] ||
-      this.relationsRefetchedForItemId === itemId
-    ) {
-      return;
-    }
-    this.relationsRefetchedForItemId = itemId;
-    client
-      .query({
-        query: gql(options.queries.detailQuery),
-        variables: { _id: itemId, includeRelations: true },
-        fetchPolicy: 'network-only',
-      })
-      .then(({ data }) => {
-        const full = data?.[options.queriesName.detailQuery];
-        if (!full || !client.cache) return;
-        try {
-          const id = client.cache.identify({
-            __typename: 'Ticket',
-            _id: itemId,
-          });
-          if (id) {
-            client.cache.modify({
-              id,
-              fields: {
-                companies: () => full.companies ?? [],
-                customers: () => full.customers ?? [],
-                hasNotified: () => full.hasNotified ?? true,
-              },
-            });
-          }
-        } catch (_) {}
-      })
-      .catch(() => {});
-  }
 
   componentDidMount() {
     // 상세 모달 열린 동안은 구독하지 않음 → description 입력 버벅임 완화 (모달 닫으면 보드는 PipelineContext 구독으로 최신 유지)
@@ -352,6 +311,25 @@ const withQuery = (props: ContainerProps) => {
     ],
   });
 
+  // 창마다 처음 정한 방식을 유지한다 — 도중에 바뀌면 Apollo가 다시 요청한다
+  let detailFetchPolicy: {
+    itemId?: string;
+    policy?: 'cache-first' | 'cache-and-network';
+  } = {};
+
+  const getDetailFetchPolicy = (itemId: string) => {
+    if (detailFetchPolicy.itemId !== itemId) {
+      detailFetchPolicy = {
+        itemId,
+        policy: isDetailPrefetchFresh(itemId)
+          ? 'cache-first'
+          : 'cache-and-network',
+      };
+    }
+
+    return detailFetchPolicy.policy;
+  };
+
   return withProps<ContainerProps>(
     compose(
       graphql<
@@ -367,8 +345,8 @@ const withQuery = (props: ContainerProps) => {
               ? { includeRelations: false }
               : {}),
           },
-          // 호버 프리페치 캐시가 있으면 즉시 표시하고 백그라운드에서 갱신
-          fetchPolicy: 'cache-and-network',
+          // 방금 호버로 미리 받았으면 그대로 쓰고, 아니면 캐시를 먼저 보여 주고 새로 받는다
+          fetchPolicy: getDetailFetchPolicy(props.itemId),
         }),
       }),
       graphql<ContainerProps, AllUsersQueryResponse>(

@@ -1,7 +1,6 @@
 import { colors } from '@erxes/ui/src/styles';
 import React, { useRef, useCallback } from 'react';
-import { gql } from '@apollo/client';
-import client from '@erxes/ui/src/apolloClient';
+import { gql, useApolloClient } from '@apollo/client';
 import { __ } from 'coreui/utils';
 import Assignees from '../../boards/components/Assignees';
 import Details from '../../boards/components/Details';
@@ -19,6 +18,7 @@ import ItemArchivedStatus from '../../boards/components/portable/ItemArchivedSta
 import { useNavigate, useLocation } from 'react-router-dom';
 import * as routerUtils from '@erxes/ui/src/utils/router';
 import Icon from '@erxes/ui/src/components/Icon';
+import { markDetailPrefetched } from '../../boards/detailPrefetch';
 
 type Props = {
   stageId?: string;
@@ -37,6 +37,8 @@ const TicketItem: React.FC<Props> = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const prefetchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 상세 창과 같은 캐시에 미리 받아 둔다 — '@erxes/ui/src/apolloClient'는 플러그인마다 따로 만들어져 상세 창이 읽지 못한다
+  const client = useApolloClient();
 
   const { item, isFormVisible, stageId, portable, onClick } = props;
 
@@ -49,11 +51,13 @@ const TicketItem: React.FC<Props> = (props) => {
           variables: { _id: item._id, includeRelations: false },
           fetchPolicy: 'network-only',
         })
+        .then(() => markDetailPrefetched(item._id))
         .catch(() => {});
     }, 150);
-  }, [item._id, props.options]);
+  }, [client, item._id, props.options]);
 
-  const handleMouseLeave = useCallback(() => {
+  // 마우스를 떼거나 클릭하면 미리 받기 취소 — 클릭 후에는 상세 창이 직접 받는다
+  const cancelPrefetch = useCallback(() => {
     if (prefetchTimer.current !== null) {
       clearTimeout(prefetchTimer.current);
       prefetchTimer.current = null;
@@ -202,6 +206,7 @@ const TicketItem: React.FC<Props> = (props) => {
   };
 
   const handleClick = () => {
+    cancelPrefetch();
     // portable 모드일 때 티켓 페이지로 이동
     if (portable && item.pipeline && item.pipeline.boardId) {
       const boardId = item.pipeline.boardId;
@@ -397,7 +402,7 @@ const TicketItem: React.FC<Props> = (props) => {
         <ItemContainer
           onClick={handleClick}
           onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+          onMouseLeave={cancelPrefetch}
         >
           <ItemArchivedStatus
             status={item.status || 'active'}
@@ -416,10 +421,11 @@ const TicketItem: React.FC<Props> = (props) => {
       <Content
         onClick={(e) => {
           e.stopPropagation();
+          cancelPrefetch();
           if (onClick) onClick();
         }}
         onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onMouseLeave={cancelPrefetch}
       >
         {renderContent()}
       </Content>
