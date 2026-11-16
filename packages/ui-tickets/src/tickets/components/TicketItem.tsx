@@ -87,7 +87,7 @@ const TicketItem: React.FC<Props> = (props) => {
       additional_development: '추가개발',
       usage_guide: '사용안내',
       data_work: '데이터작업',
-      widget: '위젯',
+      widget: '챗봇',
     };
 
     return labelMap[requestType] || requestType;

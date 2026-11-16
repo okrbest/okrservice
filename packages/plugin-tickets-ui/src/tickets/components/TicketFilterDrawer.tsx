@@ -199,7 +199,7 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
     { label: __('추가개발'), value: 'additional_development' },
     { label: __('사용안내'), value: 'usage_guide' },
     { label: __('데이터작업'), value: 'data_work' },
-    { label: __('위젯'), value: 'widget' },
+    { label: __('챗봇'), value: 'widget' },
   ];
 
   const onRequestTypeSelect = (ops: OnChangeValue<IOption, true>) => {
@@ -550,7 +550,7 @@ const TicketFilterDrawer = ({ queryParams, onSelect, btnSize }: Props) => {
               }}
             >
               {__(
-                '단순문의, 개선요청, 오류처리, 설정변경, 추가개발, 사용안내, 데이터작업, 위젯',
+                '단순문의, 개선요청, 오류처리, 설정변경, 추가개발, 사용안내, 데이터작업, 챗봇',
               )}
             </p>
           </FormGroup>
