@@ -17,6 +17,12 @@ export interface IRichTextEditorContentProps {
   /** The The minimum height that the editor can assume when adjusting to content by using the Auto Grow feature. */
   autoGrowMinHeight?: number | string;
 }
+// 코드 보기 편집기 설정은 한 번만 만든다 — 렌더마다 새로 넘기면 글자마다 전체 재설정(스타일 재주입)이 일어난다
+const SOURCE_EXTENSIONS = [
+  html({ matchClosingTags: true, selfClosingTags: true }).extension,
+];
+const SOURCE_STYLE = { outline: 'none' };
+
 export const RichTextEditorContent = (props: IRichTextEditorContentProps) => {
   const { editor, isSourceEnabled, codeMirrorRef, onChange } =
     useRichTextEditorContext();
@@ -58,7 +64,14 @@ export const RichTextEditorContent = (props: IRichTextEditorContentProps) => {
       }
       return false;
     },
-    [editor]
+    [editor],
+  );
+
+  const onSourceChange = useCallback(
+    (value: string) => {
+      onChange && onChange(value);
+    },
+    [onChange],
   );
 
   return (
@@ -72,18 +85,14 @@ export const RichTextEditorContent = (props: IRichTextEditorContentProps) => {
     >
       <CodeMirror
         ref={codeMirrorRef}
-        style={{ outline: 'none' }}
+        style={SOURCE_STYLE}
         hidden={!isSourceEnabled}
         height={autoGrow ? undefined : convertToPx(height)}
         minHeight={convertToPx(autoGrow ? autoGrowMinHeight : height)}
         maxHeight={convertToPx(autoGrow ? autoGrowMaxHeight : height)}
         autoFocus={true}
-        extensions={[
-          html({ matchClosingTags: true, selfClosingTags: true }).extension,
-        ]}
-        onChange={(value) => {
-          onChange && onChange(value);
-        }}
+        extensions={SOURCE_EXTENSIONS}
+        onChange={onSourceChange}
       />
       <EditorContent
         hidden={isSourceEnabled}

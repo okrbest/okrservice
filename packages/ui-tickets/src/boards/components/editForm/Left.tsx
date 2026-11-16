@@ -1201,9 +1201,22 @@ const Description = React.memo((props: DescProps) => {
     setSaveSlow(false);
   };
 
+  // 글자마다 상태를 바꾸면 편집기 전체(도구 모음·코드 보기 창)가 다시 그려진다.
+  // 쓰던 글은 ref에만 두고, "저장할 내용 있음" 여부가 바뀔 때만 다시 그린다.
+  const serverDescriptionRef = useRef(item.description);
+  serverDescriptionRef.current = item.description;
+  const [, setHasUnsavedText] = useState(false);
+
+  // 서버 반영·취소·불러오기로 ref가 바뀐 뒤에도 다음 입력에서 다시 그려지도록 기준을 맞춘다
+  useEffect(() => {
+    setHasUnsavedText(
+      (descriptionRef.current ?? '') !== (item.description ?? ''),
+    );
+  });
+
   const onChangeDescription = useCallback((content: string) => {
     descriptionRef.current = content;
-    setDescription(content);
+    setHasUnsavedText((content ?? '') !== (serverDescriptionRef.current ?? ''));
   }, []);
 
   const renderFooter = () => {
@@ -1235,7 +1248,7 @@ const Description = React.memo((props: DescProps) => {
         >
           Cancel
         </Button>
-        {(item.description ?? '') !== (description ?? '') && (
+        {(item.description ?? '') !== (descriptionRef.current ?? '') && (
           <Button
             onClick={onSend}
             btnStyle="success"
