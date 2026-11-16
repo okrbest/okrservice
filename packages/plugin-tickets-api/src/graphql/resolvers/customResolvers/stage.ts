@@ -1,31 +1,21 @@
-import { IContext } from "../../../connectionResolver";
-import { IStageDocument } from "../../../models/definitions/boards";
+import { IContext } from '../../../connectionResolver';
+import { IStageDocument } from '../../../models/definitions/boards';
 import {
   BOARD_STATUSES,
   BOARD_TYPES,
-  VISIBLITIES
-} from "../../../models/definitions/constants";
+  VISIBLITIES,
+} from '../../../models/definitions/constants';
 import {
   generateDealCommonFilters,
-  generateTicketCommonFilters
-} from "../queries/utils";
+  generateTicketCommonFilters,
+} from '../queries/utils';
+import { getItemsTotalCountCacheKey } from './itemsTotalCountCacheKey';
 
 const ITEMS_TOTAL_COUNT_CACHE_TTL_MS = 45 * 1000; // 45초 (담당 티켓 많을 때 count 쿼리 반복 완화)
 const itemsTotalCountCache = new Map<
   string,
   { count: number; expiresAt: number }
 >();
-
-function getItemsTotalCountCacheKey(
-  stageId: string,
-  userId: string,
-  args: any
-): string {
-  const assignedToMe = args?.assignedToMe || "";
-  const assignedUserIds = (args?.assignedUserIds || []).slice().sort().join(",");
-  const search = args?.search || "";
-  return `${stageId}:${userId}:${assignedToMe}:${assignedUserIds}:${search}`;
-}
 
 const getAmountsMap = async (
   subdomain,
@@ -34,7 +24,7 @@ const getAmountsMap = async (
   user,
   args,
   stage,
-  tickUsed = true
+  tickUsed = true,
 ) => {
   const amountsMap = {};
   const filter = await generateDealCommonFilters(
@@ -42,35 +32,35 @@ const getAmountsMap = async (
     subdomain,
     user._id,
     { ...args, stageId: stage._id, pipelineId: stage.pipelineId },
-    args.extraParams
+    args.extraParams,
   );
 
   const amountList = await collection.aggregate([
     {
-      $match: filter
+      $match: filter,
     },
     {
-      $unwind: "$productsData"
+      $unwind: '$productsData',
     },
     {
       $project: {
-        amount: "$productsData.amount",
-        currency: "$productsData.currency",
-        tickUsed: "$productsData.tickUsed"
-      }
+        amount: '$productsData.amount',
+        currency: '$productsData.currency',
+        tickUsed: '$productsData.tickUsed',
+      },
     },
     {
-      $match: { tickUsed }
+      $match: { tickUsed },
     },
     {
       $group: {
-        _id: "$currency",
-        amount: { $sum: "$amount" }
-      }
-    }
+        _id: '$currency',
+        amount: { $sum: '$amount' },
+      },
+    },
   ]);
 
-  amountList.forEach(item => {
+  amountList.forEach((item) => {
     if (item._id) {
       amountsMap[item._id] = item.amount;
     }
@@ -85,9 +75,9 @@ export default {
 
   members(stage: IStageDocument, {}) {
     if (stage.visibility === VISIBLITIES.PRIVATE && stage.memberIds) {
-      return stage.memberIds.map(memberId => ({
-        __typename: "User",
-        _id: memberId
+      return stage.memberIds.map((memberId) => ({
+        __typename: 'User',
+        _id: memberId,
       }));
     }
 
@@ -98,7 +88,7 @@ export default {
     stage: IStageDocument,
     _args,
     { user, models, subdomain }: IContext,
-    { variableValues: args }
+    { variableValues: args },
   ) {
     let amountsMap = {};
 
@@ -110,7 +100,7 @@ export default {
         user,
         args,
         stage,
-        false
+        false,
       );
     }
 
@@ -121,7 +111,7 @@ export default {
     stage: IStageDocument,
     _args,
     { user, models, subdomain }: IContext,
-    { variableValues: args }
+    { variableValues: args },
   ) {
     let amountsMap = {};
 
@@ -132,7 +122,7 @@ export default {
         models.Tickets,
         user,
         args,
-        stage
+        stage,
       );
     }
 
@@ -143,7 +133,7 @@ export default {
     stage: IStageDocument,
     _args,
     { user, models, subdomain }: IContext,
-    { variableValues: args }
+    { variableValues: args },
   ) {
     const { Tickets } = models;
 
@@ -152,7 +142,7 @@ export default {
         const cacheKey = getItemsTotalCountCacheKey(
           stage._id,
           user._id,
-          args || {}
+          args || {},
         );
         const now = Date.now();
         const cached = itemsTotalCountCache.get(cacheKey);
@@ -165,13 +155,13 @@ export default {
           subdomain,
           user._id,
           { ...args, stageId: stage._id, pipelineId: stage.pipelineId },
-          args.extraParams
+          args.extraParams,
         );
 
         const count = await Tickets.find(filter).countDocuments();
         itemsTotalCountCache.set(cacheKey, {
           count,
-          expiresAt: now + ITEMS_TOTAL_COUNT_CACHE_TTL_MS
+          expiresAt: now + ITEMS_TOTAL_COUNT_CACHE_TTL_MS,
         });
         return count;
       }
@@ -185,14 +175,14 @@ export default {
     stage: IStageDocument,
     _args,
     { user, models, subdomain }: IContext,
-    { variableValues: args }
+    { variableValues: args },
   ) {
     const filter = await generateTicketCommonFilters(
       models,
       subdomain,
       user._id,
       { ...args, initialStageId: stage._id },
-      args.extraParams
+      args.extraParams,
     );
 
     return models.Tickets.find(filter).countDocuments();
@@ -206,51 +196,51 @@ export default {
   async inProcessTicketsTotalCount(
     stage: IStageDocument,
     _args,
-    { models: { Stages } }: IContext
+    { models: { Stages } }: IContext,
   ) {
     const filter = {
       pipelineId: stage.pipelineId,
-      probability: { $ne: "Lost" },
-      _id: { $ne: stage._id }
+      probability: { $ne: 'Lost' },
+      _id: { $ne: stage._id },
     };
 
     const tickets = await Stages.aggregate([
       {
-        $match: filter
+        $match: filter,
       },
       {
         $lookup: {
-          from: "tickets",
-          let: { stageId: "$_id" },
+          from: 'tickets',
+          let: { stageId: '$_id' },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $and: [
-                    { $eq: ["$stageId", "$$stageId"] },
-                    { $ne: ["$status", BOARD_STATUSES.ARCHIVED] }
-                  ]
-                }
-              }
-            }
+                    { $eq: ['$stageId', '$$stageId'] },
+                    { $ne: ['$status', BOARD_STATUSES.ARCHIVED] },
+                  ],
+                },
+              },
+            },
           ],
-          as: "tickets"
-        }
+          as: 'tickets',
+        },
       },
       {
         $project: {
           name: 1,
-          tickets: 1
-        }
+          tickets: 1,
+        },
       },
       {
-        $unwind: "$tickets"
+        $unwind: '$tickets',
       },
       {
         $match: {
-          "tickets.initialStageId": stage._id
-        }
-      }
+          'tickets.initialStageId': stage._id,
+        },
+      },
     ]);
 
     return tickets.length;
@@ -260,7 +250,7 @@ export default {
     stage: IStageDocument,
     _args,
     { user, models, subdomain }: IContext,
-    { variableValues: args }
+    { variableValues: args },
   ) {
     const filter = await generateTicketCommonFilters(
       models,
@@ -270,9 +260,9 @@ export default {
         ...args,
         initialStageId: stage._id,
         stageId: stage._id,
-        pipelineId: stage.pipelineId
+        pipelineId: stage.pipelineId,
       },
-      args.extraParams
+      args.extraParams,
     );
 
     return models.Tickets.find(filter).countDocuments();
@@ -281,7 +271,7 @@ export default {
   async compareNextStageTicket(
     stage: IStageDocument,
     _args,
-    { models: { Stages } }: IContext
+    { models: { Stages } }: IContext,
   ) {
     const result: { count?: number; percent?: number } = {};
 
@@ -289,60 +279,60 @@ export default {
 
     const filter = {
       order: { $in: [order, order + 1] },
-      probability: { $ne: "Lost" },
-      pipelineId: stage.pipelineId
+      probability: { $ne: 'Lost' },
+      pipelineId: stage.pipelineId,
     };
 
     const stages = await Stages.aggregate([
       {
-        $match: filter
+        $match: filter,
       },
       {
         $lookup: {
-          from: "tickets",
-          let: { stageId: "$_id" },
+          from: 'tickets',
+          let: { stageId: '$_id' },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $and: [
-                    { $eq: ["$stageId", "$$stageId"] },
-                    { $ne: ["$status", BOARD_STATUSES.ARCHIVED] }
-                  ]
-                }
-              }
-            }
+                    { $eq: ['$stageId', '$$stageId'] },
+                    { $ne: ['$status', BOARD_STATUSES.ARCHIVED] },
+                  ],
+                },
+              },
+            },
           ],
-          as: "currentTickets"
-        }
+          as: 'currentTickets',
+        },
       },
       {
         $lookup: {
-          from: "tickets",
-          let: { stageId: "$_id" },
+          from: 'tickets',
+          let: { stageId: '$_id' },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $and: [
-                    { $eq: ["$initialStageId", "$$stageId"] },
-                    { $ne: ["$status", BOARD_STATUSES.ARCHIVED] }
-                  ]
-                }
-              }
-            }
+                    { $eq: ['$initialStageId', '$$stageId'] },
+                    { $ne: ['$status', BOARD_STATUSES.ARCHIVED] },
+                  ],
+                },
+              },
+            },
           ],
-          as: "initialTickets"
-        }
+          as: 'initialTickets',
+        },
       },
       {
         $project: {
           order: 1,
-          currentTicketCount: { $size: "$currentTickets" },
-          initialTicketCount: { $size: "$initialTickets" }
-        }
+          currentTicketCount: { $size: '$currentTickets' },
+          initialTicketCount: { $size: '$initialTickets' },
+        },
       },
-      { $sort: { order: 1 } }
+      { $sort: { order: 1 } },
     ]);
 
     if (stages.length === 2) {
@@ -353,5 +343,5 @@ export default {
     }
 
     return result;
-  }
+  },
 };
