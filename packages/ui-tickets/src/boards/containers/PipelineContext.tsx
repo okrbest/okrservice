@@ -34,14 +34,15 @@ import {
   slideUp,
   syncWindow,
 } from '../utils/stageWindow';
+import { applyItemAdds, PendingItemAdd } from '../utils/itemAdds';
 import { queries as queriesLogs } from '@erxes/ui-log/src/activityLogs/graphql';
 
 import InvisibleItemInUrl from './InvisibleItemInUrl';
 import React from 'react';
 import { UserDetailQueryResponse } from '@erxes/ui/src/auth/types';
 import client from '@erxes/ui/src/apolloClient';
-import { gql } from '@apollo/client';
-import { graphql } from '@apollo/client/react/hoc';
+import { ApolloClient, gql } from '@apollo/client';
+import { graphql, withApollo } from '@apollo/client/react/hoc';
 import { requestIdleCallback } from 'request-idle-callback';
 import { setTimeout } from 'timers';
 
@@ -62,6 +63,7 @@ type WrapperProps = {
 type Props = WrapperProps & {
   currentUserQuery: UserDetailQueryResponse;
   pipelineDetailQuery: PipelineDetailQueryResponse;
+  client: ApolloClient<any>;
 };
 
 type StageLoadMap = {
@@ -168,11 +170,15 @@ class PipelineProviderInner extends React.Component<Props, State> {
     null;
   private pendingItemUpdatesRef = new Map<string, IItem>();
   private itemUpdateFlushTimeout: ReturnType<typeof setTimeout> | null = null;
+  /** 실시간으로 들어온 새 카드 — 모아서 한 번에 넣는다 */
+  private pendingItemAdds: PendingItemAdd<IItem>[] = [];
+  private itemAddFlushTimeout: ReturnType<typeof setTimeout> | null = null;
+  private pipelineSubscription: { unsubscribe: () => void } | null = null;
 
   constructor(props: Props) {
     super(props);
 
-    const { pipeline, pipelineDetailQuery, initialItemMap } = props;
+    const { pipeline, initialItemMap } = props;
 
     const stageIds = Object.keys(initialItemMap || {});
 
@@ -191,163 +197,176 @@ class PipelineProviderInner extends React.Component<Props, State> {
     PipelineProviderInner.tickets = [];
     PipelineProviderInner.currentTicket = null;
 
-    pipelineDetailQuery.subscribeToMore({
-      document: gql(subscriptions.pipelinesChanged),
-      variables: { _id: pipeline._id },
-      updateQuery: (
-        prev,
-        {
-          subscriptionData: {
-            data: { ticketsPipelinesChanged },
-          },
-        },
-      ) => {
-        if (!ticketsPipelinesChanged || !ticketsPipelinesChanged.data) {
-          return;
-        }
+    // 공용 캐시에 쓰지 않는다(no-cache) — 쓰면 알림이 올 때마다 화면에 떠 있는 모든 조회가 다시 확인되어
+    // 보드와 열린 상세 창이 통째로 다시 그려진다 (subscribeToMore는 이 설정을 받지 못한다)
+    this.pipelineSubscription = props.client
+      .subscribe({
+        query: gql(subscriptions.pipelinesChanged),
+        variables: { _id: pipeline._id },
+        fetchPolicy: 'no-cache',
+      })
+      .subscribe({
+        error: (error) =>
+          console.error('ticketsPipelinesChanged 구독 오류:', error),
+        next: ({ data }) => {
+          const ticketsPipelinesChanged = data?.ticketsPipelinesChanged;
+          if (!ticketsPipelinesChanged || !ticketsPipelinesChanged.data) {
+            return;
+          }
 
-        const {
-          data: { item, aboveItemId, destinationStageId, oldStageId },
-          action,
-          proccessId,
-        } = ticketsPipelinesChanged;
+          const {
+            data: { item, aboveItemId, destinationStageId, oldStageId },
+            action,
+            proccessId,
+          } = ticketsPipelinesChanged;
 
-        if (proccessId !== localStorage.getItem('proccessId')) {
-          if (action === 'orderUpdated') {
-            if (destinationStageId !== oldStageId) {
-              this.removeBufferedItem(oldStageId, item._id);
-            }
-
-            let destIndex = aboveItemId
-              ? this.findItemIndex(destinationStageId, aboveItemId)
-              : 0;
-
-            const srcIndex = this.findItemIndex(oldStageId, item._id);
-
+          if (proccessId !== localStorage.getItem('proccessId')) {
             if (
-              destIndex !== undefined &&
-              aboveItemId &&
-              ((destinationStageId === oldStageId && destIndex < srcIndex) ||
-                destinationStageId !== oldStageId)
+              action === 'orderUpdated' &&
+              !this.movePendingItemAdd(item, destinationStageId, aboveItemId)
             ) {
-              destIndex = destIndex + 1;
-            }
+              if (destinationStageId !== oldStageId) {
+                this.removeBufferedItem(oldStageId, item._id);
+              }
 
-            this.onDragEnd(
-              {
-                destination: {
-                  droppableId: destinationStageId,
-                  index: destIndex,
+              let destIndex = aboveItemId
+                ? this.findItemIndex(destinationStageId, aboveItemId)
+                : 0;
+
+              const srcIndex = this.findItemIndex(oldStageId, item._id);
+
+              if (
+                destIndex !== undefined &&
+                aboveItemId &&
+                ((destinationStageId === oldStageId && destIndex < srcIndex) ||
+                  destinationStageId !== oldStageId)
+              ) {
+                destIndex = destIndex + 1;
+              }
+
+              this.onDragEnd(
+                {
+                  destination: {
+                    droppableId: destinationStageId,
+                    index: destIndex,
+                  },
+                  draggableId: item._id,
+                  combine: null,
+                  mode: 'FLUID',
+                  reason: 'DROP',
+                  source: {
+                    item,
+                    droppableId: oldStageId,
+                    index: srcIndex,
+                  },
+                  type: 'DEFAULT',
                 },
-                draggableId: item._id,
-                combine: null,
-                mode: 'FLUID',
-                reason: 'DROP',
-                source: {
-                  item,
-                  droppableId: oldStageId,
-                  index: srcIndex,
-                },
-                type: 'DEFAULT',
-              },
-              false,
-            );
-          }
-
-          if (action === 'itemAdd') {
-            this.onAddItem(destinationStageId, item, aboveItemId);
-          }
-
-          if (action === 'itemRemove') {
-            this.pendingItemUpdatesRef.delete(item._id);
-            this.removeBufferedItem(oldStageId, item._id);
-            this.onRemoveItem(item._id, oldStageId);
-          }
-
-          if (action === 'itemsRemove') {
-            const { itemMap } = this.state;
-
-            this.setBuffer(destinationStageId, createBuffer<IItem>([]));
-
-            this.setState({
-              itemMap: {
-                ...itemMap,
-                [destinationStageId]: [],
-              },
-            });
-          }
-
-          if (action === 'itemUpdate') {
-            const { itemMap } = this.state;
-            const stageItems = itemMap[item.stageId] || [];
-            const isInCurrentMap = stageItems.some(
-              (i: IItem) => i._id === item._id,
-            );
-            if (!isInCurrentMap) {
-              this.updateBufferedItem(item);
-              return;
-            }
-            this.pendingItemUpdatesRef.set(item._id, item);
-            if (this.itemUpdateFlushTimeout === null) {
-              const throttleMs =
-                typeof document !== 'undefined' &&
-                document.querySelectorAll('.modal').length >= 1
-                  ? ITEM_UPDATE_THROTTLE_WHEN_MODAL_MS
-                  : ITEM_UPDATE_THROTTLE_MS;
-              this.itemUpdateFlushTimeout = setTimeout(
-                () => this.flushPendingItemUpdates(),
-                throttleMs,
+                false,
               );
             }
-          }
 
-          if (action === 'itemOfConformitiesUpdate' && item._id) {
-            setTimeout(() => {
-              client
-                .query({
-                  query: gql(this.props.options.queries.detailQuery),
-                  fetchPolicy: 'network-only',
-                  variables: {
-                    _id: item._id,
-                  },
-                })
-                .then(({ data }) => {
-                  const refetchedItem =
-                    data[this.props.options.queriesName.detailQuery];
-                  this.setState({
-                    itemMap: updateItemInfo(this.state, refetchedItem),
+            if (action === 'itemAdd') {
+              this.queueItemAdd(destinationStageId, item, aboveItemId);
+            }
+
+            if (action === 'itemRemove') {
+              this.pendingItemUpdatesRef.delete(item._id);
+              this.pendingItemAdds = this.pendingItemAdds.filter(
+                (add) => add.item._id !== item._id,
+              );
+              this.removeBufferedItem(oldStageId, item._id);
+              this.onRemoveItem(item._id, oldStageId);
+            }
+
+            if (action === 'itemsRemove') {
+              const { itemMap } = this.state;
+
+              this.pendingItemAdds = this.pendingItemAdds.filter(
+                (add) => add.stageId !== destinationStageId,
+              );
+
+              this.setBuffer(destinationStageId, createBuffer<IItem>([]));
+
+              this.setState({
+                itemMap: {
+                  ...itemMap,
+                  [destinationStageId]: [],
+                },
+              });
+            }
+
+            if (action === 'itemUpdate') {
+              const { itemMap } = this.state;
+              const stageItems = itemMap[item.stageId] || [];
+              const isInCurrentMap = stageItems.some(
+                (i: IItem) => i._id === item._id,
+              );
+              // 아직 화면에 넣기 전인 새 카드면 최신 내용으로 바꿔 둔다
+              this.pendingItemAdds = this.pendingItemAdds.map((add) =>
+                add.item._id === item._id
+                  ? { ...add, item, stageId: item.stageId || add.stageId }
+                  : add,
+              );
+              if (!isInCurrentMap) {
+                this.updateBufferedItem(item);
+                return;
+              }
+              this.pendingItemUpdatesRef.set(item._id, item);
+              if (this.itemUpdateFlushTimeout === null) {
+                this.itemUpdateFlushTimeout = setTimeout(
+                  () => this.flushPendingItemUpdates(),
+                  this.getRealtimeThrottleMs(),
+                );
+              }
+            }
+
+            if (action === 'itemOfConformitiesUpdate' && item._id) {
+              setTimeout(() => {
+                client
+                  .query({
+                    query: gql(this.props.options.queries.detailQuery),
+                    fetchPolicy: 'network-only',
+                    variables: {
+                      _id: item._id,
+                    },
+                  })
+                  .then(({ data }) => {
+                    const refetchedItem =
+                      data[this.props.options.queriesName.detailQuery];
+                    this.setState({
+                      itemMap: updateItemInfo(this.state, refetchedItem),
+                    });
                   });
-                });
-            }, 5000);
-          }
-
-          if (action === 'reOrdered') {
-            this.refetchStage(destinationStageId);
-          } else {
-            // refetch stages info (쓰로틀: 이벤트가 잦을 때 stageDetail 연속 호출 방지)
-            const changedStageIds: string[] = item.stageId
-              ? [item.stageId]
-              : [];
-
-            if (
-              destinationStageId &&
-              !changedStageIds.includes(destinationStageId)
-            ) {
-              changedStageIds.push(destinationStageId);
+              }, 5000);
             }
 
-            if (oldStageId && !changedStageIds.includes(oldStageId)) {
-              changedStageIds.push(oldStageId);
-            }
+            if (action === 'reOrdered') {
+              this.refetchStage(destinationStageId);
+            } else {
+              // refetch stages info (쓰로틀: 이벤트가 잦을 때 stageDetail 연속 호출 방지)
+              const changedStageIds: string[] = item.stageId
+                ? [item.stageId]
+                : [];
 
-            changedStageIds.forEach((id) =>
-              this.pendingStageRefetchIds.add(id),
-            );
-            this.scheduleThrottledStageRefetch();
+              if (
+                destinationStageId &&
+                !changedStageIds.includes(destinationStageId)
+              ) {
+                changedStageIds.push(destinationStageId);
+              }
+
+              if (oldStageId && !changedStageIds.includes(oldStageId)) {
+                changedStageIds.push(oldStageId);
+              }
+
+              changedStageIds.forEach((id) =>
+                this.pendingStageRefetchIds.add(id),
+              );
+              this.scheduleThrottledStageRefetch();
+            }
           }
-        }
-      },
-    });
+        },
+      });
   }
 
   /** 화면 밖에 보관된 카드에 실시간 수정 반영 — 다른 단계로 옮겨졌으면 원래 단계 보관분에서 뺀다 */
@@ -405,6 +424,61 @@ class PipelineProviderInner extends React.Component<Props, State> {
     }, STAGE_REFETCH_THROTTLE_MS);
   };
 
+  /** 상세 창이 열려 있으면 보드 반영을 더 늦춘다 → 쓰는 중 버벅임 방지 */
+  getRealtimeThrottleMs = () =>
+    typeof document !== 'undefined' &&
+    document.querySelectorAll('.modal').length >= 1
+      ? ITEM_UPDATE_THROTTLE_WHEN_MODAL_MS
+      : ITEM_UPDATE_THROTTLE_MS;
+
+  queueItemAdd = (stageId: string, item: IItem, aboveItemId?: string) => {
+    this.pendingItemAdds = [
+      ...this.pendingItemAdds,
+      { stageId, item, aboveItemId },
+    ];
+
+    if (this.itemAddFlushTimeout === null) {
+      this.itemAddFlushTimeout = setTimeout(
+        () => this.flushPendingItemAdds(),
+        this.getRealtimeThrottleMs(),
+      );
+    }
+  };
+
+  /** 아직 화면에 넣기 전인 새 카드가 다른 자리로 옮겨졌으면 넣을 자리만 바꾼다 */
+  movePendingItemAdd = (item: IItem, stageId: string, aboveItemId?: string) => {
+    if (!this.pendingItemAdds.some((add) => add.item._id === item._id)) {
+      return false;
+    }
+
+    this.pendingItemAdds = this.pendingItemAdds.map((add) =>
+      add.item._id === item._id ? { stageId, item, aboveItemId } : add,
+    );
+
+    return true;
+  };
+
+  flushPendingItemAdds = () => {
+    this.itemAddFlushTimeout = null;
+    const adds = this.pendingItemAdds;
+    this.pendingItemAdds = [];
+
+    if (adds.length === 0) {
+      return;
+    }
+
+    const { itemMap, addedIds } = applyItemAdds(this.state.itemMap, adds);
+
+    this.setState({
+      itemMap,
+      itemIds: [...this.state.itemIds, ...addedIds],
+    });
+
+    const { queryParams, navigate, location } = this.props;
+
+    isRefresh(queryParams, routerUtils, navigate, location);
+  };
+
   flushPendingItemUpdates = () => {
     this.itemUpdateFlushTimeout = null;
     const pending = Array.from(this.pendingItemUpdatesRef.values());
@@ -428,6 +502,12 @@ class PipelineProviderInner extends React.Component<Props, State> {
       clearTimeout(this.itemUpdateFlushTimeout);
       this.itemUpdateFlushTimeout = null;
     }
+    if (this.itemAddFlushTimeout !== null) {
+      clearTimeout(this.itemAddFlushTimeout);
+      this.itemAddFlushTimeout = null;
+    }
+    this.pipelineSubscription?.unsubscribe();
+    this.pipelineSubscription = null;
     document.removeEventListener(
       'erxes:toggleSelectMode',
       this.handleToggleSelectModeEvent,
@@ -1054,6 +1134,7 @@ class PipelineProviderInner extends React.Component<Props, State> {
 
 export const PipelineProvider = withProps<WrapperProps>(
   compose(
+    withApollo,
     graphql<Props, PipelineDetailQueryResponse>(gql(queries.pipelineDetail), {
       name: 'pipelineDetailQuery',
       options: ({ pipeline }) => ({
