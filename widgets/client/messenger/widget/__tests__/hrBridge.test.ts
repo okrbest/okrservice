@@ -832,6 +832,64 @@ describe('initHrBridge', () => {
 
   // 월 근무시간(5240 홈 "월별 근무현황") — /Home.do에는 팀·회사 단위 홈 위젯 조회가 함께 있어
   // 이 cmd 하나만 허용한다(teamplgpt specs/019 contracts/bridge-contract.md).
+  describe('급여명세서 기재사항 (teamplgpt specs/024)', () => {
+    const PAYSLIP = '/SALSalaryDtstmnMgr.do';
+    const addStaff = () => {
+      const input = document.createElement('input');
+      input.id = 'searchUserId';
+      input.value = 'STAFF123';
+      document.body.appendChild(input);
+    };
+    const send = (form: Record<string, unknown>, callId: string) =>
+      dispatchRequest(
+        iframe,
+        request({ path: PAYSLIP, method: 'POST', form }, callId),
+      );
+    const lastBody = () =>
+      replyMock.mock.calls[replyMock.mock.calls.length - 1][0].body;
+    const base = {
+      searchItem: '20261025P',
+      searchYm: '2026-10',
+      searchType: 'web',
+      cmmSearchStaffId: SELF,
+    };
+
+    it('기재사항(List3)은 본인 사번으로 조회한다', async () => {
+      addStaff();
+      send({ cmd: 'getSALSalaryDtstmnMgrList3', ...base }, 'list3');
+      await flush();
+      expect(fetchMock).toHaveBeenCalledWith(
+        `https://kiwibox.example.com${PAYSLIP}`,
+        expect.objectContaining({
+          body: expect.stringContaining('cmmSearchStaffId=STAFF123'),
+        }),
+      );
+    });
+
+    it('기재사항도 다른 직원 사번이면 거부한다', async () => {
+      addStaff();
+      send(
+        {
+          cmd: 'getSALSalaryDtstmnMgrList3',
+          ...base,
+          cmmSearchStaffId: 'OTHER',
+        },
+        'other',
+      );
+      await flush();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(lastBody()).toBe('bridge: staff param must be self');
+    });
+
+    it('데드코드 List4는 허용하지 않는다', async () => {
+      addStaff();
+      send({ cmd: 'getSALSalaryDtstmnMgrList4', ...base }, 'list4');
+      await flush();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(lastBody()).toBe('bridge: cmd not allowed');
+    });
+  });
+
   describe('월 근무시간 경로 (teamplgpt specs/019)', () => {
     const HOME = '/Home.do';
     const CMD = 'getHomeWorkStatusBarWidgetMap';

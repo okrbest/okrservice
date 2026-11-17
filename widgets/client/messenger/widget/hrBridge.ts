@@ -96,6 +96,7 @@ const CMD_ALLOWLIST: Record<string, string[]> = {
   '/SALSalaryDtstmnMgr.do': [
     'getSALSalaryDtstmnMgrList',
     'getSALSalaryDtstmnMgrList2',
+    'getSALSalaryDtstmnMgrList3', // 기재사항 — teamplgpt specs/024 급여명세서 5240 화면 구성
     'getSALSalaryDtstmnMgrMap',
   ],
   '/SALSalaryBassMgr.do': ['getSALSalaryBassMgrTab110List'],
