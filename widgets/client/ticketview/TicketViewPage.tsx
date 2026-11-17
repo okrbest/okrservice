@@ -16,7 +16,7 @@ import { ViewErrorState, viewStateFromError } from './viewState';
 // 상태별 안내 문구(번역 키)
 const NOTICES: Record<ViewErrorState, string> = {
   expired:
-    "The link has expired. Please press 'Open in new tab' again in the widget.",
+    "The link has expired. Please open the link in your latest email, or press 'Open in new tab' again in the widget.",
   notFound: "We couldn't find this ticket.",
   error: 'Please try again in a moment.',
 };

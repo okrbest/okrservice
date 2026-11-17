@@ -17,7 +17,7 @@ export const buildTicketViewUrl = ({
   return `${base}${query}#${token}`;
 };
 
-// 진행 상황 화면을 열 때 받아 둔 링크. 만료(마지막 사용 후 하루)가 1시간 안으로 다가오면 새로 받는다.
+// 진행 상황 화면을 열 때 받아 둔 링크. 만료(마지막 사용 후 2일)가 1시간 안으로 다가오면 새로 받는다.
 const REFRESH_BEFORE_MS = 60 * 60 * 1000;
 
 export type IssuedLink = { url: string; expiresAt: number };

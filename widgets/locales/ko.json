@@ -213,7 +213,7 @@
   "Edit": "수정",
   "Open in new tab": "새 탭에서 보기",
   "Please try again in a moment.": "잠시 후 다시 시도해 주세요.",
-  "The link has expired. Please press 'Open in new tab' again in the widget.": "링크가 만료됐어요. 위젯에서 '새 탭에서 보기'를 다시 눌러 주세요",
+  "The link has expired. Please open the link in your latest email, or press 'Open in new tab' again in the widget.": "링크가 만료됐어요. 최근 받은 메일의 링크를 누르거나, 위젯에서 '새 탭에서 보기'를 다시 눌러 주세요",
   "We couldn't find this ticket.": "티켓을 찾을 수 없어요",
   "Try again": "다시 시도",
   "To see your ticket bigger": "티켓을 더 크게 보려면",

@@ -26,7 +26,9 @@ import graphqlPubsub from '@erxes/api-utils/src/graphqlPubsub';
 import { itemsAdd } from '../src/graphql/resolvers/mutations/utils';
 import { sendMessage } from '@erxes/api-utils/src/core';
 import { TICKET_AUTOMATION_TRIGGER_SOURCE } from './constants';
+import { debugError } from '@erxes/api-utils/src/debuggers';
 import {
+  createEmailTicketViewLink,
   createTicketViewLink,
   getTicketViewDetail,
   useTicketViewLink,
@@ -777,8 +779,35 @@ export const setupMessageConsumers = async () => {
 
       return {
         status: 'success',
-        data: await useTicketViewLink(models, data),
+        data: await useTicketViewLink(models, data, {
+          subdomain,
+          sendCore: sendCoreMessage,
+        }),
       };
+    },
+  );
+
+  // 자동화 메일의 고객 링크(보낸 뒤 14일). 못 만들면 null — 메일 발송이 멈추지 않게 오류도 null로 답한다
+  consumeRPCQueue(
+    'tickets:ticketView.createEmailLink',
+    async ({ subdomain, data }) => {
+      const models = await generateModels(subdomain);
+
+      try {
+        return {
+          status: 'success',
+          data: await createEmailTicketViewLink(
+            models,
+            subdomain,
+            sendCoreMessage,
+            data,
+          ),
+        };
+      } catch (e) {
+        debugError(`ticketView.createEmailLink: ${e.message}`);
+
+        return { status: 'success', data: null };
+      }
     },
   );
 

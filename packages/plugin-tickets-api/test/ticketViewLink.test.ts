@@ -1,6 +1,9 @@
 // tickets-api에는 테스트 실행 환경이 없어 widgets의 jest로 돌린다:
 // cd widgets && npx jest --config '{"rootDir":"../packages/plugin-tickets-api","testEnvironment":"node","transform":{"^.+\\.tsx?$":["<rootDir>/../../widgets/node_modules/ts-jest",{"tsconfig":{"esModuleInterop":true,"target":"es2019"},"diagnostics":false}]},"testMatch":["<rootDir>/test/ticketViewLink.test.ts"]}'
 import {
+  TICKET_VIEW_EMAIL_LINK_TTL_MS,
+  TICKET_VIEW_EMAIL_MAX_LINKS_PER_TICKET,
+  TICKET_VIEW_EMAIL_RECHECK_MS,
   TICKET_VIEW_EXTEND_THROTTLE_MS,
   TICKET_VIEW_ISSUE_LIMIT_PER_MINUTE,
   TICKET_VIEW_ISSUE_WINDOW_MS,
@@ -9,12 +12,14 @@ import {
   TICKET_VIEW_MAX_LINKS_PER_TICKET,
   linksToPrune,
   canIssueLink,
+  emailLinkExpiry,
   generateToken,
   hashToken,
   isLinkActive,
   nextExpiry,
   revokedExpiry,
   shouldExtend,
+  shouldRecheck,
 } from '../src/ticketViewLink';
 
 const NOW = new Date('2026-10-26T09:00:00Z');
@@ -41,8 +46,8 @@ describe('hashToken', () => {
 });
 
 describe('유효 기간', () => {
-  it('하루짜리이고 연장 간격은 5분', () => {
-    expect(TICKET_VIEW_LINK_TTL_MS).toBe(24 * 60 * MINUTE);
+  it('2일짜리이고 연장 간격은 5분', () => {
+    expect(TICKET_VIEW_LINK_TTL_MS).toBe(2 * 24 * 60 * MINUTE);
     expect(TICKET_VIEW_EXTEND_THROTTLE_MS).toBe(5 * MINUTE);
   });
 
@@ -82,7 +87,7 @@ describe('유효 기간', () => {
     ).toBe(false);
   });
 
-  it('다음 만료 시각은 지금부터 하루 뒤', () => {
+  it('다음 만료 시각은 지금부터 2일 뒤', () => {
     expect(nextExpiry(NOW).getTime()).toBe(
       NOW.getTime() + TICKET_VIEW_LINK_TTL_MS,
     );
@@ -191,5 +196,73 @@ describe('발급 남용 막기', () => {
     }));
     expect(linksToPrune(links)).toEqual(['l5', 'l6']);
     expect(linksToPrune(links.slice(0, 5))).toEqual([]);
+  });
+});
+
+describe('메일 링크', () => {
+  const DAY = 24 * 60 * MINUTE;
+
+  it('보낸 뒤 14일 동안 열리고, 20개까지 남기며, 권한은 5분마다 다시 본다', () => {
+    expect(TICKET_VIEW_EMAIL_LINK_TTL_MS).toBe(14 * DAY);
+    expect(TICKET_VIEW_EMAIL_MAX_LINKS_PER_TICKET).toBe(20);
+    expect(TICKET_VIEW_EMAIL_RECHECK_MS).toBe(5 * MINUTE);
+  });
+
+  it('만료 시각은 발급 시각 + 14일', () => {
+    expect(emailLinkExpiry(NOW).getTime()).toBe(NOW.getTime() + 14 * DAY);
+  });
+
+  it('위젯 링크의 7일 최대 제한을 받지 않는다(14일 안이면 열림)', () => {
+    const createdAt = new Date(NOW.getTime() - 10 * DAY);
+    const expiresAt = emailLinkExpiry(createdAt);
+
+    expect(isLinkActive({ kind: 'email', createdAt, expiresAt }, NOW)).toBe(
+      true,
+    );
+    // 같은 날짜의 위젯 링크는 7일이 지나 막힌다
+    expect(isLinkActive({ createdAt, expiresAt }, NOW)).toBe(false);
+  });
+
+  it('14일이 지나거나 폐기되면 열리지 않는다', () => {
+    const createdAt = new Date(NOW.getTime() - 14 * DAY);
+
+    expect(
+      isLinkActive(
+        { kind: 'email', createdAt, expiresAt: emailLinkExpiry(createdAt) },
+        NOW,
+      ),
+    ).toBe(false);
+    expect(
+      isLinkActive(
+        {
+          kind: 'email',
+          createdAt: NOW,
+          expiresAt: emailLinkExpiry(NOW),
+          revokedAt: NOW,
+        },
+        NOW,
+      ),
+    ).toBe(false);
+  });
+
+  it('같은 티켓·고객의 메일 링크는 최근 20개만 남긴다', () => {
+    const links = Array.from({ length: 22 }, (_, i) => ({
+      _id: `m${i}`,
+      createdAt: new Date(NOW.getTime() - i * MINUTE),
+    }));
+
+    expect(linksToPrune(links, TICKET_VIEW_EMAIL_MAX_LINKS_PER_TICKET)).toEqual(
+      ['m20', 'm21'],
+    );
+  });
+
+  it('마지막 권한 확인 후 5분이 지났을 때만 다시 확인한다', () => {
+    expect(shouldRecheck({}, NOW)).toBe(true);
+    expect(
+      shouldRecheck({ checkedAt: new Date(NOW.getTime() - 5 * MINUTE) }, NOW),
+    ).toBe(true);
+    expect(
+      shouldRecheck({ checkedAt: new Date(NOW.getTime() - 4 * MINUTE) }, NOW),
+    ).toBe(false);
   });
 });

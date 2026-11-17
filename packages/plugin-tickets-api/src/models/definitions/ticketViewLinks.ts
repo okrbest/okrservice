@@ -12,6 +12,10 @@ export interface ITicketViewLink {
   expiresAt: Date;
   // 같은 티켓·고객 링크 수 상한으로 폐기된 시각. 있으면 열리지 않는다
   revokedAt?: Date | null;
+  // 없으면 위젯 "새 탭에서 보기" 링크. 'email'은 자동화 메일에 넣은 링크(보낸 뒤 14일 고정)
+  kind?: 'widget' | 'email';
+  // 메일 링크 권한을 마지막으로 확인한 시각(5분마다 다시 확인)
+  checkedAt?: Date | null;
 }
 
 export interface ITicketViewLinkDocument extends ITicketViewLink, Document {
@@ -27,6 +31,8 @@ export const ticketViewLinkSchema = new Schema({
   lastUsedAt: field({ type: Date, label: 'Last used at' }),
   expiresAt: field({ type: Date, label: 'Expires at' }),
   revokedAt: field({ type: Date, label: 'Revoked at', optional: true }),
+  kind: field({ type: String, label: 'Kind', optional: true }),
+  checkedAt: field({ type: Date, label: 'Checked at', optional: true }),
 });
 
 // 만료 시각이 지나면 Mongo가 문서를 지운다(삭제는 지연될 수 있어 사용할 때 시각도 함께 확인)

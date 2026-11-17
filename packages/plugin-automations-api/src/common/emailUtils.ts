@@ -1,9 +1,12 @@
 import {
   sendCommonMessage,
   sendCoreMessage,
-  sendSegmentsMessage
+  sendSegmentsMessage,
 } from '../messageBroker';
-import { EMAIL_RECIPIENTS_TYPES, TICKET_AUTOMATION_TRIGGER_SOURCE } from '../constants';
+import {
+  EMAIL_RECIPIENTS_TYPES,
+  TICKET_AUTOMATION_TRIGGER_SOURCE,
+} from '../constants';
 import { getEnv } from '../utils';
 import * as AWS from 'aws-sdk';
 import * as nodemailer from 'nodemailer';
@@ -11,9 +14,14 @@ import { debugError } from '@erxes/api-utils/src/debuggers';
 import {
   getServices,
   getService,
-  isEnabled
+  isEnabled,
 } from '@erxes/api-utils/src/serviceDiscovery';
 import { putActivityLog } from '../logUtils';
+import {
+  fillCustomerTicketLink,
+  hasCustomerTicketLink,
+  resolveCustomerTicketLinkHtml,
+} from './customerTicketLink';
 
 export const getEmailRecipientTypes = async () => {
   let reciepentTypes = [...EMAIL_RECIPIENTS_TYPES];
@@ -29,7 +37,7 @@ export const getEmailRecipientTypes = async () => {
 
       reciepentTypes = [
         ...reciepentTypes,
-        ...emailRecipIentTypes.map((eTR) => ({ ...eTR, serviceName }))
+        ...emailRecipIentTypes.map((eTR) => ({ ...eTR, serviceName })),
       ];
     }
   }
@@ -59,7 +67,7 @@ const generateEmails = (entry: string | any[], key?: string): string[] => {
           value &&
           value.toLowerCase() !== 'null' &&
           value.toLowerCase() !== 'undefined' &&
-          emailRegex.test(value)
+          emailRegex.test(value),
       );
   }
 
@@ -72,10 +80,10 @@ const getTeamMemberEmails = async ({ subdomain, params }) => {
     action: 'users.find',
     data: {
       query: {
-        ...params
-      }
+        ...params,
+      },
     },
-    isRPC: true
+    isRPC: true,
   });
 
   return generateEmails(users, 'email');
@@ -88,22 +96,28 @@ const getAttributionEmails = async ({
   target,
   execution,
   value,
-  key
+  key,
 }) => {
   let emails: string[] = [];
   const matches = (value || '').match(/\{\{\s*([^}]+)\s*\}\}/g);
   const attributes = matches.map((match) =>
-    match.replace(/\{\{\s*|\s*\}\}/g, '')
+    match.replace(/\{\{\s*|\s*\}\}/g, ''),
   );
   const relatedValueProps = {};
 
   if (!attributes?.length) {
-    console.log('⚠️ [getAttributionEmails] No attributes found in value:', value);
+    console.log(
+      '⚠️ [getAttributionEmails] No attributes found in value:',
+      value,
+    );
     return [];
   }
 
   console.log('🔍 [getAttributionEmails] Attributes found:', attributes);
-  console.log('🔍 [getAttributionEmails] Target assignedUserIds:', target?.assignedUserIds);
+  console.log(
+    '🔍 [getAttributionEmails] Target assignedUserIds:',
+    target?.assignedUserIds,
+  );
 
   for (const attribute of attributes) {
     if (attribute === 'triggerExecutors') {
@@ -111,7 +125,7 @@ const getAttributionEmails = async ({
         subdomain,
         serviceName,
         contentType,
-        execution
+        execution,
       });
       emails = [...emails, ...excutorEmails];
     }
@@ -120,19 +134,22 @@ const getAttributionEmails = async ({
       key: 'email',
       filter: {
         key: 'registrationToken',
-        value: null
-      }
+        value: null,
+      },
     };
 
     if (['customers', 'companies'].includes(attribute)) {
       relatedValueProps[attribute] = {
-        key: 'primaryEmail'
+        key: 'primaryEmail',
       };
       target[attribute] = null;
     }
   }
 
-  console.log('🔍 [getAttributionEmails] Calling replacePlaceHolders with relatedValueProps:', relatedValueProps);
+  console.log(
+    '🔍 [getAttributionEmails] Calling replacePlaceHolders with relatedValueProps:',
+    relatedValueProps,
+  );
 
   const replacedContent = await sendCommonMessage({
     subdomain,
@@ -141,17 +158,23 @@ const getAttributionEmails = async ({
     data: {
       target: { ...target, type: contentType },
       config: {
-        [key]: value
+        [key]: value,
       },
-      relatedValueProps
+      relatedValueProps,
     },
     isRPC: true,
-    defaultValue: {}
+    defaultValue: {},
   });
-  
-  console.log('🔍 [getAttributionEmails] Replaced content result:', replacedContent);
 
-  console.log('🔍 [getAttributionEmails] Replaced content:', replacedContent[key]);
+  console.log(
+    '🔍 [getAttributionEmails] Replaced content result:',
+    replacedContent,
+  );
+
+  console.log(
+    '🔍 [getAttributionEmails] Replaced content:',
+    replacedContent[key],
+  );
 
   const generatedEmails = generateEmails(replacedContent[key]);
 
@@ -164,7 +187,7 @@ const getSegmentEmails = async ({
   subdomain,
   serviceName,
   contentType,
-  execution
+  execution,
 }) => {
   const { triggerConfig, targetId } = execution;
   const contentTypeIds = await sendSegmentsMessage({
@@ -176,20 +199,20 @@ const getSegmentEmails = async ({
         defaultMustSelector: [
           {
             match: {
-              _id: targetId
-            }
-          }
-        ]
-      }
+              _id: targetId,
+            },
+          },
+        ],
+      },
     },
     isRPC: true,
-    defaultValue: []
+    defaultValue: [],
   });
 
   if (contentType === 'user') {
     return getTeamMemberEmails({
       subdomain,
-      params: { _id: { $in: contentTypeIds } }
+      params: { _id: { $in: contentTypeIds } },
     });
   }
 
@@ -200,10 +223,10 @@ const getSegmentEmails = async ({
     data: {
       type: contentType,
       config: {
-        [`${contentType}Ids`]: contentTypeIds
-      }
+        [`${contentType}Ids`]: contentTypeIds,
+      },
     },
-    isRPC: true
+    isRPC: true,
   });
 };
 
@@ -226,7 +249,7 @@ const replaceDocuments = async (subdomain, content, target) => {
 
   // Regular expression to match `documents.<id>` within `{{ }}`
   const documentIds = [
-    ...content.matchAll(/\{\{\s*document\.([a-zA-Z0-9_]+)\s*\}\}/g)
+    ...content.matchAll(/\{\{\s*document\.([a-zA-Z0-9_]+)\s*\}\}/g),
   ].map((match) => match[1]);
 
   if (!!documentIds?.length) {
@@ -238,10 +261,10 @@ const replaceDocuments = async (subdomain, content, target) => {
         data: {
           ...target,
           _id: documentId,
-          itemId: target._id
+          itemId: target._id,
         },
         isRPC: true,
-        defaultValue: ''
+        defaultValue: '',
       });
 
       content = content.replace(`{{ document.${documentId} }}`, response);
@@ -256,7 +279,7 @@ export const generateDoc = async ({
   target,
   execution,
   triggerType,
-  config
+  config,
 }) => {
   const { templateId, fromUserId, sender } = config;
   const [serviceName, type] = triggerType.split(':');
@@ -267,10 +290,10 @@ export const generateDoc = async ({
     subdomain,
     action: 'emailTemplatesFindOne',
     data: {
-      _id: templateId
+      _id: templateId,
     },
     isRPC: true,
-    defaultValue: null
+    defaultValue: null,
   });
 
   let fromUserEmail = version === 'saas' ? DEFAULT_AWS_EMAIL : '';
@@ -280,10 +303,10 @@ export const generateDoc = async ({
       subdomain,
       action: 'users.findOne',
       data: {
-        _id: fromUserId
+        _id: fromUserId,
       },
       isRPC: true,
-      defaultValue: null
+      defaultValue: null,
     });
 
     fromUserEmail = fromUser?.email;
@@ -304,10 +327,10 @@ export const generateDoc = async ({
       subdomain,
       action: 'users.findOne',
       data: {
-        _id: target.modifiedBy
+        _id: target.modifiedBy,
       },
       isRPC: true,
-      defaultValue: null
+      defaultValue: null,
     });
 
     modifiedByEmail = modifiedUser?.email || '';
@@ -315,7 +338,7 @@ export const generateDoc = async ({
 
   let replacedContent = (template?.content || '').replace(
     new RegExp(`{{\\s*${type}\\.\\s*(.*?)\\s*}}`, 'g'),
-    '{{ $1 }}'
+    '{{ $1 }}',
   );
 
   replacedContent = await replaceDocuments(subdomain, replacedContent, target);
@@ -328,11 +351,11 @@ export const generateDoc = async ({
       target,
       config: {
         subject: config.subject,
-        content: replacedContent
-      }
+        content: replacedContent,
+      },
     },
     isRPC: true,
-    defaultValue: {}
+    defaultValue: {},
   });
 
   const toEmails = await getRecipientEmails({
@@ -340,7 +363,7 @@ export const generateDoc = async ({
     config,
     triggerType,
     target,
-    execution
+    execution,
   });
 
   if (!toEmails?.length) {
@@ -348,10 +371,12 @@ export const generateDoc = async ({
       triggerType,
       configKeys: Object.keys(config),
       targetAssignedUserIds: target?.assignedUserIds,
-      targetId: target?._id
+      targetId: target?._id,
     };
     console.error('❌ [generateDoc] No recipient emails found:', errorDetails);
-    throw new Error(`"Recieving emails not found. Check if ticket has assigned users or email configuration is correct. Details: ${JSON.stringify(errorDetails)}"`);
+    throw new Error(
+      `"Recieving emails not found. Check if ticket has assigned users or email configuration is correct. Details: ${JSON.stringify(errorDetails)}"`,
+    );
   }
 
   // 발신자는 항상 제외. 수정자 제외는 본문 수정 트리거에서만 적용(위에서 modifiedByEmail 미조회 시 빈 값)
@@ -359,16 +384,16 @@ export const generateDoc = async ({
   if (modifiedByEmail) {
     excludedEmails.push(modifiedByEmail);
   }
-  
+
   const filteredToEmails = toEmails.filter(
-    (email) => !excludedEmails.includes(email)
+    (email) => !excludedEmails.includes(email),
   );
 
   const emailDoc = {
     title: subject,
     fromEmail: generateFromEmail(sender, fromUserEmail),
     toEmails: filteredToEmails,
-    customHtml: content
+    customHtml: content,
   };
 
   return emailDoc;
@@ -379,7 +404,7 @@ export const getRecipientEmails = async ({
   config,
   triggerType,
   target,
-  execution
+  execution,
 }) => {
   let toEmails: string[] = [];
   const reciepentTypes: any = await getEmailRecipientTypes();
@@ -388,7 +413,10 @@ export const getRecipientEmails = async ({
 
   console.log('🔍 [getRecipientEmails] Config keys:', Object.keys(config));
   console.log('🔍 [getRecipientEmails] Trigger type:', triggerType);
-  console.log('🔍 [getRecipientEmails] Target assignedUserIds:', target?.assignedUserIds);
+  console.log(
+    '🔍 [getRecipientEmails] Target assignedUserIds:',
+    target?.assignedUserIds,
+  );
 
   for (const key of Object.keys(config)) {
     if (reciepentTypeKeys.includes(key) && !!config[key]) {
@@ -397,17 +425,20 @@ export const getRecipientEmails = async ({
         .split(':');
 
       const { type, ...reciepentType } = reciepentTypes.find(
-        (rT) => rT.name === key
+        (rT) => rT.name === key,
       );
 
-      console.log(`🔍 [getRecipientEmails] Processing recipient type: ${type}, key: ${key}, value:`, config[key]);
+      console.log(
+        `🔍 [getRecipientEmails] Processing recipient type: ${type}, key: ${key}, value:`,
+        config[key],
+      );
 
       if (type === 'teamMember') {
         const emails = await getTeamMemberEmails({
           subdomain,
           params: {
-            _id: { $in: config[key] || [] }
-          }
+            _id: { $in: config[key] || [] },
+          },
         });
 
         console.log(`🔍 [getRecipientEmails] Team member emails:`, emails);
@@ -423,7 +454,7 @@ export const getRecipientEmails = async ({
           target,
           execution,
           value: config[key],
-          key: type
+          key: type,
         });
 
         console.log(`🔍 [getRecipientEmails] Attribution emails:`, emails);
@@ -446,9 +477,9 @@ export const getRecipientEmails = async ({
           action: 'automations.getRecipientsEmails',
           data: {
             type,
-            config
+            config,
           },
-          isRPC: true
+          isRPC: true,
         });
 
         console.log(`🔍 [getRecipientEmails] Service emails:`, emails);
@@ -468,7 +499,7 @@ const setActivityLog = async ({
   subdomain,
   triggerType,
   target,
-  responses
+  responses,
 }) => {
   for (const response of responses || []) {
     if (response?.messageId) {
@@ -478,8 +509,8 @@ const setActivityLog = async ({
           contentType: triggerType,
           contentId: target._id,
           createdBy: 'automation',
-          action: 'sendEmail'
-        }
+          action: 'sendEmail',
+        },
       });
     }
   }
@@ -490,7 +521,7 @@ export const handleEmail = async ({
   target,
   execution,
   triggerType,
-  config
+  config,
 }) => {
   try {
     const params = await generateDoc({
@@ -498,7 +529,7 @@ export const handleEmail = async ({
       triggerType,
       target,
       config,
-      execution
+      execution,
     });
 
     if (!params) {
@@ -509,11 +540,11 @@ export const handleEmail = async ({
     const customerIds = target?.customerIds || [];
     let targetCompanyIds = target?.companyIds || [];
     let customerMapByEmail: { [email: string]: any } = {};
-    
+
     // target.companyIds가 없으면 triggerType에 따라 직접 조회
     if (!targetCompanyIds || targetCompanyIds.length === 0) {
       const [serviceName, contentType] = triggerType.split(':');
-      
+
       // 티켓의 경우 Conformity를 통해 companyIds 조회
       if (contentType === 'ticket' && target?._id) {
         try {
@@ -523,17 +554,20 @@ export const handleEmail = async ({
             data: {
               mainType: 'ticket',
               mainTypeId: target._id,
-              relTypes: ['company']
+              relTypes: ['company'],
             },
             isRPC: true,
-            defaultValue: []
+            defaultValue: [],
           });
         } catch (error) {
-          console.error(`📧 [handleEmail] 티켓에서 companyIds 조회 실패:`, error);
+          console.error(
+            `📧 [handleEmail] 티켓에서 companyIds 조회 실패:`,
+            error,
+          );
         }
       }
     }
-    
+
     // target.companyIds가 있으면 먼저 회사 정보 조회하여 맵에 저장
     let targetCompanyMap: { [companyId: string]: string } = {};
     if (targetCompanyIds && targetCompanyIds.length > 0) {
@@ -543,22 +577,26 @@ export const handleEmail = async ({
           action: 'companies.find',
           data: { _id: { $in: targetCompanyIds } },
           isRPC: true,
-          defaultValue: []
+          defaultValue: [],
         });
-        
+
         if (companies && companies.length > 0) {
-          companies.forEach(company => {
-            const companyName = company.primaryName || company.names?.[0] || null;
+          companies.forEach((company) => {
+            const companyName =
+              company.primaryName || company.names?.[0] || null;
             if (companyName) {
               targetCompanyMap[company._id] = companyName;
             }
           });
         }
       } catch (error) {
-        console.error(`📧 [handleEmail] Error fetching companies from target.companyIds:`, error);
+        console.error(
+          `📧 [handleEmail] Error fetching companies from target.companyIds:`,
+          error,
+        );
       }
     }
-    
+
     // 고객 ID가 있으면 미리 고객 정보 조회하여 이메일 주소로 매핑
     if (customerIds && customerIds.length > 0) {
       try {
@@ -566,10 +604,10 @@ export const handleEmail = async ({
           subdomain,
           action: 'customers.find',
           data: {
-            query: { _id: { $in: customerIds } }
+            query: { _id: { $in: customerIds } },
           },
           isRPC: true,
-          defaultValue: []
+          defaultValue: [],
         });
 
         if (customers && customers.length > 0) {
@@ -577,7 +615,7 @@ export const handleEmail = async ({
           for (const customer of customers) {
             const emails = [
               customer.primaryEmail,
-              ...(customer.emails || [])
+              ...(customer.emails || []),
             ].filter(Boolean);
 
             // 고객의 회사 정보 조회
@@ -585,16 +623,18 @@ export const handleEmail = async ({
             try {
               // 먼저 target.companyIds에서 회사 정보 확인 (고객이 속한 회사가 target.companyIds에 있는지)
               let companyIds = customer.companyIds || [];
-              
+
               // target.companyIds와 고객의 companyIds 교집합 확인
               if (targetCompanyIds.length > 0 && companyIds.length > 0) {
-                const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
+                const commonCompanyIds = companyIds.filter((id) =>
+                  targetCompanyIds.includes(id),
+                );
                 if (commonCompanyIds.length > 0) {
                   // target.companyIds에 있는 회사 정보 우선 사용
                   companyName = targetCompanyMap[commonCompanyIds[0]] || null;
                 }
               }
-              
+
               // target.companyIds에서 찾지 못한 경우 기존 로직 사용
               if (!companyName) {
                 // companyIds가 없으면 Conformity를 통해 조회
@@ -605,17 +645,22 @@ export const handleEmail = async ({
                     data: {
                       mainType: 'customer',
                       mainTypeId: customer._id,
-                      relTypes: ['company']
+                      relTypes: ['company'],
                     },
                     isRPC: true,
-                    defaultValue: []
+                    defaultValue: [],
                   });
                 }
-                
+
                 if (companyIds && companyIds.length > 0) {
                   // target.companyIds에 있는 회사 정보 우선 사용
-                  const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
-                  if (commonCompanyIds.length > 0 && targetCompanyMap[commonCompanyIds[0]]) {
+                  const commonCompanyIds = companyIds.filter((id) =>
+                    targetCompanyIds.includes(id),
+                  );
+                  if (
+                    commonCompanyIds.length > 0 &&
+                    targetCompanyMap[commonCompanyIds[0]]
+                  ) {
                     companyName = targetCompanyMap[commonCompanyIds[0]] || null;
                   } else {
                     // target.companyIds에 없으면 일반 조회
@@ -624,19 +669,22 @@ export const handleEmail = async ({
                       action: 'companies.find',
                       data: { _id: { $in: companyIds } },
                       isRPC: true,
-                      defaultValue: []
+                      defaultValue: [],
                     });
                     const companies = companiesResult?.slice(0, 1) || [];
-                    
+
                     if (companies && companies.length > 0) {
-                      companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                      companyName =
+                        companies[0].primaryName ||
+                        companies[0].names?.[0] ||
+                        null;
                     }
                   }
                 } else {
                   // 고객의 companyIds가 없고 targetCompanyIds가 있으면 targetCompanyIds 사용
                   if (targetCompanyIds.length > 0) {
                     companyName = targetCompanyMap[targetCompanyIds[0]] || null;
-                    
+
                     // targetCompanyMap에 없으면 직접 조회
                     if (!companyName) {
                       try {
@@ -645,34 +693,52 @@ export const handleEmail = async ({
                           action: 'companies.find',
                           data: { _id: targetCompanyIds[0] },
                           isRPC: true,
-                          defaultValue: []
+                          defaultValue: [],
                         });
                         const companies = companiesResult?.slice(0, 1) || [];
-                        
+
                         if (companies && companies.length > 0) {
-                          companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                          companyName =
+                            companies[0].primaryName ||
+                            companies[0].names?.[0] ||
+                            null;
                         }
                       } catch (error) {
-                        console.error(`📧 [handleEmail] 직접 조회 실패:`, error);
+                        console.error(
+                          `📧 [handleEmail] 직접 조회 실패:`,
+                          error,
+                        );
                       }
                     }
                   }
                 }
               }
             } catch (companyError) {
-              console.error(`📧 [handleEmail] Error fetching company info:`, companyError);
-              debugError(`Failed to fetch company info for customer ${customer._id}:`, companyError);
+              console.error(
+                `📧 [handleEmail] Error fetching company info:`,
+                companyError,
+              );
+              debugError(
+                `Failed to fetch company info for customer ${customer._id}:`,
+                companyError,
+              );
             }
 
             const customerInfo = {
-              customerName: [customer.firstName, customer.lastName]
-                .filter(Boolean)
-                .join(' ') || customer.primaryEmail || emails[0],
-              companyName: companyName
+              // 고객용 티켓 링크({{ customerTicketLink }})를 받는 고객 몫으로 만들 때 쓴다
+              customerId: customer._id,
+              primaryEmail: customer.primaryEmail,
+              customerName:
+                [customer.firstName, customer.lastName]
+                  .filter(Boolean)
+                  .join(' ') ||
+                customer.primaryEmail ||
+                emails[0],
+              companyName: companyName,
             };
-            
+
             // 각 이메일 주소에 대해 매핑 저장
-            emails.forEach(email => {
+            emails.forEach((email) => {
               if (email && !customerMapByEmail[email]) {
                 customerMapByEmail[email] = customerInfo;
               }
@@ -689,13 +755,14 @@ export const handleEmail = async ({
     if (params.toEmails && params.toEmails.length > 0) {
       try {
         // 이미 조회한 이메일은 제외
-        const emailsToQuery = params.toEmails.filter(email => !customerMapByEmail[email]);
-        
+        const emailsToQuery = params.toEmails.filter(
+          (email) => !customerMapByEmail[email],
+        );
+
         if (emailsToQuery.length > 0) {
-          
           // RPC가 $or를 지원하지 않으므로 각 이메일을 개별 조회
           const allCustomers: any[] = [];
-          
+
           for (const email of emailsToQuery) {
             try {
               // primaryEmail로 조회
@@ -704,31 +771,33 @@ export const handleEmail = async ({
                 action: 'customers.findOne',
                 data: { primaryEmail: email },
                 isRPC: true,
-                defaultValue: null
+                defaultValue: null,
               });
-              
+
               if (customerByPrimary) {
                 // 중복 체크
-                if (!allCustomers.find(c => c._id === customerByPrimary._id)) {
+                if (
+                  !allCustomers.find((c) => c._id === customerByPrimary._id)
+                ) {
                   allCustomers.push(customerByPrimary);
                 }
                 continue;
               }
-              
+
               // emails 배열에서 조회 (findOne은 단일 값만 지원하므로 find 사용)
               const customersByEmails = await sendCoreMessage({
                 subdomain,
                 action: 'customers.find',
                 data: {
-                  query: { emails: email }
+                  query: { emails: email },
                 },
                 isRPC: true,
-                defaultValue: []
+                defaultValue: [],
               });
-              
+
               if (customersByEmails && customersByEmails.length > 0) {
-                customersByEmails.forEach(customer => {
-                  if (!allCustomers.find(c => c._id === customer._id)) {
+                customersByEmails.forEach((customer) => {
+                  if (!allCustomers.find((c) => c._id === customer._id)) {
                     allCustomers.push(customer);
                   }
                 });
@@ -744,103 +813,133 @@ export const handleEmail = async ({
             for (const customer of customers) {
               const emails = [
                 customer.primaryEmail,
-                ...(customer.emails || [])
+                ...(customer.emails || []),
               ].filter(Boolean);
 
-            // 고객의 회사 정보 조회
-            let companyName: string | null = null;
-            try {
-              // 먼저 target.companyIds에서 회사 정보 확인 (고객이 속한 회사가 target.companyIds에 있는지)
-              let companyIds = customer.companyIds || [];
-              
-              // target.companyIds와 고객의 companyIds 교집합 확인
-              if (targetCompanyIds.length > 0 && companyIds.length > 0) {
-                const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
-                if (commonCompanyIds.length > 0) {
-                  // target.companyIds에 있는 회사 정보 우선 사용
-                  companyName = targetCompanyMap[commonCompanyIds[0]] || null;
-                }
-              }
-              
-              // target.companyIds에서 찾지 못한 경우 기존 로직 사용
-              if (!companyName) {
-                // companyIds가 없으면 Conformity를 통해 조회
-                if (!companyIds || companyIds.length === 0) {
-                  companyIds = await sendCoreMessage({
-                    subdomain,
-                    action: 'conformities.savedConformity',
-                    data: {
-                      mainType: 'customer',
-                      mainTypeId: customer._id,
-                      relTypes: ['company']
-                    },
-                    isRPC: true,
-                    defaultValue: []
-                  });
-                }
-                
-                if (companyIds && companyIds.length > 0) {
-                  // target.companyIds에 있는 회사 정보 우선 사용
-                  const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
-                  if (commonCompanyIds.length > 0 && targetCompanyMap[commonCompanyIds[0]]) {
+              // 고객의 회사 정보 조회
+              let companyName: string | null = null;
+              try {
+                // 먼저 target.companyIds에서 회사 정보 확인 (고객이 속한 회사가 target.companyIds에 있는지)
+                let companyIds = customer.companyIds || [];
+
+                // target.companyIds와 고객의 companyIds 교집합 확인
+                if (targetCompanyIds.length > 0 && companyIds.length > 0) {
+                  const commonCompanyIds = companyIds.filter((id) =>
+                    targetCompanyIds.includes(id),
+                  );
+                  if (commonCompanyIds.length > 0) {
+                    // target.companyIds에 있는 회사 정보 우선 사용
                     companyName = targetCompanyMap[commonCompanyIds[0]] || null;
-                  } else {
-                    // target.companyIds에 없으면 일반 조회
-                    const companiesResult = await sendCoreMessage({
-                      subdomain,
-                      action: 'companies.find',
-                      data: { _id: { $in: companyIds } },
-                      isRPC: true,
-                      defaultValue: []
-                    });
-                    const companies = companiesResult?.slice(0, 1) || [];
-                    
-                    if (companies && companies.length > 0) {
-                      companyName = companies[0].primaryName || companies[0].names?.[0] || null;
-                    }
                   }
-                } else {
-                  // 고객의 companyIds가 없고 targetCompanyIds가 있으면 targetCompanyIds 사용
-                  if (targetCompanyIds.length > 0) {
-                    companyName = targetCompanyMap[targetCompanyIds[0]] || null;
-                    
-                    // targetCompanyMap에 없으면 직접 조회
-                    if (!companyName) {
-                      try {
-                        const companiesResult = await sendCoreMessage({
-                          subdomain,
-                          action: 'companies.find',
-                          data: { _id: targetCompanyIds[0] },
-                          isRPC: true,
-                          defaultValue: []
-                        });
-                        const companies = companiesResult?.slice(0, 1) || [];
-                        
-                        if (companies && companies.length > 0) {
-                          companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                }
+
+                // target.companyIds에서 찾지 못한 경우 기존 로직 사용
+                if (!companyName) {
+                  // companyIds가 없으면 Conformity를 통해 조회
+                  if (!companyIds || companyIds.length === 0) {
+                    companyIds = await sendCoreMessage({
+                      subdomain,
+                      action: 'conformities.savedConformity',
+                      data: {
+                        mainType: 'customer',
+                        mainTypeId: customer._id,
+                        relTypes: ['company'],
+                      },
+                      isRPC: true,
+                      defaultValue: [],
+                    });
+                  }
+
+                  if (companyIds && companyIds.length > 0) {
+                    // target.companyIds에 있는 회사 정보 우선 사용
+                    const commonCompanyIds = companyIds.filter((id) =>
+                      targetCompanyIds.includes(id),
+                    );
+                    if (
+                      commonCompanyIds.length > 0 &&
+                      targetCompanyMap[commonCompanyIds[0]]
+                    ) {
+                      companyName =
+                        targetCompanyMap[commonCompanyIds[0]] || null;
+                    } else {
+                      // target.companyIds에 없으면 일반 조회
+                      const companiesResult = await sendCoreMessage({
+                        subdomain,
+                        action: 'companies.find',
+                        data: { _id: { $in: companyIds } },
+                        isRPC: true,
+                        defaultValue: [],
+                      });
+                      const companies = companiesResult?.slice(0, 1) || [];
+
+                      if (companies && companies.length > 0) {
+                        companyName =
+                          companies[0].primaryName ||
+                          companies[0].names?.[0] ||
+                          null;
+                      }
+                    }
+                  } else {
+                    // 고객의 companyIds가 없고 targetCompanyIds가 있으면 targetCompanyIds 사용
+                    if (targetCompanyIds.length > 0) {
+                      companyName =
+                        targetCompanyMap[targetCompanyIds[0]] || null;
+
+                      // targetCompanyMap에 없으면 직접 조회
+                      if (!companyName) {
+                        try {
+                          const companiesResult = await sendCoreMessage({
+                            subdomain,
+                            action: 'companies.find',
+                            data: { _id: targetCompanyIds[0] },
+                            isRPC: true,
+                            defaultValue: [],
+                          });
+                          const companies = companiesResult?.slice(0, 1) || [];
+
+                          if (companies && companies.length > 0) {
+                            companyName =
+                              companies[0].primaryName ||
+                              companies[0].names?.[0] ||
+                              null;
+                          }
+                        } catch (error) {
+                          console.error(
+                            `📧 [handleEmail] 직접 조회 실패:`,
+                            error,
+                          );
                         }
-                      } catch (error) {
-                        console.error(`📧 [handleEmail] 직접 조회 실패:`, error);
                       }
                     }
                   }
                 }
+              } catch (companyError) {
+                console.error(
+                  `📧 [handleEmail] Error fetching company info:`,
+                  companyError,
+                );
+                debugError(
+                  `Failed to fetch company info for customer ${customer._id}:`,
+                  companyError,
+                );
               }
-            } catch (companyError) {
-              console.error(`📧 [handleEmail] Error fetching company info:`, companyError);
-              debugError(`Failed to fetch company info for customer ${customer._id}:`, companyError);
-            }
 
-            const customerInfo = {
-              customerName: [customer.firstName, customer.lastName]
-                .filter(Boolean)
-                .join(' ') || customer.primaryEmail || emails[0],
-              companyName: companyName
-            };
+              const customerInfo = {
+                // 고객용 티켓 링크({{ customerTicketLink }})를 받는 고객 몫으로 만들 때 쓴다
+                customerId: customer._id,
+                primaryEmail: customer.primaryEmail,
+                customerName:
+                  [customer.firstName, customer.lastName]
+                    .filter(Boolean)
+                    .join(' ') ||
+                  customer.primaryEmail ||
+                  emails[0],
+                companyName: companyName,
+              };
 
               // 각 이메일 주소에 대해 매핑 저장
               // emailsToQuery에 있는 이메일만 매핑 (이미 조회한 이메일은 제외)
-              emails.forEach(email => {
+              emails.forEach((email) => {
                 if (email && !customerMapByEmail[email]) {
                   customerMapByEmail[email] = customerInfo;
                 }
@@ -854,11 +953,7 @@ export const handleEmail = async ({
     }
 
     let targetForLog = target;
-    if (
-      triggerType?.includes('ticket') &&
-      target?._id &&
-      !target?.name
-    ) {
+    if (triggerType?.includes('ticket') && target?._id && !target?.name) {
       try {
         const ticket = await sendCommonMessage({
           subdomain,
@@ -866,7 +961,7 @@ export const handleEmail = async ({
           action: 'tickets.findOne',
           data: { _id: target._id },
           isRPC: true,
-          defaultValue: null
+          defaultValue: null,
         });
         if (ticket?.name) {
           targetForLog = { ...target, name: ticket.name };
@@ -878,7 +973,7 @@ export const handleEmail = async ({
 
     const triggerSummary = buildAutomationTriggerSummary(
       triggerType,
-      targetForLog
+      targetForLog,
     );
 
     const responses = await sendEmails({
@@ -888,14 +983,18 @@ export const handleEmail = async ({
       targetCompanyMap, // target.companyIds에서 조회한 회사 정보 맵 전달
       targetCompanyIds, // target.companyIds 전달
       triggerType: triggerType || '',
-      triggerSummary
+      triggerSummary,
+      // 고객용 티켓 링크는 티켓 자동화에서만 만든다
+      ticketId: String(triggerType || '').startsWith('tickets:ticket')
+        ? target?._id
+        : undefined,
     });
-    
+
     await setActivityLog({
       subdomain,
       triggerType,
       target,
-      responses
+      responses,
     });
 
     // 이메일 발송 후 10초 뒤에 assignAlarm을 false로 설정 (티켓의 경우)
@@ -909,22 +1008,28 @@ export const handleEmail = async ({
       (async () => {
         try {
           // 10초 대기
-          await new Promise(resolve => setTimeout(resolve, 10000));
-          
+          await new Promise((resolve) => setTimeout(resolve, 10000));
+
           await sendCommonMessage({
             subdomain,
             serviceName: 'tickets',
             action: 'tickets.updateOne',
             data: {
               selector: { _id: target._id },
-              modifier: { $set: { assignAlarm: false } }
+              modifier: { $set: { assignAlarm: false } },
             },
             isRPC: true,
-            defaultValue: null
+            defaultValue: null,
           });
-          console.log('✅ Assign alarm set to false after 10 seconds for ticket:', target._id);
+          console.log(
+            '✅ Assign alarm set to false after 10 seconds for ticket:',
+            target._id,
+          );
         } catch (error) {
-          debugError(`Failed to reset assignAlarm for ticket ${target._id}:`, error);
+          debugError(
+            `Failed to reset assignAlarm for ticket ${target._id}:`,
+            error,
+          );
         }
       })();
     }
@@ -951,18 +1056,18 @@ const createTransporter = async ({ ses }, configs) => {
 
     const AWS_SES_SECRET_ACCESS_KEY = getConfig(
       configs,
-      'AWS_SES_SECRET_ACCESS_KEY'
+      'AWS_SES_SECRET_ACCESS_KEY',
     );
     const AWS_REGION = getConfig(configs, 'AWS_REGION');
 
     AWS.config.update({
       region: AWS_REGION,
       accessKeyId: AWS_SES_ACCESS_KEY_ID,
-      secretAccessKey: AWS_SES_SECRET_ACCESS_KEY
+      secretAccessKey: AWS_SES_SECRET_ACCESS_KEY,
     });
 
     return nodemailer.createTransport({
-      SES: new AWS.SES({ apiVersion: '2010-12-01' })
+      SES: new AWS.SES({ apiVersion: '2010-12-01' }),
     });
   }
 
@@ -977,7 +1082,7 @@ const createTransporter = async ({ ses }, configs) => {
   if (MAIL_USER && MAIL_PASS) {
     auth = {
       user: MAIL_USER,
-      pass: MAIL_PASS
+      pass: MAIL_PASS,
     };
   }
 
@@ -985,14 +1090,14 @@ const createTransporter = async ({ ses }, configs) => {
     service: MAIL_SERVICE,
     host: MAIL_HOST,
     port: MAIL_PORT,
-    auth
+    auth,
   });
 };
 
 /** 자동화 이메일 로그용: 어떤 대상(티켓 제목 등) 때문에 발송됐는지 한 줄 요약 */
 const buildAutomationTriggerSummary = (
   triggerType: string | undefined,
-  target: any
+  target: any,
 ): string => {
   if (!target && !triggerType) {
     return '';
@@ -1036,7 +1141,8 @@ const sendEmails = async ({
   targetCompanyMap = {},
   targetCompanyIds = [],
   triggerType = '',
-  triggerSummary = ''
+  triggerSummary = '',
+  ticketId,
 }: {
   subdomain: string;
   params: any;
@@ -1045,15 +1151,43 @@ const sendEmails = async ({
   targetCompanyIds?: string[];
   triggerType?: string;
   triggerSummary?: string;
+  ticketId?: string;
 }) => {
   const { toEmails = [], fromEmail, title, customHtml, attachments } = params;
+
+  // 본문에 고객용 티켓 링크 칸이 있을 때만 받는 사람마다 링크를 만든다(없으면 추가 요청 없음)
+  const needsCustomerTicketLink = hasCustomerTicketLink(customHtml);
+  // 제목에는 링크를 넣지 않는다 — 칸이 있으면 비운다
+  const subject = hasCustomerTicketLink(title)
+    ? fillCustomerTicketLink(title, '')
+    : title;
+  const customerTicketLinkDeps = {
+    widgetsDomain: getEnv({ name: 'WIDGETS_DOMAIN', defaultValue: '' }),
+    findUserByEmail: (email: string) =>
+      sendCoreMessage({
+        subdomain,
+        action: 'users.findOne',
+        data: { email },
+        isRPC: true,
+        defaultValue: null,
+      }),
+    createEmailLink: (input: { ticketId: string; customerId: string }) =>
+      sendCommonMessage({
+        subdomain,
+        serviceName: 'tickets',
+        action: 'ticketView.createEmailLink',
+        data: input,
+        isRPC: true,
+        defaultValue: null,
+      }),
+  };
 
   const configs = await sendCoreMessage({
     subdomain,
     action: 'getConfigs',
     data: {},
     isRPC: true,
-    defaultValue: {}
+    defaultValue: {},
   });
 
   const NODE_ENV = getEnv({ name: 'NODE_ENV' });
@@ -1061,14 +1195,14 @@ const sendEmails = async ({
   const DEFAULT_EMAIL_SERVICE = getConfig(
     configs,
     'DEFAULT_EMAIL_SERVICE',
-    'SES'
+    'SES',
   );
   const COMPANY_EMAIL_FROM = getConfig(configs, 'COMPANY_EMAIL_FROM');
   const AWS_SES_CONFIG_SET = getConfig(configs, 'AWS_SES_CONFIG_SET');
   const AWS_SES_ACCESS_KEY_ID = getConfig(configs, 'AWS_SES_ACCESS_KEY_ID');
   const AWS_SES_SECRET_ACCESS_KEY = getConfig(
     configs,
-    'AWS_SES_SECRET_ACCESS_KEY'
+    'AWS_SES_SECRET_ACCESS_KEY',
   );
 
   if (!fromEmail && !COMPANY_EMAIL_FROM) {
@@ -1084,7 +1218,7 @@ const sendEmails = async ({
   try {
     transporter = await createTransporter(
       { ses: DEFAULT_EMAIL_SERVICE === 'SES' },
-      configs
+      configs,
     );
   } catch (e) {
     debugError(e.message);
@@ -1098,13 +1232,28 @@ const sendEmails = async ({
     if (!fromAddress && COMPANY_EMAIL_FROM) {
       fromAddress = `no-reply <${COMPANY_EMAIL_FROM}>`;
     }
-    
+
+    // 받는 사람 몫의 링크는 이 메일에만 넣는다 — 발송 기록(body)에는 바꾸기 전 본문을 남겨 열쇠가 기록되지 않게
+    const html = needsCustomerTicketLink
+      ? fillCustomerTicketLink(
+          customHtml,
+          await resolveCustomerTicketLinkHtml(
+            {
+              toEmail,
+              customer: customerMapByEmail[toEmail],
+              ticketId,
+            },
+            customerTicketLinkDeps,
+          ),
+        )
+      : customHtml;
+
     const mailOptions: any = {
       from: fromAddress,
       to: toEmail,
-      subject: title,
-      html: customHtml,
-      attachments
+      subject,
+      html,
+      attachments,
     };
     let headers: { [key: string]: string } = {};
 
@@ -1117,20 +1266,20 @@ const sendEmails = async ({
           kind: 'automation',
           to: [toEmail],
           from: fromAddress || fromEmail || '',
-          subject: title,
+          subject,
           body: customHtml || '',
           status: 'pending',
           triggerType: triggerType || undefined,
-          triggerSummary: triggerSummary || undefined
+          triggerSummary: triggerSummary || undefined,
         },
-        isRPC: true
+        isRPC: true,
       });
 
       pendingDeliveryId = emailDelivery?._id || null;
 
       headers = {
         'X-SES-CONFIGURATION-SET': AWS_SES_CONFIG_SET || 'erxes',
-        EmailDeliveryId: pendingDeliveryId || ''
+        EmailDeliveryId: pendingDeliveryId || '',
       };
     } else {
       headers['X-SES-CONFIGURATION-SET'] = 'erxes';
@@ -1148,7 +1297,7 @@ const sendEmails = async ({
           subdomain,
           action: 'emailDeliveries.updateStatus',
           data: { _id: pendingDeliveryId, status },
-          isRPC: true
+          isRPC: true,
         });
         return;
       }
@@ -1159,13 +1308,13 @@ const sendEmails = async ({
           kind: 'automation',
           to: [toEmail],
           from: fromAddress || fromEmail || '',
-          subject: title,
+          subject,
           body: customHtml || '',
           status,
           triggerType: triggerType || undefined,
-          triggerSummary: triggerSummary || undefined
+          triggerSummary: triggerSummary || undefined,
         },
-        isRPC: true
+        isRPC: true,
       });
     };
 
@@ -1179,22 +1328,22 @@ const sendEmails = async ({
 
       // 먼저 미리 조회한 고객 정보 맵에서 확인
       let customerInfo = customerMapByEmail[toEmail] || null;
-      
+
       // 맵에 없으면 이메일 주소로 고객 정보 조회
       if (!customerInfo) {
         try {
           // RPC가 $or를 지원하지 않으므로 각각 개별 조회
           let customer: any = null;
-          
+
           // primaryEmail로 먼저 조회
           customer = await sendCoreMessage({
             subdomain,
             action: 'customers.findOne',
             data: { primaryEmail: toEmail },
             isRPC: true,
-            defaultValue: null
+            defaultValue: null,
           });
-          
+
           // primaryEmail로 찾지 못한 경우 emails 배열에서 조회
           if (!customer) {
             const customersByEmails = await sendCoreMessage({
@@ -1202,12 +1351,12 @@ const sendEmails = async ({
               action: 'customers.find',
               data: {
                 query: { emails: toEmail },
-                limit: 1
+                limit: 1,
               },
               isRPC: true,
-              defaultValue: []
+              defaultValue: [],
             });
-            
+
             if (customersByEmails && customersByEmails.length > 0) {
               customer = customersByEmails[0];
             }
@@ -1219,16 +1368,18 @@ const sendEmails = async ({
             try {
               // 먼저 target.companyIds에서 회사 정보 확인 (고객이 속한 회사가 target.companyIds에 있는지)
               let companyIds = customer.companyIds || [];
-              
+
               // target.companyIds와 고객의 companyIds 교집합 확인
               if (targetCompanyIds.length > 0 && companyIds.length > 0) {
-                const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
+                const commonCompanyIds = companyIds.filter((id) =>
+                  targetCompanyIds.includes(id),
+                );
                 if (commonCompanyIds.length > 0) {
                   // target.companyIds에 있는 회사 정보 우선 사용
                   companyName = targetCompanyMap[commonCompanyIds[0]] || null;
                 }
               }
-              
+
               // target.companyIds에서 찾지 못한 경우 기존 로직 사용
               if (!companyName) {
                 // companyIds가 없으면 Conformity를 통해 조회
@@ -1239,17 +1390,22 @@ const sendEmails = async ({
                     data: {
                       mainType: 'customer',
                       mainTypeId: customer._id,
-                      relTypes: ['company']
+                      relTypes: ['company'],
                     },
                     isRPC: true,
-                    defaultValue: []
+                    defaultValue: [],
                   });
                 }
-                
+
                 if (companyIds && companyIds.length > 0) {
                   // target.companyIds에 있는 회사 정보 우선 사용
-                  const commonCompanyIds = companyIds.filter(id => targetCompanyIds.includes(id));
-                  if (commonCompanyIds.length > 0 && targetCompanyMap[commonCompanyIds[0]]) {
+                  const commonCompanyIds = companyIds.filter((id) =>
+                    targetCompanyIds.includes(id),
+                  );
+                  if (
+                    commonCompanyIds.length > 0 &&
+                    targetCompanyMap[commonCompanyIds[0]]
+                  ) {
                     companyName = targetCompanyMap[commonCompanyIds[0]] || null;
                   } else {
                     // target.companyIds에 없으면 일반 조회
@@ -1258,19 +1414,22 @@ const sendEmails = async ({
                       action: 'companies.find',
                       data: { _id: { $in: companyIds } },
                       isRPC: true,
-                      defaultValue: []
+                      defaultValue: [],
                     });
                     const companies = companiesResult?.slice(0, 1) || [];
-                    
+
                     if (companies && companies.length > 0) {
-                      companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                      companyName =
+                        companies[0].primaryName ||
+                        companies[0].names?.[0] ||
+                        null;
                     }
                   }
                 } else {
                   // 고객의 companyIds가 없고 targetCompanyIds가 있으면 targetCompanyIds 사용
                   if (targetCompanyIds.length > 0) {
                     companyName = targetCompanyMap[targetCompanyIds[0]] || null;
-                    
+
                     // targetCompanyMap에 없으면 직접 조회
                     if (!companyName) {
                       try {
@@ -1279,12 +1438,15 @@ const sendEmails = async ({
                           action: 'companies.find',
                           data: { _id: targetCompanyIds[0] },
                           isRPC: true,
-                          defaultValue: []
+                          defaultValue: [],
                         });
                         const companies = companiesResult?.slice(0, 1) || [];
-                        
+
                         if (companies && companies.length > 0) {
-                          companyName = companies[0].primaryName || companies[0].names?.[0] || null;
+                          companyName =
+                            companies[0].primaryName ||
+                            companies[0].names?.[0] ||
+                            null;
                         }
                       } catch (error) {
                         console.error(`📧 [sendEmails] 직접 조회 실패:`, error);
@@ -1294,32 +1456,42 @@ const sendEmails = async ({
                 }
               }
             } catch (companyError) {
-              console.error(`📧 [sendEmails] Error fetching company info:`, companyError);
-              debugError(`Failed to fetch company info for customer ${customer._id}:`, companyError);
+              console.error(
+                `📧 [sendEmails] Error fetching company info:`,
+                companyError,
+              );
+              debugError(
+                `Failed to fetch company info for customer ${customer._id}:`,
+                companyError,
+              );
             }
 
             customerInfo = {
-              customerName: [customer.firstName, customer.lastName]
-                .filter(Boolean)
-                .join(' ') || toEmail,
-              companyName: companyName
+              customerName:
+                [customer.firstName, customer.lastName]
+                  .filter(Boolean)
+                  .join(' ') || toEmail,
+              companyName: companyName,
             };
           }
         } catch (customerError) {
           // 고객 정보 조회 실패해도 이메일 전송은 계속 진행
-          debugError(`Failed to fetch customer info for ${toEmail}:`, customerError);
+          debugError(
+            `Failed to fetch customer info for ${toEmail}:`,
+            customerError,
+          );
         }
       }
-      
-      const responseItem: any = { 
-        messageId: info.messageId, 
-        toEmail
+
+      const responseItem: any = {
+        messageId: info.messageId,
+        toEmail,
       };
-      
+
       if (customerInfo) {
         responseItem.customerInfo = customerInfo;
       }
-      
+
       responses.push(responseItem);
     } catch (error) {
       try {
@@ -1329,13 +1501,13 @@ const sendEmails = async ({
       }
       // 에러가 발생해도 고객 정보는 포함
       const errorResponse: any = { fromEmail, toEmail, error };
-      
+
       // 고객 정보가 있으면 추가
       const customerInfo = customerMapByEmail[toEmail] || null;
       if (customerInfo) {
         errorResponse.customerInfo = customerInfo;
       }
-      
+
       responses.push(errorResponse);
       debugError(error);
     }
