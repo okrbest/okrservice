@@ -1,20 +1,26 @@
-import * as compose from "lodash.flowright";
+import * as compose from 'lodash.flowright';
 
 import Select, {
   MultiValueProps,
   OnChangeValue,
-  components
-} from "react-select";
-import { __ } from "coreui/utils";
-import { confirm, readFile, withProps } from "../utils";
+  components,
+} from 'react-select';
+import { __ } from 'coreui/utils';
+import { confirm, readFile, withProps } from '../utils';
 
-import { IOption } from "../types";
-import Icon from "./Icon";
-import React from "react";
-import colors from "../styles/colors";
-import { gql } from "@apollo/client";
-import { graphql } from "@apollo/client/react/hoc";
-import styled from "styled-components";
+import { IOption } from '../types';
+import {
+  mergeLoadedOptions,
+  nextSearchValue,
+  pickSelectedOptions,
+  sameValues,
+} from './selectWithSearchOptions';
+import Icon from './Icon';
+import React from 'react';
+import colors from '../styles/colors';
+import { gql } from '@apollo/client';
+import { graphql } from '@apollo/client/react/hoc';
+import styled from 'styled-components';
 
 export const SelectValue = styled.div`
   display: flex;
@@ -84,7 +90,7 @@ const content = (option: IOption): React.ReactNode => (
       src={
         option.avatar
           ? readFile(option.avatar, 40, true)
-          : "/images/avatar-colored.svg"
+          : '/images/avatar-colored.svg'
       }
     />
     {option.label}
@@ -94,7 +100,7 @@ const content = (option: IOption): React.ReactNode => (
 export const selectItemRenderer = (
   option: IOption,
   showAvatar: boolean,
-  OptionWrapper
+  OptionWrapper,
 ): React.ReactNode => {
   if (!showAvatar) {
     return option.label;
@@ -119,9 +125,9 @@ class SelectWithSearch extends React.Component<
 
     this.state = {
       selectedValues: props.initialValues,
-      searchValue: "",
+      searchValue: '',
       selectedOptions: undefined,
-      totalOptions: undefined
+      totalOptions: undefined,
     };
 
     this.timer = 0;
@@ -132,56 +138,59 @@ class SelectWithSearch extends React.Component<
       nextProps;
 
     const { initialValuesProvided } = this.props;
-    const { selectedValues, selectedOptions } = this.state;
+    const { selectedValues, selectedOptions, totalOptions } = this.state;
 
-    // trigger clearing values by initialValues prop
-    if (
-      initialValuesProvided &&
-      (!initialValues || !initialValues.length) &&
-      selectedValues.length
-    ) {
-      this.setState({ selectedValues: [] });
+    // 저장된 값(initialValues)이 실제로 바뀌었을 때만 선택 상태를 맞춘다.
+    // 화면이 다시 그려질 때마다 덮어쓰면, 방금 고른 항목이 저장 반영 전 값으로 지워진다.
+    let nextSelectedValues = selectedValues;
+
+    if (!sameValues(initialValues, this.props.initialValues)) {
+      if (initialValues?.length) {
+        nextSelectedValues = initialValues;
+      } else if (initialValuesProvided && selectedValues.length) {
+        // trigger clearing values by initialValues prop
+        nextSelectedValues = [];
+      }
     }
 
-    if (initialValues?.length) {
-      this.setState({ selectedValues: initialValues });
+    if (nextSelectedValues !== selectedValues) {
+      this.setState({ selectedValues: nextSelectedValues });
     }
 
     if (customQuery.loading !== this.props.customQuery.loading) {
       const datas = customQuery[queryName] || [];
 
-      const totalOptions = this.state.totalOptions || ([] as IOption[]);
-      const totalOptionsValues = totalOptions.map(option => option.value);
+      // 선택된 항목 + 이번에 받은 항목 전체 — 이미 보였던 항목을 빼면 다시 받은 목록이 비어 보인다
+      const updatedTotalOptions = mergeLoadedOptions({
+        selectedOptions,
+        loadedOptions: generateOptions(datas),
+        exactFilter: this.props.exactFilter,
+      });
 
-      const uniqueLoadedOptions = generateOptions(
-        datas.filter(data => !totalOptionsValues.includes(data._id))
-      );
-
-      const updatedTotalOptions = [
-        ...new Set([
-          ...(this.props.exactFilter ? [] : selectedOptions || []),
-          ...uniqueLoadedOptions
-        ])
-      ];
-
-      const upSelectedOptions = updatedTotalOptions.filter(option =>
-        selectedValues.includes(option.value)
-      );
+      // 선택 칩은 알고 있는 항목 전체에서 찾는다 — 목록 조회는 선택된 항목을 빼고 오므로
+      const upSelectedOptions = this.props.exactFilter
+        ? pickSelectedOptions(nextSelectedValues, updatedTotalOptions)
+        : pickSelectedOptions(
+            nextSelectedValues,
+            updatedTotalOptions,
+            selectedOptions,
+            totalOptions,
+          );
 
       if (
         this.props.exactFilter &&
-        selectedValues?.length &&
+        nextSelectedValues?.length &&
         !upSelectedOptions.length
       ) {
         this.setState({
-          selectedValues: []
+          selectedValues: [],
         });
         this.props.onSelect([], this.props.name);
       }
 
       this.setState({
         totalOptions: updatedTotalOptions,
-        selectedOptions: upSelectedOptions
+        selectedOptions: upSelectedOptions,
       });
     }
   }
@@ -204,7 +213,7 @@ class SelectWithSearch extends React.Component<
     return null;
   };
 
-  onClear = e => {
+  onClear = (e) => {
     confirm().then(() => {
       this.props.onSelect([], this.props.name);
       this.setState({ selectedValues: [], selectedOptions: [] });
@@ -222,47 +231,57 @@ class SelectWithSearch extends React.Component<
       customOption,
       showAvatar = true,
       menuPortalTarget,
-      customStyles
+      customStyles,
     } = this.props;
 
     const { totalOptions, selectedOptions } = this.state;
 
     const selectMultiple = (ops: OnChangeValue<IOption, true>) => {
-      const selectedOptionsValues = ops.map(option => option.value);
+      const selectedOptionsValues = ops.map((option) => option.value);
 
       onSelect(selectedOptionsValues, name);
 
       this.setState({
         selectedValues: selectedOptionsValues,
-        selectedOptions: [...ops]
+        selectedOptions: [...ops],
       });
     };
 
     const selectSingle = (option: OnChangeValue<IOption, false>) => {
-      const selectedOptionValue = option ? option.value : "";
-      const selectedOption = option ? option : { value: "", label: "" };
+      const selectedOptionValue = option ? option.value : '';
+      const selectedOption = option ? option : { value: '', label: '' };
 
       onSelect(selectedOptionValue, name, option?.extraValue, option?.obj);
 
       this.setState({
         selectedValues: [selectedOptionValue],
-        selectedOptions: [{ ...selectedOption }]
+        selectedOptions: [{ ...selectedOption }],
       });
     };
 
     const onChange = multi ? selectMultiple : selectSingle;
 
-    const onSearch = (searchValue: string) => {
+    const onSearch = (
+      searchValue: string,
+      actionMeta?: { action?: string },
+    ) => {
+      // 항목 선택·메뉴 닫기로 입력칸이 비는 것은 검색이 아니다(열린 목록 조회가 취소되지 않게)
+      const nextSearch = nextSearchValue(searchValue, actionMeta?.action);
+
+      if (nextSearch === null) {
+        return;
+      }
+
       this.setState({ searchValue });
 
       clearTimeout(this.timer);
 
       this.timer = setTimeout(() => {
-        search(searchValue);
+        search(nextSearch);
       }, 1200);
     };
 
-    const onOpen = () => search("reload");
+    const onOpen = () => search('reload');
 
     const selectOptions = [...(totalOptions || [])];
 
@@ -270,7 +289,7 @@ class SelectWithSearch extends React.Component<
       selectOptions.unshift(customOption);
     }
 
-    const Option = props => {
+    const Option = (props) => {
       return (
         <components.Option {...props}>
           {selectItemRenderer(props.data, showAvatar, SelectOption)}
@@ -294,7 +313,7 @@ class SelectWithSearch extends React.Component<
         isClearable={true}
         placeholder={__(label)}
         value={multi ? selectedOptions : selectedOptions && selectedOptions[0]}
-        loadingMessage={({ inputValue }) => __("Loading...")}
+        loadingMessage={({ inputValue }) => __('Loading...')}
         filterOption={filterOption}
         isLoading={customQuery.loading}
         onMenuOpen={onOpen}
@@ -319,25 +338,25 @@ const withQuery = ({ customQuery }) =>
         {},
         { searchValue?: string; ids?: string[]; filterParams?: any }
       >(gql(customQuery), {
-        name: "customQuery",
+        name: 'customQuery',
         options: ({
           searchValue,
           filterParams,
           initialValues,
-          abortController
+          abortController,
         }) => {
           const context = { fetchOptions: { signal: abortController.signal } };
 
-          if (searchValue === "reload") {
+          if (searchValue === 'reload') {
             return {
               context,
               variables: {
                 ids: initialValues,
                 excludeIds: true,
-                ...filterParams
+                ...filterParams,
               },
-              fetchPolicy: "network-only",
-              notifyOnNetworkStatusChange: true
+              fetchPolicy: 'network-only',
+              notifyOnNetworkStatusChange: true,
             };
           }
 
@@ -347,15 +366,15 @@ const withQuery = ({ customQuery }) =>
 
           return {
             context,
-            fetchPolicy: "network-only",
+            fetchPolicy: 'network-only',
             variables: {
               ids: initialValues,
-              ...filterParams
-            }
+              ...filterParams,
+            },
           };
-        }
-      })
-    )(SelectWithSearch)
+        },
+      }),
+    )(SelectWithSearch),
   );
 
 type IInitialValue = string | string[] | undefined;
@@ -369,7 +388,7 @@ type WrapperProps = {
     values: string[] | string,
     name: string,
     extraValue?: string,
-    obj?: any
+    obj?: any,
   ) => void;
   generateOptions: (datas: any[]) => IOption[];
   customQuery?: any;
@@ -398,7 +417,7 @@ class Wrapper extends React.Component<
 
     this.withQuery = withQuery({ customQuery: this.props.customQuery });
 
-    this.state = { searchValue: "", abortController: new AbortController() };
+    this.state = { searchValue: '', abortController: new AbortController() };
   }
 
   search = (searchValue: string) => {
@@ -421,7 +440,7 @@ class Wrapper extends React.Component<
 
     if (initialValue) {
       initialValues =
-        typeof initialValue === "string" ? [initialValue] : initialValue;
+        typeof initialValue === 'string' ? [initialValue] : initialValue;
     }
 
     return (
