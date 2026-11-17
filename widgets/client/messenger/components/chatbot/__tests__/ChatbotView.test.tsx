@@ -41,10 +41,12 @@ jest.mock('../useChatbotKeywordSuggestions', () => ({
 
 // 직원의 5240 메뉴 권한 — 기본은 모두 허용, 권한 테스트에서만 바꾼다
 const mockCanOpenMenu = jest.fn((_path: string) => true);
+const mockResolveMenuPath = jest.fn((path: string) => path);
 jest.mock('../useMenuPermission', () => ({
   useMenuPermission: () => ({
     status: 'ready',
     canOpenMenu: (path: string) => mockCanOpenMenu(path),
+    resolveMenuPath: (path: string) => mockResolveMenuPath(path),
   }),
 }));
 
@@ -325,6 +327,46 @@ describe('ChatbotView - 메뉴 권한', () => {
     expect(mockSetChatbotMenu).toHaveBeenCalledWith(
       expect.objectContaining({ title: '휴가신청' }),
     );
+  });
+});
+
+describe('ChatbotView - 결재 양식 메뉴 열기', () => {
+  afterEach(() => {
+    mockResolveMenuPath.mockImplementation((path: string) => path);
+    mockSuggestions.mockReturnValue({ keyword: '', menus: [], questions: [] });
+  });
+
+  it('5240 메뉴 정보로 만든 주소로 연다', () => {
+    mockSetChatbotMenu.mockReset();
+    mockResolveMenuPath.mockImplementation(
+      () =>
+        '/EAPApprovalMgr.do?cmd=viewEAPApprovalMgr&progCd=PRC-0030&dataRwType=W',
+    );
+    mockSuggestions.mockReturnValue({
+      keyword: '사직',
+      menus: [
+        {
+          id: 'resign',
+          label: '사직서(직원)',
+          description: '사직서 작성·제출',
+          path: '/EAPApprovalMgr.do?cmd=viewEAPApprovalMgr?searchApplCd=1590',
+          category: 'hr',
+        },
+      ] as any,
+      questions: [],
+    });
+    render(<ChatbotView />);
+    const box = screen.getByRole('textbox');
+    fireEvent.change(box, { target: { value: '사직서' } });
+    fireEvent.keyDown(box, { key: 'ArrowDown' });
+    fireEvent.keyDown(box, { key: 'Enter' });
+
+    expect(mockSetChatbotMenu).toHaveBeenCalledWith({
+      title: '사직서(직원)',
+      url: expect.stringMatching(
+        /\/EAPApprovalMgr\.do\?cmd=viewEAPApprovalMgr&progCd=PRC-0030&dataRwType=W$/,
+      ),
+    });
   });
 });
 

@@ -661,7 +661,7 @@ function headerIconButtonStyle(
 const ChatbotView: React.FC = () => {
   const { setRoute, setChatbotMenu } = useRouter();
   // 직원의 5240 모바일 메뉴 권한 — 권한 있는 메뉴만 보이고 열린다(확인 전·실패면 항상 허용 화면만)
-  const { canOpenMenu } = useMenuPermission();
+  const { canOpenMenu, resolveMenuPath } = useMenuPermission();
   const primaryColor = getColor() || '#6366f1';
   const [hoveredBtn, setHoveredBtn] = React.useState<string | null>(null);
   const [hoveredHeaderBtn, setHoveredHeaderBtn] = React.useState<
@@ -761,7 +761,7 @@ const ChatbotView: React.FC = () => {
     if (!canOpenMenu(pathOrUrl)) {
       return;
     }
-    setChatbotMenu({ title, url: buildHrUrl(pathOrUrl) });
+    setChatbotMenu({ title, url: buildHrUrl(resolveMenuPath(pathOrUrl)) });
     setRoute('chatbot-iframe');
   };
 

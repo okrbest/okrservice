@@ -1,5 +1,10 @@
 import * as React from 'react';
-import { isMenuAllowed, loadAllowedMenuKeys } from './menuPermission';
+import {
+  MenuPermissions,
+  isMenuAllowed,
+  loadMenuPermissions,
+  menuOpenPath,
+} from './menuPermission';
 
 export type MenuPermissionStatus = 'loading' | 'ready' | 'failed';
 
@@ -10,15 +15,15 @@ export type MenuPermissionStatus = 'loading' | 'ready' | 'failed';
 export const useMenuPermission = () => {
   const [state, setState] = React.useState<{
     status: MenuPermissionStatus;
-    allowedKeys: Set<string> | null;
-  }>({ status: 'loading', allowedKeys: null });
+    permissions: MenuPermissions | null;
+  }>({ status: 'loading', permissions: null });
 
   React.useEffect(() => {
     let alive = true;
 
-    loadAllowedMenuKeys().then((allowedKeys) => {
+    loadMenuPermissions().then((permissions) => {
       if (alive) {
-        setState({ status: allowedKeys ? 'ready' : 'failed', allowedKeys });
+        setState({ status: permissions ? 'ready' : 'failed', permissions });
       }
     });
 
@@ -28,9 +33,15 @@ export const useMenuPermission = () => {
   }, []);
 
   const canOpenMenu = React.useCallback(
-    (pathOrUrl: string) => isMenuAllowed(pathOrUrl, state.allowedKeys),
-    [state.allowedKeys],
+    (pathOrUrl: string) => isMenuAllowed(pathOrUrl, state.permissions),
+    [state.permissions],
   );
 
-  return { status: state.status, canOpenMenu };
+  // 결재 양식 메뉴는 5240 메뉴 정보로 만든 주소로 연다
+  const resolveMenuPath = React.useCallback(
+    (pathOrUrl: string) => menuOpenPath(pathOrUrl, state.permissions),
+    [state.permissions],
+  );
+
+  return { status: state.status, canOpenMenu, resolveMenuPath };
 };
