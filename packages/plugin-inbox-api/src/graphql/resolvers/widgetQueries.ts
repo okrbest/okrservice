@@ -10,6 +10,7 @@ import { getConfig } from '../../utils';
 import {
   hashTicketViewToken,
   parseAllowedFileTypes,
+  toViewActivityLogs,
 } from '../../ticketViewWidget';
 import {
   sendAutomationsMessage,
@@ -215,7 +216,7 @@ export default {
       ticket: detail.ticket,
       stages: detail.stages || [],
       comments: detail.comments || [],
-      activityLogs: Array.isArray(activityLogs) ? activityLogs : [],
+      activityLogs: toViewActivityLogs(activityLogs),
       allowedFileTypes: parseAllowedFileTypes(fileTypes),
     };
   },

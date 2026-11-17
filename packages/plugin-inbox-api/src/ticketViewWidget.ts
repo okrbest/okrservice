@@ -54,3 +54,10 @@ export const parseAllowedFileTypes = (value: unknown): string[] => {
 
   return Array.isArray(value) ? value : [];
 };
+
+/**
+ * 새 탭에 보낼 처리 기록. 자동화 메일 발송 상세처럼 _id가 없는 기록이 섞이면
+ * ActivityLog._id(필수) 오류로 새 탭 조회 전체가 실패하므로 뺀다.
+ */
+export const toViewActivityLogs = (logs: unknown): any[] =>
+  Array.isArray(logs) ? logs.filter((log) => log && log._id) : [];

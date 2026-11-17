@@ -7,6 +7,7 @@ import {
   TICKET_VIEW_COMMENT_MAX_LENGTH,
   hashTicketViewToken,
   parseAllowedFileTypes,
+  toViewActivityLogs,
   validateTicketViewComment,
 } from '../src/ticketViewWidget';
 
@@ -81,5 +82,23 @@ describe('parseAllowedFileTypes', () => {
     ]);
     expect(parseAllowedFileTypes(['a'])).toEqual(['a']);
     expect(parseAllowedFileTypes(undefined)).toEqual([]);
+  });
+});
+
+describe('toViewActivityLogs', () => {
+  it('_id 없는 기록(자동화 메일 발송 상세)은 빼서 새 탭 조회 전체가 실패하지 않게 한다', () => {
+    const logs = [
+      { _id: 'a', action: 'sendEmail' },
+      { action: 'sendEmail', contentType: 'automations:sendEmail' },
+      null,
+      { _id: 'b', action: 'create' },
+    ];
+
+    expect(toViewActivityLogs(logs).map((log) => log._id)).toEqual(['a', 'b']);
+  });
+
+  it('목록이 아니면 빈 목록', () => {
+    expect(toViewActivityLogs(null)).toEqual([]);
+    expect(toViewActivityLogs({ _id: 'a' })).toEqual([]);
   });
 });
