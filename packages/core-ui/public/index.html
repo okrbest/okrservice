@@ -17,7 +17,8 @@
     />
     <title>erxes</title>
     <script defer="defer" src="%REACT_APP_PUBLIC_PATH%/main.js"></script>
-    <script defer="defer" src="%REACT_APP_PUBLIC_PATH%/remoteEntry.js"></script>
+    <!-- 플러그인이 메인 공용 묶음을 다시 붙이지 않게 플러그인 로더가 찾는 id를 단다(두 번 실행되면 React 연결이 어긋남) -->
+    <script defer="defer" id="coreuiRemoteEntry" src="%REACT_APP_PUBLIC_PATH%/remoteEntry.js"></script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

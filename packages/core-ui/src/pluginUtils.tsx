@@ -9,6 +9,7 @@ import ErrorBoundary from '@erxes/ui/src/components/ErrorBoundary';
 import { IUser } from 'modules/auth/types';
 import { NavItem } from 'modules/layout/components/QuickNavigation';
 import React from 'react';
+import { ensurePluginScript } from './dynamicScript';
 import { __ } from 'coreui/utils';
 import apolloClient from '@erxes/ui/src/apolloClient';
 import { createRoot } from 'react-dom/client';
@@ -105,7 +106,9 @@ const PluginsWrapper = ({
 };
 
 const useDynamicScript = (args) => {
-  const [ready, setReady] = React.useState(false);
+  const [ready, setReady] = React.useState(() =>
+    Boolean(args.scope && (window as any)[args.scope]),
+  );
   const [failed, setFailed] = React.useState(false);
 
   React.useEffect(() => {
@@ -113,35 +116,30 @@ const useDynamicScript = (args) => {
       return;
     }
 
-    const element = document.createElement('script');
-    const id = `dynamic-script-${args.scope}`;
+    let alive = true;
 
-    element.src = args.url;
-    element.id = id;
-    element.type = 'text/javascript';
-    element.async = true;
+    // 진입 파일은 페이지에 한 번만 붙인다(다시 붙이면 플러그인이 재실행돼 묶음이 어긋남) — 떼어낼 때도 지우지 않는다
+    ensurePluginScript(args.scope, args.url).then(
+      () => {
+        if (alive) {
+          setFailed(false);
+          setReady(true);
+        }
+      },
+      (e) => {
+        console.error(e.message, args);
 
-    setReady(false);
-    setFailed(false);
-
-    element.onload = () => {
-      console.debug(`Dynamic Script Loaded: ${args.url}`);
-      setReady(true);
-    };
-
-    element.onerror = () => {
-      console.error(`Dynamic Script Error: ${args.url}`, args);
-      setReady(false);
-      setFailed(true);
-    };
-
-    document.head.appendChild(element);
+        if (alive) {
+          setReady(false);
+          setFailed(true);
+        }
+      },
+    );
 
     return () => {
-      console.debug(`Dynamic Script Removed: ${args.url}`);
-      document.head.removeChild(element);
+      alive = false;
     };
-  }, [args.url]);
+  }, [args.url, args.scope]);
 
   return {
     ready,
@@ -188,6 +186,14 @@ export const loadComponent = (scope, module) => {
 };
 
 const System = (props) => {
+  const scope = props.system && props.system.scope;
+  const module = props.system && props.system.module;
+  // 같은 플러그인·모듈이면 lazy 컴포넌트를 한 번만 만든다 — 그릴 때마다 새로 만들면 플러그인 화면이 통째로 다시 만들어진다
+  const Component = React.useMemo(
+    () => React.lazy(loadComponent(scope, module)),
+    [scope, module],
+  );
+
   if (props.loadScript) {
     const { ready, failed } = useDynamicScript({
       url: props.system && props.system.url,
@@ -198,10 +204,6 @@ const System = (props) => {
       return null;
     }
   }
-
-  const Component = React.lazy(
-    loadComponent(props.system.scope, props.system.module),
-  );
 
   return (
     <ErrorBoundary pluginName={props.pluginName}>
@@ -213,6 +215,14 @@ const System = (props) => {
 };
 
 const SystemWithApolloProvider = (props) => {
+  const scope = props.system && props.system.scope;
+  const module = props.system && props.system.module;
+  // 같은 플러그인·모듈이면 lazy 컴포넌트를 한 번만 만든다 — 그릴 때마다 새로 만들면 플러그인 화면이 통째로 다시 만들어진다
+  const Component = React.useMemo(
+    () => React.lazy(loadComponent(scope, module)),
+    [scope, module],
+  );
+
   if (props.loadScript) {
     const { ready, failed } = useDynamicScript({
       url: props.system && props.system.url,
@@ -223,10 +233,6 @@ const SystemWithApolloProvider = (props) => {
       return null;
     }
   }
-
-  const Component = React.lazy(
-    loadComponent(props.system.scope, props.system.module),
-  );
 
   return (
     <ErrorBoundary pluginName={props.pluginName}>
@@ -366,7 +372,7 @@ export const pluginLayouts = (currentUser: IUser) => {
     if (plugin.layout) {
       layouts.push(
         <System
-          key={Math.random()}
+          key={plugin.name}
           loadScript={true}
           system={plugin.layout}
           currentUser={currentUser}
@@ -397,7 +403,7 @@ export const pluginsInnerWidgets = () => {
     createRoot(newDiv).render(
       <BrowserRouter>
         <SystemWithApolloProvider
-          key={Math.random()}
+          key={plugin.name}
           loadScript={true}
           system={plugin.innerWidget}
           pluginName={plugin.name}
@@ -421,7 +427,7 @@ export const pluginRouters = () => {
     if (plugin.routes) {
       pluginRoutes.push(
         <System
-          key={Math.random()}
+          key={plugin.name}
           loadScript={true}
           system={plugin.routes}
           pluginName={plugin.name}
