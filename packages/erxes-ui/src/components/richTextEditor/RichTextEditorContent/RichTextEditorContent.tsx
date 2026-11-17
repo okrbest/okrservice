@@ -95,7 +95,8 @@ export const RichTextEditorContent = (props: IRichTextEditorContentProps) => {
         height={autoGrow ? undefined : convertToPx(height)}
         minHeight={convertToPx(autoGrow ? autoGrowMinHeight : height)}
         maxHeight={convertToPx(autoGrow ? autoGrowMaxHeight : height)}
-        autoFocus={true}
+        // 숨겨진 채로 늘 붙어 있으므로 소스 모드일 때만 — 아니면 붙는 순간 다른 입력의 포커스를 가져간다
+        autoFocus={isSourceEnabled}
         extensions={SOURCE_EXTENSIONS}
         onChange={onSourceChange}
       />

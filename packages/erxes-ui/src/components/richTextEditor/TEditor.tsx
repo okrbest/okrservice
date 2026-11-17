@@ -202,7 +202,9 @@ const RichTextEditor = forwardRef(function RichTextEditor(
     extensions,
     content: initialContent, // ⭐ 초기 content 전달
     parseOptions: { preserveWhitespace: true },
-    autofocus: autoFocus,
+    // 지정하지 않으면 false — undefined를 넘기면 TipTap 기본값(false)을 덮어써 붙는 순간 포커스를 가져간다
+    // (티켓 상세의 메모 편집기가 열려 있던 담당자 목록 등을 닫던 원인)
+    autofocus: autoFocus ?? false,
     immediatelyRender: true,
     shouldRerenderOnTransaction: false,
   });

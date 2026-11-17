@@ -14,6 +14,7 @@ import {
   nextSearchValue,
   pickSelectedOptions,
   sameValues,
+  shouldDeferReload,
 } from './selectWithSearchOptions';
 import Icon from './Icon';
 import React from 'react';
@@ -119,6 +120,8 @@ class SelectWithSearch extends React.Component<
   }
 > {
   private timer: any;
+  // 처음 "현재 선택값" 조회가 끝나면 시작할 목록 조회(그 사이에 목록을 연 경우)
+  private pendingReload = false;
 
   constructor(props: Props) {
     super(props);
@@ -131,6 +134,19 @@ class SelectWithSearch extends React.Component<
     };
 
     this.timer = 0;
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.timer);
+    this.pendingReload = false;
+  }
+
+  componentDidUpdate() {
+    // 처음 "현재 선택값" 조회가 끝났으면 미뤄 둔 목록 조회를 시작한다(화면 반영 뒤라 부모 상태를 바꿔도 안전)
+    if (this.pendingReload && !this.props.customQuery.loading) {
+      this.pendingReload = false;
+      this.props.search('reload');
+    }
   }
 
   componentWillReceiveProps(nextProps: Props) {
@@ -281,7 +297,20 @@ class SelectWithSearch extends React.Component<
       }, 1200);
     };
 
-    const onOpen = () => search('reload');
+    const onOpen = () => {
+      // 처음 "현재 선택값" 조회를 취소하지 않는다 — 끝나면 이어서 목록을 받는다(그동안 Loading...)
+      if (
+        shouldDeferReload({
+          loading: customQuery.loading,
+          searchValue: this.props.searchValue,
+        })
+      ) {
+        this.pendingReload = true;
+        return;
+      }
+
+      search('reload');
+    };
 
     const selectOptions = [...(totalOptions || [])];
 
@@ -315,7 +344,7 @@ class SelectWithSearch extends React.Component<
         value={multi ? selectedOptions : selectedOptions && selectedOptions[0]}
         loadingMessage={({ inputValue }) => __('Loading...')}
         filterOption={filterOption}
-        isLoading={customQuery.loading}
+        isLoading={customQuery.loading || this.pendingReload}
         onMenuOpen={onOpen}
         components={{ Option, MultiValue }}
         onChange={(options: any) => onChange(options)}

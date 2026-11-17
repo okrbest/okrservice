@@ -78,3 +78,16 @@ export const sameValues = (a?: string[], b?: string[]): boolean => {
     left.every((value, index) => value === right[index])
   );
 };
+
+/**
+ * 목록을 열 때 목록 조회를 미뤄야 하나 — 처음 "현재 선택값" 조회(searchValue '')가 아직 오는 중이면 미룬다.
+ * 바로 목록 조회를 시작하면 그 조회가 취소돼 선택 칩이 안 그려지고(목록은 "No options"/닫힘),
+ * 그 상태로 다른 항목을 고르면 원래 선택값이 빠진 채 저장된다(응답이 느릴 때 "바로 누르면" 생김).
+ */
+export const shouldDeferReload = ({
+  loading,
+  searchValue,
+}: {
+  loading?: boolean;
+  searchValue?: string;
+}): boolean => Boolean(loading) && !searchValue;

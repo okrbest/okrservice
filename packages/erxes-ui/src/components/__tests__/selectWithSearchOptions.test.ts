@@ -5,6 +5,7 @@ import {
   nextSearchValue,
   pickSelectedOptions,
   sameValues,
+  shouldDeferReload,
 } from '../selectWithSearchOptions';
 
 const opt = (value: string) => ({ value, label: value });
@@ -95,5 +96,21 @@ describe('sameValues', () => {
   it('내용이 다르면 다른 값', () => {
     expect(sameValues(['a'], ['a', 'b'])).toBe(false);
     expect(sameValues(['a', 'b'], ['b', 'a'])).toBe(false);
+  });
+});
+
+describe('shouldDeferReload', () => {
+  it('처음 "현재 선택값" 조회가 아직 오는 중이면 목록 조회를 미룬다(취소하면 선택 칩이 안 그려짐)', () => {
+    expect(shouldDeferReload({ loading: true, searchValue: '' })).toBe(true);
+  });
+
+  it('처음 조회가 끝났거나, 이미 목록·검색 조회 중이면 미루지 않는다', () => {
+    expect(shouldDeferReload({ loading: false, searchValue: '' })).toBe(false);
+    expect(shouldDeferReload({ loading: true, searchValue: 'reload' })).toBe(
+      false,
+    );
+    expect(shouldDeferReload({ loading: true, searchValue: 'kim' })).toBe(
+      false,
+    );
   });
 });
