@@ -11,10 +11,11 @@ import {
   loadIndex,
 } from '../chatHistory';
 
+const mockSetChatbotMenu = jest.fn();
 jest.mock('../../../context/Router', () => ({
   useRouter: () => ({
     setRoute: jest.fn(),
-    setChatbotMenu: jest.fn(),
+    setChatbotMenu: mockSetChatbotMenu,
     setActiveRoute: jest.fn(),
     isZoomed: false,
     setIsZoomed: jest.fn(),
@@ -36,6 +37,15 @@ const mockSuggestions = jest.fn(() => ({
 }));
 jest.mock('../useChatbotKeywordSuggestions', () => ({
   useChatbotKeywordSuggestions: () => mockSuggestions(),
+}));
+
+// 직원의 5240 메뉴 권한 — 기본은 모두 허용, 권한 테스트에서만 바꾼다
+const mockCanOpenMenu = jest.fn((_path: string) => true);
+jest.mock('../useMenuPermission', () => ({
+  useMenuPermission: () => ({
+    status: 'ready',
+    canOpenMenu: (path: string) => mockCanOpenMenu(path),
+  }),
 }));
 
 jest.mock('../useChatbotMessages', () => ({
@@ -229,6 +239,92 @@ describe('ChatbotView - 답변 아래 HR 메뉴 바로가기', () => {
 
     const panel = screen.getByRole('group', { name: 'HR 메뉴 바로가기' });
     expect(within(panel).getAllByRole('button')).toHaveLength(3);
+  });
+});
+
+describe('ChatbotView - 메뉴 권한', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    connection.data = {};
+    (streamChat as jest.Mock).mockReset();
+    mockSetChatbotMenu.mockReset();
+  });
+
+  afterEach(() => {
+    mockCanOpenMenu.mockImplementation(() => true);
+    mockSuggestions.mockReturnValue({ keyword: '', menus: [], questions: [] });
+  });
+
+  it('권한 없는 메뉴는 답변 아래 바로가기에 나오지 않는다', async () => {
+    mockCanOpenMenu.mockImplementation(
+      (path: string) => !path.includes('MobileSalaryDtstmnMgr'),
+    );
+    (streamChat as jest.Mock).mockImplementation(async function* () {
+      yield { textResponse: '안내해 드릴게요.', close: true, error: false };
+    });
+    render(<ChatbotView />);
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: '급여명세서 보고 싶어요' },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '전송' }));
+    });
+
+    expect(screen.getByText('안내해 드릴게요.')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /급여명세서/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('권한 없는 메뉴는 입력 중 추천에서 빠지고 Enter로도 열리지 않는다', () => {
+    mockCanOpenMenu.mockImplementation(() => false);
+    mockSuggestions.mockReturnValue({
+      keyword: '휴가',
+      menus: [
+        {
+          id: 'leave',
+          label: '휴가신청',
+          description: '연차·반차 등 휴가 신청',
+          path: '/MobileLeaveAppl.do',
+          category: 'leave',
+        },
+      ] as any,
+      questions: ['올해 남은 휴가가 며칠인가요?'],
+    });
+    render(<ChatbotView />);
+    const box = screen.getByRole('textbox');
+    fireEvent.change(box, { target: { value: '휴가 쓰고 싶은데' } });
+
+    expect(screen.queryByText('휴가신청')).not.toBeInTheDocument();
+    fireEvent.keyDown(box, { key: 'ArrowDown' });
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect(mockSetChatbotMenu).not.toHaveBeenCalled();
+    expect(box).toHaveValue('올해 남은 휴가가 며칠인가요?');
+  });
+
+  it('권한 있는 메뉴는 그대로 열린다', () => {
+    mockSuggestions.mockReturnValue({
+      keyword: '휴가',
+      menus: [
+        {
+          id: 'leave',
+          label: '휴가신청',
+          description: '연차·반차 등 휴가 신청',
+          path: '/MobileLeaveAppl.do',
+          category: 'leave',
+        },
+      ] as any,
+      questions: [],
+    });
+    render(<ChatbotView />);
+    const box = screen.getByRole('textbox');
+    fireEvent.change(box, { target: { value: '휴가 쓰고 싶은데' } });
+    fireEvent.keyDown(box, { key: 'ArrowDown' });
+    fireEvent.keyDown(box, { key: 'Enter' });
+
+    expect(mockSetChatbotMenu).toHaveBeenCalledWith(
+      expect.objectContaining({ title: '휴가신청' }),
+    );
   });
 });
 

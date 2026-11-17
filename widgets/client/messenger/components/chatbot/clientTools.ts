@@ -1,4 +1,4 @@
-import { getEnv } from "../../../utils";
+import { getEnv } from '../../../utils';
 
 /**
  * clientTools — R1 클라이언트 실행 위임 위젯측 프로토콜 (TeamplGPT specs/003).
@@ -11,14 +11,14 @@ import { getEnv } from "../../../utils";
  * postMessage 송신 대상·수신 검증에 동일하게 사용한다 (테넌트별 도메인 자동 대응).
  * 세션 쿠키는 브리지의 same-origin fetch에서만 처리 — 이 모듈은 절대 다루지 않는다.
  */
-const REQUEST_TYPE = "teamplgpt:hr-tool-request";
-const RESULT_TYPE = "teamplgpt:hr-tool-result";
+const REQUEST_TYPE = 'teamplgpt:hr-tool-request';
+const RESULT_TYPE = 'teamplgpt:hr-tool-result';
 // 타임아웃 중첩 계약(작업지시서 §3.1): 브리지 fetch 20s < 위젯 대기 25s
 // < broker 45s(기본, env HR_CLIENT_TOOL_TIMEOUT_MS로 조정).
 // 브리지보다 짧으면 kiwibox 지연 응답 구간에서 진짜 결과가 유실되고 거짓 실패가 회신된다.
 const BRIDGE_TIMEOUT_MS = 25000;
 
-export const CLIENT_TOOL_EVENT_TYPE = "clientToolRequest";
+export const CLIENT_TOOL_EVENT_TYPE = 'clientToolRequest';
 
 export interface ClientToolSpec {
   transport: string;
@@ -32,7 +32,7 @@ export interface ClientToolChunk {
   spec?: ClientToolSpec;
 }
 
-interface BridgeResult {
+export interface BridgeResult {
   ok: boolean;
   status: number;
   body: string;
@@ -60,16 +60,16 @@ export function __resetPinnedOriginForTest(): void {
 function requestBridge(
   callId: string,
   spec: ClientToolSpec,
-  origin: string | null
+  origin: string | null,
 ): Promise<BridgeResult> {
   return new Promise((resolve, reject) => {
     if (!origin || window.parent === window) {
-      reject(new Error("no parent bridge available"));
+      reject(new Error('no parent bridge available'));
       return;
     }
     const timer = setTimeout(() => {
-      window.removeEventListener("message", onMessage);
-      reject(new Error("bridge timeout"));
+      window.removeEventListener('message', onMessage);
+      reject(new Error('bridge timeout'));
     }, BRIDGE_TIMEOUT_MS);
 
     function onMessage(event: MessageEvent) {
@@ -77,17 +77,28 @@ function requestBridge(
       const m = event.data;
       if (!m || m.type !== RESULT_TYPE || m.callId !== callId) return;
       clearTimeout(timer);
-      window.removeEventListener("message", onMessage);
+      window.removeEventListener('message', onMessage);
       resolve({
         ok: m.ok === true,
         status: Number(m.status) || 0,
-        body: typeof m.body === "string" ? m.body : "",
+        body: typeof m.body === 'string' ? m.body : '',
       });
     }
 
-    window.addEventListener("message", onMessage);
+    window.addEventListener('message', onMessage);
     window.parent.postMessage({ type: REQUEST_TYPE, callId, spec }, origin);
   });
+}
+
+/**
+ * 위젯이 직접 부르는 HR 조회(챗봇 메뉴 권한 등) — 같은 브리지·같은 보안 규칙을 거친다.
+ * 브리지가 없거나(5240 밖에 붙은 위젯) 시간이 지나면 실패로 끝난다.
+ */
+export function requestHrBridge(spec: ClientToolSpec): Promise<BridgeResult> {
+  const callId = `widget-${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
+  return requestBridge(callId, spec, getParentOrigin());
 }
 
 /**
@@ -96,7 +107,7 @@ function requestBridge(
  */
 export async function handleClientToolRequest(
   chunk: ClientToolChunk,
-  sessionId: string
+  sessionId: string,
 ): Promise<void> {
   const { callId, spec } = chunk;
   if (!callId || !spec) return;
@@ -106,16 +117,16 @@ export async function handleClientToolRequest(
       ok: false,
       status: 0,
       body: `widget: ${e.message}`,
-    })
+    }),
   );
 
   const { ROOT_URL } = getEnv();
-  const baseUrl = (ROOT_URL || "").replace(/\/$/, "");
+  const baseUrl = (ROOT_URL || '').replace(/\/$/, '');
 
   try {
     const resp = await fetch(`${baseUrl}/ai-chat/tool-result`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ callId, sessionId, ...result }),
     });
     // 무음 삼킴 제거 — 회신 실패 원인을 콘솔에 남겨 사후 추적 가능하게.
@@ -123,12 +134,15 @@ export async function handleClientToolRequest(
     if (!resp.ok) {
       // eslint-disable-next-line no-console
       console.warn(
-        `[clientTools] tool-result ${resp.status} callId=${callId.slice(0, 8)}`
+        `[clientTools] tool-result ${resp.status} callId=${callId.slice(0, 8)}`,
       );
     }
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.warn(`[clientTools] tool-result 전송 실패 callId=${callId.slice(0, 8)}`, e);
+    console.warn(
+      `[clientTools] tool-result 전송 실패 callId=${callId.slice(0, 8)}`,
+      e,
+    );
     // 재시도 안 함 — 서버 타임아웃(30s)에 맡김
   }
 }

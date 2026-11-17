@@ -8,7 +8,7 @@
  *
  * 보안 장치:
  *  - event.source(iframe contentWindow) + event.origin(위젯 서버 origin) 이중 검증
- *  - endpoint allowlist: 정적 21개 + YTA 정규식 외 실행 거부
+ *  - endpoint allowlist: 정적 경로 목록 + YTA 정규식 외 실행 거부
  *  - path + cmd 조합 allowlist: 허용 경로라도 조회 cmd 외(save*·delete* 등) 거부
  *  - 범용 endpoint(/CommonCode.do)는 queryId 화이트리스트 병행 — 임의 쿼리 차단
  *  - self 강제: "$SELF_STAFF_ID" 마커를 페이지 DOM의 본인 STAFF_ID로만 치환.
@@ -61,6 +61,9 @@ const ALLOWED_PATHS = [
   '/CTIMcrtfIssuMgr.do', // 발급내역 목록 정본 (Refrom은 단건/초기조회용)
   // hr-welfare
   '/LONLoanReqstListMgr.do',
+  // 챗봇 HR 메뉴 권한 — 로그인 세션 본인의 모바일 메뉴 목록(권한 그룹·메뉴 사용 여부로 걸러짐).
+  // 파라미터 없이만 허용(아래 ALLOWED_PARAM_KEYS)
+  '/getMobileMenuList.do',
 ];
 
 // hr-year-end-tax: 연말정산 컨트롤러가 연도별 분리 — endpoint 6개 × 지원연도(2022~2025)만
@@ -208,6 +211,7 @@ const ALLOWED_PARAM_KEYS: Record<string, string[]> = {
     'cmmSearchStaffId',
   ],
   '/Home.do': ['cmd', 'searchYmd', 'cmmSearchStaffId'],
+  '/getMobileMenuList.do': [],
 };
 
 function areParamKeysAllowed(

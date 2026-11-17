@@ -27,6 +27,7 @@ import { CHATBOT_MANUAL_URL } from '../ticket/helpLinks';
 import { dispatchViz, VizBlockRenderer } from './vizRenderers';
 import { chatbotTheme } from './chatbotTheme';
 import { safeHref } from './linkSafety';
+import { useMenuPermission } from './useMenuPermission';
 
 const T = chatbotTheme;
 import {
@@ -659,6 +660,8 @@ function headerIconButtonStyle(
 
 const ChatbotView: React.FC = () => {
   const { setRoute, setChatbotMenu } = useRouter();
+  // 직원의 5240 모바일 메뉴 권한 — 권한 있는 메뉴만 보이고 열린다(확인 전·실패면 항상 허용 화면만)
+  const { canOpenMenu } = useMenuPermission();
   const primaryColor = getColor() || '#6366f1';
   const [hoveredBtn, setHoveredBtn] = React.useState<string | null>(null);
   const [hoveredHeaderBtn, setHoveredHeaderBtn] = React.useState<
@@ -683,9 +686,10 @@ const ChatbotView: React.FC = () => {
   }, []);
   const {
     keyword: suggestionKeyword,
-    menus: suggestionMenus,
+    menus: keywordMenus,
     questions: suggestionQuestions,
   } = useChatbotKeywordSuggestions(inputValue);
+  const suggestionMenus = keywordMenus.filter((menu) => canOpenMenu(menu.path));
 
   const showSuggestions =
     dismissedForValue !== inputValue &&
@@ -753,6 +757,10 @@ const ChatbotView: React.FC = () => {
   }, [timelineItems.length, aiMessages]);
 
   const handleMenuClick = (title: string, pathOrUrl: string) => {
+    // 권한 없는 메뉴는 목록에서 빠지지만, 어느 경로로 오든 여기서 한 번 더 막는다
+    if (!canOpenMenu(pathOrUrl)) {
+      return;
+    }
     setChatbotMenu({ title, url: buildHrUrl(pathOrUrl) });
     setRoute('chatbot-iframe');
   };
@@ -1072,30 +1080,32 @@ const ChatbotView: React.FC = () => {
                     <div style={BUBBLE_STYLE}>{msg.text}</div>
                     {msg.buttons && msg.buttons.length > 0 && (
                       <div style={ACTION_BUTTON_GROUP_STYLE}>
-                        {msg.buttons.map((btn) => {
-                          const btnKey = `${msg.id}-${btn.label}`;
-                          const isHovered = hoveredBtn === btnKey;
-                          return (
-                            <button
-                              key={btnKey}
-                              type="button"
-                              tabIndex={-1}
-                              style={createActionButtonStyle(
-                                primaryColor,
-                                isHovered,
-                              )}
-                              onMouseEnter={() => setHoveredBtn(btnKey)}
-                              onMouseLeave={() => setHoveredBtn(null)}
-                              onMouseDown={(e) => e.preventDefault()}
-                              onFocus={(e) => e.currentTarget.blur()}
-                              onClick={() =>
-                                handleMenuClick(btn.label, btn.url)
-                              }
-                            >
-                              {btn.label} →
-                            </button>
-                          );
-                        })}
+                        {msg.buttons
+                          .filter((btn) => canOpenMenu(btn.url))
+                          .map((btn) => {
+                            const btnKey = `${msg.id}-${btn.label}`;
+                            const isHovered = hoveredBtn === btnKey;
+                            return (
+                              <button
+                                key={btnKey}
+                                type="button"
+                                tabIndex={-1}
+                                style={createActionButtonStyle(
+                                  primaryColor,
+                                  isHovered,
+                                )}
+                                onMouseEnter={() => setHoveredBtn(btnKey)}
+                                onMouseLeave={() => setHoveredBtn(null)}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onFocus={(e) => e.currentTarget.blur()}
+                                onClick={() =>
+                                  handleMenuClick(btn.label, btn.url)
+                                }
+                              >
+                                {btn.label} →
+                              </button>
+                            );
+                          })}
                       </div>
                     )}
                     {!!msg.shownAt && (
@@ -1117,7 +1127,10 @@ const ChatbotView: React.FC = () => {
 
             if (item.kind === 'rpa') {
               const msg = item.data;
-              const actionButtons = resolveRpaButtons(msg.rpaCode, msg.buttons);
+              const actionButtons = resolveRpaButtons(
+                msg.rpaCode,
+                msg.buttons,
+              ).filter((btn) => canOpenMenu(btn.path));
               return (
                 <div
                   key={`rpa-${msg._id}`}
@@ -1190,28 +1203,32 @@ const ChatbotView: React.FC = () => {
                       <strong>{msg.label}</strong> 관련 메뉴입니다.
                     </div>
                     <div style={ACTION_BUTTON_GROUP_STYLE}>
-                      {msg.buttons.map((btn) => {
-                        const btnKey = `${msg.id}-${btn.label}`;
-                        const isHovered = hoveredBtn === btnKey;
-                        return (
-                          <button
-                            key={btnKey}
-                            type="button"
-                            tabIndex={-1}
-                            style={createActionButtonStyle(
-                              primaryColor,
-                              isHovered,
-                            )}
-                            onMouseEnter={() => setHoveredBtn(btnKey)}
-                            onMouseLeave={() => setHoveredBtn(null)}
-                            onMouseDown={(e) => e.preventDefault()}
-                            onFocus={(e) => e.currentTarget.blur()}
-                            onClick={() => handleMenuClick(btn.label, btn.path)}
-                          >
-                            {btn.label} →
-                          </button>
-                        );
-                      })}
+                      {msg.buttons
+                        .filter((btn) => canOpenMenu(btn.path))
+                        .map((btn) => {
+                          const btnKey = `${msg.id}-${btn.label}`;
+                          const isHovered = hoveredBtn === btnKey;
+                          return (
+                            <button
+                              key={btnKey}
+                              type="button"
+                              tabIndex={-1}
+                              style={createActionButtonStyle(
+                                primaryColor,
+                                isHovered,
+                              )}
+                              onMouseEnter={() => setHoveredBtn(btnKey)}
+                              onMouseLeave={() => setHoveredBtn(null)}
+                              onMouseDown={(e) => e.preventDefault()}
+                              onFocus={(e) => e.currentTarget.blur()}
+                              onClick={() =>
+                                handleMenuClick(btn.label, btn.path)
+                              }
+                            >
+                              {btn.label} →
+                            </button>
+                          );
+                        })}
                     </div>
                     <span
                       style={{
@@ -1250,7 +1267,7 @@ const ChatbotView: React.FC = () => {
                       .map((id) => CHATBOT_MENUS.find((menu) => menu.id === id))
                       .filter(
                         (menu): menu is (typeof CHATBOT_MENUS)[number] =>
-                          !!menu,
+                          !!menu && canOpenMenu(menu.path),
                       )
                       .slice(0, MAX_ANSWER_MENU_BUTTONS);
               return (

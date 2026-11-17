@@ -994,4 +994,48 @@ describe('initHrBridge', () => {
       );
     });
   });
+
+  // 챗봇 HR 메뉴 권한 — 로그인 세션 본인의 모바일 메뉴 목록(권한 그룹·사용 여부)만 돌려주는 경로
+  describe('/getMobileMenuList.do', () => {
+    it('파라미터 없이 부르면 실행한다', async () => {
+      dispatchRequest(
+        iframe,
+        request(
+          { path: '/getMobileMenuList.do', method: 'POST', form: {} },
+          'menu-1',
+        ),
+      );
+      await flush();
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        'https://kiwibox.example.com/getMobileMenuList.do',
+        expect.objectContaining({ body: '' }),
+      );
+    });
+
+    it('파라미터를 붙이면 거부한다(세션 값을 바꿔 남의 메뉴를 보는 시도 차단)', async () => {
+      dispatchRequest(
+        iframe,
+        request(
+          {
+            path: '/getMobileMenuList.do',
+            method: 'POST',
+            form: { ssnStaffId: 'OTHER' },
+          },
+          'menu-2',
+        ),
+      );
+      await flush();
+
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(replyMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          callId: 'menu-2',
+          ok: false,
+          body: 'bridge: param key not allowed',
+        }),
+        WIDGET_ORIGIN,
+      );
+    });
+  });
 });
