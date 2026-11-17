@@ -64,6 +64,9 @@ const ALLOWED_PATHS = [
   // 챗봇 HR 메뉴 권한 — 로그인 세션 본인의 모바일 메뉴 목록(권한 그룹·메뉴 사용 여부로 걸러짐).
   // 파라미터 없이만 허용(아래 ALLOWED_PARAM_KEYS)
   '/getMobileMenuList.do',
+  // 챗봇 HR 메뉴 권한(PC) — 로그인 세션 본인의 PC 메뉴 목록. menuKind=menu01(직원용)·menu02(담당자용)만
+  // (아래 ALLOWED_PARAM_KEYS·PARAM_VALUE_ALLOWLIST, teamplgpt specs/023)
+  '/getSubLowMenuList.do',
 ];
 
 // hr-year-end-tax: 연말정산 컨트롤러가 연도별 분리 — endpoint 6개 × 지원연도(2022~2025)만
@@ -156,6 +159,7 @@ const hasOwn = (obj: object, key: string) =>
 const PARAM_VALUE_ALLOWLIST: Record<string, Record<string, string[]>> = {
   '/EAPRequestMgr.do': { selectGubun: ['2'] },
   '/getMBLDclzWorkOtSchdul.do': { searchType: ['2', '3'] },
+  '/getSubLowMenuList.do': { menuKind: ['menu01', 'menu02'] },
 };
 
 // 사번 키가 반드시 있어야 하는 경로 — 키가 아예 없으면 값 검사(아래 키별 루프)를 건너뛰고,
@@ -212,6 +216,7 @@ const ALLOWED_PARAM_KEYS: Record<string, string[]> = {
   ],
   '/Home.do': ['cmd', 'searchYmd', 'cmmSearchStaffId'],
   '/getMobileMenuList.do': [],
+  '/getSubLowMenuList.do': ['menuKind'],
 };
 
 function areParamKeysAllowed(

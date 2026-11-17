@@ -304,6 +304,47 @@ describe('ChatbotView - 메뉴 권한', () => {
     expect(box).toHaveValue('올해 남은 휴가가 며칠인가요?');
   });
 
+  it('PC 메뉴 권한만 있는 휴가신청도 답변 아래 바로가기에 나오고, 어느 쪽에도 없는 메뉴는 빠진다', async () => {
+    // 실제 판단 함수 — 모바일 메뉴 권한 없음 + PC에 휴가신청(직원) TAA-0070만 (teamplgpt specs/023)
+    const { isMenuAllowed, parseMenuPermissions, parsePcMenuPermissions } =
+      jest.requireActual('../menuPermission');
+    const sources = {
+      mobile: parseMenuPermissions(JSON.stringify({ Result: [] })),
+      pc: parsePcMenuPermissions(
+        JSON.stringify({
+          result: [
+            { lvl: 4, progCd: 'TAA-0070', applCd: '1022', dataRwType: 'W' },
+          ],
+        }),
+      ),
+    };
+    mockCanOpenMenu.mockImplementation((path: string) =>
+      isMenuAllowed(path, sources),
+    );
+    (streamChat as jest.Mock).mockImplementation(async function* () {
+      yield { textResponse: '안내해 드릴게요.', close: true, error: false };
+    });
+    render(<ChatbotView />);
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: '휴가 신청하고 싶어' },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '전송' }));
+    });
+
+    const panel = screen.getByRole('group', { name: 'HR 메뉴 바로가기' });
+    expect(
+      within(panel).getByRole('button', { name: /휴가신청/ }),
+    ).toBeInTheDocument();
+    expect(
+      within(panel).queryByRole('button', { name: /경조휴가신청/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(panel).queryByRole('button', { name: /휴가캘린더/ }),
+    ).not.toBeInTheDocument();
+    expect(within(panel).getAllByRole('button')).toHaveLength(1);
+  });
+
   it('권한 있는 메뉴는 그대로 열린다', () => {
     mockSuggestions.mockReturnValue({
       keyword: '휴가',

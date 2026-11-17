@@ -1038,4 +1038,107 @@ describe('initHrBridge', () => {
       );
     });
   });
+  // 챗봇 HR 메뉴 권한(PC) — 로그인 세션 본인의 5240 PC 메뉴 목록. 직원용(menu01)·담당자용(menu02)만
+  // (teamplgpt specs/023 contracts/bridge-allowlist.md)
+  describe('/getSubLowMenuList.do', () => {
+    it.each(['menu01', 'menu02'])(
+      'menuKind=%s 는 실행한다',
+      async (menuKind) => {
+        dispatchRequest(
+          iframe,
+          request(
+            {
+              path: '/getSubLowMenuList.do',
+              method: 'POST',
+              form: { menuKind },
+            },
+            `pc-menu-${menuKind}`,
+          ),
+        );
+        await flush();
+
+        expect(fetchMock).toHaveBeenCalledWith(
+          'https://kiwibox.example.com/getSubLowMenuList.do',
+          expect.objectContaining({ body: `menuKind=${menuKind}` }),
+        );
+      },
+    );
+
+    it.each([
+      ['menuKind 없음', {}],
+      ['허용 밖 menuKind', { menuKind: 'menu03' }],
+    ])('%s 이면 거부한다', async (_label, form) => {
+      dispatchRequest(
+        iframe,
+        request(
+          { path: '/getSubLowMenuList.do', method: 'POST', form },
+          'pc-menu-bad-value',
+        ),
+      );
+      await flush();
+
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(replyMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          callId: 'pc-menu-bad-value',
+          ok: false,
+          body: 'bridge: param not allowed',
+        }),
+        WIDGET_ORIGIN,
+      );
+    });
+
+    it.each(['ssnId', 'grpCd', 'mainMenuCd', 'cmmSearchStaffId'])(
+      'menuKind 외 키(%s)를 붙이면 거부한다(세션 값을 바꿔 남의 메뉴를 보는 시도 차단)',
+      async (key) => {
+        dispatchRequest(
+          iframe,
+          request(
+            {
+              path: '/getSubLowMenuList.do',
+              method: 'POST',
+              form: { menuKind: 'menu01', [key]: 'OTHER' },
+            },
+            'pc-menu-extra-key',
+          ),
+        );
+        await flush();
+
+        expect(fetchMock).not.toHaveBeenCalled();
+        expect(replyMock).toHaveBeenCalledWith(
+          expect.objectContaining({
+            callId: 'pc-menu-extra-key',
+            ok: false,
+            body: 'bridge: param key not allowed',
+          }),
+          WIDGET_ORIGIN,
+        );
+      },
+    );
+
+    it('cmd를 붙이면 거부한다', async () => {
+      dispatchRequest(
+        iframe,
+        request(
+          {
+            path: '/getSubLowMenuList.do',
+            method: 'POST',
+            form: { menuKind: 'menu01', cmd: 'deleteMenu' },
+          },
+          'pc-menu-cmd',
+        ),
+      );
+      await flush();
+
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(replyMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          callId: 'pc-menu-cmd',
+          ok: false,
+          body: 'bridge: cmd not allowed',
+        }),
+        WIDGET_ORIGIN,
+      );
+    });
+  });
 });
