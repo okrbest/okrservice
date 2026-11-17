@@ -7,14 +7,12 @@ import {
   StatusKind,
   cellText,
   isNumericColumn,
-  isPayTable,
   isTimeColumn,
   isTotalRow,
   issueTarget,
   leaveTableCols,
   limitTableKind,
   workHoursTable,
-  parseAmount,
   plainNumber,
   rowIssues,
   statusKind,
@@ -35,7 +33,6 @@ type Props = {
 };
 
 const COLLAPSED_ROWS = 7;
-const BAR_MAX_PX = 48;
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 const STATUS_STYLE: Record<StatusKind, { background: string; color: string }> =
@@ -73,8 +70,6 @@ const MarkdownTable: React.FC<Props> = ({
   const limitCol = headers.findIndex((h) => cellText(h) === '한도');
   // 휴가 발생·사용·잔여 표: 열 막대 대신 잔여 칸에만 그 휴가 발생일수 기준 막대
   const leave = leaveTableCols(headers);
-  // 급여 표: 막대 없이 숫자 정렬만(사용자 결정 2026-11-18)
-  const payTable = isPayTable(headers);
 
   const bodyRows = rows.filter((row) => !isTotalRow(row));
   const totalRows = rows.filter((row) => isTotalRow(row));
@@ -86,26 +81,15 @@ const MarkdownTable: React.FC<Props> = ({
 
   const weekColIndex = headers.findIndex((h) => cellText(h) === '요일');
 
-  // 열별 해석: 숫자 열 여부, 막대 최대값(시각 열·값 2개 미만이면 막대 없음)
+  // 열별 해석: 숫자 열이면 오른쪽 정렬. 일반 표에는 값 막대를 그리지 않는다(사용자 결정 2026-11-18 —
+  // 금액끼리 막대로 견주는 뜻이 없고, 숫자 모양 날짜(20261116)·경과일에도 막대가 붙었다).
   const columns = headers.map((_, ci) => {
     const values = rows.map((row) => row[ci] ?? '');
     const numeric = isNumericColumn(values);
-    const amounts = bodyRows
-      .map((row) => parseAmount(row[ci] ?? ''))
-      .filter((n): n is number => n !== null);
-    const max = Math.max(0, ...amounts);
-    const hasBars =
-      !monthly &&
-      !leave &&
-      !payTable &&
-      numeric &&
-      !isTimeColumn(values, headers[ci]) &&
-      amounts.length >= 2 &&
-      max > 0;
     const explicit = aligns[ci];
     const align: Align =
       explicit && explicit !== 'left' ? explicit : numeric ? 'right' : 'left';
-    return { numeric, hasBars, max, align };
+    return { numeric, align };
   });
 
   const cellStyle = (ci: number): React.CSSProperties => ({
@@ -238,37 +222,6 @@ const MarkdownTable: React.FC<Props> = ({
           }}
         >
           {text}
-        </span>
-      );
-    }
-
-    const column = columns[ci];
-    const amount = column.hasBars && !isTotal ? parseAmount(raw) : null;
-    if (amount !== null) {
-      const pct = Math.round((amount / column.max) * 100);
-      return (
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            justifyContent: 'flex-end',
-          }}
-        >
-          <motion.span
-            data-bar={String(pct)}
-            aria-hidden="true"
-            initial={reduceMotion ? false : { width: 0 }}
-            animate={{ width: (pct / 100) * BAR_MAX_PX }}
-            transition={{ duration: 0.9, ease: EASE, delay: 0.1 }}
-            style={{
-              display: 'block',
-              height: '6px',
-              borderRadius: '99px',
-              background: `color-mix(in srgb, ${T.color.accent} 55%, transparent)`,
-            }}
-          />
-          <span>{renderInline(raw, key)}</span>
         </span>
       );
     }

@@ -41,7 +41,9 @@ describe('MarkdownTable', () => {
     expect(screen.getByText('토')).toHaveAttribute('data-weekend', 'sat');
   });
 
-  it('금액 열에는 값 크기만큼의 막대를 그리고 합계 줄에는 그리지 않는다', () => {
+  // 일반 표의 값 막대는 그리지 않는다(사용자 결정 2026-11-18 — "막대 다 빼줘").
+  // 결재 표의 신청일(20261116) 같은 숫자 모양 날짜에도 막대가 붙었다. 휴가 잔여·월별 사용 미터와 게이지는 별도.
+  it('금액 열에도 값 막대를 그리지 않고, 합계 줄 표시는 그대로', () => {
     const { container } = render(
       <MarkdownTable
         headers={['항목', '금액(원)']}
@@ -54,14 +56,27 @@ describe('MarkdownTable', () => {
         renderInline={renderInline}
       />,
     );
-    const bars = Array.from(container.querySelectorAll('[data-bar]')).map((b) =>
-      b.getAttribute('data-bar'),
-    );
-    expect(bars).toEqual(['100', '6']);
+    expect(container.querySelectorAll('[data-bar]')).toHaveLength(0);
     expect(screen.getByText('합계').closest('tr')).toHaveAttribute(
       'data-total',
       'true',
     );
+  });
+
+  it('결재 표(경과일·숫자 날짜)에도 막대를 그리지 않는다', () => {
+    const { container } = render(
+      <MarkdownTable
+        headers={['문서명', '상태', '경과일', '신청일']}
+        aligns={[]}
+        rows={[
+          ['휴가신청서', '결재중', '2', '2026-11-16'],
+          ['출장신청서', '결재완료', '0', '2026-10-20'],
+          ['연장근무신청서', '반려', '5', '20261002'],
+        ]}
+        renderInline={renderInline}
+      />,
+    );
+    expect(container.querySelectorAll('[data-bar]')).toHaveLength(0);
   });
 
   it('시각 열에는 막대를 그리지 않는다', () => {
