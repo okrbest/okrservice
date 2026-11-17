@@ -1,17 +1,17 @@
-import * as dayjs from "dayjs";
-import T from "i18n-react";
-import { FieldValue } from "./form/types";
-import { ENV, IBrowserInfo, IRule } from "./types";
+import * as dayjs from 'dayjs';
+import T from 'i18n-react';
+import { FieldValue } from './form/types';
+import { ENV, IBrowserInfo, IRule } from './types';
 
 export const getSubdomain = (): string => {
-  const hostnameParts = window.location.hostname.split(".");
+  const hostnameParts = window.location.hostname.split('.');
 
   if (hostnameParts.length > 2) {
     return hostnameParts[0];
   }
 
   // return an empty string (for open-source environments with no subdomain)
-  return "";
+  return '';
 };
 
 // get env config from process.env or window.env
@@ -21,19 +21,19 @@ export const getEnv = () => {
   const subdomain = getSubdomain();
 
   const getItem = (name: string) => {
-    const value = wenv[name] || process.env[name] || "";
+    const value = wenv[name] || process.env[name] || '';
     // Only replace '<subdomain>' if it exists in the value
-    if (value.includes("<subdomain>")) {
-      return value.replace("<subdomain>", subdomain);
+    if (value.includes('<subdomain>')) {
+      return value.replace('<subdomain>', subdomain);
     }
 
     return value;
   };
 
   return {
-    ROOT_URL: getItem("ROOT_URL"),
-    API_URL: getItem("API_URL"),
-    API_SUBSCRIPTIONS_URL: getItem("API_SUBSCRIPTIONS_URL"),
+    ROOT_URL: getItem('ROOT_URL'),
+    API_URL: getItem('API_URL'),
+    API_SUBSCRIPTIONS_URL: getItem('API_SUBSCRIPTIONS_URL'),
     // CALLS_APP_ID: getItem('CALLS_APP_ID'),
     // CALLS_APP_SECRET: getItem('CALLS_APP_SECRET'),
   };
@@ -49,7 +49,7 @@ export const postMessage = (source: string, message: string, postData = {}) => {
       message,
       ...postData,
     },
-    "*"
+    '*',
   );
 };
 
@@ -73,16 +73,16 @@ export const requestBrowserInfo = ({
   postData = {},
   callback,
 }: RequestBrowserInfoParams) => {
-  postMessage(source, "requestingBrowserInfo", postData);
+  postMessage(source, 'requestingBrowserInfo', postData);
 
-  window.addEventListener("message", (event: any) => {
+  window.addEventListener('message', (event: any) => {
     const data = event.data || {};
     const { fromPublisher, message, browserInfo } = data;
 
     if (
       fromPublisher &&
       source === data.source &&
-      message === "sendingBrowserInfo"
+      message === 'sendingBrowserInfo'
     ) {
       callback(browserInfo);
     }
@@ -90,26 +90,28 @@ export const requestBrowserInfo = ({
 };
 
 const LANGUAGE_ALIASES: Record<string, string> = {
-  jp: "ja",
-  jpn: "ja",
-  japanese: "ja",
-  kr: "ko",
-  korean: "ko",
+  jp: 'ja',
+  jpn: 'ja',
+  japanese: 'ja',
+  kr: 'ko',
+  korean: 'ko',
 };
 
 export const normalizeLanguageCode = (code?: string): string => {
-  const raw = (code || "ko").toLowerCase().replace(/_/g, "-");
+  const raw = (code || 'ko').toLowerCase().replace(/_/g, '-');
   return LANGUAGE_ALIASES[raw] || raw;
 };
 
 const setDayjsLocale = (code: string) => {
-  import("dayjs/locale/" + code + ".js")
+  import('dayjs/locale/' + code + '.js')
     .then(() => dayjs.locale(code))
-    .catch(() => dayjs.locale("en"));
+    .catch(() => dayjs.locale('en'));
 };
 
-export const setLocale = (code: string = "en", callBack?: () => void) => {
-  const validCode = normalizeLanguageCode(typeof code === "string" && code ? code : "ko");
+export const setLocale = (code: string = 'en', callBack?: () => void) => {
+  const validCode = normalizeLanguageCode(
+    typeof code === 'string' && code ? code : 'ko',
+  );
 
   import(`../locales/${validCode}.json`)
     .then((translations) => {
@@ -123,15 +125,15 @@ export const setLocale = (code: string = "en", callBack?: () => void) => {
     .catch((e) => {
       console.error(`Failed to load locale: ${validCode}`, e);
 
-      if (validCode !== "en") {
+      if (validCode !== 'en') {
         console.log(`Falling back to 'en' locale`);
-        setLocale("en", callBack);
+        setLocale('en', callBack);
       }
     });
 };
 
 export const __ = (key: string, options?: any) => {
-  if (key && T.texts && typeof T.texts === "object") {
+  if (key && T.texts && typeof T.texts === 'object') {
     const texts = T.texts as Record<string, any>;
 
     if (key in texts) {
@@ -186,7 +188,7 @@ export const makeClickableLink = (selector: string) => {
   const nodes = Array.from(document.querySelectorAll(selector));
 
   nodes.forEach((node) => {
-    node.setAttribute("target", "__blank");
+    node.setAttribute('target', '__blank');
   });
 };
 
@@ -204,20 +206,20 @@ export const isValidURL = (url: string) => {
  * 예) BgxNdbX…g5난임치료_이미지.png → 난임치료_이미지.png (한글 완성형·자모 모두 인식)
  */
 export function sanitizeAttachmentDownloadBasename(nameOrUrl: string): string {
-  if (!nameOrUrl || typeof nameOrUrl !== "string") {
+  if (!nameOrUrl || typeof nameOrUrl !== 'string') {
     return nameOrUrl;
   }
   let s = nameOrUrl.trim();
 
-  if (s.includes("read-file")) {
+  if (s.includes('read-file')) {
     try {
       const abs =
-        s.startsWith("http://") || s.startsWith("https://")
+        s.startsWith('http://') || s.startsWith('https://')
           ? s
-          : `http://placeholder.invalid${s.startsWith("/") ? "" : "/"}${s}`;
+          : `http://placeholder.invalid${s.startsWith('/') ? '' : '/'}${s}`;
       const u = new URL(abs);
-      if (u.pathname.includes("read-file")) {
-        const key = u.searchParams.get("key");
+      if (u.pathname.includes('read-file')) {
+        const key = u.searchParams.get('key');
         if (key) {
           s = decodeURIComponent(key);
         }
@@ -234,8 +236,8 @@ export function sanitizeAttachmentDownloadBasename(nameOrUrl: string): string {
     }
   }
 
-  let pathPart = s.split("?")[0];
-  const baseRaw = pathPart.split("/").pop() || pathPart;
+  let pathPart = s.split('?')[0];
+  const baseRaw = pathPart.split('/').pop() || pathPart;
   let base = baseRaw;
   try {
     base = decodeURIComponent(baseRaw);
@@ -243,12 +245,12 @@ export function sanitizeAttachmentDownloadBasename(nameOrUrl: string): string {
     /* keep base */
   }
 
-  base = base.replace(/^upload_[^_]+_/, "");
+  base = base.replace(/^upload_[^_]+_/, '');
 
   /** 스토리지 objectId(영숫자·-_ 20자+) 뒤에 한글이 오는 형태 — _만 끼인 경우도 처리 */
   const hangulIdx = base.search(/\p{Script=Hangul}/u);
   if (hangulIdx > 0) {
-    const prefix = base.slice(0, hangulIdx).replace(/[_\s-]+$/, "");
+    const prefix = base.slice(0, hangulIdx).replace(/[_\s-]+$/, '');
     if (/^[A-Za-z0-9_-]+$/.test(prefix) && prefix.length >= 20) {
       return base.slice(hangulIdx);
     }
@@ -262,22 +264,22 @@ export function sanitizeAttachmentDownloadBasename(nameOrUrl: string): string {
  * (새 탭 저장 시 Content-Disposition이 raw key를 쓰지 않도록)
  */
 export function ensureFriendlyReadFileNameParam(url: string): string {
-  if (!url || !url.includes("/read-file")) {
+  if (!url || !url.includes('/read-file')) {
     return url;
   }
   try {
     const abs =
-      url.startsWith("http://") || url.startsWith("https://")
+      url.startsWith('http://') || url.startsWith('https://')
         ? url
-        : `http://placeholder.invalid${url.startsWith("/") ? "" : "/"}${url}`;
+        : `http://placeholder.invalid${url.startsWith('/') ? '' : '/'}${url}`;
     const u = new URL(abs);
-    if ((u.searchParams.get("name") || "").trim()) {
-      if (url.startsWith("http://") || url.startsWith("https://")) {
+    if ((u.searchParams.get('name') || '').trim()) {
+      if (url.startsWith('http://') || url.startsWith('https://')) {
         return `${u.origin}${u.pathname}?${u.searchParams.toString()}`;
       }
       return `${u.pathname}?${u.searchParams.toString()}`;
     }
-    const key = u.searchParams.get("key");
+    const key = u.searchParams.get('key');
     if (!key) {
       return url;
     }
@@ -289,9 +291,9 @@ export function ensureFriendlyReadFileNameParam(url: string): string {
     }
     const friendly = sanitizeAttachmentDownloadBasename(decodedKey);
     if (friendly) {
-      u.searchParams.set("name", friendly);
+      u.searchParams.set('name', friendly);
     }
-    if (url.startsWith("http://") || url.startsWith("https://")) {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
       return `${u.origin}${u.pathname}?${u.searchParams.toString()}`;
     }
     return `${u.pathname}?${u.searchParams.toString()}`;
@@ -308,7 +310,7 @@ export function ensureFriendlyReadFileNameParam(url: string): string {
 export const readFile = (value: string, width?: number): string => {
   const { API_URL } = getEnv();
 
-  if (!value || isValidURL(value) || value.includes("http")) {
+  if (!value || isValidURL(value) || value.includes('http')) {
     return value;
   }
 
@@ -323,32 +325,30 @@ export const readFile = (value: string, width?: number): string => {
 
 /** read-file URL에 inline=true 설정(name 등 다른 쿼리는 유지) */
 export const readFileUrlForInlineDisplay = (url: string): string => {
-  if (!url || typeof url !== "string") {
+  if (!url || typeof url !== 'string') {
     return url;
   }
-  if (!url.includes("/read-file")) {
+  if (!url.includes('/read-file')) {
     return url;
   }
   try {
     const abs =
-      url.startsWith("http://") || url.startsWith("https://")
+      url.startsWith('http://') || url.startsWith('https://')
         ? url
-        : `http://placeholder.invalid${url.startsWith("/") ? "" : "/"}${url}`;
+        : `http://placeholder.invalid${url.startsWith('/') ? '' : '/'}${url}`;
     const u = new URL(abs);
-    u.searchParams.set("inline", "true");
+    u.searchParams.set('inline', 'true');
     const qs = u.searchParams.toString();
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return `${u.origin}${u.pathname}${qs ? `?${qs}` : ""}`;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return `${u.origin}${u.pathname}${qs ? `?${qs}` : ''}`;
     }
-    return `${u.pathname}${qs ? `?${qs}` : ""}`;
+    return `${u.pathname}${qs ? `?${qs}` : ''}`;
   } catch {
-    const base = url.split("#")[0];
-    if (base.includes("inline=true")) {
+    const base = url.split('#')[0];
+    if (base.includes('inline=true')) {
       return base;
     }
-    return base.includes("?")
-      ? `${base}&inline=true`
-      : `${base}?inline=true`;
+    return base.includes('?') ? `${base}&inline=true` : `${base}?inline=true`;
   }
 };
 
@@ -358,26 +358,53 @@ export const readFileViewInline = (value: string, width?: number): string => {
     return value;
   }
   let out: string;
-  if (value.includes("http") && value.includes("/read-file")) {
+  if (value.includes('http') && value.includes('/read-file')) {
     out = readFileUrlForInlineDisplay(value);
   } else {
     const base = readFile(value, width);
     if (!base) {
       return base;
     }
-    if (base.includes("inline=true")) {
+    if (base.includes('inline=true')) {
       out = base;
-    } else if (base.includes("http") && !base.includes("/read-file")) {
+    } else if (base.includes('http') && !base.includes('/read-file')) {
       out = base;
     } else {
-      out = base.includes("?")
-        ? `${base}&inline=true`
-        : `${base}?inline=true`;
+      out = base.includes('?') ? `${base}&inline=true` : `${base}?inline=true`;
     }
   }
-  return out.includes("/read-file")
+  return out.includes('/read-file')
     ? ensureFriendlyReadFileNameParam(out)
     : out;
+};
+
+// data: 사진을 blob 주소로 바꾼 것(같은 사진을 다시 열 때 재사용)
+const dataImageBlobUrls = new Map<string, string>();
+
+/** data:image/... 를 blob 주소로 바꾼다. 형식이 이상하면 null */
+const dataImageToBlobUrl = (src: string): string | null => {
+  const cached = dataImageBlobUrls.get(src);
+  if (cached) {
+    return cached;
+  }
+  const comma = src.indexOf(',');
+  if (comma < 0) {
+    return null;
+  }
+  const meta = src.slice('data:'.length, comma).split(';');
+  const mime = meta[0] || 'image/png';
+  const base64 = meta.includes('base64');
+  const payload = src.slice(comma + 1);
+  try {
+    const text = base64 ? atob(payload) : decodeURIComponent(payload);
+    const bytes = Uint8Array.from(text, (ch) => ch.charCodeAt(0));
+    const blobUrl = URL.createObjectURL(new Blob([bytes], { type: mime }));
+    dataImageBlobUrls.set(src, blobUrl);
+    return blobUrl;
+  } catch (error) {
+    console.error('원본 사진을 열 수 없습니다:', error);
+    return null;
+  }
 };
 
 /**
@@ -386,10 +413,19 @@ export const readFileViewInline = (value: string, width?: number): string => {
  * 연결 오류로 실패하는 경우가 많으므로, read-file은 항상 실제 URL로 연다.
  */
 export const openReadFileImageInNewTab = (src: string): void => {
+  // 글 속에 붙여 넣은 사진은 주소 대신 데이터(data:)로 저장된다.
+  // 브라우저는 data: 주소로 새 탭 여는 것을 막아 글자만 보이므로 blob 주소로 연다.
+  if (/^data:image\//i.test(src)) {
+    const blobUrl = dataImageToBlobUrl(src);
+    if (blobUrl) {
+      window.open(blobUrl, '_blank', 'noopener,noreferrer');
+    }
+    return;
+  }
   const viewUrl = ensureFriendlyReadFileNameParam(
     readFileUrlForInlineDisplay(src),
   );
-  window.open(viewUrl, "_blank", "noopener,noreferrer");
+  window.open(viewUrl, '_blank', 'noopener,noreferrer');
 };
 
 export const checkRule = (rule: IRule, browserInfo: IBrowserInfo) => {
@@ -399,45 +435,45 @@ export const checkRule = (rule: IRule, browserInfo: IBrowserInfo) => {
 
   let valueToTest: any;
 
-  if (kind === "browserLanguage") {
+  if (kind === 'browserLanguage') {
     valueToTest = language;
   }
 
-  if (kind === "currentPageUrl") {
+  if (kind === 'currentPageUrl') {
     valueToTest = url;
   }
 
-  if (kind === "city") {
+  if (kind === 'city') {
     valueToTest = city;
   }
 
-  if (kind === "country") {
+  if (kind === 'country') {
     valueToTest = country;
   }
 
   // is
-  if (condition === "is" && valueToTest !== ruleValue) {
+  if (condition === 'is' && valueToTest !== ruleValue) {
     return false;
   }
 
   // isNot
-  if (condition === "isNot" && valueToTest === ruleValue) {
+  if (condition === 'isNot' && valueToTest === ruleValue) {
     return false;
   }
 
   // isUnknown
-  if (condition === "isUnknown" && valueToTest) {
+  if (condition === 'isUnknown' && valueToTest) {
     return false;
   }
 
   // hasAnyValue
-  if (condition === "hasAnyValue" && !valueToTest) {
+  if (condition === 'hasAnyValue' && !valueToTest) {
     return false;
   }
 
   // startsWith
   if (
-    condition === "startsWith" &&
+    condition === 'startsWith' &&
     valueToTest &&
     !valueToTest.startsWith(ruleValue)
   ) {
@@ -446,7 +482,7 @@ export const checkRule = (rule: IRule, browserInfo: IBrowserInfo) => {
 
   // endsWith
   if (
-    condition === "endsWith" &&
+    condition === 'endsWith' &&
     valueToTest &&
     !valueToTest.endsWith(ruleValue)
   ) {
@@ -455,7 +491,7 @@ export const checkRule = (rule: IRule, browserInfo: IBrowserInfo) => {
 
   // contains
   if (
-    condition === "contains" &&
+    condition === 'contains' &&
     valueToTest &&
     !valueToTest.includes(ruleValue)
   ) {
@@ -463,15 +499,15 @@ export const checkRule = (rule: IRule, browserInfo: IBrowserInfo) => {
   }
 
   // greaterThan
-  if (condition === "greaterThan" && valueToTest < parseInt(ruleValue, 10)) {
+  if (condition === 'greaterThan' && valueToTest < parseInt(ruleValue, 10)) {
     return false;
   }
 
-  if (condition === "lessThan" && valueToTest > parseInt(ruleValue, 10)) {
+  if (condition === 'lessThan' && valueToTest > parseInt(ruleValue, 10)) {
     return false;
   }
 
-  if (condition === "doesNotContain" && valueToTest.includes(ruleValue)) {
+  if (condition === 'doesNotContain' && valueToTest.includes(ruleValue)) {
     return false;
   }
 
@@ -480,7 +516,7 @@ export const checkRule = (rule: IRule, browserInfo: IBrowserInfo) => {
 
 export const checkRules = (
   rules: IRule[],
-  browserInfo: IBrowserInfo
+  browserInfo: IBrowserInfo,
 ): boolean => {
   let passedAllRules = true;
 
@@ -496,20 +532,20 @@ export const checkRules = (
 };
 
 export const striptags = (htmlString: string) => {
-  const _div = document.createElement("div");
-  let _text = "";
+  const _div = document.createElement('div');
+  let _text = '';
 
   _div.innerHTML = htmlString;
-  _text = _div.textContent ? _div.textContent.trim() : "";
-  _text = _text.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+  _text = _div.textContent ? _div.textContent.trim() : '';
+  _text = _text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;');
   return _text;
 };
 
 export const fixErrorMessage = (msg: string) =>
-  msg.replace("GraphQL error: ", "");
+  msg.replace('GraphQL error: ', '');
 
 export const newLineToBr = (content: string) => {
-  return content.replace(/\r\n|\r|\n/g, "<br />");
+  return content.replace(/\r\n|\r|\n/g, '<br />');
 };
 
 export const urlify = (text: string) => {
@@ -522,7 +558,7 @@ export const urlify = (text: string) => {
   }
 
   return text.replace(urlRegex, (url) => {
-    if (url.startsWith("http")) {
+    if (url.startsWith('http')) {
       return `<a href="${url}" target="_blank">${url}</a>`;
     }
 
@@ -540,7 +576,7 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
     values[key] = false;
 
     // if fieldValue is set
-    if (operator === "hasAnyValue") {
+    if (operator === 'hasAnyValue') {
       if (fieldValue) {
         values[key] = true;
       } else {
@@ -549,7 +585,7 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
     }
 
     // if fieldValue is not set
-    if (operator === "isUnknown") {
+    if (operator === 'isUnknown') {
       if (!fieldValue) {
         values[key] = true;
       } else {
@@ -558,7 +594,7 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
     }
 
     // if fieldValue equals logic value
-    if (operator === "is") {
+    if (operator === 'is') {
       if (logicValue === fieldValue) {
         values[key] = true;
       } else {
@@ -567,7 +603,7 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
     }
 
     // if fieldValue not equal to logic value
-    if (operator === "isNot") {
+    if (operator === 'isNot') {
       if (logicValue !== fieldValue) {
         values[key] = true;
       } else {
@@ -575,9 +611,9 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
       }
     }
 
-    if (validation === "number") {
+    if (validation === 'number') {
       // if number value: is greater than
-      if (operator === "greaterThan" && fieldValue) {
+      if (operator === 'greaterThan' && fieldValue) {
         if (Number(fieldValue) > Number(logicValue)) {
           values[key] = true;
         } else {
@@ -586,7 +622,7 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
       }
 
       // if number value: is less than
-      if (operator === "lessThan" && fieldValue) {
+      if (operator === 'lessThan' && fieldValue) {
         if (Number(fieldValue) < Number(logicValue)) {
           values[key] = true;
         } else {
@@ -595,9 +631,9 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
       }
     }
 
-    if (typeof logicValue === "string") {
+    if (typeof logicValue === 'string') {
       // if string value contains logicValue
-      if (operator === "contains") {
+      if (operator === 'contains') {
         if (String(fieldValue).includes(logicValue)) {
           values[key] = true;
         } else {
@@ -606,7 +642,7 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
       }
 
       // if string value does not contain logicValue
-      if (operator === "doesNotContain") {
+      if (operator === 'doesNotContain') {
         if (!String(fieldValue).includes(logicValue)) {
           values[key] = true;
         } else {
@@ -615,7 +651,7 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
       }
 
       // if string value startsWith logicValue
-      if (operator === "startsWith") {
+      if (operator === 'startsWith') {
         if (String(fieldValue).startsWith(logicValue)) {
           values[key] = true;
         } else {
@@ -624,7 +660,7 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
       }
 
       // if string value endsWith logicValue
-      if (operator === "endsWith") {
+      if (operator === 'endsWith') {
         if (!String(fieldValue).endsWith(logicValue)) {
           values[key] = true;
         } else {
@@ -633,12 +669,12 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
       }
     }
 
-    if (validation && validation.includes("date")) {
+    if (validation && validation.includes('date')) {
       const dateValueToCheck = new Date(String(fieldValue));
       const logicDateValue = new Date(String(logicValue));
 
       // date is greather than
-      if (operator === "dateGreaterThan") {
+      if (operator === 'dateGreaterThan') {
         if (dateValueToCheck > logicDateValue) {
           values[key] = true;
         } else {
@@ -647,7 +683,7 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
       }
 
       // date is less than
-      if (operator === "dateLessThan") {
+      if (operator === 'dateLessThan') {
         if (logicDateValue > dateValueToCheck) {
           values[key] = true;
         } else {
@@ -656,13 +692,13 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
       }
     }
 
-    if (type === "check") {
+    if (type === 'check') {
       if (
         fieldValue &&
-        typeof fieldValue === "string" &&
-        typeof logicValue === "string"
+        typeof fieldValue === 'string' &&
+        typeof logicValue === 'string'
       ) {
-        if (operator === "isNot") {
+        if (operator === 'isNot') {
           if (!fieldValue.includes(logicValue)) {
             values[key] = true;
           } else {
@@ -670,7 +706,7 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
           }
         }
 
-        if (operator === "is") {
+        if (operator === 'is') {
           if (fieldValue.includes(logicValue)) {
             values[key] = true;
           } else {
@@ -696,13 +732,13 @@ export const checkLogicFulfilled = (logics: LogicParams[]) => {
 
 export const loadMapApi = (apiKey: string, locale?: string) => {
   if (!apiKey) {
-    return "";
+    return '';
   }
 
   const mapsURL = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry,places&language=${
-    locale || "en"
+    locale || 'en'
   }&v=quarterly`;
-  const scripts: any = document.getElementsByTagName("script");
+  const scripts: any = document.getElementsByTagName('script');
   // Go through existing script tags, and return google maps api tag when found.
   for (const script of scripts) {
     if (script.src.indexOf(mapsURL) === 0) {
@@ -710,7 +746,7 @@ export const loadMapApi = (apiKey: string, locale?: string) => {
     }
   }
 
-  const googleMapScript = document.createElement("script");
+  const googleMapScript = document.createElement('script');
   googleMapScript.src = mapsURL;
   googleMapScript.async = true;
   googleMapScript.defer = true;
