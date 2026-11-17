@@ -37,6 +37,23 @@ export const EditorWrapper = styled.div`
   display: flex;
   flex-direction: column;
 
+  /* 흰 영역 어디를 눌러도 한 번에 쓰이게 — 편집기가 남는 높이를 채운다(아래 빈 곳을 누르면 편집이 시작되지 않았음) */
+  > div:first-child {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  div:has(> div > .ProseMirror),
+  div:has(> .ProseMirror) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  div:has(> .ProseMirror),
+  .ProseMirror {
+    flex: 1 1 auto;
+  }
+
   @media (max-width: 768px) {
     min-height: 160px;
     border-radius: 8px;
