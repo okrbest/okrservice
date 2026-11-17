@@ -7,6 +7,7 @@ import {
   StatusKind,
   cellText,
   isNumericColumn,
+  isPayTable,
   isTimeColumn,
   isTotalRow,
   issueTarget,
@@ -72,6 +73,8 @@ const MarkdownTable: React.FC<Props> = ({
   const limitCol = headers.findIndex((h) => cellText(h) === '한도');
   // 휴가 발생·사용·잔여 표: 열 막대 대신 잔여 칸에만 그 휴가 발생일수 기준 막대
   const leave = leaveTableCols(headers);
+  // 급여 표: 막대 없이 숫자 정렬만(사용자 결정 2026-11-18)
+  const payTable = isPayTable(headers);
 
   const bodyRows = rows.filter((row) => !isTotalRow(row));
   const totalRows = rows.filter((row) => isTotalRow(row));
@@ -94,6 +97,7 @@ const MarkdownTable: React.FC<Props> = ({
     const hasBars =
       !monthly &&
       !leave &&
+      !payTable &&
       numeric &&
       !isTimeColumn(values, headers[ci]) &&
       amounts.length >= 2 &&

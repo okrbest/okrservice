@@ -139,6 +139,26 @@ export const limitTableKind = (headers: string[]): LimitTableKind | null => {
   return null;
 };
 
+// 급여 표(teamplgpt hr-salary 명세·공제·요약·월별 지급내역·일용직) — 값 막대를 그리지 않는다(사용자 결정 2026-11-18).
+// 급여 금액끼리 막대로 견주는 건 뜻이 없고, 급여연월(202606) 같은 숫자 모양 날짜에도 막대가 붙었다.
+// 판단은 hr-salary가 보내는 금액 머리글로 한다.
+const PAY_TABLE_HEADERS = [
+  '지급금액',
+  '공제금액',
+  '지급총액',
+  '공제총액',
+  '실지급액',
+  '지급합계',
+  '공제합계',
+  '실수령',
+  '지급액',
+  '시급',
+  '일급',
+];
+
+export const isPayTable = (headers: string[]): boolean =>
+  headers.map(cellText).some((h) => PAY_TABLE_HEADERS.indexOf(h) !== -1);
+
 // 휴가 발생·사용·잔여 표(teamplgpt hr-attendance annual_leave_balance) — 잔여 칸에만 그 휴가 발생일수 기준 막대.
 // 열마다 따로 최대값을 잡으면 사용 1.4일 막대가 발생 15일 막대보다 길어 보인다(사용자 지적 2026-10-20).
 export const leaveTableCols = (
