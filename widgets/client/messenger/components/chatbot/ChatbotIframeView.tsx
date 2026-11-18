@@ -87,7 +87,7 @@ const ChatbotIframeView: React.FC<Props> = ({ title, url }) => {
       }
     };
 
-    // 로그아웃 직후 30초를 기다리지 않도록 바로 한 번 보고, 이후 주기 확인
+    // 마운트 직후 바로 한 번 보고, 이후 5초 주기로 확인 (로그아웃→챗봇 복귀 지연 완화)
     void tick();
     const id = window.setInterval(() => {
       void tick();

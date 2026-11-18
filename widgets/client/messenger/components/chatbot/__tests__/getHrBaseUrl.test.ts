@@ -2,6 +2,7 @@ import {
   getHrBaseUrl,
   buildHrUrl,
   buildChatbotIframeUrl,
+  reload5240ForRelogin,
   CHATBOT_BACK_EVENT,
 } from '../getHrBaseUrl';
 
@@ -143,5 +144,87 @@ describe('buildChatbotIframeUrl', () => {
     ).toBe(
       `https://xxx.okr.best/EAPApprovalMgr.do?progCd=1&dataRwType=R&from=chatbot&backEvent=${CHATBOT_BACK_EVENT}`,
     );
+  });
+});
+
+describe('reload5240ForRelogin', () => {
+  it('open(_top)으로 호스트 사이트만 연다 (위젯 location은 안 건드림)', () => {
+    const open = jest.fn(() => ({}) as Window);
+    const reload = jest.fn();
+    const win = {
+      open,
+      top: { location: { href: '', reload } },
+      location: { href: 'https://widget.example/messenger', reload },
+      document: { createElement: jest.fn(), body: { appendChild: jest.fn() } },
+    } as any;
+
+    reload5240ForRelogin(win, 'https://hr.example.com');
+
+    expect(open).toHaveBeenCalledWith('https://hr.example.com/', '_top');
+    expect(reload).not.toHaveBeenCalled();
+    expect(win.location.href).toBe('https://widget.example/messenger');
+  });
+
+  it('open이 실패하면 top.location.href로 호스트만 이동한다', () => {
+    const setHref = jest.fn();
+    const topLocation = {} as { href: string };
+    Object.defineProperty(topLocation, 'href', {
+      get: () => 'https://hr.example.com/MobileMain.do',
+      set: setHref,
+      configurable: true,
+    });
+    const widgetReload = jest.fn();
+    const win = {
+      open: () => {
+        throw new Error('blocked');
+      },
+      top: { location: topLocation },
+      location: {
+        href: 'https://widget.example/messenger',
+        reload: widgetReload,
+      },
+      document: { createElement: jest.fn(), body: { appendChild: jest.fn() } },
+    } as any;
+
+    reload5240ForRelogin(win, 'https://hr.example.com');
+
+    expect(setHref).toHaveBeenCalledWith('https://hr.example.com/');
+    expect(widgetReload).not.toHaveBeenCalled();
+  });
+
+  it('open·top 모두 실패하면 a[target=_top]로 호스트만 연다', () => {
+    const click = jest.fn();
+    const remove = jest.fn();
+    const anchor: any = {
+      href: '',
+      target: '',
+      rel: '',
+      click,
+      remove,
+    };
+    const appendChild = jest.fn();
+    const win = {
+      open: () => {
+        throw new Error('blocked');
+      },
+      top: {
+        get location() {
+          throw new Error('cross-origin');
+        },
+      },
+      location: { href: 'https://widget.example/messenger', reload: jest.fn() },
+      document: {
+        createElement: jest.fn(() => anchor),
+        body: { appendChild },
+      },
+    } as any;
+
+    reload5240ForRelogin(win, 'https://hr.example.com');
+
+    expect(anchor.href).toBe('https://hr.example.com/');
+    expect(anchor.target).toBe('_top');
+    expect(appendChild).toHaveBeenCalledWith(anchor);
+    expect(click).toHaveBeenCalled();
+    expect(win.location.reload).not.toHaveBeenCalled();
   });
 });

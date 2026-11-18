@@ -1,7 +1,10 @@
 import { menuKey } from './menuPermission';
 
-/** iframe이 열린 동안 세션이 살아 있는지 다시 보는 간격 (너무 잦으면 브리지·5240 부담) */
-export const IFRAME_SESSION_POLL_MS = 30_000;
+/**
+ * iframe이 열린 동안 세션이 살아 있는지 다시 보는 간격.
+ * 30s는 로그아웃 후 챗봇 복귀가 너무 늦고, chkLoginSession은 가벼운 POST라 5s로 둔다.
+ */
+export const IFRAME_SESSION_POLL_MS = 5_000;
 
 const MOBILE_MAIN = menuKey('/MobileMain.do');
 const CHG_PWD = menuKey('/MobileChgPwd.do');

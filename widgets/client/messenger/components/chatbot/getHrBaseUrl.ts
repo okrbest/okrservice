@@ -79,3 +79,54 @@ export const appendChatbotIframeQuery = (url: string): string => {
 /** 바로가기로 열 5240 URL (base 결합 + 챗봇 iframe 쿼리) */
 export const buildChatbotIframeUrl = (pathOrUrl: string): string =>
   appendChatbotIframeQuery(buildHrUrl(pathOrUrl));
+
+/**
+ * 세션 만료 안내의 「5240 새로고침」.
+ * 위젯 iframe이 아니라 호스트(5240) 탭 전체를 연다.
+ * cross-origin에서는 top.location.reload()가 막히므로 `_top` 네비게이션을 쓴다.
+ * 위젯 자신(window)만 reload/이동하는 폴백은 쓰지 않는다.
+ */
+export const reload5240ForRelogin = (
+  win: Window = window,
+  hrBaseUrl: string = getHrBaseUrl(),
+): void => {
+  const siteUrl = `${String(hrBaseUrl).replace(/\/$/, '')}/`;
+
+  // 1) browsing context 이름 `_top` — Location 읽기 없이 최상위만 이동
+  try {
+    const opened = win.open(siteUrl, '_top');
+    if (opened !== undefined) {
+      return;
+    }
+  } catch {
+    // open 차단 시 아래로
+  }
+
+  // 2) top.location 직접 지정 (읽기 없이 href 쓰기)
+  try {
+    if (win.top) {
+      win.top.location.href = siteUrl;
+      return;
+    }
+  } catch {
+    // sandbox 등
+  }
+
+  // 3) <a target="_top"> 클릭 — 위젯 location은 건드리지 않음
+  try {
+    const anchor = win.document.createElement('a');
+    anchor.href = siteUrl;
+    anchor.target = '_top';
+    anchor.rel = 'noopener';
+    win.document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  } catch {
+    // 최후: 여전히 top만 시도 (위젯 reload 금지)
+    try {
+      win.top!.location.href = siteUrl;
+    } catch {
+      // no-op — 위젯만 새로고침하지 않음
+    }
+  }
+};

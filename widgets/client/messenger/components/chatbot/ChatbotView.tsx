@@ -7,7 +7,7 @@ import { useRouter } from '../../context/Router';
 import { getColor } from '../../utils/util';
 import { useChatbotMessages } from './useChatbotMessages';
 import { useRpaMessages } from '../../context/RpaMessage';
-import { buildChatbotIframeUrl } from './getHrBaseUrl';
+import { buildChatbotIframeUrl, reload5240ForRelogin } from './getHrBaseUrl';
 import {
   useChatbotButtonMessages,
   ChatbotButtonCardMessage,
@@ -1096,8 +1096,8 @@ const ChatbotView: React.FC = () => {
               margin: '12px 16px 0',
               padding: '12px 14px',
               borderRadius: 10,
-              background: '#f5f6ff',
-              border: '1px solid #d8dcff',
+              background: '#ffffff',
+              border: '1px solid #d0d0d0',
               display: 'flex',
               flexDirection: 'column',
               gap: 10,
@@ -1118,7 +1118,7 @@ const ChatbotView: React.FC = () => {
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button
                 type="button"
-                onClick={() => window.top?.location.reload()}
+                onClick={() => reload5240ForRelogin()}
                 style={{
                   padding: '8px 14px',
                   backgroundColor: '#6f80ff',
