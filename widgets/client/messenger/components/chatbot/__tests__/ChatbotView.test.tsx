@@ -16,13 +16,19 @@ import { probeHrSessionAlive } from '../menuPermission';
 const mockSetChatbotMenu = jest.fn();
 const mockSetRoute = jest.fn();
 const mockSetSessionExpiredNotice = jest.fn();
+let mockSessionExpiredNotice = false;
 jest.mock('../../../context/Router', () => ({
   useRouter: () => ({
     setRoute: mockSetRoute,
     setChatbotMenu: mockSetChatbotMenu,
     setActiveRoute: jest.fn(),
-    sessionExpiredNotice: false,
-    setSessionExpiredNotice: mockSetSessionExpiredNotice,
+    get sessionExpiredNotice() {
+      return mockSessionExpiredNotice;
+    },
+    setSessionExpiredNotice: (value: boolean) => {
+      mockSessionExpiredNotice = !!value;
+      mockSetSessionExpiredNotice(value);
+    },
     isZoomed: false,
     setIsZoomed: jest.fn(),
   }),
@@ -264,6 +270,7 @@ describe('ChatbotView - 메뉴 권한', () => {
   beforeEach(() => {
     localStorage.clear();
     connection.data = {};
+    mockSessionExpiredNotice = false;
     (streamChat as jest.Mock).mockReset();
     mockSetChatbotMenu.mockReset();
     (probeHrSessionAlive as jest.Mock).mockResolvedValue(true);
@@ -470,6 +477,22 @@ describe('ChatbotView - 메뉴 권한', () => {
     expect(
       screen.queryByText('오류가 발생했습니다. 다시 시도해주세요.'),
     ).not.toBeInTheDocument();
+  });
+
+  it('세션 만료 안내가 켜지면 입력·전송이 막히고 닫기로 풀 수 없다', () => {
+    mockSessionExpiredNotice = true;
+    render(<ChatbotView />);
+
+    expect(screen.getByText(/위젯을 사용할 수 없습니다/)).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeDisabled();
+    expect(screen.getByRole('button', { name: '전송' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '채팅 이력' })).toBeDisabled();
+    expect(
+      screen.queryByRole('button', { name: '닫기' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '5240 새로고침' }),
+    ).toBeInTheDocument();
   });
 
   it('세션 검사 중에 전송을 두 번 눌러도 스트림은 한 번만 나간다', async () => {

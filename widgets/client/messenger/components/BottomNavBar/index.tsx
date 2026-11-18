@@ -42,7 +42,7 @@ const items = [
 ];
 
 function BottomNavBar() {
-  const { setRoute, activeRoute } = useRouter();
+  const { setRoute, activeRoute, sessionExpiredNotice } = useRouter();
   const { unreadTicketCount, hasTickets } = useTicket();
   const showTicket = getShowTicket();
   const showChatbot = getShowChatbot();
@@ -53,6 +53,9 @@ function BottomNavBar() {
 
   // setRoute로 가야 chatbot-iframe 메뉴 상태가 지워진다(setActiveRoute만 쓰면 잔상)
   const handleItemClick = (route: string) => (_e: React.MouseEvent) => {
+    if (sessionExpiredNotice && route !== 'chatbot') {
+      return;
+    }
     setRoute(route);
   };
 
@@ -72,7 +75,15 @@ function BottomNavBar() {
   const showHome = visibleTabs(getTabFlags(hasTickets)).includes('home');
 
   return (
-    <ul className="nav-container nav-list">
+    <ul
+      className="nav-container nav-list"
+      style={
+        sessionExpiredNotice
+          ? { opacity: 0.45, pointerEvents: 'none' as const }
+          : undefined
+      }
+      aria-disabled={sessionExpiredNotice || undefined}
+    >
       {items.map((item) => {
         const { route } = item;
 

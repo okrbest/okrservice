@@ -772,6 +772,10 @@ const ChatbotView: React.FC = () => {
   }, [timelineItems.length, aiMessages]);
 
   const handleMenuClick = async (title: string, pathOrUrl: string) => {
+    // 세션 만료 안내가 떠 있으면 바로가기·메뉴를 열지 않는다
+    if (sessionExpiredNotice) {
+      return;
+    }
     // 권한 없는 메뉴는 목록에서 빠지지만, 어느 경로로 오든 여기서 한 번 더 막는다
     if (!canOpenMenu(pathOrUrl)) {
       return;
@@ -819,6 +823,8 @@ const ChatbotView: React.FC = () => {
   // 입력창의 글, 또는 첫 화면 질문 버튼으로 질문을 보낸다
   const sendQuestion = async (question: string) => {
     const text = question.trim();
+    // 만료 안내 중에는 질문·스타터를 보내지 않는다
+    if (sessionExpiredNotice) return;
     // isStreaming은 setState라 probe await 전에 반영 안 됨 → ref로 동기 잠금
     if (!text || isStreaming || sendLockRef.current) return;
     sendLockRef.current = true;
@@ -997,7 +1003,7 @@ const ChatbotView: React.FC = () => {
             <button
               type="button"
               onClick={handleNewChat}
-              disabled={aiMessages.length === 0}
+              disabled={aiMessages.length === 0 || sessionExpiredNotice}
               aria-label="새 채팅"
               onMouseEnter={() => setHoveredHeaderBtn('new')}
               onMouseLeave={() =>
@@ -1006,11 +1012,15 @@ const ChatbotView: React.FC = () => {
               style={{
                 ...headerIconButtonStyle(
                   hoveredHeaderBtn === 'new',
-                  aiMessages.length === 0,
+                  aiMessages.length === 0 || sessionExpiredNotice,
                 ),
-                opacity: aiMessages.length === 0 ? 0.4 : 1,
+                opacity:
+                  aiMessages.length === 0 || sessionExpiredNotice ? 0.4 : 1,
                 // 꺼진 버튼은 마우스 이벤트를 받지 않아, 감싼 칸이 받아 이름을 띄우게 한다
-                pointerEvents: aiMessages.length === 0 ? 'none' : undefined,
+                pointerEvents:
+                  aiMessages.length === 0 || sessionExpiredNotice
+                    ? 'none'
+                    : undefined,
               }}
             >
               <svg
@@ -1032,15 +1042,20 @@ const ChatbotView: React.FC = () => {
             <button
               type="button"
               onClick={() => setRoute('chatbot-history')}
+              disabled={sessionExpiredNotice}
               aria-label="채팅 이력"
               onMouseEnter={() => setHoveredHeaderBtn('history')}
               onMouseLeave={() =>
                 setHoveredHeaderBtn((cur) => (cur === 'history' ? null : cur))
               }
-              style={headerIconButtonStyle(
-                hoveredHeaderBtn === 'history',
-                false,
-              )}
+              style={{
+                ...headerIconButtonStyle(
+                  hoveredHeaderBtn === 'history',
+                  sessionExpiredNotice,
+                ),
+                opacity: sessionExpiredNotice ? 0.4 : 1,
+                pointerEvents: sessionExpiredNotice ? 'none' : undefined,
+              }}
             >
               <svg
                 width="17"
@@ -1061,17 +1076,26 @@ const ChatbotView: React.FC = () => {
           {/* 5240 사용 설명서 — 일반 링크라 새 탭으로 바로 열린다(팝업 차단 영향 없음) */}
           <ChatbotHeaderTip label="매뉴얼">
             <a
-              href={CHATBOT_MANUAL_URL}
+              href={sessionExpiredNotice ? undefined : CHATBOT_MANUAL_URL}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="매뉴얼"
+              aria-disabled={sessionExpiredNotice || undefined}
+              onClick={(e) => {
+                if (sessionExpiredNotice) e.preventDefault();
+              }}
               onMouseEnter={() => setHoveredHeaderBtn('manual')}
               onMouseLeave={() =>
                 setHoveredHeaderBtn((cur) => (cur === 'manual' ? null : cur))
               }
               style={{
-                ...headerIconButtonStyle(hoveredHeaderBtn === 'manual', false),
+                ...headerIconButtonStyle(
+                  hoveredHeaderBtn === 'manual',
+                  sessionExpiredNotice,
+                ),
                 textDecoration: 'none',
+                opacity: sessionExpiredNotice ? 0.4 : 1,
+                pointerEvents: sessionExpiredNotice ? 'none' : undefined,
               }}
             >
               <svg
@@ -1127,7 +1151,8 @@ const ChatbotView: React.FC = () => {
             >
               로그인이 만료되었거나, 바로가기 화면에서 로그아웃된 상태입니다.
               <br />
-              아래 버튼으로 페이지를 새로고침한 뒤 다시 로그인해 주세요.
+              세션이 끊어져 위젯을 사용할 수 없습니다. 아래 버튼으로 페이지를
+              새로고침한 뒤 다시 로그인해 주세요.
             </p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button
@@ -1144,21 +1169,6 @@ const ChatbotView: React.FC = () => {
                 }}
               >
                 5240 새로고침
-              </button>
-              <button
-                type="button"
-                onClick={() => setSessionExpiredNotice(false)}
-                style={{
-                  padding: '8px 14px',
-                  backgroundColor: 'transparent',
-                  color: '#555',
-                  border: '1px solid #d0d0d0',
-                  borderRadius: 8,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                }}
-              >
-                닫기
               </button>
             </div>
           </div>
@@ -1192,7 +1202,7 @@ const ChatbotView: React.FC = () => {
           {aiMessages.length === 0 && (
             <ChatbotStarters
               primaryColor={primaryColor}
-              disabled={isStreaming}
+              disabled={isStreaming || sessionExpiredNotice}
               onSelect={sendQuestion}
             />
           )}
@@ -1485,13 +1495,18 @@ const ChatbotView: React.FC = () => {
           keyword={suggestionKeyword}
           activeIndex={activeSuggestion}
           primaryColor={primaryColor}
-          menus={showSuggestions ? suggestionMenus : []}
-          questions={showSuggestions ? suggestionQuestions : []}
+          menus={
+            showSuggestions && !sessionExpiredNotice ? suggestionMenus : []
+          }
+          questions={
+            showSuggestions && !sessionExpiredNotice ? suggestionQuestions : []
+          }
           onMenuClick={(menu) => {
             handleMenuClick(menu.label, menu.path);
             setDismissedForValue(inputValue);
           }}
           onQuestionClick={(q) => {
+            if (sessionExpiredNotice) return;
             setInputValue(q);
             setDismissedForValue(q);
           }}
@@ -1515,21 +1530,29 @@ const ChatbotView: React.FC = () => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder=""
-            disabled={isStreaming}
+            disabled={isStreaming || sessionExpiredNotice}
             rows={3}
             style={{
               flex: 1,
-              border: `1.5px solid ${inputFocused ? T.color.accent : T.color.input}`,
-              boxShadow: inputFocused
-                ? '0 0 0 3px rgba(99, 102, 241, 0.12)'
-                : 'none',
+              border: `1.5px solid ${
+                inputFocused && !sessionExpiredNotice
+                  ? T.color.accent
+                  : T.color.input
+              }`,
+              boxShadow:
+                inputFocused && !sessionExpiredNotice
+                  ? '0 0 0 3px rgba(99, 102, 241, 0.12)'
+                  : 'none',
               borderRadius: '10px',
               padding: '10px 12px',
               fontSize: '13px',
               color: T.color.foreground,
               outline: 'none',
               boxSizing: 'border-box',
-              background: isStreaming ? T.color.muted : T.color.background,
+              background:
+                isStreaming || sessionExpiredNotice
+                  ? T.color.muted
+                  : T.color.background,
               resize: 'none',
               lineHeight: 1.5,
               fontFamily: 'inherit',
@@ -1540,7 +1563,7 @@ const ChatbotView: React.FC = () => {
           <button
             type="button"
             onClick={handleSend}
-            disabled={isStreaming || !inputValue.trim()}
+            disabled={isStreaming || sessionExpiredNotice || !inputValue.trim()}
             aria-label="전송"
             style={{
               flexShrink: 0,
@@ -1550,13 +1573,15 @@ const ChatbotView: React.FC = () => {
               height: '42px',
               // 참고 UI(.cmm-ai-send-btn)와 동일한 액센트 블루 그라디언트
               background:
-                isStreaming || !inputValue.trim()
+                isStreaming || sessionExpiredNotice || !inputValue.trim()
                   ? '#c4cfe6'
                   : `linear-gradient(135deg, ${T.color.accent}, ${T.color.accent2})`,
               border: 'none',
               borderRadius: '50%',
               cursor:
-                isStreaming || !inputValue.trim() ? 'not-allowed' : 'pointer',
+                isStreaming || sessionExpiredNotice || !inputValue.trim()
+                  ? 'not-allowed'
+                  : 'pointer',
               outline: 'none',
             }}
           >
@@ -1590,7 +1615,11 @@ const ChatbotView: React.FC = () => {
               tabIndex={-1}
               onMouseDown={(e) => e.preventDefault()}
               onFocus={(e) => e.currentTarget.blur()}
-              onClick={() => setIsMenuOpen((prev) => !prev)}
+              onClick={() => {
+                if (sessionExpiredNotice) return;
+                setIsMenuOpen((prev) => !prev);
+              }}
+              disabled={sessionExpiredNotice}
               style={{
                 width: '100%',
                 display: 'flex',
@@ -1599,10 +1628,11 @@ const ChatbotView: React.FC = () => {
                 padding: '10px 16px',
                 background: 'none',
                 border: 'none',
-                cursor: 'pointer',
+                cursor: sessionExpiredNotice ? 'not-allowed' : 'pointer',
                 outline: 'none',
                 WebkitAppearance: 'none',
                 appearance: 'none',
+                opacity: sessionExpiredNotice ? 0.5 : 1,
               }}
             >
               <span

@@ -43,8 +43,6 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
     connection.data ? startRoute(getTabFlags()) : 'home',
   );
   // "홈으로" 가던 곳(뒤로 가기 기본값·통화 종료 등)은 홈 탭이 없으면 첫 화면으로
-  const setActiveRoute = (route: string) =>
-    setRawActiveRoute(resolveRoute(route, getTabFlags()));
   const [isSmallContainer, setIsSmallContainer] = useState(false);
   const [activeFaqArticle, setActiveFaqArticle] = useState<IFaqArticle | null>(
     null,
@@ -65,6 +63,18 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   } | null>(null);
   /** HR 바로가기 중 세션 끊김 — 챗봇 화면에 만료 안내 (iframe/모바일 화면 유지하지 않음) */
   const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
+
+  // 세션 만료 중에는 챗봇(+만료 안내)만 허용 — 티켓·통화 등 탭 이동·입력 차단
+  const setActiveRoute = (route: string) => {
+    if (
+      sessionExpiredNotice &&
+      route !== 'chatbot' &&
+      route !== 'chatbot-iframe'
+    ) {
+      return;
+    }
+    setRawActiveRoute(resolveRoute(route, getTabFlags()));
+  };
 
   const { setIsInputDisabled, setSelectedSkill, isLoggedIn } = useConfig();
 
@@ -115,20 +125,28 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const setRoute = (routePath: string) => {
-    if (routePath) {
-      if (shouldAcquireInformation(routePath)) {
-        setActiveRoute('acquireInformation');
-        setSelectedSkill('');
-        return;
-      }
-
-      // iframe 밖으로 나가면 메뉴 상태 제거(하단 탭이 setActiveRoute만 쓰던 때 잔상 방지)
-      if (routePath !== 'chatbot-iframe') {
-        setChatbotMenu(null);
-      }
-
-      handleRouteChange(routePath);
+    if (!routePath) {
+      return;
     }
+    if (
+      sessionExpiredNotice &&
+      routePath !== 'chatbot' &&
+      routePath !== 'chatbot-iframe'
+    ) {
+      return;
+    }
+    if (shouldAcquireInformation(routePath)) {
+      setActiveRoute('acquireInformation');
+      setSelectedSkill('');
+      return;
+    }
+
+    // iframe 밖으로 나가면 메뉴 상태 제거(하단 탭이 setActiveRoute만 쓰던 때 잔상 방지)
+    if (routePath !== 'chatbot-iframe') {
+      setChatbotMenu(null);
+    }
+
+    handleRouteChange(routePath);
   };
 
   const shouldAcquireInformation = (routePath: string) => {

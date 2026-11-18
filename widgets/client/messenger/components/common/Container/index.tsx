@@ -35,10 +35,14 @@ const Container: React.FC<Props> = ({
   showBackButton = true,
   showZoomButton = true,
 }) => {
-  const { setActiveRoute, isZoomed, setIsZoomed } = useRouter();
+  const { setActiveRoute, isZoomed, setIsZoomed, sessionExpiredNotice } =
+    useRouter();
   const [isZoomHovered, setIsZoomHovered] = React.useState(false);
 
   const handleBackClick = () => {
+    if (sessionExpiredNotice) {
+      return;
+    }
     if (onBackButton) {
       onBackButton();
       return;
@@ -51,6 +55,9 @@ const Container: React.FC<Props> = ({
   };
 
   const handleZoomToggle = () => {
+    if (sessionExpiredNotice) {
+      return;
+    }
     const newZoomState = !isZoomed;
     setIsZoomed(newZoomState);
     postMessage('fromMessenger', 'ERXES_MESSENGER_ZOOM', {
