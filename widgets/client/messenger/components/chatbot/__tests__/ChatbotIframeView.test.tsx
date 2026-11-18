@@ -4,6 +4,7 @@ import { render, fireEvent, act } from '@testing-library/react';
 import ChatbotIframeView from '../ChatbotIframeView';
 import { probeHrSessionAlive } from '../menuPermission';
 import {
+  CHATBOT_HR_IFRAME_SANDBOX,
   IFRAME_SESSION_POLL_MS,
   isSessionExpiredIframeLocation,
   shouldReturnForMobileMainFallback,
@@ -60,9 +61,14 @@ describe('shouldReturnForMobileMainFallback (C)', () => {
 });
 
 describe('isSessionExpiredIframeLocation', () => {
-  it('Login·세션 오류 화면이면 만료', () => {
+  it('Login·MobileLogin·세션 오류 화면이면 만료', () => {
     expect(
       isSessionExpiredIframeLocation('https://hr.example.com/Login.do'),
+    ).toBe(true);
+    expect(
+      isSessionExpiredIframeLocation(
+        'https://5240corp.5240.cloud/MobileLogin.do',
+      ),
     ).toBe(true);
     expect(
       isSessionExpiredIframeLocation(
@@ -91,6 +97,18 @@ describe('ChatbotIframeView — 세션·iframe 재오픈', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it('HR iframe은 top 이동을 막는 sandbox를 쓴다(로그아웃이 전체 페이지를 날리지 않게)', () => {
+    render(
+      <ChatbotIframeView
+        title="휴가신청"
+        url="https://hr.example.com/MobileLeaveAppl.do"
+      />,
+    );
+    const iframe = document.querySelector('iframe');
+    expect(iframe).toHaveAttribute('sandbox', CHATBOT_HR_IFRAME_SANDBOX);
+    expect(CHATBOT_HR_IFRAME_SANDBOX).not.toMatch(/allow-top-navigation/);
   });
 
   it('UNAUTHORIZED를 받으면 챗봇으로 돌아가고 만료 안내를 켠다', () => {

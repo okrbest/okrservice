@@ -4,6 +4,7 @@ import { useRouter } from '../../context/Router';
 import { CHATBOT_BACK_EVENT } from './getHrBaseUrl';
 import { probeHrSessionAlive } from './menuPermission';
 import {
+  CHATBOT_HR_IFRAME_SANDBOX,
   IFRAME_SESSION_POLL_MS,
   isPasswordChangeUrl,
   isSessionExpiredIframeLocation,
@@ -191,6 +192,7 @@ const ChatbotIframeView: React.FC<Props> = ({ title, url }) => {
           title={title}
           src={url}
           className="websiteApp"
+          sandbox={CHATBOT_HR_IFRAME_SANDBOX}
           style={{ width: '100%', height: '100%', border: 'none' }}
           onError={() => setBlocked(true)}
           onLoad={handleIframeLoad}

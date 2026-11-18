@@ -43,14 +43,27 @@ export const isSessionExpiredIframeLocation = (
     return false;
   }
   const href = String(currentLocationHref);
-  if (/Login\.do/i.test(href)) {
+  // Login.do · MobileLogin.do · logout 종료 화면
+  if (/MobileLogin\.do|Login\.do|logoutUserSessionEnd\.do/i.test(href)) {
     return true;
   }
   if (/Error\.do/i.test(href) && /[?&]code=(905|915)\b/.test(href)) {
     return true;
   }
-  if (/logoutUserSessionEnd\.do/i.test(href)) {
-    return true;
-  }
   return false;
 };
+
+/**
+ * HR 바로가기 iframe sandbox.
+ * allow-top-navigation* 를 빼서 5240 로그아웃이 top을 MobileLogin으로
+ * 날려 위젯 전체가 사라지는 것을 막고, 세션 프로브·만료 안내로 챗봇에 남긴다.
+ */
+export const CHATBOT_HR_IFRAME_SANDBOX = [
+  'allow-scripts',
+  'allow-same-origin',
+  'allow-forms',
+  'allow-popups',
+  'allow-popups-to-escape-sandbox',
+  'allow-downloads',
+  'allow-modals',
+].join(' ');
