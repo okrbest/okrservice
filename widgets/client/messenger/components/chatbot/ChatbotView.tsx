@@ -692,6 +692,8 @@ const ChatbotView: React.FC = () => {
     string | null
   >(null);
   const abortRef = React.useRef<AbortController | null>(null);
+  // probe await 중에 isStreaming이 아직 false라 이중 전송되는 것 방지
+  const sendLockRef = React.useRef(false);
 
   // 화면 이탈 시 진행 중인 스트림 취소
   React.useEffect(() => {
@@ -814,113 +816,123 @@ const ChatbotView: React.FC = () => {
     };
   }, [setSessionExpiredNotice]);
 
-  // 입력창의 글, 또는 첫 화면 질문 버튼의 질문을 보낸다
+  // 입력창의 글, 또는 첫 화면 질문 버튼으로 질문을 보낸다
   const sendQuestion = async (question: string) => {
     const text = question.trim();
-    if (!text || isStreaming) return;
-
-    // HR 브리지·tool이 세션에 의존 — 죽은 세션으로 보내면 일반 오류만 난다
-    const sessionOk = await probeHrSessionAlive();
-    if (!sessionOk) {
-      setSessionExpiredNotice(true);
-      setInputValue('');
-      setDismissedForValue('');
-      return;
-    }
-
-    const now = Date.now();
-    const userMsg: AiMessage = {
-      id: `u-${now}`,
-      role: 'user',
-      text,
-      createdAt: now,
-    };
-    const botMsgId = `b-${now + 1}`;
-    // createdAt은 첫 청크 수신 시점으로 업데이트 — 전송 시점으로 고정하면
-    // 그 사이에 도착한 RPA 메시지보다 위에 정렬됨
-    const botMsg: AiMessage = {
-      id: botMsgId,
-      role: 'bot',
-      text: '',
-      createdAt: now + 1,
-      streaming: true,
-      menuIds: getMenusForText(text).map((menu) => menu.id),
-    };
-
-    setAiMessages((prev) => [...prev, userMsg, botMsg]);
+    // isStreaming은 setState라 probe await 전에 반영 안 됨 → ref로 동기 잠금
+    if (!text || isStreaming || sendLockRef.current) return;
+    sendLockRef.current = true;
+    // 잠금 직후 비워 두 번째 Enter/클릭이 같은 문장으로 못 들어오게 한다
     setInputValue('');
     setDismissedForValue('');
-    setIsStreaming(true);
 
-    const controller = new AbortController();
-    abortRef.current = controller;
-
+    let botMsgId: string | null = null;
     try {
-      let accumulated = '';
-      let firstChunk = true;
-      for await (const chunk of streamChat(text, sessionId, {
-        signal: controller.signal,
-      })) {
-        // 서버 abort 청크: error가 문자열로 옴 (정상 청크는 false/null)
-        if (typeof chunk.error === 'string' && chunk.error) {
-          console.error('[ChatbotView] stream aborted:', chunk.error);
+      // HR 브리지·tool이 세션에 의존 — 죽은 세션으로 보내면 일반 오류만 난다
+      const sessionOk = await probeHrSessionAlive();
+      if (!sessionOk) {
+        setSessionExpiredNotice(true);
+        return;
+      }
+
+      const now = Date.now();
+      const userMsg: AiMessage = {
+        id: `u-${now}`,
+        role: 'user',
+        text,
+        createdAt: now,
+      };
+      botMsgId = `b-${now + 1}`;
+      // createdAt은 첫 청크 수신 시점으로 업데이트 — 전송 시점으로 고정하면
+      // 그 사이에 도착한 RPA 메시지보다 위에 정렬됨
+      const botMsg: AiMessage = {
+        id: botMsgId,
+        role: 'bot',
+        text: '',
+        createdAt: now + 1,
+        streaming: true,
+        menuIds: getMenusForText(text).map((menu) => menu.id),
+      };
+
+      setAiMessages((prev) => [...prev, userMsg, botMsg]);
+      setIsStreaming(true);
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      try {
+        let accumulated = '';
+        let firstChunk = true;
+        for await (const chunk of streamChat(text, sessionId, {
+          signal: controller.signal,
+        })) {
+          // 서버 abort 청크: error가 문자열로 옴 (정상 청크는 false/null)
+          if (typeof chunk.error === 'string' && chunk.error) {
+            console.error('[ChatbotView] stream aborted:', chunk.error);
+            setAiMessages((prev) =>
+              prev.map((m) =>
+                m.id === botMsgId
+                  ? {
+                      ...m,
+                      text:
+                        accumulated ||
+                        '오류가 발생했습니다. 다시 시도해주세요.',
+                      streaming: false,
+                      isError: !accumulated,
+                    }
+                  : m,
+              ),
+            );
+            break;
+          }
+          accumulated += chunk.textResponse ?? '';
+          const receivedAt = Date.now();
+          setAiMessages((prev) =>
+            prev.map((m) => {
+              if (m.id !== botMsgId) return m;
+              return {
+                ...m,
+                text: accumulated,
+                streaming: !chunk.close,
+                // 첫 청크 수신 시각으로 createdAt 업데이트
+                createdAt: firstChunk ? receivedAt : m.createdAt,
+              };
+            }),
+          );
+          firstChunk = false;
+        }
+      } catch (e: any) {
+        // unmount로 인한 중단은 에러 표시하지 않음
+        if (e?.name !== 'AbortError') {
+          console.error('[ChatbotView] streamChat failed:', e);
           setAiMessages((prev) =>
             prev.map((m) =>
               m.id === botMsgId
                 ? {
                     ...m,
-                    text:
-                      accumulated || '오류가 발생했습니다. 다시 시도해주세요.',
+                    text: '오류가 발생했습니다. 다시 시도해주세요.',
                     streaming: false,
-                    isError: !accumulated,
+                    isError: true,
                   }
                 : m,
             ),
           );
-          break;
         }
-        accumulated += chunk.textResponse ?? '';
-        const receivedAt = Date.now();
-        setAiMessages((prev) =>
-          prev.map((m) => {
-            if (m.id !== botMsgId) return m;
-            return {
-              ...m,
-              text: accumulated,
-              streaming: !chunk.close,
-              // 첫 청크 수신 시각으로 createdAt 업데이트
-              createdAt: firstChunk ? receivedAt : m.createdAt,
-            };
-          }),
-        );
-        firstChunk = false;
-      }
-    } catch (e: any) {
-      // unmount로 인한 중단은 에러 표시하지 않음
-      if (e?.name !== 'AbortError') {
-        console.error('[ChatbotView] streamChat failed:', e);
-        setAiMessages((prev) =>
-          prev.map((m) =>
-            m.id === botMsgId
-              ? {
-                  ...m,
-                  text: '오류가 발생했습니다. 다시 시도해주세요.',
-                  streaming: false,
-                  isError: true,
-                }
-              : m,
-          ),
-        );
+      } finally {
+        abortRef.current = null;
+        setIsStreaming(false);
+        // close 청크 없이 스트림이 끝나도 "···" 플레이스홀더가 남지 않도록 해제
+        const id = botMsgId;
+        if (id) {
+          setAiMessages((prev) =>
+            prev.map((m) =>
+              m.id === id && m.streaming ? { ...m, streaming: false } : m,
+            ),
+          );
+        }
       }
     } finally {
-      abortRef.current = null;
-      setIsStreaming(false);
-      // close 청크 없이 스트림이 끝나도 "···" 플레이스홀더가 남지 않도록 해제
-      setAiMessages((prev) =>
-        prev.map((m) =>
-          m.id === botMsgId && m.streaming ? { ...m, streaming: false } : m,
-        ),
-      );
+      sendLockRef.current = false;
     }
   };
 
@@ -967,6 +979,8 @@ const ChatbotView: React.FC = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (handleSuggestionKey(e)) return;
+    // 한글 IME 조합 확정 Enter(keyCode 229)와 전송 Enter가 연달아 오면 두 번 나간다
+    if (e.nativeEvent.isComposing || (e as any).keyCode === 229) return;
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();

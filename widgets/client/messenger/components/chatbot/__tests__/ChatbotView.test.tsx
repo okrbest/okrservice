@@ -472,6 +472,45 @@ describe('ChatbotView - 메뉴 권한', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('세션 검사 중에 전송을 두 번 눌러도 스트림은 한 번만 나간다', async () => {
+    let releaseProbe!: (ok: boolean) => void;
+    const probeGate = new Promise<boolean>((resolve) => {
+      releaseProbe = resolve;
+    });
+    (probeHrSessionAlive as jest.Mock).mockImplementation(() => probeGate);
+    (streamChat as jest.Mock).mockReset();
+    (streamChat as jest.Mock).mockImplementation(async function* () {
+      yield { textResponse: '한 번만', close: true, error: false };
+    });
+
+    render(<ChatbotView />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: '대화내용 요약해줘' },
+    });
+    const sendBtn = screen.getByRole('button', { name: '전송' });
+    await act(async () => {
+      fireEvent.click(sendBtn);
+      fireEvent.click(sendBtn);
+      fireEvent.keyDown(screen.getByRole('textbox'), {
+        key: 'Enter',
+        code: 'Enter',
+      });
+    });
+
+    await act(async () => {
+      releaseProbe(true);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(streamChat).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByText('대화내용 요약해줘')).toHaveLength(1);
+  });
+
   it('HR 메뉴 목록에서도 권한 없는 메뉴는 보이지 않는다(D10)', () => {
     chatbotFeatureFlags.showHrMenuGrid = true;
     mockCanOpenMenu.mockImplementation(
