@@ -5,6 +5,8 @@ import { CHATBOT_MENUS, ChatbotMenu } from './chatbotMenus';
 import { requestHrBridge } from './clientTools';
 
 export const MENU_LIST_PATH = '/getMobileMenuList.do';
+/** 5240 세션 생존 확인(로그아웃 후에도 getMobileMenuList는 Result:[] 200을 줌) */
+export const SESSION_CHECK_PATH = '/chkLoginSession.do';
 
 // 5240 모바일도 권한 목록과 상관없이 늘 보여 주는 화면(모바일 메인 = 출퇴근 체크, 비밀번호 변경)
 export const ALWAYS_ALLOWED_MENU_PATHS = ['/MobileMain.do', '/MobileChgPwd.do'];
@@ -207,3 +209,30 @@ export const loadMenuPermissions =
       return null;
     }
   };
+
+/**
+ * 5240 로그인 세션이 살아 있는지 — chkLoginSession 기준.
+ * 로그아웃·만료 시 getMobileMenuList는 Result:[](200)이라 null이 아니므로
+ * 메뉴 목록으로 세션을 보면 안 된다(실측 5240corp).
+ */
+export const probeHrSessionAlive = async (): Promise<boolean> => {
+  try {
+    const result = await requestHrBridge({
+      transport: 'kiwibox-bridge',
+      path: SESSION_CHECK_PATH,
+      method: 'POST',
+      form: {},
+    });
+    if (!result.ok) {
+      return false;
+    }
+    const data = JSON.parse(result.body);
+    return Boolean(
+      data &&
+        typeof data === 'object' &&
+        (data.loginInfo != null || data.timeLimit != null),
+    );
+  } catch {
+    return false;
+  }
+};

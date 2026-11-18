@@ -30,8 +30,8 @@ import { chatbotTheme } from './chatbotTheme';
 import { safeHref } from './linkSafety';
 import {
   filterChatbotMenusByPermission,
-  loadMenuPermissions,
   menuKey,
+  probeHrSessionAlive,
 } from './menuPermission';
 import { useMenuPermission } from './useMenuPermission';
 
@@ -783,8 +783,9 @@ const ChatbotView: React.FC = () => {
     // 비밀번호변경만 세션 없이 열리는 5240 화면이라 검사를 건너뛴다.
     const skipSessionProbe = menuKey(openPath) === menuKey('/MobileChgPwd.do');
     if (!skipSessionProbe) {
-      const mobile = await loadMenuPermissions();
-      if (mobile === null) {
+      // getMobileMenuList Result:[] ≠ 만료 — chkLoginSession으로 본다
+      const alive = await probeHrSessionAlive();
+      if (!alive) {
         // 모바일 iframe에 두지 않고 챗봇으로 돌아와 만료 안내
         setSessionExpiredNotice(true);
         setRoute('chatbot');
@@ -800,10 +801,32 @@ const ChatbotView: React.FC = () => {
     setRoute('chatbot-iframe');
   };
 
+  // 챗봇 화면에 있을 때도 세션이 이미 죽었으면 안내를 보여 준다
+  // (iframe을 안 거친 채 로그아웃·만료된 경우)
+  React.useEffect(() => {
+    let alive = true;
+    void probeHrSessionAlive().then((ok) => {
+      if (!alive) return;
+      if (!ok) setSessionExpiredNotice(true);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [setSessionExpiredNotice]);
+
   // 입력창의 글, 또는 첫 화면 질문 버튼의 질문을 보낸다
   const sendQuestion = async (question: string) => {
     const text = question.trim();
     if (!text || isStreaming) return;
+
+    // HR 브리지·tool이 세션에 의존 — 죽은 세션으로 보내면 일반 오류만 난다
+    const sessionOk = await probeHrSessionAlive();
+    if (!sessionOk) {
+      setSessionExpiredNotice(true);
+      setInputValue('');
+      setDismissedForValue('');
+      return;
+    }
 
     const now = Date.now();
     const userMsg: AiMessage = {

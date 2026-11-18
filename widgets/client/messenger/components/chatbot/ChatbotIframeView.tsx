@@ -2,10 +2,11 @@ import * as React from 'react';
 import Container from '../common/Container';
 import { useRouter } from '../../context/Router';
 import { CHATBOT_BACK_EVENT } from './getHrBaseUrl';
-import { loadMenuPermissions } from './menuPermission';
+import { probeHrSessionAlive } from './menuPermission';
 import {
   IFRAME_SESSION_POLL_MS,
   isPasswordChangeUrl,
+  isSessionExpiredIframeLocation,
   shouldReturnForMobileMainFallback,
 } from './iframeSessionGuard';
 
@@ -68,6 +69,7 @@ const ChatbotIframeView: React.FC<Props> = ({ title, url }) => {
   }, [url, leaveToChatbot]);
 
   // #1: iframe이 열린 뒤에도 세션이 끊기면 만료 안내 후 챗봇으로
+  // getMobileMenuList는 로그아웃 후에도 Result:[]라 쓰면 안 됨 — chkLoginSession 사용
   // 비밀번호변경은 세션 없이 열리는 화면이라 폴링하지 않는다
   React.useEffect(() => {
     if (isPasswordChangeUrl(url)) {
@@ -76,15 +78,17 @@ const ChatbotIframeView: React.FC<Props> = ({ title, url }) => {
 
     let cancelled = false;
     const tick = async () => {
-      const mobile = await loadMenuPermissions();
+      const alive = await probeHrSessionAlive();
       if (cancelled || leftRef.current) {
         return;
       }
-      if (mobile === null) {
+      if (!alive) {
         leaveToChatbot(true);
       }
     };
 
+    // 로그아웃 직후 30초를 기다리지 않도록 바로 한 번 보고, 이후 주기 확인
+    void tick();
     const id = window.setInterval(() => {
       void tick();
     }, IFRAME_SESSION_POLL_MS);
@@ -96,14 +100,30 @@ const ChatbotIframeView: React.FC<Props> = ({ title, url }) => {
   }, [url, leaveToChatbot]);
 
   const handleIframeLoad = () => {
-    // C 폴백: same-origin일 때만 현재 주소를 볼 수 있다. cross-origin이면 조용히 패스.
+    // cross-origin이어도 load는 온다(로그아웃→Login 이동 등). 주소는 못 읽어도
+    // 공유 쿠키 기준 chkLoginSession으로 바로 만료 여부를 본다.
+    void (async () => {
+      if (leftRef.current || isPasswordChangeUrl(url)) {
+        return;
+      }
+      const alive = await probeHrSessionAlive();
+      if (!alive && !leftRef.current) {
+        leaveToChatbot(true);
+      }
+    })();
+
+    // C 폴백: same-origin일 때만 현재 주소를 볼 수 있다.
     try {
       const href = iframeRef.current?.contentWindow?.location?.href ?? null;
+      if (isSessionExpiredIframeLocation(href)) {
+        leaveToChatbot(true);
+        return;
+      }
       if (shouldReturnForMobileMainFallback(url, href)) {
         leaveToChatbot(false);
       }
     } catch {
-      // cross-origin — 5240 이벤트·세션 폴링에 맡긴다
+      // cross-origin — 위 세션 프로브·CHATBOT_BACK에 맡긴다
     }
   };
 

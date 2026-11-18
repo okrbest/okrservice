@@ -28,3 +28,26 @@ export const shouldReturnForMobileMainFallback = (
   }
   return menuKey(currentLocationHref) === MOBILE_MAIN;
 };
+
+/**
+ * same-origin일 때 iframe이 로그인·세션 오류 화면이면 만료로 본다.
+ * (위젯 도메인≠5240이면 읽지 못함 — 그때는 chkLoginSession 폴링에 의존)
+ */
+export const isSessionExpiredIframeLocation = (
+  currentLocationHref: string | null | undefined,
+): boolean => {
+  if (!currentLocationHref) {
+    return false;
+  }
+  const href = String(currentLocationHref);
+  if (/Login\.do/i.test(href)) {
+    return true;
+  }
+  if (/Error\.do/i.test(href) && /[?&]code=(905|915)\b/.test(href)) {
+    return true;
+  }
+  if (/logoutUserSessionEnd\.do/i.test(href)) {
+    return true;
+  }
+  return false;
+};

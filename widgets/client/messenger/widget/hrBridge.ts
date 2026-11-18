@@ -64,6 +64,9 @@ const ALLOWED_PATHS = [
   // 챗봇 HR 메뉴 권한 — 로그인 세션 본인의 모바일 메뉴 목록(권한 그룹·메뉴 사용 여부로 걸러짐).
   // 파라미터 없이만 허용(아래 ALLOWED_PARAM_KEYS)
   '/getMobileMenuList.do',
+  // 챗봇 iframe 세션 생존 확인 — 로그아웃 후 getMobileMenuList가 Result:[](200)라
+  // 만료로 안 보이던 문제 보완(파라미터 없음만)
+  '/chkLoginSession.do',
 ];
 
 // hr-year-end-tax: 연말정산 컨트롤러가 연도별 분리 — endpoint 6개 × 지원연도(2022~2025)만
@@ -213,6 +216,7 @@ const ALLOWED_PARAM_KEYS: Record<string, string[]> = {
   ],
   '/Home.do': ['cmd', 'searchYmd', 'cmmSearchStaffId'],
   '/getMobileMenuList.do': [],
+  '/chkLoginSession.do': [],
 };
 
 function areParamKeysAllowed(

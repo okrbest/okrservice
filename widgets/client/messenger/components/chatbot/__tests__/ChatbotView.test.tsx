@@ -11,7 +11,7 @@ import {
   saveMessages,
   loadIndex,
 } from '../chatHistory';
-import { loadMenuPermissions } from '../menuPermission';
+import { probeHrSessionAlive } from '../menuPermission';
 
 const mockSetChatbotMenu = jest.fn();
 const mockSetRoute = jest.fn();
@@ -32,10 +32,7 @@ jest.mock('../menuPermission', () => {
   const actual = jest.requireActual('../menuPermission');
   return {
     ...actual,
-    loadMenuPermissions: jest.fn(async () => ({
-      keys: new Set(['mobileleaveappl.do']),
-      openPaths: new Map(),
-    })),
+    probeHrSessionAlive: jest.fn(async () => true),
   };
 });
 
@@ -181,6 +178,7 @@ describe('ChatbotView - 첫 화면', () => {
     localStorage.clear();
     connection.data = {};
     (streamChat as jest.Mock).mockReset();
+    (probeHrSessionAlive as jest.Mock).mockResolvedValue(true);
   });
 
   it('인사말로 할 수 있는 일을 알려 주고, 주제별 질문 버튼 6개를 보여준다', () => {
@@ -221,6 +219,7 @@ describe('ChatbotView - 답변 아래 HR 메뉴 바로가기', () => {
     localStorage.clear();
     connection.data = {};
     (streamChat as jest.Mock).mockReset();
+    (probeHrSessionAlive as jest.Mock).mockResolvedValue(true);
   });
 
   const sendMessage = async (text: string) => {
@@ -267,6 +266,7 @@ describe('ChatbotView - 메뉴 권한', () => {
     connection.data = {};
     (streamChat as jest.Mock).mockReset();
     mockSetChatbotMenu.mockReset();
+    (probeHrSessionAlive as jest.Mock).mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -384,7 +384,7 @@ describe('ChatbotView - 메뉴 권한', () => {
     mockSetChatbotMenu.mockClear();
     mockSetRoute.mockClear();
     mockSetSessionExpiredNotice.mockClear();
-    (loadMenuPermissions as jest.Mock).mockResolvedValueOnce(null);
+    (probeHrSessionAlive as jest.Mock).mockResolvedValue(false);
     mockSuggestions.mockReturnValue({
       keyword: '휴가',
       menus: [
@@ -416,7 +416,7 @@ describe('ChatbotView - 메뉴 권한', () => {
     mockSetRoute.mockClear();
     mockSetSessionExpiredNotice.mockClear();
     mockCanOpenMenu.mockReturnValue(true);
-    (loadMenuPermissions as jest.Mock).mockResolvedValueOnce(null);
+    (probeHrSessionAlive as jest.Mock).mockResolvedValue(false);
     mockSuggestions.mockReturnValue({
       keyword: '출근',
       menus: [
@@ -441,6 +441,35 @@ describe('ChatbotView - 메뉴 권한', () => {
     expect(mockSetSessionExpiredNotice).toHaveBeenCalledWith(true);
     expect(mockSetRoute).toHaveBeenCalledWith('chatbot');
     expect(mockSetChatbotMenu).not.toHaveBeenCalled();
+  });
+
+  it('세션이 죽은 채 질문하면 스트림을 보내지 않고 만료 안내만 켠다', async () => {
+    mockSetSessionExpiredNotice.mockClear();
+    (probeHrSessionAlive as jest.Mock).mockResolvedValue(false);
+    (streamChat as jest.Mock).mockReset();
+    (streamChat as jest.Mock).mockImplementation(async function* () {
+      yield { textResponse: '나오면 안 됨', close: true, error: false };
+    });
+
+    render(<ChatbotView />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    fireEvent.change(screen.getByRole('textbox'), {
+      target: { value: '남은 연차 알려줘' },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '전송' }));
+      await Promise.resolve();
+    });
+
+    expect(streamChat).not.toHaveBeenCalled();
+    expect(mockSetSessionExpiredNotice).toHaveBeenCalledWith(true);
+    expect(screen.queryByText('나오면 안 됨')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('오류가 발생했습니다. 다시 시도해주세요.'),
+    ).not.toBeInTheDocument();
   });
 
   it('HR 메뉴 목록에서도 권한 없는 메뉴는 보이지 않는다(D10)', () => {
@@ -575,6 +604,7 @@ describe('ChatbotView - 답변 복사', () => {
     localStorage.clear();
     connection.data = {};
     (streamChat as jest.Mock).mockReset();
+    (probeHrSessionAlive as jest.Mock).mockResolvedValue(true);
   });
 
   it('끝난 답변 아래 복사 버튼으로 답변을 평문으로 복사한다', async () => {

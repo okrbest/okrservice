@@ -7,6 +7,7 @@ import {
   menuKey,
   menuOpenPath,
   parseMenuPermissions,
+  probeHrSessionAlive,
 } from '../menuPermission';
 import { CHATBOT_MENUS } from '../chatbotMenus';
 
@@ -257,6 +258,46 @@ describe('loadMenuPermissions', () => {
 
     bridge.mockRejectedValueOnce(new Error('no parent bridge available'));
     expect(await loadMenuPermissions()).toBeNull();
+  });
+});
+
+describe('probeHrSessionAlive', () => {
+  const bridge = requestHrBridge as jest.Mock;
+
+  afterEach(() => bridge.mockReset());
+
+  it('chkLoginSession JSON이면 살아 있음', async () => {
+    bridge.mockResolvedValue({
+      ok: true,
+      status: 200,
+      body: JSON.stringify({ timeLimit: '1200', loginInfo: 'Login!' }),
+    });
+    expect(await probeHrSessionAlive()).toBe(true);
+    expect(bridge).toHaveBeenCalledWith(
+      expect.objectContaining({ path: '/chkLoginSession.do', form: {} }),
+    );
+  });
+
+  it('로그아웃 후 getMobileMenuList식 Result:[]만으로는 세션 판단을 하지 않는다', async () => {
+    // probe는 chkLoginSession만 본다 — Result:[]가 와도 여기선 호출되지 않음
+    bridge.mockResolvedValue({
+      ok: false,
+      status: 0,
+      body: 'bridge: path not allowed',
+    });
+    expect(await probeHrSessionAlive()).toBe(false);
+  });
+
+  it('HTML·브리지 실패면 죽은 세션', async () => {
+    bridge.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      body: '<html>login</html>',
+    });
+    expect(await probeHrSessionAlive()).toBe(false);
+
+    bridge.mockRejectedValueOnce(new Error('no parent bridge available'));
+    expect(await probeHrSessionAlive()).toBe(false);
   });
 });
 
