@@ -56,3 +56,7 @@ packages/plugin-payment-api/src/public/js/bundle.js.map.gz
 docker/elasticsearchData
 
 .superpowers/sdd/
+
+# 서버 접속 키(SSH) — 커밋 금지
+ssh-key-*
+*.ppk

@@ -1,4 +1,9 @@
-import { getHrBaseUrl, buildHrUrl } from '../getHrBaseUrl';
+import {
+  getHrBaseUrl,
+  buildHrUrl,
+  buildChatbotIframeUrl,
+  CHATBOT_BACK_EVENT,
+} from '../getHrBaseUrl';
 
 jest.mock('../../../connection', () => ({
   connection: {
@@ -103,16 +108,40 @@ describe('buildHrUrl', () => {
   });
 
   it('절대 URL은 그대로 반환한다', () => {
-    expect(buildHrUrl('https://other.example.com/path')).toBe('https://other.example.com/path');
+    expect(buildHrUrl('https://other.example.com/path')).toBe(
+      'https://other.example.com/path',
+    );
   });
 
   it('상대 경로는 base URL과 결합한다', () => {
     mockConnection.setting = { hrBaseUrl: 'https://xxx.okr.best' };
-    expect(buildHrUrl('/MobileMain.do')).toBe('https://xxx.okr.best/MobileMain.do');
+    expect(buildHrUrl('/MobileMain.do')).toBe(
+      'https://xxx.okr.best/MobileMain.do',
+    );
   });
 
   it('슬래시 없는 상대 경로도 슬래시 추가 후 결합한다', () => {
     mockConnection.setting = { hrBaseUrl: 'https://xxx.okr.best' };
-    expect(buildHrUrl('MobileMain.do')).toBe('https://xxx.okr.best/MobileMain.do');
+    expect(buildHrUrl('MobileMain.do')).toBe(
+      'https://xxx.okr.best/MobileMain.do',
+    );
+  });
+});
+
+describe('buildChatbotIframeUrl', () => {
+  it('바로가기 iframe URL에 from·backEvent 쿼리를 붙인다', () => {
+    mockConnection.setting = { hrBaseUrl: 'https://xxx.okr.best' };
+    expect(buildChatbotIframeUrl('/MobileLeaveAppl.do')).toBe(
+      `https://xxx.okr.best/MobileLeaveAppl.do?from=chatbot&backEvent=${CHATBOT_BACK_EVENT}`,
+    );
+  });
+
+  it('기존 쿼리가 있으면 &로 이어 붙인다', () => {
+    mockConnection.setting = { hrBaseUrl: 'https://xxx.okr.best' };
+    expect(
+      buildChatbotIframeUrl('/EAPApprovalMgr.do?progCd=1&dataRwType=R'),
+    ).toBe(
+      `https://xxx.okr.best/EAPApprovalMgr.do?progCd=1&dataRwType=R&from=chatbot&backEvent=${CHATBOT_BACK_EVENT}`,
+    );
   });
 });

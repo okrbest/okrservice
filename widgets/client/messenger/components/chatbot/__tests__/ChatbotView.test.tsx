@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 import React from 'react';
 import { render, fireEvent, screen, act, within } from '@testing-library/react';
 import ChatbotView from '../ChatbotView';
+import { chatbotFeatureFlags } from '../chatbotFeatureFlags';
 import { streamChat } from '../teamplgpt';
 import { connection } from '../../../connection';
 import {
@@ -10,17 +11,33 @@ import {
   saveMessages,
   loadIndex,
 } from '../chatHistory';
+import { loadMenuPermissions } from '../menuPermission';
 
 const mockSetChatbotMenu = jest.fn();
+const mockSetRoute = jest.fn();
+const mockSetSessionExpiredNotice = jest.fn();
 jest.mock('../../../context/Router', () => ({
   useRouter: () => ({
-    setRoute: jest.fn(),
+    setRoute: mockSetRoute,
     setChatbotMenu: mockSetChatbotMenu,
     setActiveRoute: jest.fn(),
+    sessionExpiredNotice: false,
+    setSessionExpiredNotice: mockSetSessionExpiredNotice,
     isZoomed: false,
     setIsZoomed: jest.fn(),
   }),
 }));
+
+jest.mock('../menuPermission', () => {
+  const actual = jest.requireActual('../menuPermission');
+  return {
+    ...actual,
+    loadMenuPermissions: jest.fn(async () => ({
+      keys: new Set(['mobileleaveappl.do']),
+      openPaths: new Map(),
+    })),
+  };
+});
 
 jest.mock('../../../context/RpaMessage', () => ({
   useRpaMessages: () => ({ rpaMessages: [] }),
@@ -255,6 +272,7 @@ describe('ChatbotView - 메뉴 권한', () => {
   afterEach(() => {
     mockCanOpenMenu.mockImplementation(() => true);
     mockSuggestions.mockReturnValue({ keyword: '', menus: [], questions: [] });
+    chatbotFeatureFlags.showHrMenuGrid = false;
   });
 
   it('권한 없는 메뉴는 답변 아래 바로가기에 나오지 않는다', async () => {
@@ -304,22 +322,12 @@ describe('ChatbotView - 메뉴 권한', () => {
     expect(box).toHaveValue('올해 남은 휴가가 며칠인가요?');
   });
 
-  it('PC 메뉴 권한만 있는 휴가신청도 답변 아래 바로가기에 나오고, 어느 쪽에도 없는 메뉴는 빠진다', async () => {
-    // 실제 판단 함수 — 모바일 메뉴 권한 없음 + PC에 휴가신청(직원) TAA-0070만 (teamplgpt specs/023)
-    const { isMenuAllowed, parseMenuPermissions, parsePcMenuPermissions } =
+  it('모바일 메뉴 목록에 없는 휴가신청은 바로가기에 안 나온다', async () => {
+    const { isMenuAllowed, parseMenuPermissions } =
       jest.requireActual('../menuPermission');
-    const sources = {
-      mobile: parseMenuPermissions(JSON.stringify({ Result: [] })),
-      pc: parsePcMenuPermissions(
-        JSON.stringify({
-          result: [
-            { lvl: 4, progCd: 'TAA-0070', applCd: '1022', dataRwType: 'W' },
-          ],
-        }),
-      ),
-    };
+    const permissions = parseMenuPermissions(JSON.stringify({ Result: [] }));
     mockCanOpenMenu.mockImplementation((path: string) =>
-      isMenuAllowed(path, sources),
+      isMenuAllowed(path, permissions),
     );
     (streamChat as jest.Mock).mockImplementation(async function* () {
       yield { textResponse: '안내해 드릴게요.', close: true, error: false };
@@ -332,20 +340,17 @@ describe('ChatbotView - 메뉴 권한', () => {
       fireEvent.click(screen.getByRole('button', { name: '전송' }));
     });
 
-    const panel = screen.getByRole('group', { name: 'HR 메뉴 바로가기' });
+    expect(screen.getByText('안내해 드릴게요.')).toBeInTheDocument();
     expect(
-      within(panel).getByRole('button', { name: /휴가신청/ }),
-    ).toBeInTheDocument();
-    expect(
-      within(panel).queryByRole('button', { name: /경조휴가신청/ }),
+      screen.queryByRole('button', { name: /휴가신청/ }),
     ).not.toBeInTheDocument();
     expect(
-      within(panel).queryByRole('button', { name: /휴가캘린더/ }),
+      screen.queryByRole('group', { name: 'HR 메뉴 바로가기' }),
     ).not.toBeInTheDocument();
-    expect(within(panel).getAllByRole('button')).toHaveLength(1);
   });
 
-  it('권한 있는 메뉴는 그대로 열린다', () => {
+  it('권한 있는 메뉴는 그대로 열린다', async () => {
+    mockSetChatbotMenu.mockClear();
     mockSuggestions.mockReturnValue({
       keyword: '휴가',
       menus: [
@@ -361,13 +366,107 @@ describe('ChatbotView - 메뉴 권한', () => {
     });
     render(<ChatbotView />);
     const box = screen.getByRole('textbox');
-    fireEvent.change(box, { target: { value: '휴가 쓰고 싶은데' } });
-    fireEvent.keyDown(box, { key: 'ArrowDown' });
-    fireEvent.keyDown(box, { key: 'Enter' });
+    fireEvent.change(box, { target: { value: '휴가' } });
+    fireEvent.click(screen.getByRole('option', { name: /휴가신청/ }));
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     expect(mockSetChatbotMenu).toHaveBeenCalledWith(
-      expect.objectContaining({ title: '휴가신청' }),
+      expect.objectContaining({
+        title: '휴가신청',
+        openedAt: expect.any(Number),
+      }),
     );
+  });
+
+  it('5240 세션이 끊긴 뒤 메뉴를 누르면 모바일 iframe이 아니라 챗봇에 만료 안내를 켠다', async () => {
+    mockSetChatbotMenu.mockClear();
+    mockSetRoute.mockClear();
+    mockSetSessionExpiredNotice.mockClear();
+    (loadMenuPermissions as jest.Mock).mockResolvedValueOnce(null);
+    mockSuggestions.mockReturnValue({
+      keyword: '휴가',
+      menus: [
+        {
+          id: 'leave',
+          label: '휴가신청',
+          description: '연차·반차 등 휴가 신청',
+          path: '/MobileLeaveAppl.do',
+          category: 'leave',
+        },
+      ] as any,
+      questions: [],
+    });
+    render(<ChatbotView />);
+    const box = screen.getByRole('textbox');
+    fireEvent.change(box, { target: { value: '휴가' } });
+    fireEvent.click(screen.getByRole('option', { name: /휴가신청/ }));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockSetSessionExpiredNotice).toHaveBeenCalledWith(true);
+    expect(mockSetRoute).toHaveBeenCalledWith('chatbot');
+    expect(mockSetChatbotMenu).not.toHaveBeenCalled();
+  });
+
+  it('세션이 끊긴 뒤 출퇴근 체크도 iframe을 열지 않고 만료 안내를 켠다', async () => {
+    mockSetChatbotMenu.mockClear();
+    mockSetRoute.mockClear();
+    mockSetSessionExpiredNotice.mockClear();
+    mockCanOpenMenu.mockReturnValue(true);
+    (loadMenuPermissions as jest.Mock).mockResolvedValueOnce(null);
+    mockSuggestions.mockReturnValue({
+      keyword: '출근',
+      menus: [
+        {
+          id: 'commute',
+          label: '출퇴근 체크',
+          description: '출퇴근 체크',
+          path: '/MobileMain.do',
+          category: 'attendance',
+        },
+      ] as any,
+      questions: [],
+    });
+    render(<ChatbotView />);
+    const box = screen.getByRole('textbox');
+    fireEvent.change(box, { target: { value: '출근' } });
+    fireEvent.click(screen.getByRole('option', { name: /출퇴근 체크/ }));
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockSetSessionExpiredNotice).toHaveBeenCalledWith(true);
+    expect(mockSetRoute).toHaveBeenCalledWith('chatbot');
+    expect(mockSetChatbotMenu).not.toHaveBeenCalled();
+  });
+
+  it('HR 메뉴 목록에서도 권한 없는 메뉴는 보이지 않는다(D10)', () => {
+    chatbotFeatureFlags.showHrMenuGrid = true;
+    mockCanOpenMenu.mockImplementation(
+      (path: string) =>
+        path.includes('MobileMain') || path.includes('MobileChgPwd'),
+    );
+    render(<ChatbotView />);
+
+    fireEvent.click(screen.getByRole('button', { name: /HR 메뉴/ }));
+
+    expect(
+      screen.getByRole('button', { name: '출퇴근 체크' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: '비밀번호변경' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: '급여명세서' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: '휴가신청' }),
+    ).not.toBeInTheDocument();
+
+    chatbotFeatureFlags.showHrMenuGrid = false;
   });
 });
 
@@ -377,8 +476,8 @@ describe('ChatbotView - 결재 양식 메뉴 열기', () => {
     mockSuggestions.mockReturnValue({ keyword: '', menus: [], questions: [] });
   });
 
-  it('5240 메뉴 정보로 만든 주소로 연다', () => {
-    mockSetChatbotMenu.mockReset();
+  it('5240 메뉴 정보로 만든 주소로 연다', async () => {
+    mockSetChatbotMenu.mockClear();
     mockResolveMenuPath.mockImplementation(
       () =>
         '/EAPApprovalMgr.do?cmd=viewEAPApprovalMgr&progCd=PRC-0030&dataRwType=W',
@@ -399,15 +498,20 @@ describe('ChatbotView - 결재 양식 메뉴 열기', () => {
     render(<ChatbotView />);
     const box = screen.getByRole('textbox');
     fireEvent.change(box, { target: { value: '사직서' } });
-    fireEvent.keyDown(box, { key: 'ArrowDown' });
-    fireEvent.keyDown(box, { key: 'Enter' });
-
-    expect(mockSetChatbotMenu).toHaveBeenCalledWith({
-      title: '사직서(직원)',
-      url: expect.stringMatching(
-        /\/EAPApprovalMgr\.do\?cmd=viewEAPApprovalMgr&progCd=PRC-0030&dataRwType=W$/,
-      ),
+    fireEvent.click(screen.getByRole('option', { name: /사직서\(직원\)/ }));
+    await act(async () => {
+      await Promise.resolve();
     });
+
+    expect(mockSetChatbotMenu).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: '사직서(직원)',
+        url: expect.stringMatching(
+          /\/EAPApprovalMgr\.do\?cmd=viewEAPApprovalMgr&progCd=PRC-0030&dataRwType=W&from=chatbot&backEvent=CHATBOT_BACK$/,
+        ),
+        openedAt: expect.any(Number),
+      }),
+    );
   });
 });
 

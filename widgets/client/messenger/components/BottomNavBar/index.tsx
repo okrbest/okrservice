@@ -42,7 +42,7 @@ const items = [
 ];
 
 function BottomNavBar() {
-  const { setActiveRoute, activeRoute } = useRouter();
+  const { setRoute, activeRoute } = useRouter();
   const { unreadTicketCount, hasTickets } = useTicket();
   const showTicket = getShowTicket();
   const showChatbot = getShowChatbot();
@@ -51,8 +51,9 @@ function BottomNavBar() {
   const dealData = getDealData();
   const messengerData = getMessengerData();
 
-  const handleItemClick = (route: string) => (e: React.MouseEvent) => {
-    setActiveRoute(route);
+  // setRoute로 가야 chatbot-iframe 메뉴 상태가 지워진다(setActiveRoute만 쓰면 잔상)
+  const handleItemClick = (route: string) => (_e: React.MouseEvent) => {
+    setRoute(route);
   };
 
   const isItemActive = (item: {

@@ -60,7 +60,11 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
   const [chatbotMenu, setChatbotMenu] = useState<{
     title: string;
     url: string;
+    /** iframe 강제 재마운트용 — 같은 주소 재오픈·MobileMain 잔상 방지 */
+    openedAt?: number;
   } | null>(null);
+  /** HR 바로가기 중 세션 끊김 — 챗봇 화면에 만료 안내 (iframe/모바일 화면 유지하지 않음) */
+  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
 
   const { setIsInputDisabled, setSelectedSkill, isLoggedIn } = useConfig();
 
@@ -118,7 +122,8 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      if (routePath === 'chatbot') {
+      // iframe 밖으로 나가면 메뉴 상태 제거(하단 탭이 setActiveRoute만 쓰던 때 잔상 방지)
+      if (routePath !== 'chatbot-iframe') {
         setChatbotMenu(null);
       }
 
@@ -182,6 +187,8 @@ export const RouterProvider = ({ children }: { children: React.ReactNode }) => {
         setIsZoomed,
         chatbotMenu,
         setChatbotMenu,
+        sessionExpiredNotice,
+        setSessionExpiredNotice,
       }}
     >
       {children}

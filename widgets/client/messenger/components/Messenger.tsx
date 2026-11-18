@@ -58,7 +58,11 @@ function Messenger({
         return <ChatbotView />;
       case 'chatbot-iframe':
         return chatbotMenu ? (
-          <ChatbotIframeView title={chatbotMenu.title} url={chatbotMenu.url} />
+          <ChatbotIframeView
+            key={`${chatbotMenu.url}#${chatbotMenu.openedAt ?? 0}`}
+            title={chatbotMenu.title}
+            url={chatbotMenu.url}
+          />
         ) : (
           <ChatbotView />
         );

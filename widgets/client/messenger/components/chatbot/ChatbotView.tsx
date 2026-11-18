@@ -2,11 +2,12 @@ import * as React from 'react';
 import { motion } from 'framer-motion';
 import Container from '../common/Container';
 import { CHATBOT_MENUS, CHATBOT_MENU_CATEGORIES } from './chatbotMenus';
+import { chatbotFeatureFlags } from './chatbotFeatureFlags';
 import { useRouter } from '../../context/Router';
 import { getColor } from '../../utils/util';
 import { useChatbotMessages } from './useChatbotMessages';
 import { useRpaMessages } from '../../context/RpaMessage';
-import { buildHrUrl } from './getHrBaseUrl';
+import { buildChatbotIframeUrl } from './getHrBaseUrl';
 import {
   useChatbotButtonMessages,
   ChatbotButtonCardMessage,
@@ -27,6 +28,11 @@ import { CHATBOT_MANUAL_URL } from '../ticket/helpLinks';
 import { dispatchViz, VizBlockRenderer } from './vizRenderers';
 import { chatbotTheme } from './chatbotTheme';
 import { safeHref } from './linkSafety';
+import {
+  filterChatbotMenusByPermission,
+  loadMenuPermissions,
+  menuKey,
+} from './menuPermission';
 import { useMenuPermission } from './useMenuPermission';
 
 const T = chatbotTheme;
@@ -659,7 +665,12 @@ function headerIconButtonStyle(
 }
 
 const ChatbotView: React.FC = () => {
-  const { setRoute, setChatbotMenu } = useRouter();
+  const {
+    setRoute,
+    setChatbotMenu,
+    sessionExpiredNotice,
+    setSessionExpiredNotice,
+  } = useRouter();
   // 직원의 5240 모바일 메뉴 권한 — 권한 있는 메뉴만 보이고 열린다(확인 전·실패면 항상 허용 화면만)
   const { canOpenMenu, resolveMenuPath } = useMenuPermission();
   const primaryColor = getColor() || '#6366f1';
@@ -667,6 +678,8 @@ const ChatbotView: React.FC = () => {
   const [hoveredHeaderBtn, setHoveredHeaderBtn] = React.useState<
     'new' | 'history' | 'manual' | null
   >(null);
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [hoveredId, setHoveredId] = React.useState<string | null>(null);
   const chatBottomRef = React.useRef<HTMLDivElement>(null);
 
   const scheduledMessages = useChatbotMessages();
@@ -756,12 +769,34 @@ const ChatbotView: React.FC = () => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [timelineItems.length, aiMessages]);
 
-  const handleMenuClick = (title: string, pathOrUrl: string) => {
+  const handleMenuClick = async (title: string, pathOrUrl: string) => {
     // 권한 없는 메뉴는 목록에서 빠지지만, 어느 경로로 오든 여기서 한 번 더 막는다
     if (!canOpenMenu(pathOrUrl)) {
       return;
     }
-    setChatbotMenu({ title, url: buildHrUrl(resolveMenuPath(pathOrUrl)) });
+
+    const openPath = resolveMenuPath(pathOrUrl);
+    const openedAt = Date.now();
+
+    // 세션이 이미 끊겼으면 5240이 iframe을 MobileMain/에러로 보내 모든 메뉴가 홈처럼 보인다.
+    // 출퇴근 체크(MobileMain)도 동일 — 세션 없이 열면 홈/로그인만 보인다.
+    // 비밀번호변경만 세션 없이 열리는 5240 화면이라 검사를 건너뛴다.
+    const skipSessionProbe = menuKey(openPath) === menuKey('/MobileChgPwd.do');
+    if (!skipSessionProbe) {
+      const mobile = await loadMenuPermissions();
+      if (mobile === null) {
+        // 모바일 iframe에 두지 않고 챗봇으로 돌아와 만료 안내
+        setSessionExpiredNotice(true);
+        setRoute('chatbot');
+        return;
+      }
+    }
+
+    setChatbotMenu({
+      title,
+      url: buildChatbotIframeUrl(openPath),
+      openedAt,
+    });
     setRoute('chatbot-iframe');
   };
 
@@ -805,6 +840,7 @@ const ChatbotView: React.FC = () => {
       })) {
         // 서버 abort 청크: error가 문자열로 옴 (정상 청크는 false/null)
         if (typeof chunk.error === 'string' && chunk.error) {
+          console.error('[ChatbotView] stream aborted:', chunk.error);
           setAiMessages((prev) =>
             prev.map((m) =>
               m.id === botMsgId
@@ -839,6 +875,7 @@ const ChatbotView: React.FC = () => {
     } catch (e: any) {
       // unmount로 인한 중단은 에러 표시하지 않음
       if (e?.name !== 'AbortError') {
+        console.error('[ChatbotView] streamChat failed:', e);
         setAiMessages((prev) =>
           prev.map((m) =>
             m.id === botMsgId
@@ -1029,6 +1066,66 @@ const ChatbotView: React.FC = () => {
           background: T.color.threadBackground,
         }}
       >
+        {sessionExpiredNotice && (
+          <div
+            role="alert"
+            style={{
+              margin: '12px 16px 0',
+              padding: '12px 14px',
+              borderRadius: 10,
+              background: '#f5f6ff',
+              border: '1px solid #d8dcff',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: 13,
+                color: '#555',
+                lineHeight: 1.55,
+              }}
+            >
+              로그인이 만료되었거나, 바로가기 화면에서 로그아웃된 상태입니다.
+              <br />
+              아래 버튼으로 페이지를 새로고침한 뒤 다시 로그인해 주세요.
+            </p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => window.top?.location.reload()}
+                style={{
+                  padding: '8px 14px',
+                  backgroundColor: '#6f80ff',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+              >
+                5240 새로고침
+              </button>
+              <button
+                type="button"
+                onClick={() => setSessionExpiredNotice(false)}
+                style={{
+                  padding: '8px 14px',
+                  backgroundColor: 'transparent',
+                  color: '#555',
+                  border: '1px solid #d0d0d0',
+                  borderRadius: 8,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        )}
         {/* ── 채팅 영역: 인사 + 시간대 메시지 (스크롤) ── */}
         <div
           style={{
@@ -1442,117 +1539,138 @@ const ChatbotView: React.FC = () => {
           </button>
         </div>
 
-        {/* ── 메뉴 그리드 (접기/펼치기) ── 비활성화
-        <div
-          style={{
-            flexShrink: 0,
-            borderTop: "1px solid #ebebf5",
-            background: "#f5f6fc",
-          }}
-        >
-          <button
-            type="button"
-            tabIndex={-1}
-            onMouseDown={(e) => e.preventDefault()}
-            onFocus={(e) => e.currentTarget.blur()}
-            onClick={() => setIsMenuOpen((prev) => !prev)}
+        {/* 하단 HR 메뉴 그리드 — 제품 기본 off. 켤 때도 권한 있는 메뉴만 (D10) */}
+        {chatbotFeatureFlags.showHrMenuGrid && (
+          <div
             style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "10px 16px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              outline: "none",
-              WebkitAppearance: "none",
-              appearance: "none",
+              flexShrink: 0,
+              borderTop: '1px solid #ebebf5',
+              background: '#f5f6fc',
             }}
           >
-            <span style={{ fontSize: "12px", fontWeight: "600", color: "#6366f1" }}>
-              HR 메뉴
-            </span>
-            <span
+            <button
+              type="button"
+              tabIndex={-1}
+              onMouseDown={(e) => e.preventDefault()}
+              onFocus={(e) => e.currentTarget.blur()}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
               style={{
-                fontSize: "11px",
-                color: "#94a3b8",
-                transition: "transform 0.2s",
-                display: "inline-block",
-                transform: isMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '10px 16px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                outline: 'none',
+                WebkitAppearance: 'none',
+                appearance: 'none',
               }}
             >
-              ▲
-            </span>
-          </button>
+              <span
+                style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: '#6366f1',
+                }}
+              >
+                HR 메뉴
+              </span>
+              <span
+                style={{
+                  fontSize: '11px',
+                  color: '#94a3b8',
+                  transition: 'transform 0.2s',
+                  display: 'inline-block',
+                  transform: isMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              >
+                ▲
+              </span>
+            </button>
 
-          {isMenuOpen && (
-            <div style={{ padding: "0 14px 14px", overflowY: "auto", maxHeight: "260px" }}>
-              {CHATBOT_MENU_CATEGORIES.map((cat, catIndex) => {
-            const items = CHATBOT_MENUS.filter((m) => m.category === cat.key);
-            const gridCols =
-              cat.cols === 2
-                ? "repeat(2, minmax(0, 1fr))"
-                : "repeat(auto-fit, minmax(96px, 1fr))";
+            {isMenuOpen && (
+              <div
+                style={{
+                  padding: '0 14px 14px',
+                  overflowY: 'auto',
+                  maxHeight: '260px',
+                }}
+              >
+                {CHATBOT_MENU_CATEGORIES.map((cat, catIndex) => {
+                  const items = filterChatbotMenusByPermission(
+                    canOpenMenu,
+                    cat.key,
+                  );
+                  if (items.length === 0) {
+                    return null;
+                  }
+                  const gridCols =
+                    cat.cols === 2
+                      ? 'repeat(2, minmax(0, 1fr))'
+                      : 'repeat(auto-fit, minmax(96px, 1fr))';
 
-            return (
-              <div key={cat.key}>
-                {catIndex > 0 && <div style={DIVIDER_STYLE} />}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: gridCols,
-                    gap: "7px",
-                    marginBottom: "4px",
-                    alignItems: "stretch",
-                  }}
-                >
-                  {items.map((menu) => {
-                    const isHovered = hoveredId === menu.id;
-                    return (
-                      <button
-                        key={menu.id}
-                        type="button"
-                        tabIndex={-1}
-                        className="chatbot-menu-button"
+                  return (
+                    <div key={cat.key}>
+                      {catIndex > 0 && <div style={DIVIDER_STYLE} />}
+                      <div
                         style={{
-                          ...CARD_BASE_STYLE,
-                          ...(isHovered
-                            ? {
-                                background: `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`,
-                                borderWidth: "1.5px",
-                                borderStyle: "solid",
-                                borderColor: "transparent",
-                                color: "#fff",
-                                transform: "translateY(-2px)",
-                                boxShadow: `0 6px 16px rgba(99,102,241,0.28)`,
-                                outline: "none",
-                              }
-                            : {
-                                borderWidth: "1.5px",
-                                borderStyle: "solid",
-                                borderColor: "#ebebf5",
-                                outline: "none",
-                              }),
+                          display: 'grid',
+                          gridTemplateColumns: gridCols,
+                          gap: '7px',
+                          marginBottom: '4px',
+                          alignItems: 'stretch',
                         }}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onFocus={(e) => e.currentTarget.blur()}
-                        onMouseEnter={() => setHoveredId(menu.id)}
-                        onMouseLeave={() => setHoveredId(null)}
-                        onClick={() => handleMenuClick(menu.label, menu.path)}
                       >
-                        {menu.label}
-                      </button>
-                    );
-                  })}
-                </div>
+                        {items.map((menu) => {
+                          const isHovered = hoveredId === menu.id;
+                          return (
+                            <button
+                              key={menu.id}
+                              type="button"
+                              tabIndex={-1}
+                              className="chatbot-menu-button"
+                              style={{
+                                ...CARD_BASE_STYLE,
+                                ...(isHovered
+                                  ? {
+                                      background: `linear-gradient(135deg, ${primaryColor} 0%, #7c3aed 100%)`,
+                                      borderWidth: '1.5px',
+                                      borderStyle: 'solid',
+                                      borderColor: 'transparent',
+                                      color: '#fff',
+                                      transform: 'translateY(-2px)',
+                                      boxShadow: `0 6px 16px rgba(99,102,241,0.28)`,
+                                      outline: 'none',
+                                    }
+                                  : {
+                                      borderWidth: '1.5px',
+                                      borderStyle: 'solid',
+                                      borderColor: '#ebebf5',
+                                      outline: 'none',
+                                    }),
+                              }}
+                              onMouseDown={(e) => e.preventDefault()}
+                              onFocus={(e) => e.currentTarget.blur()}
+                              onMouseEnter={() => setHoveredId(menu.id)}
+                              onMouseLeave={() => setHoveredId(null)}
+                              onClick={() =>
+                                handleMenuClick(menu.label, menu.path)
+                              }
+                            >
+                              {menu.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-              })}
-            </div>
-          )}
-        </div>
-        ── 메뉴 그리드 비활성화 끝 ── */}
+            )}
+          </div>
+        )}
       </div>
     </Container>
   );
